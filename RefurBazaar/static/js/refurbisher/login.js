@@ -207,7 +207,7 @@ async function verifyOtp() {
       setTimeout(() => {
         const user_id = data.user_id
         // Redirect to dashboard or profile page
-        window.location.href = `/dashboard/?user_id=${user_id}`
+        window.location.href = `/refurbisher-profile/`
       }, 1500)
     } else {
       showError(data.message || "OTP verification failed")

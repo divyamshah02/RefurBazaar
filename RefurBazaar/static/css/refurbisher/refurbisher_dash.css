@@ -2,7 +2,7 @@
 .dashboard-container {
   background: var(--bg-light);
   min-height: 100vh;
-  padding-top: 180px;
+  padding-top: 110px;
 }
 
 .dashboard-sidebar {
@@ -12,7 +12,7 @@
   padding: 2rem;
   height: fit-content;
   position: sticky;
-  top: 200px;
+  top: 100px;
 }
 
 .dashboard-nav {
