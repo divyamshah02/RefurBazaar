@@ -1,0 +1,2112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RefurBazar - Premium Refurbished Electronics Marketplace</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- Loader -->
+    <div id="spinner" class="spinner-container">
+        <div class="spinner">
+            <i class="fas fa-mobile-alt" style="font-size: 3rem; color: var(--primary-color);"></i>
+        </div>
+        <div class="loading-text">Loading RefurBazar...</div>
+    </div>
+
+    <!-- Updated main header layout with full width, logo left, account button right, search center -->
+    <nav class="navbar navbar-expand-lg main-navbar" id="navbar">
+        <div class="container-fluid px-4">
+
+            <!-- Logo extreme left -->
+            <a class="navbar-brand me-auto" href="#home">
+                <i class="fas fa-recycle me-2"></i>RefurBazar
+            </a>
+
+            <!-- Center Search Bar (hidden on mobile) -->
+            <div class="navbar-search mx-auto d-none d-lg-block">
+                <div class="search-container">
+                    <input type="text" class="form-control search-input" placeholder="What are you looking for?"
+                        id="searchInput">
+                    <button class="search-btn"><i class="fas fa-search"></i></button>
+                    <div class="search-suggestions" id="searchSuggestions"></div>
+                </div>
+            </div>
+
+            <!-- Right side icons/buttons -->
+            <div class="d-flex align-items-center ms-auto">
+                <a href="#" class="nav-icon me-3" id="wishlistBtn">
+                    <i class="fas fa-heart"></i><span class="badge" id="wishlistCount">0</span>
+                </a>
+                <a href="#" class="nav-icon me-3" id="cartBtn">
+                    <i class="fas fa-shopping-cart"></i><span class="badge" id="cartCount">0</span>
+                </a>
+                <a href="#" class="btn btn-primary">My Account</a>
+            </div>
+
+        </div>
+    </nav>
+
+    <!-- Fixed category navigation menu with proper dropdown styling and removed scroll bars -->
+    <nav class="category-navbar">
+        <div class="container">
+            <div class="category-menu">
+                <div class="category-item-wrapper">
+                    <a href="#" class="category-item active">
+                        <i class="fas fa-fire text-danger me-1"></i>
+                        Good deals
+                    </a>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="#" class="category-item">Smartphones</a>
+                    <div class="category-dropdown">
+                        <div class="dropdown-content">
+                            <div class="category-grid">
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #FFE5E5, #FFB3BA);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=150&h=100&fit=crop"
+                                            alt="iPhone">
+                                    </div>
+                                    <h4>iPhone</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #E5F3FF, #B3D9FF);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=150&h=100&fit=crop"
+                                            alt="Samsung Galaxy">
+                                    </div>
+                                    <h4>Samsung Galaxy</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #E5FFE5, #B3FFB3);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=150&h=100&fit=crop"
+                                            alt="Google Pixel">
+                                    </div>
+                                    <h4>Google Pixel</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #FFF5E5, #FFE5B3);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=150&h=100&fit=crop"
+                                            alt="Android smartphones">
+                                    </div>
+                                    <h4>Android smartphones</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #F0E5FF, #D9B3FF);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=150&h=100&fit=crop"
+                                            alt="Smartphone Accessories">
+                                    </div>
+                                    <h4>Smartphone Accessories</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="#" class="category-item">Laptops</a>
+                    <div class="category-dropdown">
+                        <div class="dropdown-content">
+                            <div class="category-grid">
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #F5F5F5, #E0E0E0);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=150&h=100&fit=crop"
+                                            alt="MacBook">
+                                    </div>
+                                    <h4>MacBook</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #E5F3FF, #B3D9FF);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=150&h=100&fit=crop"
+                                            alt="Windows Laptops">
+                                    </div>
+                                    <h4>Windows Laptops</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #FFE5E5, #FFB3BA);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=150&h=100&fit=crop"
+                                            alt="Gaming Laptops">
+                                    </div>
+                                    <h4>Gaming Laptops</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #E5FFE5, #B3FFB3);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=150&h=100&fit=crop"
+                                            alt="Business Laptops">
+                                    </div>
+                                    <h4>Business Laptops</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="#" class="category-item">Tablets</a>
+                    <div class="category-dropdown">
+                        <div class="dropdown-content">
+                            <div class="category-grid">
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #F5F5F5, #E0E0E0);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=150&h=100&fit=crop"
+                                            alt="iPad">
+                                    </div>
+                                    <h4>iPad</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #E5F3FF, #B3D9FF);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1561154464-82e9adf32764?w=150&h=100&fit=crop"
+                                            alt="Android Tablets">
+                                    </div>
+                                    <h4>Android Tablets</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #E5FFE5, #B3FFB3);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1585792180666-f7347c490ee2?w=150&h=100&fit=crop"
+                                            alt="Surface Tablets">
+                                    </div>
+                                    <h4>Surface Tablets</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="#" class="category-item">Gaming consoles</a>
+                    <div class="category-dropdown">
+                        <div class="dropdown-content">
+                            <div class="category-grid">
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #000033, #000066);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=150&h=100&fit=crop"
+                                            alt="PlayStation">
+                                    </div>
+                                    <h4 style="color: white;">PlayStation</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #003300, #006600);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=150&h=100&fit=crop"
+                                            alt="Xbox">
+                                    </div>
+                                    <h4 style="color: white;">Xbox</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #FF3333, #FF6666);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=150&h=100&fit=crop"
+                                            alt="Nintendo">
+                                    </div>
+                                    <h4 style="color: white;">Nintendo</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="#" class="category-item">Smartwatches</a>
+                    <div class="category-dropdown">
+                        <div class="dropdown-content">
+                            <div class="category-grid">
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #F5F5F5, #E0E0E0);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=150&h=100&fit=crop"
+                                            alt="Apple Watch">
+                                    </div>
+                                    <h4>Apple Watch</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #E5F3FF, #B3D9FF);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=150&h=100&fit=crop"
+                                            alt="Samsung Galaxy Watch">
+                                    </div>
+                                    <h4>Samsung Galaxy Watch</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #FFE5E5, #FFB3BA);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=150&h=100&fit=crop"
+                                            alt="Fitness Trackers">
+                                    </div>
+                                    <h4>Fitness Trackers</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="#" class="category-item">Audio</a>
+                    <div class="category-dropdown">
+                        <div class="dropdown-content">
+                            <div class="category-grid">
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #F5F5F5, #E0E0E0);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=150&h=100&fit=crop"
+                                            alt="Headphones">
+                                    </div>
+                                    <h4>Headphones</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #E5F3FF, #B3D9FF);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=150&h=100&fit=crop"
+                                            alt="Earbuds">
+                                    </div>
+                                    <h4>Earbuds</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #E5FFE5, #B3FFB3);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=150&h=100&fit=crop"
+                                            alt="Speakers">
+                                    </div>
+                                    <h4>Speakers</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="#" class="category-item">Home appliances</a>
+                    <div class="category-dropdown">
+                        <div class="dropdown-content">
+                            <div class="category-grid">
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #FFE5E5, #FFB3BA);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=150&h=100&fit=crop"
+                                            alt="Kitchen Appliances">
+                                    </div>
+                                    <h4>Kitchen Appliances</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #E5F3FF, #B3D9FF);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=150&h=100&fit=crop"
+                                            alt="Smart Home">
+                                    </div>
+                                    <h4>Smart Home</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #E5FFE5, #B3FFB3);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=150&h=100&fit=crop"
+                                            alt="Cleaning Appliances">
+                                    </div>
+                                    <h4>Cleaning Appliances</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="#" class="category-item">More</a>
+                    <div class="category-dropdown">
+                        <div class="dropdown-content">
+                            <div class="category-grid">
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #F0E5FF, #D9B3FF);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=150&h=100&fit=crop"
+                                            alt="Cameras">
+                                    </div>
+                                    <h4>Cameras</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #FFF5E5, #FFE5B3);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=150&h=100&fit=crop"
+                                            alt="Accessories">
+                                    </div>
+                                    <h4>Accessories</h4>
+                                </div>
+                                <div class="category-card"
+                                    style="background: linear-gradient(135deg, #E5F5FF, #B3E5FF);">
+                                    <div class="category-image">
+                                        <img src="https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=150&h=100&fit=crop"
+                                            alt="Others">
+                                    </div>
+                                    <h4>Others</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Updated hero section with direct 4 cards layout, removed empty right element -->
+    <section class="hero-section" id="home">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="hero-content text-center" data-aos="fade-up" data-aos-duration="1000">
+                        <div class="hero-badge">
+                            <i class="fas fa-award"></i>
+                            India's Most Trusted Refurb Marketplace
+                        </div>
+
+                        <h1 class="hero-title">Buy Premium Refurbished Electronics</h1>
+                        <p class="hero-subtitle">Get up to 70% off on premium refurbished devices with 5-Days return
+                            policy & quality guarantee. Every device is professionally tested and certified.</p>
+
+                        <!-- Direct 4 cards layout like original WasteBazar, removed sell your device blocks -->
+                        <!-- <div class="hero-cards-grid" data-aos="fade-up" data-aos-delay="200">
+                            <div class="hero-card">
+                                <div class="hero-card-icon">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <h3>Smartphones</h3>
+                                <p>iPhone, Samsung, OnePlus</p>
+                                <span class="hero-card-price">From ₹12,999</span>
+                            </div>
+                            <div class="hero-card">
+                                <div class="hero-card-icon">
+                                    <i class="fas fa-laptop"></i>
+                                </div>
+                                <h3>Laptops</h3>
+                                <p>MacBook, ThinkPad, Dell</p>
+                                <span class="hero-card-price">From ₹25,999</span>
+                            </div>
+                            <div class="hero-card">
+                                <div class="hero-card-icon">
+                                    <i class="fas fa-gamepad"></i>
+                                </div>
+                                <h3>Gaming</h3>
+                                <p>PlayStation, Xbox, Nintendo</p>
+                                <span class="hero-card-price">From ₹18,999</span>
+                            </div>
+                            <div class="hero-card">
+                                <div class="hero-card-icon">
+                                    <i class="fas fa-tablet-alt"></i>
+                                </div>
+                                <h3>Tablets</h3>
+                                <p>iPad, Samsung Tab, Surface</p>
+                                <span class="hero-card-price">From ₹15,999</span>
+                            </div>
+                        </div>
+                         -->
+                        <div class="hero-stats" data-aos="fade-up" data-aos-delay="400">
+                            <div class="stat-item">
+                                <span class="stat-number">5M+</span>
+                                <span class="stat-label">Happy Customers</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">50K+</span>
+                                <span class="stat-label">Devices Sold</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">5 Days</span>
+                                <span class="stat-label">Return Policy</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">4.8★</span>
+                                <span class="stat-label">Rating</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced what are you looking for section with wider layout to fit in one line -->
+    <section class="looking-for-section">
+        <div class="container">
+            <div class="section-header text-center" data-aos="fade-up">
+                <h2 class="section-title">What Are You Looking For?</h2>
+                <p class="section-subtitle">Find the perfect refurbished device for your needs</p>
+            </div>
+
+            <!-- Made grid wider to fit all items in one line -->
+            <div class="looking-for-grid-wide" data-aos="fade-up" data-aos-delay="200">
+                <div class="looking-for-item">
+                    <div class="item-icon">
+                        <i class="fab fa-apple"></i>
+                    </div>
+                    <h4>iPhone</h4>
+                    <p>Premium refurbished iPhones</p>
+                </div>
+                <div class="looking-for-item">
+                    <div class="item-icon">
+                        <i class="fab fa-android"></i>
+                    </div>
+                    <h4>Android</h4>
+                    <p>Samsung, OnePlus, Google</p>
+                </div>
+                <div class="looking-for-item">
+                    <div class="item-icon">
+                        <i class="fas fa-laptop"></i>
+                    </div>
+                    <h4>MacBooks</h4>
+                    <p>MacBook Air & Pro models</p>
+                </div>
+                <div class="looking-for-item">
+                    <div class="item-icon">
+                        <i class="fab fa-windows"></i>
+                    </div>
+                    <h4>Windows</h4>
+                    <p>Dell, HP, Lenovo laptops</p>
+                </div>
+                <div class="looking-for-item">
+                    <div class="item-icon">
+                        <i class="fab fa-playstation"></i>
+                    </div>
+                    <h4>PlayStation</h4>
+                    <p>PS4 & PS5 consoles</p>
+                </div>
+                <div class="looking-for-item">
+                    <div class="item-icon">
+                        <i class="fab fa-xbox"></i>
+                    </div>
+                    <h4>Xbox</h4>
+                    <p>Xbox One & Series X/S</p>
+                </div>
+                <div class="looking-for-item">
+                    <div class="item-icon">
+                        <i class="fas fa-tablet-alt"></i>
+                    </div>
+                    <h4>iPads</h4>
+                    <p>iPad Air, Pro & Mini</p>
+                </div>
+                <!-- <div class="looking-for-item">
+                    <div class="item-icon">
+                        <i class="fas fa-headphones"></i>
+                    </div>
+                    <h4>Audio</h4>
+                    <p>AirPods, headphones</p>
+                </div> -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Mega Sale Section -->
+    <section class="mega-sale-section">
+        <div class="container">
+            <div class="mega-sale-banner" data-aos="zoom-in">
+                <div class="sale-content">
+                    <div class="sale-badge">
+                        <i class="fas fa-bolt"></i>
+                        MEGA SALE
+                    </div>
+                    <h2 class="sale-title">Up to 70% OFF</h2>
+                    <p class="sale-subtitle">On Premium Refurbished Electronics</p>
+                    <div class="sale-timer" id="saleTimer">
+                        <div class="timer-item">
+                            <span class="timer-number" id="days">00</span>
+                            <span class="timer-label">Days</span>
+                        </div>
+                        <div class="timer-item">
+                            <span class="timer-number" id="hours">00</span>
+                            <span class="timer-label">Hours</span>
+                        </div>
+                        <div class="timer-item">
+                            <span class="timer-number" id="minutes">00</span>
+                            <span class="timer-label">Minutes</span>
+                        </div>
+                        <div class="timer-item">
+                            <span class="timer-number" id="seconds">00</span>
+                            <span class="timer-label">Seconds</span>
+                        </div>
+                    </div>
+                    <a href="#products" class="btn btn-sale">Shop Now</a>
+                </div>
+                <div class="sale-image">
+                    <img src="https://images.unsplash.com/photo-1556656793-08538906a9f8?w=500&h=400&fit=crop"
+                        alt="Mega Sale" class="img-fluid">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fixed shop by category carousel with proper Swiper initialization -->
+    <section class="category-slider-section" id="categories">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <h2 class="section-title">Shop by Category</h2>
+                <p class="section-subtitle">Explore our wide range of refurbished electronics</p>
+            </div>
+
+            <div class="category-slider-container" data-aos="fade-up" data-aos-delay="200">
+                <div class="swiper categorySwiper">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <div class="category-slide-card">
+                                <div class="category-image">
+                                    <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=200&fit=crop&crop=center"
+                                        alt="Smartphones">
+                                    <div class="category-overlay">
+                                        <div class="category-badge">Up to 60% Off</div>
+                                    </div>
+                                </div>
+                                <div class="category-content">
+                                    <h4>Smartphones</h4>
+                                    <p>500+ Models</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="category-slide-card">
+                                <div class="category-image">
+                                    <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300&h=200&fit=crop&crop=center"
+                                        alt="Laptops">
+                                    <div class="category-overlay">
+                                        <div class="category-badge">Up to 70% Off</div>
+                                    </div>
+                                </div>
+                                <div class="category-content">
+                                    <h4>Laptops</h4>
+                                    <p>300+ Models</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="category-slide-card">
+                                <div class="category-image">
+                                    <img src="https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=300&h=200&fit=crop&crop=center"
+                                        alt="Gaming">
+                                    <div class="category-overlay">
+                                        <div class="category-badge">Up to 50% Off</div>
+                                    </div>
+                                </div>
+                                <div class="category-content">
+                                    <h4>Gaming</h4>
+                                    <p>200+ Models</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="category-slide-card">
+                                <div class="category-image">
+                                    <img src="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=300&h=200&fit=crop&crop=center"
+                                        alt="Tablets">
+                                    <div class="category-overlay">
+                                        <div class="category-badge">Up to 55% Off</div>
+                                    </div>
+                                </div>
+                                <div class="category-content">
+                                    <h4>Tablets</h4>
+                                    <p>150+ Models</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="category-slide-card">
+                                <div class="category-image">
+                                    <img src="https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=300&h=200&fit=crop&crop=center"
+                                        alt="Smartwatches">
+                                    <div class="category-overlay">
+                                        <div class="category-badge">Up to 45% Off</div>
+                                    </div>
+                                </div>
+                                <div class="category-content">
+                                    <h4>Smartwatches</h4>
+                                    <p>100+ Models</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="category-slide-card">
+                                <div class="category-image">
+                                    <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=200&fit=crop&crop=center"
+                                        alt="Audio">
+                                    <div class="category-overlay">
+                                        <div class="category-badge">Up to 65% Off</div>
+                                    </div>
+                                </div>
+                                <div class="category-content">
+                                    <h4>Audio</h4>
+                                    <p>250+ Models</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="swiper-pagination"></div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fixed alignment in trending section -->
+    <section class="trending-section">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <h2 class="section-title">Trending This Week</h2>
+                <p class="section-subtitle">Most popular refurbished devices this week</p>
+            </div>
+
+            <div class="row g-4 justify-content-center" data-aos="fade-up" data-aos-delay="200">
+                <div class="col-lg-4 col-md-6">
+                    <div class="trending-card">
+                        <div class="trending-rank">1</div>
+                        <div class="trending-image">
+                            <img src="https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=300&h=200&fit=crop"
+                                alt="iPhone 14 Pro">
+                        </div>
+                        <div class="trending-content">
+                            <h4>iPhone 14 Pro 128GB</h4>
+                            <div class="trending-price">
+                                <span class="current-price">₹65,999</span>
+                                <span class="original-price">₹99,999</span>
+                            </div>
+                            <div class="trending-stats">
+                                <span class="stat"><i class="fas fa-eye"></i> 2.5K views</span>
+                                <span class="stat"><i class="fas fa-heart"></i> 450 likes</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="trending-card">
+                        <div class="trending-rank">2</div>
+                        <div class="trending-image">
+                            <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=300&h=200&fit=crop"
+                                alt="MacBook Pro">
+                        </div>
+                        <div class="trending-content">
+                            <h4>MacBook Pro 13" M1</h4>
+                            <div class="trending-price">
+                                <span class="current-price">₹85,999</span>
+                                <span class="original-price">₹1,29,999</span>
+                            </div>
+                            <div class="trending-stats">
+                                <span class="stat"><i class="fas fa-eye"></i> 1.8K views</span>
+                                <span class="stat"><i class="fas fa-heart"></i> 320 likes</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="trending-card">
+                        <div class="trending-rank">3</div>
+                        <div class="trending-image">
+                            <img src="https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=300&h=200&fit=crop"
+                                alt="PlayStation 5">
+                        </div>
+                        <div class="trending-content">
+                            <h4>PlayStation 5 Console</h4>
+                            <div class="trending-price">
+                                <span class="current-price">₹42,999</span>
+                                <span class="original-price">₹49,999</span>
+                            </div>
+                            <div class="trending-stats">
+                                <span class="stat"><i class="fas fa-eye"></i> 1.2K views</span>
+                                <span class="stat"><i class="fas fa-heart"></i> 280 likes</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Added missing flagship brands section after trending section -->
+    <!-- New Flagship Brands Section -->
+    <!-- <section class="flagship-brands-section">
+        <div class="container">
+            <div class="section-header text-center" data-aos="fade-up">
+                <h2 class="section-title">Shop by Flagship Brands</h2>
+                <p class="section-subtitle">Premium refurbished devices from top brands</p>
+            </div>
+
+            <div class="flagship-brands-grid" data-aos="fade-up" data-aos-delay="200">
+                <div class="brand-showcase apple-showcase">
+                    <div class="brand-header">
+                        <div class="brand-logo">
+                            <i class="fab fa-apple"></i>
+                        </div>
+                        <div class="brand-info">
+                            <h3>Apple</h3>
+                            <p>Premium refurbished Apple devices</p>
+                        </div>
+                    </div>
+                    <div class="brand-products">
+                        <div class="brand-product">
+                            <img src="https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=150&h=150&fit=crop" alt="iPhone">
+                            <div class="product-info">
+                                <h5>iPhone 14 Pro</h5>
+                                <span>From ₹65,999</span>
+                            </div>
+                        </div>
+                        <div class="brand-product">
+                            <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=150&h=150&fit=crop" alt="MacBook">
+                            <div class="product-info">
+                                <h5>MacBook Pro</h5>
+                                <span>From ₹85,999</span>
+                            </div>
+                        </div>
+                        <div class="brand-product">
+                            <img src="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=150&h=150&fit=crop" alt="iPad">
+                            <div class="product-info">
+                                <h5>iPad Pro</h5>
+                                <span>From ₹55,999</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#" class="brand-cta">Shop Apple <i class="fas fa-arrow-right"></i></a>
+                </div>
+
+                <div class="brand-showcase samsung-showcase">
+                    <div class="brand-header">
+                        <div class="brand-logo samsung-logo">
+                            <span>Samsung</span>
+                        </div>
+                        <div class="brand-info">
+                            <h3>Samsung</h3>
+                            <p>Galaxy series & premium devices</p>
+                        </div>
+                    </div>
+                    <div class="brand-products">
+                        <div class="brand-product">
+                            <img src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=150&h=150&fit=crop" alt="Galaxy S24">
+                            <div class="product-info">
+                                <h5>Galaxy S24 Ultra</h5>
+                                <span>From ₹89,999</span>
+                            </div>
+                        </div>
+                        <div class="brand-product">
+                            <img src="https://images.unsplash.com/photo-1561154464-82e9adf32764?w=150&h=150&fit=crop" alt="Galaxy Tab">
+                            <div class="product-info">
+                                <h5>Galaxy Tab S9</h5>
+                                <span>From ₹45,999</span>
+                            </div>
+                        </div>
+                        <div class="brand-product">
+                            <img src="https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=150&h=150&fit=crop" alt="Galaxy Watch">
+                            <div class="product-info">
+                                <h5>Galaxy Watch</h5>
+                                <span>From ₹18,999</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#" class="brand-cta">Shop Samsung <i class="fas fa-arrow-right"></i></a>
+                </div>
+
+                <div class="brand-showcase google-showcase">
+                    <div class="brand-header">
+                        <div class="brand-logo google-logo">
+                            <span>Google</span>
+                        </div>
+                        <div class="brand-info">
+                            <h3>Google</h3>
+                            <p>Pixel phones & smart devices</p>
+                        </div>
+                    </div>
+                    <div class="brand-products">
+                        <div class="brand-product">
+                            <img src="https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=150&h=150&fit=crop" alt="Pixel 8">
+                            <div class="product-info">
+                                <h5>Pixel 8 Pro</h5>
+                                <span>From ₹52,999</span>
+                            </div>
+                        </div>
+                        <div class="brand-product">
+                            <img src="https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=150&h=150&fit=crop" alt="Pixel Buds">
+                            <div class="product-info">
+                                <h5>Pixel Buds Pro</h5>
+                                <span>From ₹12,999</span>
+                            </div>
+                        </div>
+                        <div class="brand-product">
+                            <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=150&h=150&fit=crop" alt="Nest Hub">
+                            <div class="product-info">
+                                <h5>Nest Hub Max</h5>
+                                <span>From ₹15,999</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#" class="brand-cta">Shop Google <i class="fas fa-arrow-right"></i></a>
+                </div>
+
+                <div class="brand-showcase oneplus-showcase">
+                    <div class="brand-header">
+                        <div class="brand-logo oneplus-logo">
+                            <span>1+</span>
+                        </div>
+                        <div class="brand-info">
+                            <h3>OnePlus</h3>
+                            <p>Never settle for less</p>
+                        </div>
+                    </div>
+                    <div class="brand-products">
+                        <div class="brand-product">
+                            <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=150&h=150&fit=crop" alt="OnePlus 12">
+                            <div class="product-info">
+                                <h5>OnePlus 12</h5>
+                                <span>From ₹42,999</span>
+                            </div>
+                        </div>
+                        <div class="brand-product">
+                            <img src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=150&h=150&fit=crop" alt="OnePlus Buds">
+                            <div class="product-info">
+                                <h5>OnePlus Buds Pro</h5>
+                                <span>From ₹8,999</span>
+                            </div>
+                        </div>
+                        <div class="brand-product">
+                            <img src="https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=150&h=150&fit=crop" alt="OnePlus Watch">
+                            <div class="product-info">
+                                <h5>OnePlus Watch</h5>
+                                <span>From ₹12,999</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#" class="brand-cta">Shop OnePlus <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </section> -->
+
+    <!-- Enhanced featured products section with more products for better filtering -->
+    <section class="featured-products" id="products">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <h2 class="section-title">Featured Refurbished Devices</h2>
+                <p class="section-subtitle">Hand-picked premium devices at unbeatable prices</p>
+            </div>
+
+            <div class="product-filters" data-aos="fade-up" data-aos-delay="100">
+                <div class="filter-tabs">
+                    <button class="filter-btn active" data-filter="all">All Products</button>
+                    <button class="filter-btn" data-filter="smartphones">Smartphones</button>
+                    <button class="filter-btn" data-filter="laptops">Laptops</button>
+                    <button class="filter-btn" data-filter="gaming">Gaming</button>
+                    <button class="filter-btn" data-filter="tablets">Tablets</button>
+                </div>
+                <div class="filter-sort">
+                    <select class="form-select" id="sortSelect">
+                        <option value="featured">Sort by: Featured</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="newest">Newest First</option>
+                        <option value="rating">Best Rating</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row g-4" id="productsGrid" data-aos="fade-up" data-aos-delay="200">
+                <div class="col-lg-3 col-md-6" data-category="smartphones" data-price="65999" data-rating="4.8">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=250&h=250&fit=crop"
+                                alt="iPhone 14 Pro">
+                            <div class="product-badge excellent">Excellent</div>
+                            <div class="product-actions">
+                                <button class="btn-wishlist" data-product="iphone-14-pro"><i
+                                        class="fas fa-heart"></i></button>
+                                <button class="btn-quick-view" data-product="iphone-14-pro"><i
+                                        class="fas fa-eye"></i></button>
+                                <button class="btn-compare" data-product="iphone-14-pro"><i
+                                        class="fas fa-balance-scale"></i></button>
+                            </div>
+                        </div>
+                        <div class="product-content">
+                            <h4 class="product-title">iPhone 14 Pro 128GB</h4>
+                            <div class="product-rating">
+                                <div class="stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <span class="rating-text">(4.8) 234 reviews</span>
+                            </div>
+                            <div class="product-price">
+                                <span class="current-price">₹65,999</span>
+                                <span class="original-price">₹99,999</span>
+                                <span class="discount">34% off</span>
+                            </div>
+                            <div class="product-features">
+                                <span class="feature"><i class="fas fa-shield-alt"></i> 5-days Return Policy</span>
+                                <span class="feature"><i class="fas fa-shipping-fast"></i> Free shipping</span>
+                            </div>
+                            <button class="btn btn-primary product-btn" onclick="addToCart('iphone-14-pro')">Add to
+                                Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6" data-category="laptops" data-price="85999" data-rating="4.9">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=250&h=250&fit=crop"
+                                alt="MacBook Pro">
+                            <div class="product-badge very-good">Very Good</div>
+                            <div class="product-actions">
+                                <button class="btn-wishlist" data-product="macbook-pro-m1"><i
+                                        class="fas fa-heart"></i></button>
+                                <button class="btn-quick-view" data-product="macbook-pro-m1"><i
+                                        class="fas fa-eye"></i></button>
+                                <button class="btn-compare" data-product="macbook-pro-m1"><i
+                                        class="fas fa-balance-scale"></i></button>
+                            </div>
+                        </div>
+                        <div class="product-content">
+                            <h4 class="product-title">MacBook Pro 13" M1</h4>
+                            <div class="product-rating">
+                                <div class="stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <span class="rating-text">(4.9) 189 reviews</span>
+                            </div>
+                            <div class="product-price">
+                                <span class="current-price">₹85,999</span>
+                                <span class="original-price">₹1,29,999</span>
+                                <span class="discount">34% off</span>
+                            </div>
+                            <div class="product-features">
+                                <span class="feature"><i class="fas fa-shield-alt"></i> 5-days Return Policy</span>
+                                <span class="feature"><i class="fas fa-shipping-fast"></i> Free shipping</span>
+                            </div>
+                            <button class="btn btn-primary product-btn" onclick="addToCart('macbook-pro-m1')">Add to
+                                Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6" data-category="gaming" data-price="42999" data-rating="4.7">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=250&h=250&fit=crop"
+                                alt="PlayStation 5">
+                            <div class="product-badge excellent">Excellent</div>
+                            <div class="product-actions">
+                                <button class="btn-wishlist" data-product="ps5-console"><i
+                                        class="fas fa-heart"></i></button>
+                                <button class="btn-quick-view" data-product="ps5-console"><i
+                                        class="fas fa-eye"></i></button>
+                                <button class="btn-compare" data-product="ps5-console"><i
+                                        class="fas fa-balance-scale"></i></button>
+                            </div>
+                        </div>
+                        <div class="product-content">
+                            <h4 class="product-title">PlayStation 5 Console</h4>
+                            <div class="product-rating">
+                                <div class="stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <span class="rating-text">(4.7) 156 reviews</span>
+                            </div>
+                            <div class="product-price">
+                                <span class="current-price">₹42,999</span>
+                                <span class="original-price">₹49,999</span>
+                                <span class="discount">14% off</span>
+                            </div>
+                            <div class="product-features">
+                                <span class="feature"><i class="fas fa-shield-alt"></i> 5-days Return Policy</span>
+                                <span class="feature"><i class="fas fa-shipping-fast"></i> Free shipping</span>
+                            </div>
+                            <button class="btn btn-primary product-btn" onclick="addToCart('ps5-console')">Add to
+                                Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6" data-category="tablets" data-price="55999" data-rating="4.6">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=250&h=250&fit=crop"
+                                alt="iPad Pro">
+                            <div class="product-badge good">Good</div>
+                            <div class="product-actions">
+                                <button class="btn-wishlist" data-product="ipad-pro-11"><i
+                                        class="fas fa-heart"></i></button>
+                                <button class="btn-quick-view" data-product="ipad-pro-11"><i
+                                        class="fas fa-eye"></i></button>
+                                <button class="btn-compare" data-product="ipad-pro-11"><i
+                                        class="fas fa-balance-scale"></i></button>
+                            </div>
+                        </div>
+                        <div class="product-content">
+                            <h4 class="product-title">iPad Pro 11" 256GB</h4>
+                            <div class="product-rating">
+                                <div class="stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <span class="rating-text">(4.6) 98 reviews</span>
+                            </div>
+                            <div class="product-price">
+                                <span class="current-price">₹55,999</span>
+                                <span class="original-price">₹89,999</span>
+                                <span class="discount">38% off</span>
+                            </div>
+                            <div class="product-features">
+                                <span class="feature"><i class="fas fa-shield-alt"></i> 5-days Return Policy</span>
+                                <span class="feature"><i class="fas fa-shipping-fast"></i> Free shipping</span>
+                            </div>
+                            <button class="btn btn-primary product-btn" onclick="addToCart('ipad-pro-11')">Add to
+                                Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Added more products for better filtering -->
+                <div class="col-lg-3 col-md-6" data-category="smartphones" data-price="45999" data-rating="4.5">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=250&h=250&fit=crop"
+                                alt="Samsung Galaxy S22">
+                            <div class="product-badge very-good">Very Good</div>
+                            <div class="product-actions">
+                                <button class="btn-wishlist" data-product="galaxy-s22"><i
+                                        class="fas fa-heart"></i></button>
+                                <button class="btn-quick-view" data-product="galaxy-s22"><i
+                                        class="fas fa-eye"></i></button>
+                                <button class="btn-compare" data-product="galaxy-s22"><i
+                                        class="fas fa-balance-scale"></i></button>
+                            </div>
+                        </div>
+                        <div class="product-content">
+                            <h4 class="product-title">Samsung Galaxy S22 128GB</h4>
+                            <div class="product-rating">
+                                <div class="stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                                <span class="rating-text">(4.5) 167 reviews</span>
+                            </div>
+                            <div class="product-price">
+                                <span class="current-price">₹45,999</span>
+                                <span class="original-price">₹72,999</span>
+                                <span class="discount">37% off</span>
+                            </div>
+                            <div class="product-features">
+                                <span class="feature"><i class="fas fa-shield-alt"></i> 5-days Return Policy</span>
+                                <span class="feature"><i class="fas fa-shipping-fast"></i> Free shipping</span>
+                            </div>
+                            <button class="btn btn-primary product-btn" onclick="addToCart('galaxy-s22')">Add to
+                                Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6" data-category="laptops" data-price="65999" data-rating="4.4">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=250&h=250&fit=crop"
+                                alt="Dell XPS 13">
+                            <div class="product-badge good">Good</div>
+                            <div class="product-actions">
+                                <button class="btn-wishlist" data-product="dell-xps-13"><i
+                                        class="fas fa-heart"></i></button>
+                                <button class="btn-quick-view" data-product="dell-xps-13"><i
+                                        class="fas fa-eye"></i></button>
+                                <button class="btn-compare" data-product="dell-xps-13"><i
+                                        class="fas fa-balance-scale"></i></button>
+                            </div>
+                        </div>
+                        <div class="product-content">
+                            <h4 class="product-title">Dell XPS 13 i7 16GB</h4>
+                            <div class="product-rating">
+                                <div class="stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                                <span class="rating-text">(4.4) 123 reviews</span>
+                            </div>
+                            <div class="product-price">
+                                <span class="current-price">₹65,999</span>
+                                <span class="original-price">₹1,15,999</span>
+                                <span class="discount">43% off</span>
+                            </div>
+                            <div class="product-features">
+                                <span class="feature"><i class="fas fa-shield-alt"></i> 5-days Return Policy</span>
+                                <span class="feature"><i class="fas fa-shipping-fast"></i> Free shipping</span>
+                            </div>
+                            <button class="btn btn-primary product-btn" onclick="addToCart('dell-xps-13')">Add to
+                                Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6" data-category="gaming" data-price="28999" data-rating="4.3">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=250&h=250&fit=crop"
+                                alt="Xbox Series S">
+                            <div class="product-badge excellent">Excellent</div>
+                            <div class="product-actions">
+                                <button class="btn-wishlist" data-product="xbox-series-s"><i
+                                        class="fas fa-heart"></i></button>
+                                <button class="btn-quick-view" data-product="xbox-series-s"><i
+                                        class="fas fa-eye"></i></button>
+                                <button class="btn-compare" data-product="xbox-series-s"><i
+                                        class="fas fa-balance-scale"></i></button>
+                            </div>
+                        </div>
+                        <div class="product-content">
+                            <h4 class="product-title">Xbox Series S Console</h4>
+                            <div class="product-rating">
+                                <div class="stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                                <span class="rating-text">(4.3) 89 reviews</span>
+                            </div>
+                            <div class="product-price">
+                                <span class="current-price">₹28,999</span>
+                                <span class="original-price">₹34,999</span>
+                                <span class="discount">17% off</span>
+                            </div>
+                            <div class="product-features">
+                                <span class="feature"><i class="fas fa-shield-alt"></i> 5-days Return Policy</span>
+                                <span class="feature"><i class="fas fa-shipping-fast"></i> Free shipping</span>
+                            </div>
+                            <button class="btn btn-primary product-btn" onclick="addToCart('xbox-series-s')">Add to
+                                Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6" data-category="tablets" data-price="32999" data-rating="4.2">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://images.unsplash.com/photo-1561154464-82e9adf32764?w=250&h=250&fit=crop"
+                                alt="Samsung Tab S8">
+                            <div class="product-badge very-good">Very Good</div>
+                            <div class="product-actions">
+                                <button class="btn-wishlist" data-product="samsung-tab-s8"><i
+                                        class="fas fa-heart"></i></button>
+                                <button class="btn-quick-view" data-product="samsung-tab-s8"><i
+                                        class="fas fa-eye"></i></button>
+                                <button class="btn-compare" data-product="samsung-tab-s8"><i
+                                        class="fas fa-balance-scale"></i></button>
+                            </div>
+                        </div>
+                        <div class="product-content">
+                            <h4 class="product-title">Samsung Galaxy Tab S8</h4>
+                            <div class="product-rating">
+                                <div class="stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                                <span class="rating-text">(4.2) 76 reviews</span>
+                            </div>
+                            <div class="product-price">
+                                <span class="current-price">₹32,999</span>
+                                <span class="original-price">₹54,999</span>
+                                <span class="discount">40% off</span>
+                            </div>
+                            <div class="product-features">
+                                <span class="feature"><i class="fas fa-shield-alt"></i> 5-days Return Policy</span>
+                                <span class="feature"><i class="fas fa-shipping-fast"></i> Free shipping</span>
+                            </div>
+                            <button class="btn btn-primary product-btn" onclick="addToCart('samsung-tab-s8')">Add to
+                                Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5" data-aos="fade-up">
+                <a href="#" class="btn btn-outline-primary btn-lg">View All Products</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Deals of the Month Section -->
+    <section class="monthly-deals-section">
+        <div class="container">
+            <div class="section-header text-center" data-aos="fade-up">
+                <h2 class="section-title">Deals of the Month</h2>
+                <p class="section-subtitle">Exclusive monthly offers you can't miss</p>
+            </div>
+
+            <div class="monthly-deals-grid" data-aos="fade-up" data-aos-delay="200">
+                <div class="deal-card featured-deal">
+                    <div class="deal-badge">Deal of the Month</div>
+                    <div class="deal-image">
+                        <img src="https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&h=300&fit=crop"
+                            alt="iPhone 14 Pro Max">
+                    </div>
+                    <div class="deal-content">
+                        <h3>iPhone 14 Pro Max 256GB</h3>
+                        <div class="deal-price">
+                            <span class="current-price">₹89,999</span>
+                            <span class="original-price">₹1,39,999</span>
+                            <span class="discount">36% OFF</span>
+                        </div>
+                        <div class="deal-features">
+                            <span><i class="fas fa-check"></i> Excellent Condition</span>
+                            <span><i class="fas fa-check"></i> 5-days Return Policy</span>
+                            <span><i class="fas fa-check"></i> Free Shipping</span>
+                        </div>
+                        <button class="btn btn-deal">Grab Deal</button>
+                    </div>
+                </div>
+
+                <div class="deal-card">
+                    <div class="deal-badge">Limited Time</div>
+                    <div class="deal-image">
+                        <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=300&h=200&fit=crop"
+                            alt="MacBook Air M2">
+                    </div>
+                    <div class="deal-content">
+                        <h4>MacBook Air M2 512GB</h4>
+                        <div class="deal-price">
+                            <span class="current-price">₹95,999</span>
+                            <span class="original-price">₹1,49,999</span>
+                        </div>
+                        <button class="btn btn-deal-small">View Deal</button>
+                    </div>
+                </div>
+
+                <div class="deal-card">
+                    <div class="deal-badge">Hot Deal</div>
+                    <div class="deal-image">
+                        <img src="https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=300&h=200&fit=crop"
+                            alt="PS5 Bundle">
+                    </div>
+                    <div class="deal-content">
+                        <h4>PS5 + 2 Controllers</h4>
+                        <div class="deal-price">
+                            <span class="current-price">₹48,999</span>
+                            <span class="original-price">₹59,999</span>
+                        </div>
+                        <button class="btn btn-deal-small">View Deal</button>
+                    </div>
+                </div>
+
+                <div class="deal-card">
+                    <div class="deal-badge">Best Value</div>
+                    <div class="deal-image">
+                        <img src="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=300&h=200&fit=crop"
+                            alt="iPad Air">
+                    </div>
+                    <div class="deal-content">
+                        <h4>iPad Air 5th Gen 256GB</h4>
+                        <div class="deal-price">
+                            <span class="current-price">₹52,999</span>
+                            <span class="original-price">₹74,999</span>
+                        </div>
+                        <button class="btn btn-deal-small">View Deal</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fixed best offers section with proper image sizing and alignment -->
+    <section class="best-offers-section">
+        <div class="container">
+            <div class="section-header text-center" data-aos="fade-up">
+                <h2 class="section-title">Best Offers & Deals</h2>
+                <p class="section-subtitle">Unbeatable prices on premium refurbished electronics</p>
+            </div>
+
+            <div class="row g-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="col-lg-6">
+                    <div class="offer-card large-offer h-100">
+                        <div class="offer-image">
+                            <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=400&fit=crop&crop=center"
+                                alt="Smartphone Sale">
+                        </div>
+                        <div class="offer-content">
+                            <div class="offer-badge">Up to 60% OFF</div>
+                            <h3>Smartphone Mega Sale</h3>
+                            <p>iPhone, Samsung, OnePlus & more</p>
+                            <a href="#" class="btn btn-offer">Shop Now</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <div class="offer-card small-offer">
+                                <div class="offer-image">
+                                    <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=200&fit=crop&crop=center"
+                                        alt="Laptop Deals">
+                                </div>
+                                <div class="offer-content">
+                                    <div class="offer-badge">Up to 70% OFF</div>
+                                    <h4>Laptop Clearance</h4>
+                                    <a href="#" class="btn btn-offer-small">View Deals</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="offer-card small-offer">
+                                <div class="offer-image">
+                                    <img src="https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400&h=200&fit=crop&crop=center"
+                                        alt="Gaming Deals">
+                                </div>
+                                <div class="offer-content">
+                                    <div class="offer-badge">Up to 50% OFF</div>
+                                    <h4>Gaming Console Sale</h4>
+                                    <a href="#" class="btn btn-offer-small">View Deals</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Added New Arrivals section -->
+    <section class="new-arrivals-section">
+        <div class="container">
+            <div class="section-header text-center" data-aos="fade-up">
+                <h2 class="section-title">New Arrivals</h2>
+                <p class="section-subtitle">Latest refurbished devices added to our collection</p>
+            </div>
+
+            <div class="row g-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="col-lg-3 col-md-6">
+                    <div class="arrival-card">
+                        <div class="arrival-badge">New</div>
+                        <div class="arrival-image">
+                            <img src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=250&h=250&fit=crop"
+                                alt="iPhone 15">
+                        </div>
+                        <div class="arrival-content">
+                            <h4>iPhone 15 128GB</h4>
+                            <div class="arrival-price">₹72,999</div>
+                            <div class="arrival-condition">Excellent Condition</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="arrival-card">
+                        <div class="arrival-badge">New</div>
+                        <div class="arrival-image">
+                            <img src="https://images.unsplash.com/photo-1629131726692-1accd0c53ce0?w=250&h=250&fit=crop"
+                                alt="MacBook Pro M3">
+                        </div>
+                        <div class="arrival-content">
+                            <h4>MacBook Pro 14" M3</h4>
+                            <div class="arrival-price">₹1,45,999</div>
+                            <div class="arrival-condition">Very Good Condition</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="arrival-card">
+                        <div class="arrival-badge">New</div>
+                        <div class="arrival-image">
+                            <img src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=250&h=250&fit=crop"
+                                alt="Galaxy S24">
+                        </div>
+                        <div class="arrival-content">
+                            <h4>Galaxy S24 Ultra</h4>
+                            <div class="arrival-price">₹89,999</div>
+                            <div class="arrival-condition">Excellent Condition</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="arrival-card">
+                        <div class="arrival-badge">New</div>
+                        <div class="arrival-image">
+                            <img src="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=250&h=250&fit=crop"
+                                alt="iPad Pro M4">
+                        </div>
+                        <div class="arrival-content">
+                            <h4>iPad Pro 11" M4</h4>
+                            <div class="arrival-price">₹79,999</div>
+                            <div class="arrival-condition">Excellent Condition</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Added Customer Favorites section -->
+    <section class="customer-favorites-section">
+        <div class="container">
+            <div class="section-header text-center" data-aos="fade-up">
+                <h2 class="section-title">Customer Favorites</h2>
+                <p class="section-subtitle">Most loved products by our customers</p>
+            </div>
+
+            <div class="favorites-grid" data-aos="fade-up" data-aos-delay="200">
+                <div class="favorite-item">
+                    <div class="favorite-rank">#1</div>
+                    <div class="favorite-image">
+                        <img src="https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=200&h=200&fit=crop"
+                            alt="iPhone 14 Pro">
+                    </div>
+                    <div class="favorite-content">
+                        <h4>iPhone 14 Pro</h4>
+                        <div class="favorite-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.8 (2.5K reviews)</span>
+                        </div>
+                        <div class="favorite-price">₹65,999</div>
+                    </div>
+                </div>
+                <div class="favorite-item">
+                    <div class="favorite-rank">#2</div>
+                    <div class="favorite-image">
+                        <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=200&h=200&fit=crop"
+                            alt="MacBook Pro">
+                    </div>
+                    <div class="favorite-content">
+                        <h4>MacBook Pro M1</h4>
+                        <div class="favorite-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.9 (1.8K reviews)</span>
+                        </div>
+                        <div class="favorite-price">₹85,999</div>
+                    </div>
+                </div>
+                <div class="favorite-item">
+                    <div class="favorite-rank">#3</div>
+                    <div class="favorite-image">
+                        <img src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=200&h=200&fit=crop"
+                            alt="Galaxy S22">
+                    </div>
+                    <div class="favorite-content">
+                        <h4>Galaxy S22</h4>
+                        <div class="favorite-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.5 (1.2K reviews)</span>
+                        </div>
+                        <div class="favorite-price">₹45,999</div>
+                    </div>
+                </div>
+                <div class="favorite-item">
+                    <div class="favorite-rank">#4</div>
+                    <div class="favorite-image">
+                        <img src="https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=200&h=200&fit=crop"
+                            alt="PlayStation 5">
+                    </div>
+                    <div class="favorite-content">
+                        <h4>PlayStation 5</h4>
+                        <div class="favorite-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.7 (980 reviews)</span>
+                        </div>
+                        <div class="favorite-price">₹42,999</div>
+                    </div>
+                </div>
+                <div class="favorite-item">
+                    <div class="favorite-rank">#5</div>
+                    <div class="favorite-image">
+                        <img src="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=200&h=200&fit=crop"
+                            alt="iPad Pro">
+                    </div>
+                    <div class="favorite-content">
+                        <h4>iPad Pro 11"</h4>
+                        <div class="favorite-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.6 (750 reviews)</span>
+                        </div>
+                        <div class="favorite-price">₹55,999</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced trusted brands section with more brands and 3-card carousel -->
+    <section class="trusted-brands-section">
+        <div class="container">
+            <div class="section-header text-center" data-aos="fade-up">
+                <h2 class="section-title">Trusted Brands</h2>
+                <p class="section-subtitle">We work with the world's leading technology brands</p>
+            </div>
+
+            <div class="brands-carousel-container" data-aos="fade-up" data-aos-delay="200">
+                <div class="swiper brandsSwiper">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <div class="brand-card">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg"
+                                    alt="Apple">
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="brand-card">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg"
+                                    alt="Samsung">
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="brand-card">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg"
+                                    alt="Google">
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="brand-card">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/4/48/Dell_Logo.svg" alt="Dell">
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="brand-card">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/a/ad/HP_logo_2012.svg"
+                                    alt="HP">
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="brand-card">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/Lenovo_logo_2015.svg"
+                                    alt="Lenovo">
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="brand-card">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Sony_logo.svg" alt="Sony">
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="brand-card">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Xbox_one_logo.svg"
+                                    alt="Xbox">
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="brand-card">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/0/00/PlayStation_logo.svg"
+                                    alt="PlayStation">
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="brand-card">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/0/0d/Nintendo.svg"
+                                    alt="Nintendo">
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="brand-card">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/OnePlus_logo.svg"
+                                    alt="OnePlus">
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="brand-card">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/f/f9/Xiaomi_logo.svg"
+                                    alt="Xiaomi">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sell Your Old Device Section -->
+    <!-- <section class="quick-sell-section" id="sell">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="sell-content" data-aos="fade-right">
+                        <div class="section-badge">
+                            <i class="fas fa-rupee-sign"></i>
+                            Instant Cash
+                        </div>
+                        <h2 class="section-title">Sell Your Old Device in 3 Easy Steps</h2>
+                        <p class="section-subtitle">Get the best price for your electronics with our hassle-free selling process. Free pickup from your doorstep!</p>
+                        
+                        <div class="sell-steps">
+                            <div class="sell-step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h4>Get Instant Quote</h4>
+                                    <p>Select your device and get instant price quote</p>
+                                </div>
+                            </div>
+                            <div class="sell-step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h4>Free Pickup</h4>
+                                    <p>Schedule free pickup from your location</p>
+                                </div>
+                            </div>
+                            <div class="sell-step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h4>Get Paid</h4>
+                                    <p>Receive instant payment after device verification</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="sell-cta">
+                            <a href="#" class="btn btn-primary btn-lg">Get Quote Now</a>
+                            <div class="sell-guarantee">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Best Price Guarantee</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="sell-calculator" data-aos="fade-left">
+                        <div class="calculator-card">
+                            <h3>Quick Price Calculator</h3>
+                            <form class="price-form" id="priceCalculatorForm">
+                                <div class="form-group">
+                                    <label>Select Category</label>
+                                    <select class="form-select" id="deviceCategory" required>
+                                        <option value="">Choose device type</option>
+                                        <option value="smartphone">Smartphone</option>
+                                        <option value="laptop">Laptop</option>
+                                        <option value="tablet">Tablet</option>
+                                        <option value="gaming">Gaming Console</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Brand</label>
+                                    <select class="form-select" id="deviceBrand" required>
+                                        <option value="">Select brand</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Model</label>
+                                    <select class="form-select" id="deviceModel" required>
+                                        <option value="">Select model</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Condition</label>
+                                    <select class="form-select" id="deviceCondition" required>
+                                        <option value="">Select condition</option>
+                                        <option value="excellent">Excellent - Like new</option>
+                                        <option value="good">Good - Minor wear</option>
+                                        <option value="fair">Fair - Visible wear</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Get Price Quote</button>
+                            </form>
+                            <div class="price-result" id="priceResult" style="display: none;">
+                                <div class="estimated-price">
+                                    <span class="price-label">Estimated Price:</span>
+                                    <span class="price-value" id="estimatedPrice">₹0</span>
+                                </div>
+                                <button class="btn btn-success w-100" onclick="proceedToSell()">Proceed to Sell</button>
+                            </div>
+                            <div class="calculator-features">
+                                <div class="feature">
+                                    <i class="fas fa-truck"></i>
+                                    <span>Free Pickup</span>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <span>Instant Payment</span>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span>Secure Process</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section> -->
+
+    <!-- Updated How RefurBazar Works section with 5 days exchange guarantee -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <h2 class="section-title">How RefurBazar Works</h2>
+                <p class="section-subtitle">Your journey to premium refurbished electronics in 4 simple steps</p>
+            </div>
+
+            <div class="row g-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="col-lg-3 col-md-6">
+                    <div class="process-step">
+                        <div class="step-number">1</div>
+                        <div class="step-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h4 class="step-title">Browse & Select</h4>
+                        <p class="step-description">Explore our curated collection of premium refurbished electronics
+                            with detailed condition reports.</p>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="process-step">
+                        <div class="step-number">2</div>
+                        <div class="step-icon">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <h4 class="step-title">Professional Testing</h4>
+                        <p class="step-description">Every device undergoes our rigorous 30-point quality check by
+                            certified technicians.</p>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="process-step">
+                        <div class="step-number">3</div>
+                        <div class="step-icon">
+                            <i class="fas fa-shipping-fast"></i>
+                        </div>
+                        <h4 class="step-title">Fast Delivery</h4>
+                        <p class="step-description">Free shipping with secure packaging and tracking. Most orders arrive
+                            within 2-3 business days.</p>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="process-step">
+                        <div class="step-number">4</div>
+                        <div class="step-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <h4 class="step-title">5 Days Exchange Guarantee</h4>
+                        <p class="step-description">Not satisfied? Exchange your device within 5 days with our
+                            hassle-free exchange guarantee.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+        <div class="container">
+            <div class="section-header text-center" data-aos="fade-up">
+                <h2 class="section-title">Frequently Asked Questions</h2>
+                <p class="section-subtitle">Everything you need to know about RefurBazar</p>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="accordion" id="faqAccordion" data-aos="fade-up" data-aos-delay="200">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faq1">
+                                    What does "refurbished" mean?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Refurbished devices are pre-owned electronics that have been professionally restored
+                                    to like-new condition. Each device undergoes rigorous testing, cleaning, and repair
+                                    processes to ensure optimal performance and quality.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faq3">
+                                    How do you grade device conditions?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    We use a 3-tier grading system: <strong>Excellent</strong> (like new with minimal
+                                    signs of use), <strong>Very Good</strong> (light wear but fully functional), and
+                                    <strong>Good</strong> (visible wear but excellent performance).
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faq4">
+                                    Is shipping free?
+                                </button>
+                            </h2>
+                            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes, we offer free shipping on all orders across India. Your device will be securely
+                                    packaged and delivered within 2-3 business days with tracking information provided.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faq5">
+                                    Can I sell my old device to RefurBazar?
+                                </button>
+                            </h2>
+                            <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Use our price calculator to get an instant quote for your device. We offer
+                                    competitive prices, free pickup from your location, and instant payment upon device
+                                    verification.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Moved Become a Refurbisher section to before footer -->
+    <section class="refurbisher-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="refurbisher-content" data-aos="fade-right">
+                        <div class="section-badge">
+                            <i class="fas fa-handshake"></i>
+                            Partner with Us
+                        </div>
+                        <h2 class="section-title">Become a Refurbisher Partner</h2>
+                        <p class="section-subtitle">Join India's largest refurbished electronics marketplace and grow
+                            your business with us.</p>
+
+                        <div class="refurbisher-benefits">
+                            <div class="benefit-item">
+                                <div class="benefit-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="benefit-content">
+                                    <h4>Increase Sales</h4>
+                                    <p>Access to millions of customers across India</p>
+                                </div>
+                            </div>
+                            <div class="benefit-item">
+                                <div class="benefit-icon">
+                                    <i class="fas fa-tools"></i>
+                                </div>
+                                <div class="benefit-content">
+                                    <h4>Quality Standards</h4>
+                                    <p>Professional training and certification programs</p>
+                                </div>
+                            </div>
+                            <div class="benefit-item">
+                                <div class="benefit-icon">
+                                    <i class="fas fa-shipping-fast"></i>
+                                </div>
+                                <div class="benefit-content">
+                                    <h4>Logistics Support</h4>
+                                    <p>End-to-end fulfillment and customer service</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="refurbisher-cta">
+                            <a href="#" class="btn btn-primary btn-lg">Apply Now</a>
+                            <div class="refurbisher-stats">
+                                <div class="stat">
+                                    <strong>500+</strong>
+                                    <span>Partners</span>
+                                </div>
+                                <div class="stat">
+                                    <strong>₹50L+</strong>
+                                    <span>Avg. Monthly Revenue</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="refurbisher-form" data-aos="fade-left">
+                        <div class="form-card">
+                            <h3>Quick Application</h3>
+                            <form class="partner-form" id="partnerForm">
+                                <div class="form-group">
+                                    <label>Business Name</label>
+                                    <input type="text" class="form-control" placeholder="Enter your business name"
+                                        required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Contact Person</label>
+                                    <input type="text" class="form-control" placeholder="Your full name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Phone Number</label>
+                                    <input type="tel" class="form-control" placeholder="+91 98765 43210" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Email Address</label>
+                                    <input type="email" class="form-control" placeholder="your@email.com" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Business Type</label>
+                                    <select class="form-select" required>
+                                        <option value="">Select business type</option>
+                                        <option value="repair-shop">Repair Shop</option>
+                                        <option value="retailer">Electronics Retailer</option>
+                                        <option value="wholesaler">Wholesaler</option>
+                                        <option value="individual">Individual Refurbisher</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Monthly Volume</label>
+                                    <select class="form-select" required>
+                                        <option value="">Expected monthly volume</option>
+                                        <option value="1-50">1-50 devices</option>
+                                        <option value="51-200">51-200 devices</option>
+                                        <option value="201-500">201-500 devices</option>
+                                        <option value="500+">500+ devices</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Submit Application</button>
+                            </form>
+                            <div class="form-features">
+                                <div class="feature">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Quick Approval</span>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-phone"></i>
+                                    <span>Dedicated Support</span>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-chart-bar"></i>
+                                    <span>Analytics Dashboard</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Updated footer with enhanced design -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-recycle me-2"></i>RefurBazar</h3>
+                    <p>India's most trusted marketplace for refurbished electronics. Quality devices, better prices,
+                        sustainable choice.</p>
+                    <div class="footer-stats">
+                        <div class="footer-stat">
+                            <strong>5M+</strong>
+                            <span>Happy Customers</span>
+                        </div>
+                        <div class="footer-stat">
+                            <strong>50K+</strong>
+                            <span>Devices Sold</span>
+                        </div>
+                    </div>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Buy Refurbished</h3>
+                    <ul>
+                        <li><a href="#">Refurbished Smartphones</a></li>
+                        <li><a href="#">Refurbished Laptops</a></li>
+                        <li><a href="#">Refurbished Gaming</a></li>
+                        <li><a href="#">Refurbished Tablets</a></li>
+                        <li><a href="#">Refurbished Audio</a></li>
+                        <li><a href="#">All Categories</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Support & Info</h3>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Return Policy</a></li>
+                        <li><a href="#">Shipping Info</a></li>
+                        <li><a href="#">Quality Standards</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Contact Info</h3>
+                    <div class="contact-info">
+                        <p><i class="fas fa-map-marker-alt me-2"></i>123 Tech Street, Bangalore, India</p>
+                        <p><i class="fas fa-phone me-2"></i>+91 98765 43210</p>
+                        <p><i class="fas fa-envelope me-2"></i>support@refurbazar.com</p>
+                        <p><i class="fas fa-clock me-2"></i>24/7 Customer Support</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <p>&copy; 2025 RefurBazar. All rights reserved.</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="footer-links">
+                            <a href="#">Privacy Policy</a>
+                            <a href="#">Terms of Service</a>
+                            <a href="#">Sitemap</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AOS Animation -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="js/script.js"></script>
+    <script src="js/loader.js"></script>
+</body>
+
+</html>

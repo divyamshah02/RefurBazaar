@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iPhone 12 Pro - 256GB Blue - RefurBazar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <link href="css/product-enhanced copy.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg main-navbar" id="navbar">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-recycle me-2"></i>RefurBazar
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-search mx-auto d-none d-lg-block">
+                    <div class="search-container">
+                        <input type="text" class="form-control search-input" placeholder="What are you looking for?" id="searchInput">
+                        <button class="search-btn"><i class="fas fa-search"></i></button>
+                        <div class="search-suggestions" id="searchSuggestions"></div>
+                    </div>
+                </div>
+                
+                <div class="d-flex align-items-center ms-auto">
+                    <a href="#" class="nav-icon me-3" id="wishlistBtn"><i class="fas fa-heart"></i><span class="badge" id="wishlistCount">0</span></a>
+                    <a href="cart.html" class="nav-icon me-3" id="cartBtn"><i class="fas fa-shopping-cart"></i><span class="badge" id="cartCount">0</span></a>
+                    <a href="account.html" class="btn btn-primary">My Account</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Category Navigation -->
+    <nav class="category-navbar">
+        <div class="container">
+            <div class="category-menu">
+                <div class="category-item-wrapper">
+                    <a href="index.html" class="category-item">
+                        <i class="fas fa-fire text-danger me-1"></i>
+                        Good deals
+                    </a>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="#" class="category-item active">Smartphones</a>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="#" class="category-item">Laptops</a>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="#" class="category-item">Tablets</a>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="#" class="category-item">Gaming consoles</a>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="#" class="category-item">Smartwatches</a>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="#" class="category-item">Audio</a>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="#" class="category-item">More</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="px-4 py-3" style="margin-top: 180px;">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                <li class="breadcrumb-item"><a href="shop.html">Shop</a></li>
+                <li class="breadcrumb-item"><a href="shop.html?category=smartphones">Smartphones</a></li>
+                <li class="breadcrumb-item active">iPhone 12 Pro</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Product Detail -->
+    <div class="px-4 pb-5">
+        <div class="row g-4">
+            <!-- Product Images -->
+            <div class="col-lg-4">
+                <div class="product-gallery">
+                    <div class="main-image">
+                        <img src="images/iphone-12-pro-blue-hero.png" alt="iPhone 12 Pro" id="mainImage">
+                        <!-- <div class="image-badges">
+                            <span class="badge bg-success">Excellent Condition</span>
+                            <span class="badge bg-primary">Save $319.00</span>
+                        </div> -->
+                    </div>
+                    <div class="thumbnail-images">
+                        <div class="swiper thumbnailSwiper">
+                            <div class="swiper-wrapper">
+                                <div class="swiper-slide">
+                                    <img src="images/iphone-12-pro-blue-hero.png" alt="Front view" onclick="changeMainImage(this.src.replace('200&hei=200', '940&hei=1112'))">
+                                </div>
+                                <div class="swiper-slide">
+                                    <img src="data:image/jpeg;base64,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" alt="Back view" onclick="changeMainImage(this.src.replace('200&hei=200', '940&hei=1112'))">
+                                </div>
+                                <div class="swiper-slide">
+                                    <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-12-pro-side-blue?wid=200&hei=200&fmt=png-alpha&.v=1604021661000" alt="Side view" onclick="changeMainImage(this.src.replace('200&hei=200', '940&hei=1112'))">
+                                </div>
+                                <div class="swiper-slide">
+                                    <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-12-pro-cameras-blue?wid=200&hei=200&fmt=png-alpha&.v=1604021661000" alt="Camera view" onclick="changeMainImage(this.src.replace('200&hei=200', '940&hei=1112'))">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Details -->
+            <div class="col-lg-4">
+                <div class="product-details">
+                    <!-- Product Header -->
+                    <div class="product-header">
+                        <!-- Commented out sustainability badge -->
+                        <!-- <div class="sustainability-badge">
+                            <i class="fas fa-leaf text-success"></i>
+                            <span>More sustainable than new</span>
+                        </div> -->
+                        <h1>iPhone 12 Pro</h1>
+                        <!-- Commented out reviews section -->
+                        <!-- <div class="product-rating">
+                            <div class="stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="rating-score">4.8/5</span>
+                            <span class="rating-count">(1,091 reviews)</span>
+                        </div> -->
+                    </div>
+
+                    <!-- Current Selection Display -->
+                    <!-- Commented out current selection display -->
+                    <!-- <div class="current-selection">
+                        <div class="selection-badge">
+                            <i class="fas fa-mobile-alt"></i>
+                            <span>Excellent - 256 GB - Blue - Wi-Fi</span>
+                        </div>
+                    </div> -->
+
+                    <!-- Price Section -->
+                    <!-- <div class="price-section">
+                        <div class="current-price" id="currentPrice">$430.00</div>
+                        <div class="price-details">
+                            <span class="original-price" id="originalPrice">$749.00 new</span>
+                            <span class="savings" id="savingsAmount">Save $319.00</span>
+                        </div>
+                    </div> -->
+
+                    <!-- Condition Selection -->
+                    <div class="selection-section">
+                        <div class="section-header">
+                            <h6>Select the condition</h6>
+                            <div class="info-banner">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Refurbishers have restored devices to high quality based on a 25-point inspection.</span>
+                                <button class="compare-conditions-btn" onclick="toggleConditionsPanel()">
+                                    Compare conditions <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="condition-options">
+                            <div class="condition-grid">
+                                <div class="condition-card" data-condition="fair" data-price="371.00" data-original="749.00">
+                                    <div class="condition-radio">
+                                        <input type="radio" name="condition" id="fair" value="fair">
+                                        <label for="fair"></label>
+                                    </div>
+                                    <div class="condition-info">
+                                        <h6>Fair</h6>
+                                        <p class="condition-price">- $71.00</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="condition-card" data-condition="good" data-price="381.00" data-original="749.00">
+                                    <div class="condition-radio">
+                                        <input type="radio" name="condition" id="good" value="good">
+                                        <label for="good"></label>
+                                    </div>
+                                    <div class="condition-info">
+                                        <h6>Good</h6>
+                                        <p class="condition-price">- $81.00</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="condition-card active" data-condition="excellent" data-price="430.00" data-original="749.00">
+                                    <div class="condition-radio">
+                                        <input type="radio" name="condition" id="excellent" value="excellent" checked>
+                                        <label for="excellent"></label>
+                                    </div>
+                                    <div class="condition-info">
+                                        <h6>Excellent</h6>
+                                        <p class="condition-current">Current</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="condition-card" data-condition="premium" data-price="445.00" data-original="749.00">
+                                    <div class="condition-radio">
+                                        <input type="radio" name="condition" id="premium" value="premium">
+                                        <label for="premium"></label>
+                                    </div>
+                                    <div class="condition-info">
+                                        <h6>Premium</h6>
+                                        <p class="condition-price">- $45.00</p>
+                                        <i class="fas fa-gem condition-premium-icon"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Storage Selection -->
+                    <div class="selection-section">
+                        <div class="section-header">
+                            <h6>Select storage</h6>
+                        </div>
+                        <div class="storage-options">
+                            <div class="storage-card" data-storage="64gb" data-price-modifier="-50">
+                                <!-- Moved radio button to the right -->
+                                <div class="storage-info">
+                                    <h6>64 GB</h6>
+                                    <p class="storage-price">- $28.00</p>
+                                </div>
+                                <div class="storage-radio">
+                                    <input type="radio" name="storage" id="storage-64gb" value="64gb">
+                                    <label for="storage-64gb"></label>
+                                </div>
+                            </div>
+                            
+                            <div class="storage-card active" data-storage="256gb" data-price-modifier="0">
+                                <!-- Moved radio button to the right -->
+                                <div class="storage-info">
+                                    <h6>256 GB</h6>
+                                    <p class="storage-current">Current</p>
+                                </div>
+                                <div class="storage-radio">
+                                    <input type="radio" name="storage" id="storage-256gb" value="256gb" checked>
+                                    <label for="storage-256gb"></label>
+                                </div>
+                            </div>
+                            
+                            <div class="storage-card" data-storage="512gb" data-price-modifier="70">
+                                <!-- Moved radio button to the right -->
+                                <div class="storage-info">
+                                    <h6>512 GB</h6>
+                                    <p class="storage-price">+ $70.00</p>
+                                </div>
+                                <div class="storage-radio">
+                                    <input type="radio" name="storage" id="storage-512gb" value="512gb">
+                                    <label for="storage-512gb"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Color Selection -->
+                    <div class="selection-section">
+                        <div class="section-header">
+                            <h6>Select the color</h6>
+                        </div>
+                        <div class="color-options">
+                            <div class="color-card" data-color="pink" data-price-modifier="0">
+                                <div class="color-radio">
+                                    <input type="radio" name="color" id="color-pink" value="pink">
+                                    <label for="color-pink"></label>
+                                </div>
+                                <div class="color-dot" style="background: #ff69b4;"></div>
+                                <div class="color-info">
+                                    <h6>Pink</h6>
+                                    <p class="color-price">+ $0.00</p>
+                                </div>
+                            </div>
+                            
+                            <div class="color-card active" data-color="blue" data-price-modifier="0">
+                                <div class="color-radio">
+                                    <input type="radio" name="color" id="color-blue" value="blue" checked>
+                                    <label for="color-blue"></label>
+                                </div>
+                                <div class="color-dot" style="background: #4169e1;"></div>
+                                <div class="color-info">
+                                    <h6>Blue</h6>
+                                    <p class="color-current">Current</p>
+                                </div>
+                            </div>
+                            
+                            <div class="color-card" data-color="space-gray" data-price-modifier="38">
+                                <div class="color-radio">
+                                    <input type="radio" name="color" id="color-space-gray" value="space-gray">
+                                    <label for="color-space-gray"></label>
+                                </div>
+                                <div class="color-dot" style="background: #5a5a5a;"></div>
+                                <div class="color-info">
+                                    <h6>Space Gray</h6>
+                                    <p class="color-price">+ $38.00</p>
+                                </div>
+                            </div>
+                            
+                            <div class="color-card" data-color="purple" data-price-modifier="40">
+                                <div class="color-radio">
+                                    <input type="radio" name="color" id="color-purple" value="purple">
+                                    <label for="color-purple"></label>
+                                </div>
+                                <div class="color-dot" style="background: #8a2be2;"></div>
+                                <div class="color-info">
+                                    <h6>Purple</h6>
+                                    <p class="color-price">+ $40.00</p>
+                                </div>
+                            </div>
+                            
+                            <div class="color-card disabled" data-color="starlight" data-price-modifier="0">
+                                <div class="color-radio">
+                                    <input type="radio" name="color" id="color-starlight" value="starlight" disabled>
+                                    <label for="color-starlight"></label>
+                                </div>
+                                <div class="color-dot" style="background: #f5f5dc;"></div>
+                                <div class="color-info">
+                                    <h6>Starlight</h6>
+                                    <p class="color-sold-out">Sold out</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seller Cards -->
+                    <div class="sellers-section">
+                        <h6>Available from these sellers</h6>
+                        <div class="sellers-list" id="sellersList">
+                            <!-- Sellers will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <!-- <div class="d-flex gap-2">
+                        <button class="btn btn-primary add-to-cart-btn" onclick="addToCart()">
+                            Buy Now
+                        </button>
+                        <button class="btn btn-secondary add-to-cart-btn" onclick="addToCart()">
+                            <i class="fas fa-shopping-cart me-2"></i>Add to cart
+                        </button>
+                        <button class="btn btn-outline-primary wishlist-btn" onclick="addToWishlist()">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div> -->
+
+                    <!-- Product Features -->
+                    <div class="product-features">
+                        <div class="feature-item">
+                            <i class="fas fa-truck text-success"></i>
+                            <span>Free delivery</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-unlock text-primary"></i>
+                            <span>Works with all carriers</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-undo text-warning"></i>
+                            <span>Free 30-day returns</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt text-info"></i>
+                            <span>1-year warranty</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="purchase-options">
+                    <!-- Buy Now Option -->
+                    <div class="purchase-option">
+                        <div class="option-header">
+                            <input type="radio" name="purchase" id="buyNow" checked>
+                            <label for="buyNow">Buy Now</label>
+                            <span class="price">₹52400.99</span>
+                        </div>
+                        <div class="payment-methods">
+                            <span>Pay securely with Payment gateway</span>        
+                        </div>
+                        <button class="btn btn-primary w-100 mt-3">+ Add To Basket</button>
+                        
+                        <div class="purchase-benefits mt-3">
+                            <div class="benefit">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>FREE 5 Days Replacement</span>
+                            </div>
+                            <div class="benefit">
+                                <i class="fas fa-leaf"></i>
+                                <span>Better for the planet</span>
+                            </div>
+                            <div class="benefit">
+                                <i class="fas fa-mobile-alt"></i>
+                                <span>Own the device outright</span>
+                            </div>
+                            <div class="benefit">
+                                <i class="fas fa-user-friends"></i>
+                                <span>Refer a friend and get 10% off</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Specifications -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="product-tabs">
+                    <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="specs-tab" data-bs-toggle="tab" data-bs-target="#specs" type="button" role="tab">
+                                Specifications
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="condition-tab" data-bs-toggle="tab" data-bs-target="#condition" type="button" role="tab">
+                                Condition Details
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="warranty-tab" data-bs-toggle="tab" data-bs-target="#warranty" type="button" role="tab">
+                                Warranty & Returns
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="productTabsContent">
+                        <div class="tab-pane fade show active" id="specs" role="tabpanel">
+                            <!-- Enhanced specifications with comprehensive Amazon-style content -->
+                            <div class="specifications-content">
+                                <div class="spec-overview">
+                                    <h5>Product Overview</h5>
+                                    <p>The iPhone 12 Pro represents Apple's flagship smartphone with professional-grade features, including a Pro camera system, A14 Bionic chip, and premium build quality. This refurbished model offers the same premium experience at a fraction of the original cost.</p>
+                                </div>
+                                
+                                <div class="specifications-grid">
+                                    <div class="spec-category">
+                                        <h6><i class="fas fa-tv me-2"></i>Display</h6>
+                                        <div class="spec-items">
+                                            <div class="spec-item">
+                                                <span class="spec-label">Screen Size</span>
+                                                <span class="spec-value">6.1 inches</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Display Type</span>
+                                                <span class="spec-value">Super Retina XDR OLED</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Resolution</span>
+                                                <span class="spec-value">2532 x 1170 pixels at 460 ppi</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Brightness</span>
+                                                <span class="spec-value">800 nits (typical), 1200 nits (HDR)</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Contrast Ratio</span>
+                                                <span class="spec-value">2,000,000:1</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Features</span>
+                                                <span class="spec-value">HDR10, Dolby Vision, True Tone, Wide color (P3)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="spec-category">
+                                        <h6><i class="fas fa-microchip me-2"></i>Performance</h6>
+                                        <div class="spec-items">
+                                            <div class="spec-item">
+                                                <span class="spec-label">Processor</span>
+                                                <span class="spec-value">A14 Bionic chip with 6-core CPU</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">GPU</span>
+                                                <span class="spec-value">4-core GPU</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Neural Engine</span>
+                                                <span class="spec-value">16-core Neural Engine</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Storage</span>
+                                                <span class="spec-value">256GB</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">RAM</span>
+                                                <span class="spec-value">6GB</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Operating System</span>
+                                                <span class="spec-value">iOS 14 (upgradeable to latest iOS)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="spec-category">
+                                        <h6><i class="fas fa-camera me-2"></i>Camera System</h6>
+                                        <div class="spec-items">
+                                            <div class="spec-item">
+                                                <span class="spec-label">Rear Camera</span>
+                                                <span class="spec-value">Triple 12MP system (Wide, Ultra Wide, Telephoto)</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Wide Camera</span>
+                                                <span class="spec-value">ƒ/1.6 aperture, 7-element lens</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Ultra Wide Camera</span>
+                                                <span class="spec-value">ƒ/2.4 aperture, 120° field of view</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Telephoto Camera</span>
+                                                <span class="spec-value">ƒ/2.0 aperture, 2x optical zoom</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Front Camera</span>
+                                                <span class="spec-value">12MP TrueDepth with ƒ/2.2 aperture</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Video Recording</span>
+                                                <span class="spec-value">4K at 24/30/60 fps, HDR video with Dolby Vision</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Special Features</span>
+                                                <span class="spec-value">Night mode, Deep Fusion, Smart HDR 3, ProRAW</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="spec-category">
+                                        <h6><i class="fas fa-wifi me-2"></i>Connectivity</h6>
+                                        <div class="spec-items">
+                                            <div class="spec-item">
+                                                <span class="spec-label">Cellular</span>
+                                                <span class="spec-value">5G (sub-6 GHz and mmWave), 4G LTE Advanced</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Wi-Fi</span>
+                                                <span class="spec-value">Wi-Fi 6 (802.11ax) with 2x2 MIMO</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Bluetooth</span>
+                                                <span class="spec-value">Bluetooth 5.0</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">NFC</span>
+                                                <span class="spec-value">NFC with reader mode</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Lightning Connector</span>
+                                                <span class="spec-value">Lightning to USB-C cable included</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="spec-category">
+                                        <h6><i class="fas fa-battery-half me-2"></i>Battery & Power</h6>
+                                        <div class="spec-items">
+                                            <div class="spec-item">
+                                                <span class="spec-label">Battery Life</span>
+                                                <span class="spec-value">Up to 17 hours video playback</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Charging</span>
+                                                <span class="spec-value">Fast charging with 20W adapter (sold separately)</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Wireless Charging</span>
+                                                <span class="spec-value">MagSafe up to 15W, Qi up to 7.5W</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Battery Health</span>
+                                                <span class="spec-value">92% capacity (tested and verified)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="spec-category">
+                                        <h6><i class="fas fa-ruler me-2"></i>Design & Build</h6>
+                                        <div class="spec-items">
+                                            <div class="spec-item">
+                                                <span class="spec-label">Dimensions</span>
+                                                <span class="spec-value">5.78 × 2.82 × 0.29 inches</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Weight</span>
+                                                <span class="spec-value">6.66 ounces (189 grams)</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Materials</span>
+                                                <span class="spec-value">Surgical-grade stainless steel, Ceramic Shield front</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Water Resistance</span>
+                                                <span class="spec-value">IP68 (maximum depth of 6 meters up to 30 minutes)</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Colors Available</span>
+                                                <span class="spec-value">Pacific Blue, Gold, Graphite, Silver</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="spec-category">
+                                        <h6><i class="fas fa-shield-alt me-2"></i>Security & Authentication</h6>
+                                        <div class="spec-items">
+                                            <div class="spec-item">
+                                                <span class="spec-label">Face ID</span>
+                                                <span class="spec-value">Enabled by TrueDepth camera for secure authentication</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Secure Enclave</span>
+                                                <span class="spec-value">Hardware-based key manager</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Apple Pay</span>
+                                                <span class="spec-value">Supported with Face ID or passcode</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="spec-category">
+                                        <h6><i class="fas fa-box me-2"></i>What's Included</h6>
+                                        <div class="spec-items">
+                                            <div class="spec-item">
+                                                <span class="spec-label">In the Box</span>
+                                                <span class="spec-value">iPhone 12 Pro, Lightning to USB-C Cable</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Documentation</span>
+                                                <span class="spec-value">Quick Start Guide, SIM ejector tool</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Warranty</span>
+                                                <span class="spec-value">1-year RefurBazar warranty</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <span class="spec-label">Note</span>
+                                                <span class="spec-value">Power adapter and EarPods sold separately</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="compatibility-info">
+                                    <h6><i class="fas fa-check-circle me-2"></i>Compatibility</h6>
+                                    <div class="compatibility-grid">
+                                        <div class="compatibility-item">
+                                            <i class="fas fa-sim-card"></i>
+                                            <span>Works with all major carriers</span>
+                                        </div>
+                                        <div class="compatibility-item">
+                                            <i class="fas fa-headphones"></i>
+                                            <span>Compatible with AirPods and wireless headphones</span>
+                                        </div>
+                                        <div class="compatibility-item">
+                                            <i class="fas fa-car"></i>
+                                            <span>CarPlay supported</span>
+                                        </div>
+                                        <div class="compatibility-item">
+                                            <i class="fas fa-home"></i>
+                                            <span>HomeKit compatible</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="condition" role="tabpanel">
+                            <div class="condition-details">
+                                <div class="condition-info-card">
+                                    <h6><i class="fas fa-star text-warning me-2"></i>Excellent Condition</h6>
+                                    <p>This device has been professionally refurbished and tested to ensure optimal performance. It may show minimal signs of wear but functions like new.</p>
+                                    <ul class="condition-features">
+                                        <li><i class="fas fa-check text-success me-2"></i>Battery health: 85%+ capacity</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Screen: No cracks or scratches</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Body: Minor cosmetic wear possible</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>All functions tested and working</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="warranty" role="tabpanel">
+                            <div class="warranty-details">
+                                <div class="warranty-card">
+                                    <h6><i class="fas fa-shield-alt text-primary me-2"></i>1-Year Warranty</h6>
+                                    <p>All refurbished devices come with a comprehensive 1-year warranty covering hardware defects and functionality issues.</p>
+                                </div>
+                                <div class="warranty-card">
+                                    <h6><i class="fas fa-undo text-success me-2"></i>30-Day Returns</h6>
+                                    <p>Not satisfied? Return your device within 30 days for a full refund, no questions asked.</p>
+                                </div>
+                                <div class="warranty-card">
+                                    <h6><i class="fas fa-headset text-info me-2"></i>Customer Support</h6>
+                                    <p>24/7 customer support available to help with any questions or issues you may have.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Products -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="related-products">
+                    <h4 class="section-title">You might also like</h4>
+                    <div class="row g-3">
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="product-card">
+                                <div class="product-image">
+                                    <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-12-purple-hero?wid=300&hei=300&fmt=png-alpha&.v=1617492549000" alt="iPhone 12">
+                                    <div class="product-badge">-42%</div>
+                                </div>
+                                <div class="product-info">
+                                    <h6>iPhone 12</h6>
+                                    <div class="product-condition">Excellent • 128GB</div>
+                                    <div class="product-price">
+                                        <span class="current">$379.00</span>
+                                        <span class="original">$649.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="product-card">
+                                <div class="product-image">
+                                    <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-13-pink-hero?wid=300&hei=300&fmt=png-alpha&.v=1631220066000" alt="iPhone 13">
+                                    <div class="product-badge">-38%</div>
+                                </div>
+                                <div class="product-info">
+                                    <h6>iPhone 13</h6>
+                                    <div class="product-condition">Good • 256GB</div>
+                                    <div class="product-price">
+                                        <span class="current">$489.00</span>
+                                        <span class="original">$799.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="product-card">
+                                <div class="product-image">
+                                    <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-12-pro-max-gold-hero?wid=300&hei=300&fmt=png-alpha&.v=1604021661000" alt="iPhone 12 Pro Max">
+                                    <div class="product-badge">-45%</div>
+                                </div>
+                                <div class="product-info">
+                                    <h6>iPhone 12 Pro Max</h6>
+                                    <div class="product-condition">Excellent • 512GB</div>
+                                    <div class="product-price">
+                                        <span class="current">$549.00</span>
+                                        <span class="original">$999.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="product-card">
+                                <div class="product-image">
+                                    <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-11-pro-midnight-green-hero?wid=300&hei=300&fmt=png-alpha&.v=1566956144000" alt="iPhone 11 Pro">
+                                    <div class="product-badge">-48%</div>
+                                </div>
+                                <div class="product-info">
+                                    <h6>iPhone 11 Pro</h6>
+                                    <div class="product-condition">Good • 128GB</div>
+                                    <div class="product-price">
+                                        <span class="current">$329.00</span>
+                                        <span class="original">$629.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conditions Comparison Side Panel -->
+    <div class="conditions-panel" id="conditionsPanel">
+        <div class="panel-overlay" onclick="toggleConditionsPanel()"></div>
+        <div class="panel-content">
+            <div class="panel-header">
+                <h4>Compare conditions</h4>
+                <button class="close-btn" onclick="toggleConditionsPanel()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="panel-body">
+                <!-- Updated carousel to match BackMarket style exactly -->
+                <div class="condition-comparison">
+                    <div class="comparison-header">
+                        <h5>Both tested. Perfected. Refurbished.</h5>
+                        <div class="carousel-dots">
+                            <span class="dot active" data-slide="0"></span>
+                            <span class="dot" data-slide="1"></span>
+                            <span class="dot" data-slide="2"></span>
+                            <span class="dot" data-slide="3"></span>
+                            <span class="dot" data-slide="4"></span>
+                            <span class="dot" data-slide="5"></span>
+                            <span class="dot" data-slide="6"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="inspection-carousel">
+                        <div class="carousel-slides">
+                            <!-- Slide 1: SIM and/or memory card reader -->
+                            <div class="carousel-slide active" data-slide="0">
+                                <div class="slide-icon">
+                                    <i class="fas fa-sim-card"></i>
+                                </div>
+                                <div class="slide-content">
+                                    <h6>SIM and/or memory card reader</h6>
+                                    <p>This tests that SIM cards and memory cards are correctly read by the device, and any trays or slots to insert or remove the card works properly.</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Slide 2: Cameras -->
+                            <div class="carousel-slide" data-slide="1">
+                                <div class="slide-icon">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                                <div class="slide-content">
+                                    <h6>Cameras</h6>
+                                    <p>All cameras are inspected for functionality, image capture and quality. This includes video conferencing.</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Slide 3: Data deletion -->
+                            <div class="carousel-slide" data-slide="2">
+                                <div class="slide-icon">
+                                    <i class="fas fa-trash-alt"></i>
+                                </div>
+                                <div class="slide-content">
+                                    <h6>Data deletion</h6>
+                                    <p>All personal data is completely wiped from the device using industry-standard data deletion methods.</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Slide 4: Chargers and/or cables -->
+                            <div class="carousel-slide" data-slide="3">
+                                <div class="slide-icon">
+                                    <i class="fas fa-plug"></i>
+                                </div>
+                                <div class="slide-content">
+                                    <h6>Chargers and/or cables</h6>
+                                    <p>Charging functionality is tested to ensure proper power delivery and connection stability.</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Slide 5: GPS and/or positioning system -->
+                            <div class="carousel-slide" data-slide="4">
+                                <div class="slide-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="slide-content">
+                                    <h6>GPS and/or positioning system</h6>
+                                    <p>Location services and GPS accuracy are tested to ensure proper navigation and location-based features.</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Slide 6: External sensors -->
+                            <div class="carousel-slide" data-slide="5">
+                                <div class="slide-icon">
+                                    <i class="fas fa-satellite-dish"></i>
+                                </div>
+                                <div class="slide-content">
+                                    <h6>External sensors</h6>
+                                    <p>All external sensors including accelerometer, gyroscope, and ambient light sensors are tested for proper functionality.</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Slide 7: Biometric sensors -->
+                            <div class="carousel-slide" data-slide="6">
+                                <div class="slide-icon">
+                                    <i class="fas fa-fingerprint"></i>
+                                </div>
+                                <div class="slide-content">
+                                    <h6>Biometric sensors</h6>
+                                    <p>Face ID, Touch ID, and other biometric authentication methods are tested for accuracy and security.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="carousel-navigation">
+                            <button class="carousel-btn prev" onclick="previousSlide()" disabled>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="carousel-btn next" onclick="nextSlide()">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="discover-section">
+                        <button class="discover-btn">Discover Verified Refurbished</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="js/product-enhanced copy.js"></script>
+</body>
+</html>

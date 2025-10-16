@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders - RefurBazar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <link href="css/refurbisher_dash.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg main-navbar" id="navbar">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand me-auto" href="index.html">
+                <i class="fas fa-recycle me-2"></i>RefurBazar
+            </a>
+
+            <div class="navbar-search mx-auto d-none d-lg-block">
+                <div class="search-container">
+                    <input type="text" class="form-control search-input" placeholder="Search orders...">
+                    <button class="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center ms-auto">
+                <div class="dropdown">
+                    <a href="#" class="nav-icon me-3 dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-bell"></i><span class="badge">3</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#">New order received</a></li>
+                        <li><a class="dropdown-item" href="#">Profile verification pending</a></li>
+                        <li><a class="dropdown-item" href="#">Payment processed</a></li>
+                    </ul>
+                </div>
+                <div class="dropdown">
+                    <a href="#" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-user me-2"></i>Divyam Shah
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="refurbisher_profile.html">Profile</a></li>
+                        <li><a class="dropdown-item" href="#">Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-3 col-md-4">
+                    <div class="dashboard-sidebar">
+                        <div class="text-center mb-4">
+                            <div class="avatar-lg mb-3">
+                                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" 
+                                     alt="Profile" class="rounded-circle" width="80" height="80">
+                            </div>
+                            <h5 class="mb-1">Divyam Shah</h5>
+                            <p class="text-muted mb-0">Refurbisher</p>
+                        </div>
+
+                        <nav>
+                            <ul class="dashboard-nav">
+                                <li class="dashboard-nav-item">
+                                    <a href="refurbisher_dashboard.html" class="dashboard-nav-link">
+                                        <i class="fas fa-tachometer-alt"></i>Dashboard
+                                    </a>
+                                </li>
+                                <li class="dashboard-nav-item">
+                                    <a href="refurbisher_listings.html" class="dashboard-nav-link">
+                                        <i class="fas fa-list"></i>My Listings
+                                    </a>
+                                </li>
+                                <li class="dashboard-nav-item">
+                                    <a href="refurbisher_orders.html" class="dashboard-nav-link active">
+                                        <i class="fas fa-shopping-bag"></i>Orders
+                                    </a>
+                                </li>
+                                <li class="dashboard-nav-item">
+                                    <a href="refurbisher_analytics.html" class="dashboard-nav-link">
+                                        <i class="fas fa-chart-bar"></i>Analytics
+                                    </a>
+                                </li>
+                                <li class="dashboard-nav-item">
+                                    <a href="refurbisher_profile.html" class="dashboard-nav-link">
+                                        <i class="fas fa-user"></i>Profile
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+                <div class="col-lg-9 col-md-8">
+                    <div class="dashboard-main">
+                        <div class="dashboard-header">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h2 class="mb-2">Orders Management</h2>
+                                    <p class="text-muted mb-0">Track and manage all your customer orders</p>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <button class="btn btn-outline-primary">
+                                        <i class="fas fa-download me-2"></i>Export Orders
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+ 
+                        <div class="dashboard-stats">
+                            <div class="stat-card">
+                                <div class="stat-icon primary">
+                                    <i class="fas fa-shopping-bag"></i>
+                                </div>
+                                <div class="stat-value">156</div>
+                                <div class="stat-label">Total Orders</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon warning">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="stat-value">8</div>
+                                <div class="stat-label">Pending Orders</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon success">
+                                    <i class="fas fa-truck"></i>
+                                </div>
+                                <div class="stat-value">12</div>
+                                <div class="stat-label">Shipped Today</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon danger">
+                                    <i class="fas fa-rupee-sign"></i>
+                                </div>
+                                <div class="stat-value">₹2.4L</div>
+                                <div class="stat-label">Monthly Revenue</div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <div class="row align-items-center">
+                                <div class="col-md-2">
+                                    <select class="form-select">
+                                        <option>All Status</option>
+                                        <option>Pending</option>
+                                        <option>Processing</option>
+                                        <option>Shipped</option>
+                                        <option>Delivered</option>
+                                        <option>Cancelled</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <select class="form-select">
+                                        <option>Last 30 days</option>
+                                        <option>Last 7 days</option>
+                                        <option>Last 3 months</option>
+                                        <option>Last 6 months</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="date" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="text" class="form-control" placeholder="Search by order ID or customer...">
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-outline-primary w-100">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h4 class="card-title">Recent Orders</h4>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-filter me-1"></i>Filter
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-sort me-1"></i>Sort
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table dashboard-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Order ID</th>
+                                            <th>Product</th>
+                                            <th>Customer</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>#ORD-001</strong></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=50&h=50&fit=crop" 
+                                                         alt="iPhone 12" class="product-img me-3">
+                                                    <div>
+                                                        <div class="fw-bold">iPhone 12 Pro</div>
+                                                        <small class="text-muted">128GB, Blue</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div class="fw-bold">Rahul Sharma</div>
+                                                    <small class="text-muted">rahul@email.com</small>
+                                                </div>
+                                            </td>
+                                            <td><strong>₹45,000</strong></td>
+                                            <td><span class="status-badge status-processing">Processing</span></td>
+                                            <td>Dec 15, 2024</td>
+                                            <td>
+                                                <div class="dropdown">
+                                                    <button class="action-btn btn-view dropdown-toggle" data-bs-toggle="dropdown">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>View Details</a></li>
+                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Update Status</a></li>
+                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-truck me-2"></i>Track Shipment</a></li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-times me-2"></i>Cancel Order</a></li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>#ORD-002</strong></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=50&h=50&fit=crop" 
+                                                         alt="Samsung Galaxy" class="product-img me-3">
+                                                    <div>
+                                                        <div class="fw-bold">Samsung Galaxy S21</div>
+                                                        <small class="text-muted">256GB, Black</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div class="fw-bold">Priya Patel</div>
+                                                    <small class="text-muted">priya@email.com</small>
+                                                </div>
+                                            </td>
+                                            <td><strong>₹38,000</strong></td>
+                                            <td><span class="status-badge status-delivered">Delivered</span></td>
+                                            <td>Dec 14, 2024</td>
+                                            <td>
+                                                <div class="dropdown">
+                                                    <button class="action-btn btn-view dropdown-toggle" data-bs-toggle="dropdown">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>View Details</a></li>
+                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-star me-2"></i>Request Review</a></li>
+                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-receipt me-2"></i>Download Invoice</a></li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>#ORD-003</strong></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=50&h=50&fit=crop" 
+                                                         alt="MacBook" class="product-img me-3">
+                                                    <div>
+                                                        <div class="fw-bold">MacBook Air M1</div>
+                                                        <small class="text-muted">256GB, Silver</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div class="fw-bold">Amit Kumar</div>
+                                                    <small class="text-muted">amit@email.com</small>
+                                                </div>
+                                            </td>
+                                            <td><strong>₹65,000</strong></td>
+                                            <td><span class="status-badge status-pending">Pending</span></td>
+                                            <td>Dec 13, 2024</td>
+                                            <td>
+                                                <div class="dropdown">
+                                                    <button class="action-btn btn-view dropdown-toggle" data-bs-toggle="dropdown">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>View Details</a></li>
+                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-check me-2"></i>Confirm Order</a></li>
+                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Update Status</a></li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-times me-2"></i>Cancel Order</a></li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>#ORD-004</strong></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=50&h=50&fit=crop" 
+                                                         alt="iPad" class="product-img me-3">
+                                                    <div>
+                                                        <div class="fw-bold">iPad Pro 11"</div>
+                                                        <small class="text-muted">128GB, Space Gray</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div class="fw-bold">Sneha Singh</div>
+                                                    <small class="text-muted">sneha@email.com</small>
+                                                </div>
+                                            </td>
+                                            <td><strong>₹42,000</strong></td>
+                                            <td><span class="status-badge status-cancelled">Cancelled</span></td>
+                                            <td>Dec 12, 2024</td>
+                                            <td>
+                                                <div class="dropdown">
+                                                    <button class="action-btn btn-view dropdown-toggle" data-bs-toggle="dropdown">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>View Details</a></li>
+                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-info me-2"></i>Cancellation Reason</a></li>
+                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-undo me-2"></i>Refund Status</a></li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>#ORD-005</strong></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=50&h=50&fit=crop" 
+                                                         alt="Apple Watch" class="product-img me-3">
+                                                    <div>
+                                                        <div class="fw-bold">Apple Watch Series 7</div>
+                                                        <small class="text-muted">45mm, GPS</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div class="fw-bold">Vikash Gupta</div>
+                                                    <small class="text-muted">vikash@email.com</small>
+                                                </div>
+                                            </td>
+                                            <td><strong>₹28,000</strong></td>
+                                            <td><span class="status-badge status-processing">Processing</span></td>
+                                            <td>Dec 11, 2024</td>
+                                            <td>
+                                                <div class="dropdown">
+                                                    <button class="action-btn btn-view dropdown-toggle" data-bs-toggle="dropdown">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>View Details</a></li>
+                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Update Status</a></li>
+                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-truck me-2"></i>Track Shipment</a></li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-times me-2"></i>Cancel Order</a></li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <nav class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1">Previous</a>
+                                </li>
+                                <li class="page-item active">
+                                    <a class="page-link" href="#">1</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">2</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">3</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/refurbisher_orders.js"></script>
+</body>
+
+</html>

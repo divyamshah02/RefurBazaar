@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iPhone 16 Pro - RefurBazar</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Global Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Product Detail Styles -->
+    <link rel="stylesheet" href="css/product-enhanced.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg main-navbar" id="navbar">
+        <div class="container-fluid px-4">
+            <!-- Logo -->
+            <a class="navbar-brand me-auto" href="index.html">
+                <i class="fas fa-recycle me-2"></i>RefurBazar
+            </a>
+
+            <!-- Center Search Bar -->
+            <div class="navbar-search mx-auto d-none d-lg-block">
+                <div class="search-container">
+                    <input type="text" class="form-control search-input" placeholder="What are you looking for?" id="searchInput">
+                    <button class="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+
+            <!-- Right side icons -->
+            <div class="d-flex align-items-center ms-auto">
+                <a href="#" class="nav-icon me-3" id="wishlistBtn">
+                    <i class="fas fa-heart"></i><span class="badge" id="wishlistCount">0</span>
+                </a>
+                <a href="#" class="nav-icon me-3" id="cartBtn">
+                    <i class="fas fa-shopping-cart"></i><span class="badge" id="cartCount">0</span>
+                </a>
+                <a href="#" class="btn btn-primary">My Account</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="container mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                <li class="breadcrumb-item"><a href="#">Smartphones</a></li>
+                <li class="breadcrumb-item"><a href="#">Apple</a></li>
+                <li class="breadcrumb-item active" aria-current="page">iPhone 16 Pro</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Product Detail Section -->
+    <div class="container my-5">
+        <div class="row">
+            <!-- Product Images -->
+            <div class="col-lg-6">
+                <div class="product-gallery">
+                    <div class="main-image">
+                        <img src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500&h=500&fit=crop" alt="iPhone 16 Pro" id="mainProductImage">
+                        <div class="image-badges">
+                            <span class="badge bg-success">Very Good</span>
+                            <span class="badge bg-primary">UNLOCKED</span>
+                        </div>
+                    </div>
+                    <div class="thumbnail-images">
+                        <img src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=100&h=100&fit=crop" alt="iPhone 16 Pro Front" class="thumbnail active">
+                        <img src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=100&h=100&fit=crop" alt="iPhone 16 Pro Back" class="thumbnail">
+                        <img src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=100&h=100&fit=crop" alt="iPhone 16 Pro Side" class="thumbnail">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="col-lg-6">
+                <div class="product-info">
+                    <h1 class="product-title">iPhone 16 Pro</h1>
+                    <div class="product-subtitle">
+                        <span class="network-status">UNLOCKED</span> | 
+                        <span class="storage">128 GB</span> | 
+                        <span class="color">Space Grey</span> | 
+                        <span class="condition">Very Good</span>
+                    </div>
+
+                    <div class="product-options mt-4">
+                        <div class="option-group">
+                            <label>Network:</label>
+                            <div class="network-options">
+                                <button class="option-btn active">
+                                    <i class="fas fa-unlock"></i>
+                                </button>
+                                <button class="option-btn">
+                                    <img src="https://via.placeholder.com/30x20/0074e8/ffffff?text=Wi-Fi" alt="Wi-Fi">
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="option-group">
+                            <label>Size: 128 GB</label>
+                            <div class="size-options">
+                                <button class="size-btn">1 TB</button>
+                                <button class="size-btn active">128 GB</button>
+                                <button class="size-btn">256 GB</button>
+                                <button class="size-btn">512 GB</button>
+                            </div>
+                        </div>
+
+                        <div class="option-group">
+                            <label>Colour: Space Grey</label>
+                            <div class="color-options">
+                                <button class="color-btn">Blue</button>
+                                <button class="color-btn">Purple</button>
+                                <button class="color-btn active">Space Grey</button>
+                                <button class="color-btn">Starlight</button>
+                            </div>
+                        </div>
+
+                        <div class="option-group">
+                            <label>Grade: Very Good</label>
+                            <div class="grade-options">
+                                <button class="grade-btn">Pristine</button>
+                                <button class="grade-btn active">Very Good</button>
+                                <button class="grade-btn">Good</button>
+                            </div>
+                            <a href="#" class="grade-info">What do our grades mean?</a>
+                        </div>
+
+                        <div class="filter-actions">
+                            <button class="btn btn-outline-secondary">Reset Filters</button>
+                            <span class="filter-tip">Tip! Reset filters to view our full range!</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Purchase Options -->
+        <div class="row mt-4">
+            <div class="col-lg-6 offset-lg-6">
+                <div class="purchase-options">
+                    <!-- Buy Now Option -->
+                    <div class="purchase-option">
+                        <div class="option-header">
+                            <input type="radio" name="purchase" id="buyNow" checked>
+                            <label for="buyNow">Buy Now</label>
+                            <span class="price">£524.99</span>
+                        </div>
+                        <div class="payment-methods">
+                            <span>Pay securely with</span>
+                            <img src="https://via.placeholder.com/30x20/1a73e8/ffffff?text=VISA" alt="Visa">
+                            <img src="https://via.placeholder.com/30x20/eb001b/ffffff?text=MC" alt="Mastercard">
+                            <img src="https://via.placeholder.com/30x20/003087/ffffff?text=PP" alt="PayPal">
+                            <img src="https://via.placeholder.com/30x20/000000/ffffff?text=AP" alt="Apple Pay">
+                            <img src="https://via.placeholder.com/30x20/4285f4/ffffff?text=GP" alt="Google Pay">
+                        </div>
+                        <button class="btn btn-primary w-100 mt-3">+ Add To Basket</button>
+                        
+                        <div class="purchase-benefits mt-3">
+                            <div class="benefit">
+                                <i class="fas fa-clock"></i>
+                                <span>Order by 10pm and get it tomorrow</span>
+                            </div>
+                            <div class="benefit">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>FREE 12 month warranty</span>
+                            </div>
+                            <div class="benefit">
+                                <i class="fas fa-leaf"></i>
+                                <span>Better for the planet</span>
+                            </div>
+                            <div class="benefit">
+                                <i class="fas fa-mobile-alt"></i>
+                                <span>Own the device outright</span>
+                            </div>
+                            <div class="benefit">
+                                <i class="fas fa-user-friends"></i>
+                                <span>Refer a friend and get 10% off</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Spread Cost Option -->
+                    <div class="purchase-option">
+                        <div class="option-header">
+                            <input type="radio" name="purchase" id="spreadCost">
+                            <label for="spreadCost">Spread the cost</label>
+                            <span class="price">£19.06<small>/mo</small></span>
+                        </div>
+                        <div class="spread-details">
+                            <p>Pay <strong>£19.06/mo</strong> for 36 months at 19.9% APR*</p>
+                            <small>*18+, T&Cs apply, Credit subject to status.</small>
+                            <img src="https://via.placeholder.com/60x20/ff6900/ffffff?text=Klarna" alt="Klarna" class="klarna-logo">
+                        </div>
+                    </div>
+
+                    <!-- Rent Option -->
+                    <div class="purchase-option">
+                        <div class="option-header">
+                            <input type="radio" name="purchase" id="rent">
+                            <label for="rent">Rent for</label>
+                            <span class="price">£25.99<small>/mo</small></span>
+                        </div>
+                        <div class="rent-details">
+                            <p>Pay <strong>£25.99/mo</strong> over 12 months starting from today</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Tabs -->
+    <div class="container my-5">
+        <div class="product-tabs">
+            <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">Overview</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="paypal-tab" data-bs-toggle="tab" data-bs-target="#paypal" type="button" role="tab">PayPal Credit</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="klarna-tab" data-bs-toggle="tab" data-bs-target="#klarna" type="button" role="tab">Klarna</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="warranty-tab" data-bs-toggle="tab" data-bs-target="#warranty" type="button" role="tab">Warranty & Grade</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">Reviews</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="specs-tab" data-bs-toggle="tab" data-bs-target="#specs" type="button" role="tab">Tech Specs</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="productTabContent">
+                <!-- Overview Tab -->
+                <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="trust-badges">
+                                <div class="row text-center">
+                                    <div class="col-md-2">
+                                        <div class="trust-badge">
+                                            <i class="fas fa-shield-alt"></i>
+                                            <h6>FREE 12 month warranty</h6>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="trust-badge">
+                                            <i class="fas fa-certificate"></i>
+                                            <h6>Magpie Certified Refurbished</h6>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="trust-badge">
+                                            <i class="fas fa-shipping-fast"></i>
+                                            <h6>FREE delivery with ALL orders</h6>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="trust-badge">
+                                            <i class="fas fa-credit-card"></i>
+                                            <h6>Spread the cost on orders over £35</h6>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="trust-badge">
+                                            <i class="fas fa-battery-three-quarters"></i>
+                                            <h6>80%+ Battery Health Guaranteed</h6>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="trust-badge">
+                                            <i class="fas fa-undo"></i>
+                                            <h6>14 Day Money Back Guarantee</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="info-cards mt-5">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="info-card">
+                                            <div class="card-icon">
+                                                <i class="fas fa-box-open"></i>
+                                            </div>
+                                            <h5>What's in the box</h5>
+                                            <p>Here's what to expect when your device arrives</p>
+                                            <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="info-card">
+                                            <div class="card-icon">
+                                                <i class="fas fa-shield-alt"></i>
+                                            </div>
+                                            <h5>Free 12 month Warranty</h5>
+                                            <p>We offer a FREE 12 month warranty with every tech item we sell to give you extra peace of mind.</p>
+                                            <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="info-card">
+                                            <div class="card-icon">
+                                                <i class="fas fa-certificate"></i>
+                                            </div>
+                                            <h5>What is Certified Refurbished</h5>
+                                            <p>Refurbished by experts</p>
+                                            <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="info-card">
+                                            <div class="card-icon">
+                                                <i class="fas fa-star"></i>
+                                            </div>
+                                            <h5>Rated Excellent on Trustpilot</h5>
+                                            <p>Over 250,000 verified reviews</p>
+                                            <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PayPal Credit Tab -->
+                <div class="tab-pane fade" id="paypal" role="tabpanel">
+                    <div class="paypal-content mt-4">
+                        <h4>PayPal Credit Information</h4>
+                        <p>Spread the cost with PayPal Credit - 0% interest for 4 months on purchases over £99.</p>
+                    </div>
+                </div>
+
+                <!-- Klarna Tab -->
+                <div class="tab-pane fade" id="klarna" role="tabpanel">
+                    <div class="klarna-content mt-4">
+                        <h4>Klarna Payment Options</h4>
+                        <p>Pay in 3 interest-free instalments or spread the cost over 36 months.</p>
+                    </div>
+                </div>
+
+                <!-- Warranty & Grade Tab -->
+                <div class="tab-pane fade" id="warranty" role="tabpanel">
+                    <div class="warranty-content mt-4">
+                        <h4>Get a fantastic iPhone for a fraction of the cost of new!</h4>
+                        <p>All our Apple iPhone are thoroughly tested and refurbished by our team of experts. Our 3 product grades are...</p>
+                        
+                        <div class="grade-comparison mt-4">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="grade-card">
+                                        <img src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=200&h=150&fit=crop" alt="Pristine iPhone">
+                                        <h5>Pristine</h5>
+                                        <p>This is a fully tested pristine product in excellent working order. You're getting a great device at a great price!</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="grade-card active">
+                                        <img src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=200&h=150&fit=crop" alt="Very Good iPhone">
+                                        <h5>Very Good</h5>
+                                        <p>This product is in very good cosmetic condition with only light signs of use. It has been fully tested and works perfectly.</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="grade-card">
+                                        <img src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=200&h=150&fit=crop" alt="Good iPhone">
+                                        <h5>Good</h5>
+                                        <p>This product has signs of wear and tear but has been fully tested and is in great working order.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reviews Tab -->
+                <div class="tab-pane fade" id="reviews" role="tabpanel">
+                    <div class="reviews-content mt-4">
+                        <div class="trustpilot-header text-center mb-4">
+                            <h3>Excellent</h3>
+                            <div class="stars mb-2">
+                                <i class="fas fa-star text-success"></i>
+                                <i class="fas fa-star text-success"></i>
+                                <i class="fas fa-star text-success"></i>
+                                <i class="fas fa-star text-success"></i>
+                                <i class="fas fa-star text-success"></i>
+                            </div>
+                            <p>Rated 4.4 / 5 based on 328,218 reviews on <strong>Trustpilot</strong></p>
+                            <p class="text-muted">Showing our 4 & 5 star reviews</p>
+                        </div>
+
+                        <div class="reviews-grid">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="review-card">
+                                        <div class="review-header">
+                                            <div class="stars">
+                                                <i class="fas fa-star text-success"></i>
+                                                <i class="fas fa-star text-success"></i>
+                                                <i class="fas fa-star text-success"></i>
+                                                <i class="fas fa-star text-success"></i>
+                                                <i class="fas fa-star text-success"></i>
+                                            </div>
+                                            <span class="verified">✓ Verified</span>
+                                        </div>
+                                        <h6>Mark, 15 minutes ago</h6>
+                                        <h5>Rented a watch of musicMagpie I am...</h5>
+                                        <p>Rented a watch of musicMagpie I am really impressed with the service and the quality of the product is amazing</p>
+                                        <div class="review-reply">
+                                            <i class="fas fa-reply text-success"></i>
+                                            <span class="text-success">Reply from musicMagpie</span>
+                                            <span class="text-muted">9 minutes ago</span>
+                                        </div>
+                                        <a href="#" class="read-more text-success">Read more</a>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="review-card">
+                                        <div class="review-header">
+                                            <div class="stars">
+                                                <i class="fas fa-star text-success"></i>
+                                                <i class="fas fa-star text-success"></i>
+                                                <i class="fas fa-star text-success"></i>
+                                                <i class="fas fa-star text-success"></i>
+                                                <i class="far fa-star text-muted"></i>
+                                            </div>
+                                            <span class="verified">✓ Verified</span>
+                                        </div>
+                                        <h6>Kay Bridgeman, 1 hour ago</h6>
+                                        <h5>Good no problems at this stage</h5>
+                                        <p>Good no problems at this stage. Simple easy the phone looks good.</p>
+                                        <div class="review-reply">
+                                            <i class="fas fa-reply text-success"></i>
+                                            <span class="text-success">Reply from musicMagpie</span>
+                                            <span class="text-muted">58 minutes ago</span>
+                                        </div>
+                                        <a href="#" class="read-more text-success">Read more</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tech Specs Tab -->
+                <div class="tab-pane fade" id="specs" role="tabpanel">
+                    <div class="specs-content mt-4">
+                        <div class="specs-table">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="spec-item">
+                                        <span class="spec-label">Bluetooth</span>
+                                        <span class="spec-value">Bluetooth 5.3</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Colour</span>
+                                        <span class="spec-value">Space Grey</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Front Camera/Webcam Resolution</span>
+                                        <span class="spec-value">12 Megapixels</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Network</span>
+                                        <span class="spec-value">UNLOCKED</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Processor Manufacturer</span>
+                                        <span class="spec-value">Apple</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Product Line</span>
+                                        <span class="spec-value">iPhone 16 Pro</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Rear Camera</span>
+                                        <span class="spec-value">Yes</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Screen Size</span>
+                                        <span class="spec-value">6.3"</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Width</span>
+                                        <span class="spec-value">77.6 mm</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="spec-item">
+                                        <span class="spec-label">Brand Name</span>
+                                        <span class="spec-value">Apple</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Depth</span>
+                                        <span class="spec-value">8.25 mm</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">GPS</span>
+                                        <span class="spec-value">Yes</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Operating System Platform</span>
+                                        <span class="spec-value">iOS 18</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Processor Type</span>
+                                        <span class="spec-value">A18 Pro</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Product Name</span>
+                                        <span class="spec-value">iPhone 16 Pro</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Rear Camera Resolution</span>
+                                        <span class="spec-value">48 Megapixel</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Sensor Type</span>
+                                        <span class="spec-value">Face ID, accelerometer, gyro, proximity, compass, barometer</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Wireless LAN</span>
+                                        <span class="spec-value">Yes</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="spec-item">
+                                        <span class="spec-label">Size</span>
+                                        <span class="spec-value">128 GB</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Front Camera/Webcam</span>
+                                        <span class="spec-value">Yes</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Height</span>
+                                        <span class="spec-value">159.9 mm</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Processor Core</span>
+                                        <span class="spec-value">Hexa-Core (6 cores)</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Product Colour</span>
+                                        <span class="spec-value">Space Grey</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Product Type</span>
+                                        <span class="spec-value">Smartphone</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Screen Resolution</span>
+                                        <span class="spec-value">2556 x 1179</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Weight (Approximate)</span>
+                                        <span class="spec-value">227 g</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <span class="spec-label">Year of Release</span>
+                                        <span class="spec-value">2024</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999; margin-top: 80px;"></div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Product Detail JS -->
+    <script src="js/product-enhanced.js"></script>
+</body>
+</html>
