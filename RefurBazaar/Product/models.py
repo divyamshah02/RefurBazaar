@@ -102,18 +102,10 @@ class Listing(models.Model):
         ('inactive', 'Inactive'),
     ]
     
-    CONDITION_CHOICES = [
-        ('excellent', 'Excellent'),
-        ('good', 'Good'),
-        ('fair', 'Fair'),
-    ]
-    
     listing_id = models.CharField(max_length=50, unique=True, editable=False)
     model = models.ForeignKey(ProductModel, on_delete=models.CASCADE, related_name='listings')
     refurbisher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='listings')
-    price_per_unit = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     total_quantity = models.IntegerField(validators=[MinValueValidator(1)])
-    condition = models.CharField(max_length=20, choices=CONDITION_CHOICES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -131,11 +123,19 @@ class Listing(models.Model):
 
 
 class ListingUnit(models.Model):
-    """Individual units within a listing with specific attributes"""
+    """Individual units within a listing - each unit represents ONE device"""
+    
+    CONDITION_CHOICES = [
+        ('excellent', 'Excellent'),
+        ('good', 'Good'),
+        ('fair', 'Fair'),
+        ('poor', 'Poor'),
+    ]
+    
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='units')
     unit_number = models.IntegerField(null=True, blank=True)
-    quantity = models.IntegerField(default=1, validators=[MinValueValidator(1)])
-    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    condition = models.CharField(max_length=20, choices=CONDITION_CHOICES)
     is_available = models.BooleanField(default=True)
     is_sold = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -151,9 +151,6 @@ class ListingUnit(models.Model):
             )['unit_number__max']
             self.unit_number = (max_unit or 0) + 1
         
-        if self.price is None:
-            self.price = self.listing.price_per_unit
-            
         super().save(*args, **kwargs)
     
     def __str__(self):

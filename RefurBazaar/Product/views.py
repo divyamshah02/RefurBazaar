@@ -109,7 +109,6 @@ class ListingViewSet(viewsets.ViewSet):
           "model_id": int,
           "units": [
             {
-              "quantity": 1,
               "price": 12000,
               "condition": "excellent",
               "attributes": [{"attribute_id": 1, "value": "128GB"}, ...]
@@ -117,6 +116,7 @@ class ListingViewSet(viewsets.ViewSet):
           ]
         }
         """
+        
         model_id = request.data.get('model_id')
         units = request.data.get('units', [])
 
@@ -135,35 +135,40 @@ class ListingViewSet(viewsets.ViewSet):
         model = get_object_or_404(ProductModel, id=model_id)
         refurbisher = request.user
 
-        # Calculate total quantity and average price from units
-        total_quantity = sum(unit.get('quantity', 1) for unit in units)
-        
-        # Calculate average price from all units
-        total_price = sum(float(unit.get('price', 0)) * unit.get('quantity', 1) for unit in units)
-        avg_price = total_price / total_quantity if total_quantity > 0 else 0
-        
-        # Use the first unit's condition as the listing condition (or default to 'good')
-        listing_condition = units[0].get('condition', 'good') if units else 'good'
+        # Total quantity is just the number of units (each unit = 1 device)
+        total_quantity = len(units)
 
-        # Create listing
+        # Create listing without price_per_unit and condition
         listing = Listing.objects.create(
             model=model,
             refurbisher=refurbisher,
-            price_per_unit=avg_price,
-            total_quantity=total_quantity,
-            condition=listing_condition
+            total_quantity=total_quantity
         )
 
-        # Create units and attributes
+        # Create units with individual prices and conditions
         for unit_data in units:
-            quantity = unit_data.get('quantity', 1)
             unit_price = unit_data.get('price')
+            unit_condition = unit_data.get('condition')
             attributes = unit_data.get('attributes', [])
+            
+            if not unit_price:
+                listing.delete()  # Rollback
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None, "error": "Price is required for each unit."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            if not unit_condition:
+                listing.delete()  # Rollback
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None, "error": "Condition is required for each unit."
+                }, status=status.HTTP_400_BAD_REQUEST)
 
             unit = ListingUnit.objects.create(
                 listing=listing,
-                quantity=quantity,
-                price=unit_price
+                price=unit_price,
+                condition=unit_condition
             )
 
             # Create attributes for this unit
@@ -183,7 +188,7 @@ class ListingViewSet(viewsets.ViewSet):
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None
         }, status=status.HTTP_201_CREATED)
-
+    
     @handle_exceptions
     def list(self, request):
         model_id = request.query_params.get('model_id')
@@ -227,11 +232,9 @@ class ListingViewSet(viewsets.ViewSet):
         """Update listing (partial update supported)"""
         listing = get_object_or_404(Listing, pk=pk, refurbisher=request.user)
         
-        # Allow updating specific fields
-        allowed_fields = ['price_per_unit', 'condition', 'status']
-        for field in allowed_fields:
-            if field in request.data:
-                setattr(listing, field, request.data[field])
+        # Allow updating status only
+        if 'status' in request.data:
+            listing.status = request.data['status']
         
         listing.save()
         serializer = ListingSerializer(listing)
@@ -259,6 +262,7 @@ class ListingViewSet(viewsets.ViewSet):
         listing = get_object_or_404(Listing, pk=pk, refurbisher=request.user)
         
         price = request.data.get('price')
+        condition = request.data.get('condition')
         attributes = request.data.get('attributes', [])
         
         if not price:
@@ -267,11 +271,17 @@ class ListingViewSet(viewsets.ViewSet):
                 "data": None, "error": "Price is required."
             }, status=status.HTTP_400_BAD_REQUEST)
         
+        if not condition:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Condition is required."
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
         # Create unit
         unit = ListingUnit.objects.create(
             listing=listing,
-            quantity=1,
-            price=price
+            price=price,
+            condition=condition
         )
         
         # Create attributes
@@ -300,7 +310,7 @@ class ListingViewSet(viewsets.ViewSet):
     @handle_exceptions
     @check_authentication(required_role='refurbisher')
     def update_unit(self, request, pk=None, unit_id=None):
-        """Update a specific unit (mark as sold, change availability, etc.)"""
+        """Update a specific unit"""
         listing = get_object_or_404(Listing, pk=pk, refurbisher=request.user)
         unit = get_object_or_404(ListingUnit, pk=unit_id, listing=listing)
         
@@ -311,6 +321,25 @@ class ListingViewSet(viewsets.ViewSet):
             unit.is_sold = request.data['is_sold']
         if 'price' in request.data:
             unit.price = request.data['price']
+        if 'condition' in request.data:
+            unit.condition = request.data['condition']
+        
+        # Update attributes if provided
+        if 'attributes' in request.data:
+            # Delete existing attributes
+            unit.attributes.all().delete()
+            
+            # Create new attributes
+            for attr in request.data['attributes']:
+                attr_id = attr.get('attribute') or attr.get('attribute_id')
+                if not attr_id:
+                    continue
+                attr_obj = get_object_or_404(AttributeMaster, id=attr_id)
+                ListingUnitAttribute.objects.create(
+                    listing_unit=unit,
+                    attribute=attr_obj,
+                    value=attr.get('value')
+                )
         
         unit.save()
         
@@ -350,17 +379,29 @@ class ListingUnitViewSet(viewsets.ViewSet):
         Expected payload:
         {
           "listing_id": int,
-          "quantity": int,
+          "price": decimal,
+          "condition": string,
           "attributes": [ {"attribute_id": 1, "value": "128GB"}, ... ]
         }
         """
         listing_id = request.data.get('listing_id')
+        price = request.data.get('price')
+        condition = request.data.get('condition')
         attributes = request.data.get('attributes', [])
-        quantity = request.data.get('quantity', 1)
+
+        if not price or not condition:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Price and condition are required."
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         listing = get_object_or_404(Listing, id=listing_id, refurbisher=request.user)
 
-        unit = ListingUnit.objects.create(listing=listing, quantity=quantity)
+        unit = ListingUnit.objects.create(
+            listing=listing,
+            price=price,
+            condition=condition
+        )
 
         for attr in attributes:
             attr_id = attr.get('attribute_id') or attr.get('id') or attr.get('attribute')
@@ -378,7 +419,7 @@ class ListingUnitViewSet(viewsets.ViewSet):
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None
         }, status=status.HTTP_201_CREATED)
-
+    
     @handle_exceptions
     def list(self, request):
         listing_id = request.query_params.get('listing_id')

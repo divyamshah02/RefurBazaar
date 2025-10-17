@@ -61,8 +61,8 @@ async function loadUserInfo() {
           ? `${response.data.first_name} ${response.data.last_name}`
           : response.data.name || "User"
 
-      document.getElementById("user-name").textContent = userName
-      document.getElementById("sidebar-user-name").textContent = userName
+      // document.getElementById("user-name").textContent = userName
+      // document.getElementById("sidebar-user-name").textContent = userName
     }
   } catch (error) {
     console.error("Error loading user info:", error)
@@ -215,6 +215,19 @@ function renderListings() {
     .map((listing) => {
       const availableUnits = listing.units.filter((u) => u.is_available && !u.is_sold).length
 
+      let priceDisplay = "N/A"
+      if (listing.units && listing.units.length > 0) {
+        const prices = listing.units.map((u) => Number.parseFloat(u.price))
+        const minPrice = Math.min(...prices)
+        const maxPrice = Math.max(...prices)
+
+        if (minPrice === maxPrice) {
+          priceDisplay = `₹${minPrice.toLocaleString("en-IN")}`
+        } else {
+          priceDisplay = `₹${minPrice.toLocaleString("en-IN")} - ₹${maxPrice.toLocaleString("en-IN")}`
+        }
+      }
+
       return `
             <tr>
                 <td>
@@ -224,12 +237,12 @@ function renderListings() {
                         </div>
                         <div>
                             <div class="fw-bold">${listing.model_name}</div>
-                            <small class="text-muted">${listing.brand_name} - ${listing.condition}</small>
+                            <small class="text-muted">${listing.brand_name}</small>
                         </div>
                     </div>
                 </td>
                 <td>${listing.category_display || getCategoryLabel(listing.category)}</td>
-                <td><strong>₹${Number.parseFloat(listing.price_per_unit).toLocaleString("en-IN")}</strong></td>
+                <td><strong>${priceDisplay}</strong></td>
                 <td>${availableUnits} / ${listing.total_quantity} units</td>
                 <td>${getStatusBadge(listing.status)}</td>
                 <td>${formatDate(listing.created_at)}</td>

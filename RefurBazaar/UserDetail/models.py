@@ -84,6 +84,12 @@ class CompanyProfile(models.Model):
     identity_proof = models.FileField(upload_to='company_docs/identity_proofs/', null=True, blank=True)
     address_proof = models.FileField(upload_to='company_docs/address_proofs/', null=True, blank=True)
 
+    account_holder_name = models.CharField(max_length=255, null=True, blank=True)
+    account_number = models.CharField(max_length=50, null=True, blank=True)
+    ifsc_code = models.CharField(max_length=20, null=True, blank=True)
+    bank_name = models.CharField(max_length=255, null=True, blank=True)
+    branch_name = models.CharField(max_length=255, null=True, blank=True)
+
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):

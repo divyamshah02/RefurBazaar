@@ -48,8 +48,8 @@ class ListingUnitInline(admin.TabularInline):
 
 @admin.register(Listing)
 class ListingAdmin(admin.ModelAdmin):
-    list_display = ['listing_id', 'model', 'refurbisher', 'price_per_unit', 'total_quantity', 'condition', 'status', 'created_at']
-    list_filter = ['status', 'condition', 'model__category', 'created_at']
+    list_display = ['listing_id', 'model', 'refurbisher', 'total_quantity', 'status', 'created_at']
+    list_filter = ['status', 'model__category', 'created_at']
     search_fields = ['listing_id', 'model__name', 'refurbisher__name']
     readonly_fields = ['listing_id', 'created_at', 'updated_at']
     inlines = [ListingUnitInline]  # Removed ListingImageInline
@@ -62,9 +62,9 @@ class ListingUnitAttributeInline(admin.TabularInline):
 
 @admin.register(ListingUnit)
 class ListingUnitAdmin(admin.ModelAdmin):
-    list_display = ['id', 'listing', 'quantity', 'created_at']  # Removed imei_number
-    list_filter = ['listing__status', 'created_at']
-    search_fields = ['listing__listing_id']  # Removed imei_number from search
+    list_display = ['id', 'listing', 'unit_number', 'price', 'condition', 'is_available', 'is_sold', 'created_at']
+    list_filter = ['condition', 'is_available', 'is_sold', 'listing__status', 'created_at']
+    search_fields = ['listing__listing_id']
     inlines = [ListingUnitAttributeInline]
 
 

@@ -4,7 +4,6 @@ let companyProfileData = null
 let profile_url = null
 let csrf_token = null
 
-
 // Initialize Refurbisher Profile Page
 async function initRefurbisherProfile(profile_url_param, csrf_token_param) {
   profile_url = profile_url_param
@@ -94,6 +93,13 @@ function populateForms() {
     document.getElementById("returnAddressLine2").value = companyProfileData.return_address_line_2 || ""
     document.getElementById("alternateContact").value = companyProfileData.alternate_contact_number || ""
 
+    // Payment Information
+    document.getElementById("accountHolderName").value = companyProfileData.account_holder_name || ""
+    document.getElementById("accountNumber").value = companyProfileData.account_number || ""
+    document.getElementById("ifscCode").value = companyProfileData.ifsc_code || ""
+    document.getElementById("bankName").value = companyProfileData.bank_name || ""
+    document.getElementById("branchName").value = companyProfileData.branch_name || ""
+
     // Update document upload badges if files exist
     updateDocumentBadges()
   }
@@ -123,6 +129,12 @@ function setupFormHandlers() {
   document.getElementById("documentForm").addEventListener("submit", async (e) => {
     e.preventDefault()
     await saveDocuments()
+  })
+
+  // Payment Information Form
+  document.getElementById("paymentInfoForm").addEventListener("submit", async (e) => {
+    e.preventDefault()
+    await savePaymentInfo()
   })
 }
 
@@ -356,7 +368,7 @@ function handleFileUpload(input) {
 // Calculate Profile Completion
 function calculateProfileCompletion() {
   let completedSections = 0
-  const totalSections = 3
+  const totalSections = 4
 
   // Check personal information
   const personalComplete = checkPersonalInfoComplete()
@@ -369,6 +381,10 @@ function calculateProfileCompletion() {
   // Check documents
   const documentsComplete = checkDocumentsComplete()
   if (documentsComplete) completedSections++
+
+  // Check payment information
+  const paymentComplete = checkPaymentInfoComplete()
+  if (paymentComplete) completedSections++
 
   const completionPercentage = Math.round((completedSections / totalSections) * 100)
 
@@ -385,7 +401,7 @@ function calculateProfileCompletion() {
   }
 
   // Update completion items
-  updateCompletionItems(personalComplete, businessComplete, documentsComplete)
+  updateCompletionItems(personalComplete, businessComplete, documentsComplete, paymentComplete)
 }
 
 // Check if personal info is complete
@@ -419,11 +435,24 @@ function checkDocumentsComplete() {
   return !!(companyProfileData.gst_certificate && companyProfileData.identity_proof && companyProfileData.address_proof)
 }
 
+// Check if payment info is complete
+function checkPaymentInfoComplete() {
+  if (!companyProfileData) return false
+  return !!(
+    companyProfileData.account_holder_name &&
+    companyProfileData.account_number &&
+    companyProfileData.ifsc_code &&
+    companyProfileData.bank_name &&
+    companyProfileData.branch_name
+  )
+}
+
 // Update completion items UI
-function updateCompletionItems(personal, business, documents) {
+function updateCompletionItems(personal, business, documents, payment) {
   const personalItem = document.getElementById("completionPersonal")
   const businessItem = document.getElementById("completionBusiness")
   const documentsItem = document.getElementById("completionDocuments")
+  const paymentItem = document.getElementById("completionPayment")
 
   if (personalItem) {
     const icon = personalItem.querySelector("i")
@@ -451,6 +480,15 @@ function updateCompletionItems(personal, business, documents) {
       icon.className = "fas fa-times-circle text-danger me-2"
     }
   }
+
+  if (paymentItem) {
+    const icon = paymentItem.querySelector("i")
+    if (payment) {
+      icon.className = "fas fa-check-circle text-success me-2"
+    } else {
+      icon.className = "fas fa-times-circle text-danger me-2"
+    }
+  }
 }
 
 // Update verification badge
@@ -458,7 +496,11 @@ function updateVerificationBadge() {
   const badge = document.getElementById("verificationBadge")
   if (!badge) return
 
-  const isComplete = checkPersonalInfoComplete() && checkBusinessDetailsComplete() && checkDocumentsComplete()
+  const isComplete =
+    checkPersonalInfoComplete() &&
+    checkBusinessDetailsComplete() &&
+    checkDocumentsComplete() &&
+    checkPaymentInfoComplete()
 
   if (isComplete) {
     badge.className = "badge bg-success fs-6"
@@ -506,12 +548,72 @@ function updateDocumentBadges() {
   }
 }
 
+// Save Payment Information
+async function savePaymentInfo() {
+  const formData = {
+    first_name: document.getElementById("firstName").value.trim(),
+    last_name: document.getElementById("lastName").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    contact_number: profileData.contact_number,
+    business_type: document.getElementById("businessType").value,
+    company_name: document.getElementById("companyName").value.trim(),
+    gst_registration_no: document.getElementById("gstNumber").value.trim(),
+    business_license: document.getElementById("businessLicense").value.trim(),
+    address_line_1: document.getElementById("addressLine1").value.trim(),
+    address_line_2: document.getElementById("addressLine2").value.trim(),
+    pincode: document.getElementById("pincode").value.trim(),
+    city: document.getElementById("city").value.trim(),
+    state: document.getElementById("state").value.trim(),
+    country: document.getElementById("country").value.trim(),
+    return_address_line_1: document.getElementById("returnAddressLine1").value.trim(),
+    return_address_line_2: document.getElementById("returnAddressLine2").value.trim(),
+    account_holder_name: document.getElementById("accountHolderName").value.trim(),
+    account_number: document.getElementById("accountNumber").value.trim(),
+    ifsc_code: document.getElementById("ifscCode").value.trim().toUpperCase(),
+    bank_name: document.getElementById("bankName").value.trim(),
+    branch_name: document.getElementById("branchName").value.trim(),
+  }
+
+  // Validate
+  if (
+    !formData.account_holder_name ||
+    !formData.account_number ||
+    !formData.ifsc_code ||
+    !formData.bank_name ||
+    !formData.branch_name
+  ) {
+    showErrorMessage("All payment fields are required")
+    return
+  }
+
+  // Validate IFSC code format (11 characters, alphanumeric)
+  if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifsc_code)) {
+    showErrorMessage("Please enter a valid IFSC code (e.g., SBIN0001234)")
+    return
+  }
+
+  // Validate account number (numeric, 9-18 digits)
+  if (!/^\d{9,18}$/.test(formData.account_number)) {
+    showErrorMessage("Account number must be 9-18 digits")
+    return
+  }
+
+  const [success, response] = await callApi("PUT", `${profile_url}${profileData.id}/`, formData, csrf_token)
+
+  if (success && response.success) {
+    showSuccessMessage("Payment information updated successfully!")
+    await loadProfileData()
+  } else {
+    showErrorMessage(response.error || "Failed to update payment information")
+  }
+}
+
 // Helper Functions
 function getFullName() {
   if (companyProfileData && companyProfileData.first_name && companyProfileData.last_name) {
     return `${companyProfileData.first_name} ${companyProfileData.last_name}`
   }
-  
+
   if (profileData && profileData.first_name && profileData.last_name) {
     return `${profileData.first_name} ${profileData.last_name}`
   }

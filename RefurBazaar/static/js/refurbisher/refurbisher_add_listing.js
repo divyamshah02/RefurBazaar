@@ -256,19 +256,13 @@ function addNewUnit() {
       </div>
       
       <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-6">
           <div class="form-group">
-            <label class="form-label">Quantity *</label>
-            <input type="number" class="form-control" data-field="quantity" min="1" value="1" required>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="form-group">
-            <label class="form-label">Price per Unit (₹) *</label>
+            <label class="form-label">Price (₹) *</label>
             <input type="number" class="form-control" data-field="price" placeholder="Enter price" required>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-6">
           <div class="form-group">
             <label class="form-label">Condition *</label>
             <select class="form-select" data-field="condition" required>
@@ -365,12 +359,11 @@ function validateCurrentStep() {
 
       // Validate each unit
       for (const unitCard of unitCards) {
-        const quantity = unitCard.querySelector('[data-field="quantity"]')?.value
         const price = unitCard.querySelector('[data-field="price"]')?.value
         const condition = unitCard.querySelector('[data-field="condition"]')?.value
 
-        if (!quantity || !price || !condition) {
-          showNotification("Please fill in all required fields for each unit", "error")
+        if (!price || !condition) {
+          showNotification("Please fill in price and condition for each unit", "error")
           return false
         }
 
@@ -457,7 +450,7 @@ async function submitListing() {
 
       // Redirect to listings page after 2 seconds
       setTimeout(() => {
-        window.location.href = "/refurbisher_listings/"
+        window.location.href = "/refurbisher-listings/"
       }, 2000)
     } else {
       throw new Error(response.error || "Failed to create listing")
@@ -483,7 +476,6 @@ function collectFormData() {
   const units = []
 
   unitCards.forEach((unitCard) => {
-    const quantity = Number.parseInt(unitCard.querySelector('[data-field="quantity"]')?.value)
     const price = Number.parseFloat(unitCard.querySelector('[data-field="price"]')?.value)
     const condition = unitCard.querySelector('[data-field="condition"]')?.value
 
@@ -499,7 +491,6 @@ function collectFormData() {
     })
 
     units.push({
-      quantity: quantity,
       price: price,
       condition: condition,
       attributes: attributes,

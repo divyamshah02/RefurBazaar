@@ -8,7 +8,6 @@ let editingUnitId = null
 let editingUnitData = null
 const bootstrap = window.bootstrap // Declare the bootstrap variable
 
-
 /**
  * Initialize the listing detail page
  * @param {number} listingId - The listing ID
@@ -34,7 +33,6 @@ function initListingDetail(listingId, apiUrls, csrfToken) {
 function setupEventListeners() {
   document.getElementById("add-unit-btn").addEventListener("click", showAddUnitModal)
   document.getElementById("save-unit-btn").addEventListener("click", saveNewUnit)
-  document.getElementById("delete-listing-btn").addEventListener("click", deleteListing)
 }
 
 /**
@@ -49,8 +47,8 @@ async function loadUserInfo() {
           ? `${response.data.first_name} ${response.data.last_name}`
           : response.data.name || "User"
 
-      document.getElementById("user-name").textContent = userName
-      document.getElementById("sidebar-user-name").textContent = userName
+      // document.getElementById("user-name").textContent = userName
+      // document.getElementById("sidebar-user-name").textContent = userName
     }
   } catch (error) {
     console.error("Error loading user info:", error)
@@ -113,7 +111,7 @@ async function loadProductModelAttributes() {
 function renderListingHeader() {
   document.getElementById("listing-title").textContent = listingData.model_name
   document.getElementById("listing-subtitle").textContent =
-    `${listingData.brand_name} • ${getCategoryLabel(listingData.category)} • ${listingData.condition}`
+    `${listingData.brand_name} • ${getCategoryLabel(listingData.category)}`
 
   const statusBadge = document.getElementById("listing-status-badge")
   statusBadge.innerHTML = getStatusBadge(listingData.status)
@@ -202,6 +200,8 @@ function renderUnitsTable() {
     .map((unit) => {
       const attributes = unit.attributes.map((attr) => `${attr.attribute_name}: ${attr.value}`).join(", ")
 
+      const conditionBadge = getConditionBadge(unit.condition)
+
       let statusBadge = ""
       if (unit.is_sold) {
         statusBadge = '<span class="status-badge status-inactive">Sold</span>'
@@ -215,6 +215,7 @@ function renderUnitsTable() {
             <tr>
                 <td><strong>#${unit.unit_number}</strong></td>
                 <td>${attributes || "No attributes"}</td>
+                <td>${conditionBadge}</td>
                 <td><strong>₹${Number.parseFloat(unit.price).toLocaleString("en-IN")}</strong></td>
                 <td>${statusBadge}</td>
                 <td>
@@ -277,7 +278,8 @@ function showAddUnitModal() {
     })
     .join("")
 
-  document.getElementById("unit-price").value = listingData.price_per_unit
+  document.getElementById("unit-price").value = ""
+  document.getElementById("unit-condition").value = ""
 
   // Show modal
   const modal = new bootstrap.Modal(document.getElementById("unitModal"))
@@ -324,8 +326,8 @@ function editUnit(unitId) {
     })
     .join("")
 
-  // Set current price
   document.getElementById("unit-price").value = unit.price
+  document.getElementById("unit-condition").value = unit.condition
 
   // Show modal
   const modal = new bootstrap.Modal(document.getElementById("unitModal"))
@@ -337,9 +339,10 @@ function editUnit(unitId) {
  */
 async function saveNewUnit() {
   const price = document.getElementById("unit-price").value
+  const condition = document.getElementById("unit-condition").value
 
-  if (!price) {
-    showError("Please enter a price")
+  if (!price || !condition) {
+    showError("Please enter price and select condition")
     return
   }
 
@@ -364,6 +367,7 @@ async function saveNewUnit() {
     // Update existing unit
     const unitData = {
       price: Number.parseFloat(price),
+      condition: condition,
       attributes: attributes,
     }
 
@@ -395,6 +399,7 @@ async function saveNewUnit() {
     // Create new unit
     const unitData = {
       price: Number.parseFloat(price),
+      condition: condition,
       attributes: attributes,
     }
 
@@ -604,4 +609,17 @@ function showNotification(message, type = "info") {
       notification.remove()
     }
   }, 5000)
+}
+
+/**
+ * Get condition badge HTML
+ */
+function getConditionBadge(condition) {
+  const badges = {
+    excellent: '<span class="badge bg-success">Excellent</span>',
+    good: '<span class="badge bg-primary">Good</span>',
+    fair: '<span class="badge bg-warning">Fair</span>',
+    poor: '<span class="badge bg-danger">Poor</span>',
+  }
+  return badges[condition] || `<span class="badge bg-secondary">${condition}</span>`
 }

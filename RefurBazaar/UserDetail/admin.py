@@ -25,11 +25,29 @@ class UserAdmin(BaseUserAdmin):
         }),
     )
 
-
 @admin.register(CompanyProfile)
 class CompanyProfileAdmin(admin.ModelAdmin):
-    list_display = ("company_name", "business_type", "contact_number", "city", "state", "country")
-    search_fields = ("company_name", "gst_registration_no", "contact_number")
+    list_display = ("company_name", "business_type", "contact_number", "city", "state", "country", "bank_name")
+    search_fields = ("company_name", "gst_registration_no", "contact_number", "account_number", "ifsc_code")
+    
+    fieldsets = (
+        ("Company Information", {
+            "fields": ("user", "company_name", "business_type", "gst_registration_no", "business_license")
+        }),
+        ("Contact Details", {
+            "fields": ("first_name", "last_name", "email", "contact_number", "alternate_contact_number")
+        }),
+        ("Address Information", {
+            "fields": ("address_line_1", "address_line_2", "pincode", "city", "state", "country", 
+                      "return_address_line_1", "return_address_line_2")
+        }),
+        ("Documents", {
+            "fields": ("gst_certificate", "business_license_file", "identity_proof", "address_proof")
+        }),
+        ("Payment Information", {
+            "fields": ("account_holder_name", "account_number", "ifsc_code", "bank_name", "branch_name")
+        }),
+    )
 
 
 @admin.register(OTPVerification)

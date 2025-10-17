@@ -72,22 +72,28 @@
                                 <div class="progress-fill" id="completionProgressBar" style="width: 0%"></div>
                             </div>
                             <div class="row">
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="completion-item" id="completionPersonal">
                                         <i class="fas fa-exclamation-circle text-warning me-2"></i>
                                         <span>Personal Information</span>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="completion-item" id="completionBusiness">
                                         <i class="fas fa-exclamation-circle text-warning me-2"></i>
                                         <span>Business Details</span>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="completion-item" id="completionDocuments">
                                         <i class="fas fa-times-circle text-danger me-2"></i>
                                         <span>Document Verification</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="completion-item" id="completionPayment">
+                                        <i class="fas fa-times-circle text-danger me-2"></i>
+                                        <span>Payment Information</span>
                                     </div>
                                 </div>
                             </div>
@@ -321,6 +327,60 @@
                                 <div class="text-end">
                                     <button type="submit" class="btn btn-success">
                                         <i class="fas fa-check me-2"></i>Submit for Verification
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Payment Information Form -->
+                        <div class="form-section">
+                            <h4>Payment Information</h4>
+                            <p class="text-muted mb-4">Add your bank account details for receiving payments</p>
+                            <form id="paymentInfoForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Account Holder Name *</label>
+                                            <input type="text" class="form-control" id="accountHolderName" name="account_holder_name" placeholder="Enter account holder name" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Account Number *</label>
+                                            <input type="text" class="form-control" id="accountNumber" name="account_number" placeholder="Enter account number" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">IFSC Code *</label>
+                                            <input type="text" class="form-control" id="ifscCode" name="ifsc_code" placeholder="Enter IFSC code" maxlength="11" required>
+                                            <small class="text-muted">11 character IFSC code</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Bank Name *</label>
+                                            <input type="text" class="form-control" id="bankName" name="bank_name" placeholder="Enter bank name" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Branch Name *</label>
+                                            <input type="text" class="form-control" id="branchName" name="branch_name" placeholder="Enter branch name" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Note:</strong> Please ensure your bank account details are accurate. All payments will be processed to this account.
+                                </div>
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Update Payment Information
                                     </button>
                                 </div>
                             </form>

@@ -54,7 +54,7 @@ class ListingUnitSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ListingUnit
-        fields = ['id', 'unit_number', 'quantity', 'price', 'is_available', 'is_sold', 'attributes', 'created_at']
+        fields = ['id', 'unit_number', 'price', 'condition', 'is_available', 'is_sold', 'attributes', 'created_at']
 
 
 class ListingSerializer(serializers.ModelSerializer):
@@ -71,7 +71,7 @@ class ListingSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'listing_id', 'model', 'model_name', 'brand_name', 'brand_id',
             'category', 'category_display', 'refurbisher', 'refurbisher_name',
-            'price_per_unit', 'total_quantity', 'condition', 'status', 'units',
+            'total_quantity', 'status', 'units',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['listing_id', 'refurbisher', 'created_at', 'updated_at']
