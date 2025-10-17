@@ -10,8 +10,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet">
-    <link href="css/refurbisher_dash.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+    <link href="/static/css/refurbisher/refurbisher_dash.css" rel="stylesheet">
 </head>
 
 <body>
@@ -226,18 +226,19 @@
     <div id="notificationContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/refurbisher_add_listing.js"></script>
+    
+    <script src="/static/js/api_caller.js"></script>
+    <script src="/static/js/refurbisher/refurbisher_add_listing.js"></script>
     
     <!-- Initialize the add listing page with API endpoints and CSRF token -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Pass specific API endpoint URLs to the JavaScript
             const apiEndpoints = {
-                categories: '{% url "category-list" %}',
-                brands: '{% url "brand-list" %}',
-                productModels: '{% url "productmodel-list" %}',
-                productModelAttributes: '{% url "productmodelattribute-list" %}',
-                listings: '{% url "listing-list" %}'
+                categories: '{% url "products-categories" %}',
+                brands: '{% url "brands-list" %}',
+                productModels: '{% url "products-list" %}',
+                productModelAttributes: '{% url "product-model-attributes-list" %}',
+                listings: '{% url "listings-list" %}'
             };
             const csrfToken = '{{ csrf_token }}';
             

@@ -112,7 +112,6 @@ class ListingViewSet(viewsets.ViewSet):
           "units": [
             {
               "quantity": 1,
-              "imei_number": "optional",
               "attributes": [{"attribute_id": 1, "value": "128GB"}, ...]
             }
           ]
@@ -153,13 +152,11 @@ class ListingViewSet(viewsets.ViewSet):
         # Create units and attributes
         for unit_data in units:
             quantity = unit_data.get('quantity', 1)
-            imei_number = unit_data.get('imei_number')
             attributes = unit_data.get('attributes', [])
 
             unit = ListingUnit.objects.create(
                 listing=listing,
-                quantity=quantity,
-                imei_number=imei_number
+                quantity=quantity
             )
 
             # Create attributes for this unit
@@ -184,18 +181,156 @@ class ListingViewSet(viewsets.ViewSet):
     def list(self, request):
         model_id = request.query_params.get('model_id')
         refurbisher_id = request.query_params.get('refurbisher_id')
+        status_filter = request.query_params.get('status')
 
-        queryset = Listing.objects.filter(status='active')
+        queryset = Listing.objects.select_related(
+            'model', 'model__brand', 'refurbisher'
+        ).prefetch_related('units', 'units__attributes')
+        
         if model_id:
             queryset = queryset.filter(model_id=model_id)
         if refurbisher_id:
             queryset = queryset.filter(refurbisher_id=refurbisher_id)
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
 
         serializer = ListingSerializer(queryset, many=True)
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None
         }, status=status.HTTP_200_OK)
+
+    @handle_exceptions
+    def retrieve(self, request, pk=None):
+        """Get single listing details with all units"""
+        listing = get_object_or_404(
+            Listing.objects.select_related('model', 'model__brand', 'refurbisher')
+            .prefetch_related('units', 'units__attributes', 'units__attributes__attribute'),
+            pk=pk
+        )
+        serializer = ListingSerializer(listing)
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": serializer.data, "error": None
+        }, status=status.HTTP_200_OK)
+
+    @handle_exceptions
+    @check_authentication(required_role='refurbisher')
+    def update(self, request, pk=None):
+        """Update listing (partial update supported)"""
+        listing = get_object_or_404(Listing, pk=pk, refurbisher=request.user)
+        
+        # Allow updating specific fields
+        allowed_fields = ['price_per_unit', 'condition', 'status']
+        for field in allowed_fields:
+            if field in request.data:
+                setattr(listing, field, request.data[field])
+        
+        listing.save()
+        serializer = ListingSerializer(listing)
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": serializer.data, "error": None
+        }, status=status.HTTP_200_OK)
+
+    @handle_exceptions
+    @check_authentication(required_role='refurbisher')
+    def destroy(self, request, pk=None):
+        """Delete listing and all its units"""
+        listing = get_object_or_404(Listing, pk=pk, refurbisher=request.user)
+        listing.delete()
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": None, "error": None
+        }, status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['post'])
+    @handle_exceptions
+    @check_authentication(required_role='refurbisher')
+    def add_unit(self, request, pk=None):
+        """Add a new unit to existing listing"""
+        listing = get_object_or_404(Listing, pk=pk, refurbisher=request.user)
+        
+        price = request.data.get('price')
+        attributes = request.data.get('attributes', [])
+        
+        if not price:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Price is required."
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Create unit
+        unit = ListingUnit.objects.create(
+            listing=listing,
+            price=price,
+            quantity=1
+        )
+        
+        # Create attributes
+        for attr in attributes:
+            attr_id = attr.get('attribute') or attr.get('attribute_id')
+            if not attr_id:
+                continue
+            attr_obj = get_object_or_404(AttributeMaster, id=attr_id)
+            ListingUnitAttribute.objects.create(
+                listing_unit=unit,
+                attribute=attr_obj,
+                value=attr.get('value')
+            )
+        
+        # Update listing total quantity
+        listing.total_quantity = listing.units.count()
+        listing.save()
+        
+        serializer = ListingUnitSerializer(unit)
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": serializer.data, "error": None
+        }, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['patch'], url_path='update_unit/(?P<unit_id>[^/.]+)')
+    @handle_exceptions
+    @check_authentication(required_role='refurbisher')
+    def update_unit(self, request, pk=None, unit_id=None):
+        """Update a specific unit (mark as sold, change availability, etc.)"""
+        listing = get_object_or_404(Listing, pk=pk, refurbisher=request.user)
+        unit = get_object_or_404(ListingUnit, pk=unit_id, listing=listing)
+        
+        # Update allowed fields
+        if 'is_available' in request.data:
+            unit.is_available = request.data['is_available']
+        if 'is_sold' in request.data:
+            unit.is_sold = request.data['is_sold']
+        if 'price' in request.data:
+            unit.price = request.data['price']
+        
+        unit.save()
+        
+        serializer = ListingUnitSerializer(unit)
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": serializer.data, "error": None
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['delete'], url_path='delete_unit/(?P<unit_id>[^/.]+)')
+    @handle_exceptions
+    @check_authentication(required_role='refurbisher')
+    def delete_unit(self, request, pk=None, unit_id=None):
+        """Delete a specific unit"""
+        listing = get_object_or_404(Listing, pk=pk, refurbisher=request.user)
+        unit = get_object_or_404(ListingUnit, pk=unit_id, listing=listing)
+        
+        unit.delete()
+        
+        # Update listing total quantity
+        listing.total_quantity = listing.units.count()
+        listing.save()
+        
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": None, "error": None
+        }, status=status.HTTP_204_NO_CONTENT)
 
 
 class ListingUnitViewSet(viewsets.ViewSet):
@@ -209,18 +344,16 @@ class ListingUnitViewSet(viewsets.ViewSet):
         {
           "listing_id": int,
           "quantity": int,
-          "imei_number": "optional string",
           "attributes": [ {"attribute_id": 1, "value": "128GB"}, ... ]
         }
         """
         listing_id = request.data.get('listing_id')
         attributes = request.data.get('attributes', [])
         quantity = request.data.get('quantity', 1)
-        imei_number = request.data.get('imei_number')
 
         listing = get_object_or_404(Listing, id=listing_id, refurbisher=request.user)
 
-        unit = ListingUnit.objects.create(listing=listing, quantity=quantity, imei_number=imei_number)
+        unit = ListingUnit.objects.create(listing=listing, quantity=quantity)
 
         for attr in attributes:
             attr_id = attr.get('attribute_id') or attr.get('id') or attr.get('attribute')
@@ -262,10 +395,9 @@ class SeedDataViewSet(viewsets.ViewSet):
     Seed initial data for testing.
     Usage: POST /api/products/seed-data/seed/
     """
-    
-    @action(detail=False, methods=['post'])
+
     @handle_exceptions
-    def seed(self, request):
+    def list(self, request):
         """Seed initial brands, models, and attributes"""
         
         # Create Brands

@@ -74,3 +74,16 @@ class RefurbisherAddListingViewSet(viewsets.ViewSet):
     def list(self, request):
         return render(request, 'refurbisher/refurbisher_add_listing.html')
 
+class RefurbisherListingsViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'refurbisher/refurbisher_listings.html')
+
+
+class RefurbisherListingDetailViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'refurbisher/refurbisher_listing_detail.html')
+

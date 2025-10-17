@@ -133,14 +133,31 @@ class Listing(models.Model):
 class ListingUnit(models.Model):
     """Individual units within a listing with specific attributes"""
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='units')
+    unit_number = models.IntegerField(null=True, blank=True)
     quantity = models.IntegerField(default=1, validators=[MinValueValidator(1)])
+    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], null=True, blank=True)
+    is_available = models.BooleanField(default=True)
+    is_sold = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        ordering = ['created_at']
+        ordering = ['unit_number']
+        unique_together = ['listing', 'unit_number']
+    
+    def save(self, *args, **kwargs):
+        if not self.unit_number:
+            max_unit = ListingUnit.objects.filter(listing=self.listing).aggregate(
+                models.Max('unit_number')
+            )['unit_number__max']
+            self.unit_number = (max_unit or 0) + 1
+        
+        if self.price is None:
+            self.price = self.listing.price_per_unit
+            
+        super().save(*args, **kwargs)
     
     def __str__(self):
-        return f"{self.listing.listing_id} - Unit {self.id}"
+        return f"{self.listing.listing_id} - Unit #{self.unit_number}"
 
 
 class ListingUnitAttribute(models.Model):

@@ -36,56 +36,29 @@ function setupEventListeners() {
 }
 
 /**
- * Make API call with error handling
- */
-async function callApi(url, options = {}) {
-  try {
-    const defaultOptions = {
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": CSRF_TOKEN,
-      },
-    }
-
-    const response = await fetch(url, {
-      ...defaultOptions,
-      ...options,
-      headers: { ...defaultOptions.headers, ...options.headers },
-    })
-
-    const data = await response.json()
-
-    if (!data.success) {
-      throw new Error(data.error || "API request failed")
-    }
-
-    return data.data
-  } catch (error) {
-    console.error("[v0] API Error:", error)
-    showNotification("Error: " + error.message, "error")
-    throw error
-  }
-}
-
-/**
  * Load categories from API
  */
 async function loadCategories() {
   try {
-    const categories = await callApi(API_ENDPOINTS.categories)
-    const categorySelect = document.getElementById("categorySelect")
+    const [success, response] = await callApi("GET", API_ENDPOINTS.categories, null, CSRF_TOKEN)
 
-    categorySelect.innerHTML = '<option value="">Select Category</option>'
-    categories.forEach((category) => {
-      const option = document.createElement("option")
-      option.value = category.value
-      option.textContent = category.label
-      categorySelect.appendChild(option)
-    })
+    if (success && response.success) {
+      const categories = response.data
+      const categorySelect = document.getElementById("categorySelect")
 
-    console.log("[v0] Loaded categories:", categories)
+      categorySelect.innerHTML = '<option value="">Select Category</option>'
+      categories.forEach((category) => {
+        const option = document.createElement("option")
+        option.value = category.value
+        option.textContent = category.label
+        categorySelect.appendChild(option)
+      })
+
+      console.log("[v0] Loaded categories:", categories)
+    }
   } catch (error) {
     console.error("[v0] Failed to load categories:", error)
+    showNotification("Error loading categories", "error")
   }
 }
 
@@ -110,19 +83,23 @@ async function onCategoryChange() {
   }
 
   try {
-    const brands = await callApi(`${API_ENDPOINTS.brands}?category=${category}`)
+    const [success, response] = await callApi("GET", `${API_ENDPOINTS.brands}?category=${category}`, null, CSRF_TOKEN)
 
-    brandSelect.disabled = false
-    brands.forEach((brand) => {
-      const option = document.createElement("option")
-      option.value = brand.id
-      option.textContent = brand.name
-      brandSelect.appendChild(option)
-    })
+    if (success && response.success) {
+      const brands = response.data
+      brandSelect.disabled = false
+      brands.forEach((brand) => {
+        const option = document.createElement("option")
+        option.value = brand.id
+        option.textContent = brand.name
+        brandSelect.appendChild(option)
+      })
 
-    console.log("[v0] Loaded brands for category:", category, brands)
+      console.log("[v0] Loaded brands for category:", category, brands)
+    }
   } catch (error) {
     console.error("[v0] Failed to load brands:", error)
+    showNotification("Error loading brands", "error")
   }
 }
 
@@ -144,19 +121,28 @@ async function onBrandChange() {
   }
 
   try {
-    const models = await callApi(`${API_ENDPOINTS.productModels}?category=${category}&brand_id=${brandId}`)
+    const [success, response] = await callApi(
+      "GET",
+      `${API_ENDPOINTS.productModels}?category=${category}&brand_id=${brandId}`,
+      null,
+      CSRF_TOKEN,
+    )
 
-    modelSelect.disabled = false
-    models.forEach((model) => {
-      const option = document.createElement("option")
-      option.value = model.id
-      option.textContent = model.name
-      modelSelect.appendChild(option)
-    })
+    if (success && response.success) {
+      const models = response.data
+      modelSelect.disabled = false
+      models.forEach((model) => {
+        const option = document.createElement("option")
+        option.value = model.id
+        option.textContent = model.name
+        modelSelect.appendChild(option)
+      })
 
-    console.log("[v0] Loaded models:", models)
+      console.log("[v0] Loaded models:", models)
+    }
   } catch (error) {
     console.error("[v0] Failed to load models:", error)
+    showNotification("Error loading models", "error")
   }
 }
 
@@ -176,15 +162,32 @@ async function onModelChange() {
     // Get model details
     const category = document.getElementById("categorySelect").value
     const brandId = document.getElementById("brandSelect").value
-    const models = await callApi(`${API_ENDPOINTS.productModels}?category=${category}&brand_id=${brandId}`)
-    selectedModel = models.find((m) => m.id == modelId)
+    const [success1, response1] = await callApi(
+      "GET",
+      `${API_ENDPOINTS.productModels}?category=${category}&brand_id=${brandId}`,
+      null,
+      CSRF_TOKEN,
+    )
 
-    modelAttributes = await callApi(`${API_ENDPOINTS.productModelAttributes}?model_id=${modelId}`)
+    if (success1 && response1.success) {
+      selectedModel = response1.data.find((m) => m.id == modelId)
+    }
 
-    console.log("[v0] Selected model:", selectedModel)
-    console.log("[v0] Model attributes:", modelAttributes)
+    const [success2, response2] = await callApi(
+      "GET",
+      `${API_ENDPOINTS.productModelAttributes}?model_id=${modelId}`,
+      null,
+      CSRF_TOKEN,
+    )
+
+    if (success2 && response2.success) {
+      modelAttributes = response2.data
+      console.log("[v0] Selected model:", selectedModel)
+      console.log("[v0] Model attributes:", modelAttributes)
+    }
   } catch (error) {
     console.error("[v0] Failed to load model attributes:", error)
+    showNotification("Error loading model attributes", "error")
   }
 }
 
@@ -483,28 +486,19 @@ async function submitListing() {
     submitBtn.disabled = true
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating...'
 
-    const response = await fetch(API_ENDPOINTS.listings, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": CSRF_TOKEN,
-      },
-      body: JSON.stringify(formData),
-    })
+    const [success, response] = await callApi("POST", API_ENDPOINTS.listings, formData, CSRF_TOKEN)
 
-    const data = await response.json()
+    if (success && response.success) {
+      console.log("[v0] Listing created successfully:", response.data)
+      showNotification("Listing created successfully", "success")
 
-    if (!data.success) {
-      throw new Error(data.error || "Failed to create listing")
+      // Redirect to listings page after 2 seconds
+      setTimeout(() => {
+        window.location.href = "refurbisher_listings.html"
+      }, 2000)
+    } else {
+      throw new Error(response.error || "Failed to create listing")
     }
-
-    console.log("[v0] Listing created successfully:", data.data)
-    showNotification("Listing created successfully", "success")
-
-    // Redirect to listings page after 2 seconds
-    setTimeout(() => {
-      window.location.href = "refurbisher_listings.html"
-    }, 2000)
   } catch (error) {
     console.error("[v0] Failed to submit listing:", error)
     showNotification("Error: " + error.message, "error")
