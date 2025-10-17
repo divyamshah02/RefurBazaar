@@ -27,6 +27,8 @@ def check_authentication(required_role=None):
 
             if not user.is_authenticated:
                 # logger.warning(f"Unauthenticated access attempt: {request.path}")
+                if required_role == 'refurbisher' or (isinstance(required_role, (list, tuple, set)) and 'refurbisher' in required_role):
+                    return redirect('refurbisher-login-list')
                 return redirect('login-list')
 
             if required_role:
@@ -64,6 +66,7 @@ class RefurbisherLoginViewSet(viewsets.ViewSet):
 class RefurbisherProfileViewSet(viewsets.ViewSet):
 
     @handle_exceptions
+    @check_authentication(required_role='refurbisher')
     def list(self, request):
         return render(request, 'refurbisher/profile.html')
 
@@ -71,12 +74,14 @@ class RefurbisherProfileViewSet(viewsets.ViewSet):
 class RefurbisherAddListingViewSet(viewsets.ViewSet):
 
     @handle_exceptions
+    @check_authentication(required_role='refurbisher')
     def list(self, request):
         return render(request, 'refurbisher/refurbisher_add_listing.html')
 
 class RefurbisherListingsViewSet(viewsets.ViewSet):
 
     @handle_exceptions
+    @check_authentication(required_role='refurbisher')
     def list(self, request):
         return render(request, 'refurbisher/refurbisher_listings.html')
 
@@ -84,6 +89,15 @@ class RefurbisherListingsViewSet(viewsets.ViewSet):
 class RefurbisherListingDetailViewSet(viewsets.ViewSet):
 
     @handle_exceptions
+    @check_authentication(required_role='refurbisher')
     def list(self, request):
         return render(request, 'refurbisher/refurbisher_listing_detail.html')
 
+
+class RefurbisherLogoutViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    @check_authentication()
+    def list(self, request):
+        logout(request)
+        return redirect('refurbisher-login-list')
