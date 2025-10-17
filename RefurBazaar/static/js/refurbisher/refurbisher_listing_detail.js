@@ -142,8 +142,8 @@ function renderListingStats() {
             <div class="stat-label">Available</div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon info">
-                <i class="fas fa-shopping-cart"></i>
+            <div class="stat-icon danger">
+                <i class="fas fa-cart-shopping"></i>
             </div>
             <div class="stat-value">${soldUnits}</div>
             <div class="stat-label">Sold</div>

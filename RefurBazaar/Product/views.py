@@ -190,19 +190,17 @@ class ListingViewSet(viewsets.ViewSet):
         }, status=status.HTTP_201_CREATED)
     
     @handle_exceptions
+    @check_authentication(required_role='refurbisher')  # Added authentication to ensure only logged-in refurbishers can list
     def list(self, request):
         model_id = request.query_params.get('model_id')
-        refurbisher_id = request.query_params.get('refurbisher_id')
         status_filter = request.query_params.get('status')
 
-        queryset = Listing.objects.select_related(
+        queryset = Listing.objects.filter(refurbisher=request.user).select_related(
             'model', 'model__brand', 'refurbisher'
         ).prefetch_related('units', 'units__attributes')
         
         if model_id:
             queryset = queryset.filter(model_id=model_id)
-        if refurbisher_id:
-            queryset = queryset.filter(refurbisher_id=refurbisher_id)
         if status_filter:
             queryset = queryset.filter(status=status_filter)
 
