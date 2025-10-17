@@ -107,25 +107,23 @@ class ListingViewSet(viewsets.ViewSet):
         Expected payload:
         {
           "model_id": int,
-          "price_per_unit": "1234.00",
-          "condition": "good"|"excellent"|"fair",
           "units": [
             {
               "quantity": 1,
+              "price": 12000,
+              "condition": "excellent",
               "attributes": [{"attribute_id": 1, "value": "128GB"}, ...]
             }
           ]
         }
         """
         model_id = request.data.get('model_id')
-        price_per_unit = request.data.get('price_per_unit')
-        condition = request.data.get('condition')
         units = request.data.get('units', [])
 
-        if not all([model_id, price_per_unit, condition]):
+        if not model_id:
             return Response({
                 "success": False, "user_not_logged_in": False, "user_unauthorized": False,
-                "data": None, "error": "Missing required fields: model_id, price_per_unit, condition."
+                "data": None, "error": "Missing required field: model_id."
             }, status=status.HTTP_400_BAD_REQUEST)
 
         if not units or len(units) == 0:
@@ -137,26 +135,35 @@ class ListingViewSet(viewsets.ViewSet):
         model = get_object_or_404(ProductModel, id=model_id)
         refurbisher = request.user
 
-        # Calculate total quantity
+        # Calculate total quantity and average price from units
         total_quantity = sum(unit.get('quantity', 1) for unit in units)
+        
+        # Calculate average price from all units
+        total_price = sum(float(unit.get('price', 0)) * unit.get('quantity', 1) for unit in units)
+        avg_price = total_price / total_quantity if total_quantity > 0 else 0
+        
+        # Use the first unit's condition as the listing condition (or default to 'good')
+        listing_condition = units[0].get('condition', 'good') if units else 'good'
 
         # Create listing
         listing = Listing.objects.create(
             model=model,
             refurbisher=refurbisher,
-            price_per_unit=price_per_unit,
+            price_per_unit=avg_price,
             total_quantity=total_quantity,
-            condition=condition
+            condition=listing_condition
         )
 
         # Create units and attributes
         for unit_data in units:
             quantity = unit_data.get('quantity', 1)
+            unit_price = unit_data.get('price')
             attributes = unit_data.get('attributes', [])
 
             unit = ListingUnit.objects.create(
                 listing=listing,
-                quantity=quantity
+                quantity=quantity,
+                price=unit_price
             )
 
             # Create attributes for this unit
@@ -263,8 +270,8 @@ class ListingViewSet(viewsets.ViewSet):
         # Create unit
         unit = ListingUnit.objects.create(
             listing=listing,
-            price=price,
-            quantity=1
+            quantity=1,
+            price=price
         )
         
         # Create attributes

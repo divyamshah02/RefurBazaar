@@ -4,7 +4,10 @@ let CSRF_TOKEN = ""
 let LISTING_ID = null
 let listingData = null
 let productModelAttributes = []
+let editingUnitId = null
+let editingUnitData = null
 const bootstrap = window.bootstrap // Declare the bootstrap variable
+
 
 /**
  * Initialize the listing detail page
@@ -31,6 +34,7 @@ function initListingDetail(listingId, apiUrls, csrfToken) {
 function setupEventListeners() {
   document.getElementById("add-unit-btn").addEventListener("click", showAddUnitModal)
   document.getElementById("save-unit-btn").addEventListener("click", saveNewUnit)
+  document.getElementById("delete-listing-btn").addEventListener("click", deleteListing)
 }
 
 /**
@@ -46,9 +50,10 @@ async function loadUserInfo() {
           : response.data.name || "User"
 
       document.getElementById("user-name").textContent = userName
+      document.getElementById("sidebar-user-name").textContent = userName
     }
   } catch (error) {
-    console.error("[v0] Error loading user info:", error)
+    console.error("Error loading user info:", error)
   }
 }
 
@@ -73,11 +78,11 @@ async function loadListingDetails() {
     } else {
       showError("Failed to load listing details")
       setTimeout(() => {
-        window.location.href = "refurbisher_listings.html"
+        window.location.href = "refurbisher-listings"
       }, 2000)
     }
   } catch (error) {
-    console.error("[v0] Error loading listing details:", error)
+    console.error("Error loading listing details:", error)
     showError("Error loading listing details")
   }
 }
@@ -98,7 +103,7 @@ async function loadProductModelAttributes() {
       productModelAttributes = response.data
     }
   } catch (error) {
-    console.error("[v0] Error loading attributes:", error)
+    console.error("Error loading attributes:", error)
   }
 }
 
@@ -106,31 +111,12 @@ async function loadProductModelAttributes() {
  * Render listing header
  */
 function renderListingHeader() {
-  const headerHTML = `
-        <div class="d-flex justify-content-between align-items-start">
-            <div>
-                <h2 class="mb-2">${listingData.model_name}</h2>
-                <p class="text-muted mb-0">
-                    ${listingData.brand_name} • ${getCategoryLabel(listingData.category)} • ${listingData.condition}
-                </p>
-            </div>
-            <div class="d-flex gap-2">
-                ${getStatusBadge(listingData.status)}
-                <button class="btn btn-outline-primary" onclick="toggleListingStatus()">
-                    <i class="fas fa-toggle-${listingData.status === "active" ? "on" : "off"} me-1"></i>
-                    ${listingData.status === "active" ? "Deactivate" : "Activate"}
-                </button>
-                <button class="btn btn-outline-primary" onclick="editListing()">
-                    <i class="fas fa-edit me-1"></i>Edit
-                </button>
-                <button class="btn btn-outline-danger" onclick="deleteListing()">
-                    <i class="fas fa-trash me-1"></i>Delete
-                </button>
-            </div>
-        </div>
-    `
+  document.getElementById("listing-title").textContent = listingData.model_name
+  document.getElementById("listing-subtitle").textContent =
+    `${listingData.brand_name} • ${getCategoryLabel(listingData.category)} • ${listingData.condition}`
 
-  document.getElementById("listing-header").innerHTML = headerHTML
+  const statusBadge = document.getElementById("listing-status-badge")
+  statusBadge.innerHTML = getStatusBadge(listingData.status)
 }
 
 /**
@@ -181,22 +167,6 @@ function renderListingStats() {
  */
 function renderListingInfo() {
   const infoHTML = `
-        <div class="info-item">
-            <label>Base Price</label>
-            <div class="fw-bold">₹${Number.parseFloat(listingData.price_per_unit).toLocaleString("en-IN")}</div>
-        </div>
-        <div class="info-item mt-3">
-            <label>Condition</label>
-            <div>${listingData.condition}</div>
-        </div>
-        <div class="info-item mt-3">
-            <label>Total Quantity</label>
-            <div>${listingData.total_quantity} units</div>
-        </div>
-        <div class="info-item mt-3">
-            <label>Status</label>
-            <div>${getStatusBadge(listingData.status)}</div>
-        </div>
         <div class="info-item mt-3">
             <label>Created</label>
             <div>${formatDate(listingData.created_at)}</div>
@@ -251,6 +221,11 @@ function renderUnitsTable() {
                     ${
                       !unit.is_sold
                         ? `
+                        <button class="action-btn btn-outline-primary" 
+                                onclick="editUnit(${unit.id})" 
+                                title="Edit Unit">
+                            <i class="fas fa-edit"></i>
+                        </button>
                         <button class="action-btn btn-${unit.is_available ? "warning" : "success"}" 
                                 onclick="toggleUnitAvailability(${unit.id}, ${unit.is_available})" 
                                 title="${unit.is_available ? "Mark Unavailable" : "Mark Available"}">
@@ -280,6 +255,11 @@ function renderUnitsTable() {
  * Show add unit modal
  */
 function showAddUnitModal() {
+  editingUnitId = null
+  editingUnitData = null
+
+  document.getElementById("unitModalTitle").textContent = "Add New Unit"
+
   // Populate attribute fields
   const container = document.getElementById("unit-attributes-container")
   container.innerHTML = productModelAttributes
@@ -300,7 +280,55 @@ function showAddUnitModal() {
   document.getElementById("unit-price").value = listingData.price_per_unit
 
   // Show modal
-  const modal = new bootstrap.Modal(document.getElementById("addUnitModal"))
+  const modal = new bootstrap.Modal(document.getElementById("unitModal"))
+  modal.show()
+}
+
+/**
+ * Edit existing unit
+ */
+function editUnit(unitId) {
+  const unit = listingData.units.find((u) => u.id === unitId)
+  if (!unit) {
+    showError("Unit not found")
+    return
+  }
+
+  editingUnitId = unitId
+  editingUnitData = unit
+
+  document.getElementById("unitModalTitle").textContent = `Edit Unit #${unit.unit_number}`
+
+  // Populate attribute fields with current values
+  const container = document.getElementById("unit-attributes-container")
+  container.innerHTML = productModelAttributes
+    .map((pma) => {
+      const attribute = pma.attribute
+      const currentAttr = unit.attributes.find((a) => a.attribute === attribute.id)
+      const currentValue = currentAttr ? currentAttr.value : ""
+
+      return `
+            <div class="mb-3">
+                <label class="form-label">${attribute.name}${pma.is_required ? " *" : ""}</label>
+                <select class="form-control" data-attribute-id="${attribute.id}" ${pma.is_required ? "required" : ""}>
+                    <option value="">Select ${attribute.name}</option>
+                    ${attribute.possible_values
+                      .map(
+                        (value) =>
+                          `<option value="${value}" ${value === currentValue ? "selected" : ""}>${value}</option>`,
+                      )
+                      .join("")}
+                </select>
+            </div>
+        `
+    })
+    .join("")
+
+  // Set current price
+  document.getElementById("unit-price").value = unit.price
+
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById("unitModal"))
   modal.show()
 }
 
@@ -320,45 +348,80 @@ async function saveNewUnit() {
   const attributes = []
 
   for (const select of attributeSelects) {
-    if (!select.value) {
+    if (!select.value && select.required) {
       showError(`Please select ${select.previousElementSibling.textContent}`)
       return
     }
-    attributes.push({
-      attribute: Number.parseInt(select.dataset.attributeId),
-      value: select.value,
-    })
-  }
-
-  // Create unit data
-  const unitData = {
-    price: Number.parseFloat(price),
-    attributes: attributes,
-  }
-
-  try {
-    const [success, response] = await callApi(
-      "POST",
-      `${API_URLS.listings}${LISTING_ID}/add_unit/`,
-      unitData,
-      CSRF_TOKEN,
-    )
-
-    if (success && response.success) {
-      showSuccess("Unit added successfully")
-
-      // Close modal
-      const modal = bootstrap.Modal.getInstance(document.getElementById("addUnitModal"))
-      modal.hide()
-
-      // Reload listing details
-      loadListingDetails()
-    } else {
-      showError("Failed to add unit")
+    if (select.value) {
+      attributes.push({
+        attribute: Number.parseInt(select.dataset.attributeId),
+        value: select.value,
+      })
     }
-  } catch (error) {
-    console.error("[v0] Error adding unit:", error)
-    showError("Error adding unit. Please try again.")
+  }
+
+  if (editingUnitId) {
+    // Update existing unit
+    const unitData = {
+      price: Number.parseFloat(price),
+      attributes: attributes,
+    }
+
+    try {
+      const [success, response] = await callApi(
+        "PATCH",
+        `${API_URLS.listings}${LISTING_ID}/update_unit/${editingUnitId}/`,
+        unitData,
+        CSRF_TOKEN,
+      )
+
+      if (success && response.success) {
+        showSuccess("Unit updated successfully")
+
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById("unitModal"))
+        modal.hide()
+
+        // Reload listing details
+        loadListingDetails()
+      } else {
+        showError("Failed to update unit")
+      }
+    } catch (error) {
+      console.error("Error updating unit:", error)
+      showError("Error updating unit. Please try again.")
+    }
+  } else {
+    // Create new unit
+    const unitData = {
+      price: Number.parseFloat(price),
+      attributes: attributes,
+    }
+
+    try {
+      const [success, response] = await callApi(
+        "POST",
+        `${API_URLS.listings}${LISTING_ID}/add_unit/`,
+        unitData,
+        CSRF_TOKEN,
+      )
+
+      if (success && response.success) {
+        showSuccess("Unit added successfully")
+
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById("unitModal"))
+        modal.hide()
+
+        // Reload listing details
+        loadListingDetails()
+      } else {
+        showError("Failed to add unit")
+      }
+    } catch (error) {
+      console.error("Error adding unit:", error)
+      showError("Error adding unit. Please try again.")
+    }
   }
 }
 
@@ -385,7 +448,7 @@ async function toggleUnitAvailability(unitId, currentStatus) {
       showError("Failed to update unit status")
     }
   } catch (error) {
-    console.error("[v0] Error updating unit:", error)
+    console.error("Error updating unit:", error)
     showError("Error updating unit. Please try again.")
   }
 }
@@ -416,7 +479,7 @@ async function markUnitAsSold(unitId) {
       showError("Failed to mark unit as sold")
     }
   } catch (error) {
-    console.error("[v0] Error marking unit as sold:", error)
+    console.error("Error marking unit as sold:", error)
     showError("Error marking unit as sold. Please try again.")
   }
 }
@@ -444,42 +507,9 @@ async function deleteUnit(unitId, unitNumber) {
       showError("Failed to delete unit")
     }
   } catch (error) {
-    console.error("[v0] Error deleting unit:", error)
+    console.error("Error deleting unit:", error)
     showError("Error deleting unit. Please try again.")
   }
-}
-
-/**
- * Toggle listing status
- */
-async function toggleListingStatus() {
-  const newStatus = listingData.status === "active" ? "inactive" : "active"
-
-  try {
-    const [success, response] = await callApi(
-      "PATCH",
-      `${API_URLS.listings}${LISTING_ID}/`,
-      { status: newStatus },
-      CSRF_TOKEN,
-    )
-
-    if (success && response.success) {
-      showSuccess(`Listing ${newStatus === "active" ? "activated" : "deactivated"} successfully`)
-      loadListingDetails()
-    } else {
-      showError("Failed to update listing status")
-    }
-  } catch (error) {
-    console.error("[v0] Error updating listing status:", error)
-    showError("Error updating listing status. Please try again.")
-  }
-}
-
-/**
- * Edit listing
- */
-function editListing() {
-  window.location.href = `refurbisher_add_listing.html?id=${LISTING_ID}`
 }
 
 /**
@@ -496,13 +526,13 @@ async function deleteListing() {
     if (success && response.success) {
       showSuccess("Listing deleted successfully")
       setTimeout(() => {
-        window.location.href = "refurbisher_listings.html"
+        window.location.href = "/refurbisher-listings/"
       }, 1500)
     } else {
       showError("Failed to delete listing")
     }
   } catch (error) {
-    console.error("[v0] Error deleting listing:", error)
+    console.error("Error deleting listing:", error)
     showError("Error deleting listing. Please try again.")
   }
 }
@@ -524,11 +554,12 @@ function getCategoryLabel(value) {
  */
 function getStatusBadge(status) {
   const badges = {
-    active: '<span class="status-badge status-active">Active</span>',
-    inactive: '<span class="status-badge status-inactive">Inactive</span>',
-    pending: '<span class="status-badge status-pending">Pending</span>',
+    active: '<span class="status-badge status-active"><i class="fas fa-check-circle me-1"></i>Active</span>',
+    inactive: '<span class="status-badge status-inactive"><i class="fas fa-times-circle me-1"></i>Inactive</span>',
+    draft: '<span class="status-badge status-pending"><i class="fas fa-clock me-1"></i>Draft</span>',
+    sold: '<span class="status-badge status-inactive"><i class="fas fa-shopping-cart me-1"></i>Sold</span>',
   }
-  return badges[status] || status
+  return badges[status] || `<span class="status-badge">${status}</span>`
 }
 
 /**

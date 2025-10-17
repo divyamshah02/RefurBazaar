@@ -3,7 +3,7 @@ import { Chart } from "@/components/ui/chart"
 // Uses Chart.js library loaded via CDN
 
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("[v0] Analytics dashboard initializing...")
+  console.log("Analytics dashboard initializing...")
   initializeAnalytics()
   setupCharts()
 })
@@ -16,7 +16,7 @@ function initializeAnalytics() {
 
 function loadAnalyticsData() {
   // Simulate loading analytics data from Django API
-  console.log("[v0] Loading analytics data...")
+  console.log("Loading analytics data...")
 
   // In real implementation, this would fetch from your Django API
   const analyticsData = {
@@ -62,7 +62,7 @@ function setupExportButton() {
 }
 
 function updateAnalytics(period) {
-  console.log("[v0] Updating analytics for period:", period)
+  console.log("Updating analytics for period:", period)
 
   // Update all charts and metrics based on selected period
   updateCharts(period)
@@ -79,12 +79,12 @@ function updateAnalytics(period) {
 function setupCharts() {
   // Wait for Chart.js to be available
   if (typeof Chart === "undefined") {
-    console.log("[v0] Chart.js not loaded yet, retrying...")
+    console.log("Chart.js not loaded yet, retrying...")
     setTimeout(setupCharts, 100)
     return
   }
 
-  console.log("[v0] Setting up charts...")
+  console.log("Setting up charts...")
   setupRevenueChart()
   setupOrdersChart()
   setupCategoryChart()
@@ -93,7 +93,7 @@ function setupCharts() {
 function setupRevenueChart() {
   const ctx = document.getElementById("revenueChart")
   if (!ctx) {
-    console.log("[v0] Revenue chart canvas not found")
+    console.log("Revenue chart canvas not found")
     return
   }
 
@@ -150,13 +150,13 @@ function setupRevenueChart() {
     },
   })
 
-  console.log("[v0] Revenue chart initialized")
+  console.log("Revenue chart initialized")
 }
 
 function setupOrdersChart() {
   const ctx = document.getElementById("ordersChart")
   if (!ctx) {
-    console.log("[v0] Orders chart canvas not found")
+    console.log("Orders chart canvas not found")
     return
   }
 
@@ -193,13 +193,13 @@ function setupOrdersChart() {
     },
   })
 
-  console.log("[v0] Orders chart initialized")
+  console.log("Orders chart initialized")
 }
 
 function setupCategoryChart() {
   const ctx = document.getElementById("categoryChart")
   if (!ctx) {
-    console.log("[v0] Category chart canvas not found")
+    console.log("Category chart canvas not found")
     return
   }
 
@@ -255,11 +255,11 @@ function setupCategoryChart() {
     },
   })
 
-  console.log("[v0] Category chart initialized")
+  console.log("Category chart initialized")
 }
 
 function updateCharts(period) {
-  console.log("[v0] Updating charts for period:", period)
+  console.log("Updating charts for period:", period)
 
   // In real implementation, this would fetch new data based on period
   // and update existing charts with new datasets
@@ -274,7 +274,7 @@ function updateCharts(period) {
 }
 
 function exportReport() {
-  console.log("[v0] Exporting analytics report...")
+  console.log("Exporting analytics report...")
 
   // Show loading state
   const btn = event.target
@@ -291,7 +291,7 @@ function exportReport() {
     btn.innerHTML = originalText
     btn.disabled = false
 
-    console.log("[v0] Report export completed")
+    console.log("Report export completed")
   }, 2000)
 }
 
@@ -315,7 +315,7 @@ function showNotification(message, type = "info") {
     }
   }, 5000)
 
-  console.log(`[v0] Notification: ${message}`)
+  console.log(`Notification: ${message}`)
 }
 
 // Make functions available globally for HTML onclick handlers

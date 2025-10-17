@@ -420,7 +420,7 @@ function initializeCategorySelect() {
       updateFiltersForCategory(currentCategory)
       loadProductsForCategory(currentCategory)
 
-      console.log("[v0] Category changed to:", selectedCategory)
+      console.log("Category changed to:", selectedCategory)
     })
   }
 }
@@ -459,7 +459,7 @@ function initializeCategoryNavigation() {
       updateFiltersForCategory(currentCategory)
       loadProductsForCategory(currentCategory)
 
-      console.log("[v0] Category navigation clicked:", currentCategory)
+      console.log("Category navigation clicked:", currentCategory)
     })
   })
 }
@@ -467,11 +467,11 @@ function initializeCategoryNavigation() {
 function updateFiltersForCategory(category) {
   const config = categoryConfig[category]
   if (!config) {
-    console.log("[v0] No config found for category:", category)
+    console.log("No config found for category:", category)
     return
   }
 
-  console.log("[v0] Updating filters for category:", category)
+  console.log("Updating filters for category:", category)
 
   // Update category title
   document.getElementById("categoryTitle").textContent = category

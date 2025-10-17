@@ -65,7 +65,7 @@ async function loadUserInfo() {
       document.getElementById("sidebar-user-name").textContent = userName
     }
   } catch (error) {
-    console.error("[v0] Error loading user info:", error)
+    console.error("Error loading user info:", error)
   }
 }
 
@@ -85,7 +85,7 @@ async function loadCategories() {
       })
     }
   } catch (error) {
-    console.error("[v0] Error loading categories:", error)
+    console.error("Error loading categories:", error)
   }
 }
 
@@ -108,7 +108,7 @@ async function loadListings() {
       showError("Failed to load listings")
     }
   } catch (error) {
-    console.error("[v0] Error loading listings:", error)
+    console.error("Error loading listings:", error)
     showError("Error loading listings. Please try again.")
   }
 }
@@ -343,7 +343,7 @@ async function deleteListing(listingId, productName) {
       showError("Failed to delete listing")
     }
   } catch (error) {
-    console.error("[v0] Error deleting listing:", error)
+    console.error("Error deleting listing:", error)
     showError("Error deleting listing. Please try again.")
   }
 }

@@ -530,6 +530,31 @@
   transition: width 0.3s ease;
 }
 
+/* Added wizard step container styles */
+.wizard-step-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.wizard-step-container .step-label {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.wizard-step-container:has(.wizard-step.active) .step-label {
+  color: var(--primary-color);
+}
+
+.wizard-step-container:has(.wizard-step.completed) .step-label {
+  color: var(--success-color);
+}
+
 /* Order Detail Page Styles */
 .order-status-banner {
   background: white;
@@ -632,8 +657,9 @@
 .condition-badge {
   padding: 0.5rem 1rem;
   border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
 }
 
 .condition-badge.excellent {
@@ -649,6 +675,87 @@
 .condition-badge.fair {
   background: rgba(245, 158, 11, 0.1);
   color: var(--warning-color);
+}
+
+/* Added condition guide styles */
+.condition-guide {
+  background: var(--bg-light);
+  border-radius: 15px;
+  padding: 1.5rem;
+  height: 100%;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.condition-guide:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.condition-guide.excellent {
+  border-color: var(--success-color);
+}
+
+.condition-guide.good {
+  border-color: var(--secondary-color);
+}
+
+.condition-guide.fair {
+  border-color: var(--warning-color);
+}
+
+.condition-guide.poor {
+  border-color: var(--accent-color);
+}
+
+.condition-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.condition-guide.excellent .condition-badge {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success-color);
+}
+
+.condition-guide.good .condition-badge {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--secondary-color);
+}
+
+.condition-guide.fair .condition-badge {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning-color);
+}
+
+.condition-guide.poor .condition-badge {
+  background: rgba(255, 107, 53, 0.1);
+  color: var(--accent-color);
+}
+
+.condition-criteria {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.condition-criteria li {
+  padding: 0.5rem 0;
+  color: var(--text-dark);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+}
+
+.condition-criteria li::before {
+  content: "✓";
+  margin-right: 0.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
 }
 
 .product-details-list {
@@ -931,6 +1038,26 @@
 
 .breadcrumb-item.active {
   color: var(--text-light);
+}
+
+/* Added unit card styles */
+.unit-card {
+  border: 2px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.unit-card:hover {
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-lg);
+}
+
+.unit-card .card-body {
+  padding: 1.5rem;
+}
+
+.unit-card h6 {
+  color: var(--text-dark);
+  font-weight: 700;
 }
 
 @media (max-width: 768px) {

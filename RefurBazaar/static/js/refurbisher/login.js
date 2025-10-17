@@ -335,7 +335,7 @@ function fillOtpForTesting(otp) {
         input.value = otp[index]
         input.classList.add("filled")
       })
-      console.log("[v0] Auto-filled OTP for testing:", otp)
+      console.log("Auto-filled OTP for testing:", otp)
     }, 500)
   }
 }

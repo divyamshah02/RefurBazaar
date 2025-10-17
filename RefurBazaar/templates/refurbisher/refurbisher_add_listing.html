@@ -44,7 +44,7 @@
                         <i class="fas fa-user me-2"></i>Divyam Shah
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="refurbisher_profile.html">Profile</a></li>
+                        <li><a class="dropdown-item" href="/refurbisher-profile">Profile</a></li>
                         <li><a class="dropdown-item" href="#">Settings</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="#">Logout</a></li>
@@ -76,7 +76,7 @@
                                     </a>
                                 </li>
                                 <li class="dashboard-nav-item">
-                                    <a href="refurbisher_listings.html" class="dashboard-nav-link active">
+                                    <a href="/refurbisher-listings" class="dashboard-nav-link active">
                                         <i class="fas fa-list"></i>My Listings
                                     </a>
                                 </li>
@@ -91,7 +91,7 @@
                                     </a>
                                 </li>
                                 <li class="dashboard-nav-item">
-                                    <a href="refurbisher_profile.html" class="dashboard-nav-link">
+                                    <a href="/refurbisher-profile" class="dashboard-nav-link">
                                         <i class="fas fa-user"></i>Profile
                                     </a>
                                 </li>
@@ -109,34 +109,39 @@
                                     <p class="text-muted mb-0">Create a new product listing for your refurbished device</p>
                                 </div>
                                 <div class="col-md-4 text-end">
-                                    <a href="refurbisher_listings.html" class="btn btn-outline-secondary">
+                                    <a href="/refurbisher-listings" class="btn btn-outline-secondary">
                                         <i class="fas fa-arrow-left me-2"></i>Back to Listings
                                     </a>
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Simplified to 2-step wizard -->
                         <div class="listing-wizard">
                             <div class="wizard-steps">
-                                <div class="wizard-step active" id="step1">1</div>
-                                <div class="wizard-step" id="step2">2</div>
-                                <div class="wizard-step" id="step3">3</div>
-                                <div class="wizard-step" id="step4">4</div>
+                                <div class="wizard-step-container">
+                                    <div class="wizard-step active" id="step1">1</div>
+                                    <span class="step-label">Select Device</span>
+                                </div>
+                                <div class="wizard-step-container">
+                                    <div class="wizard-step" id="step2">2</div>
+                                    <span class="step-label">Add Units</span>
+                                </div>
                             </div>
 
-                             <!-- Step 1: Category & Model Selection  -->
+                            <!-- Step 1: Device Selection -->
                             <div class="wizard-content" id="content1">
-                                <h4 class="mb-4">Step 1: Select Category & Model</h4>
+                                <h4 class="mb-4">Step 1: Select Device</h4>
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <label class="form-label">Category *</label>
                                             <select class="form-select" id="categorySelect">
                                                 <option value="">Select Category</option>
-                                                <!-- Dynamic options loaded from API -->
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <label class="form-label">Brand *</label>
                                             <select class="form-select" id="brandSelect" disabled>
@@ -144,9 +149,7 @@
                                             </select>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <label class="form-label">Model *</label>
                                             <select class="form-select" id="modelSelect" disabled>
@@ -154,56 +157,90 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label class="form-label">Quantity *</label>
-                                            <input type="number" class="form-control" id="quantityInput" min="1" max="50" placeholder="Enter quantity">
-                                        </div>
-                                    </div>
+                                </div>
+                                
+                                <!-- Selected Device Info -->
+                                <div id="selectedDeviceInfo" class="alert alert-info mt-4" style="display: none;">
+                                    <h6 class="mb-2"><i class="fas fa-info-circle me-2"></i>Selected Device</h6>
+                                    <p class="mb-0" id="deviceInfoText"></p>
                                 </div>
                             </div>
 
-                             <!-- Step 2: Device Details  -->
+                            <!-- Step 2: Add Units -->
                             <div class="wizard-content" id="content2" style="display: none;">
-                                <h4 class="mb-4">Step 2: Device Details</h4>
-                                <div id="deviceDetailsContainer">
-                                     <!-- Dynamic device detail forms will be generated here -->
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h4 class="mb-0">Step 2: Add Units</h4>
+                                    <button type="button" class="btn btn-primary" id="addUnitBtn">
+                                        <i class="fas fa-plus me-2"></i>Add Unit
+                                    </button>
                                 </div>
-                            </div>
 
-                             <!-- Step 3: Quality Assessment  -->
-                            <div class="wizard-content" id="content3" style="display: none;">
-                                <h4 class="mb-4">Step 3: Quality Assessment</h4>
-                                <div id="qualityAssessmentContainer">
-                                     <!-- Dynamic quality assessment forms will be generated here -->
-                                </div>
-                            </div>
-
-                             <!-- Step 4: Pricing -->
-                            <div class="wizard-content" id="content4" style="display: none;">
-                                <h4 class="mb-4">Step 4: Pricing</h4>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label class="form-label">Price per Unit (₹) *</label>
-                                            <input type="number" class="form-control" id="priceInput" placeholder="Enter price">
+                                <!-- Condition Guidelines Card -->
+                                <div class="card mb-4 border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <h6 class="mb-3"><i class="fas fa-clipboard-check me-2"></i>Condition Guidelines</h6>
+                                        <div class="row g-3">
+                                            <div class="col-md-6 col-lg-3">
+                                                <div class="condition-guide excellent">
+                                                    <div class="condition-badge">Excellent</div>
+                                                    <ul class="condition-criteria">
+                                                        <li>Battery >95%</li>
+                                                        <li>No scratches</li>
+                                                        <li>All functions perfect</li>
+                                                        <li>Like new appearance</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 col-lg-3">
+                                                <div class="condition-guide good">
+                                                    <div class="condition-badge">Good</div>
+                                                    <ul class="condition-criteria">
+                                                        <li>Battery 85-95%</li>
+                                                        <li>Minor scratches</li>
+                                                        <li>All functions working</li>
+                                                        <li>Light wear visible</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 col-lg-3">
+                                                <div class="condition-guide fair">
+                                                    <div class="condition-badge">Fair</div>
+                                                    <ul class="condition-criteria">
+                                                        <li>Battery 70-85%</li>
+                                                        <li>Visible wear & tear</li>
+                                                        <li>Minor function issues</li>
+                                                        <li>Moderate scratches</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 col-lg-3">
+                                                <div class="condition-guide poor">
+                                                    <div class="condition-badge">Poor</div>
+                                                    <ul class="condition-criteria">
+                                                        <li>Battery <70%</li>
+                                                        <li>Heavy wear</li>
+                                                        <li>Multiple issues</li>
+                                                        <li>Deep scratches/dents</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label class="form-label">Condition *</label>
-                                            <select class="form-select" id="conditionSelect">
-                                                <option value="">Select Condition</option>
-                                                <option value="excellent">Excellent</option>
-                                                <option value="good">Good</option>
-                                                <option value="fair">Fair</option>
-                                            </select>
-                                        </div>
-                                    </div>
+                                </div>
+
+                                <!-- Units Container -->
+                                <div id="unitsContainer">
+                                    <!-- Units will be dynamically added here -->
+                                </div>
+
+                                <!-- Empty State -->
+                                <div id="emptyUnitsState" class="text-center py-5">
+                                    <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">No units added yet. Click "Add Unit" to start.</p>
                                 </div>
                             </div>
 
-                             <!-- Navigation  -->
+                            <!-- Navigation -->
                             <div class="wizard-navigation">
                                 <button type="button" class="btn btn-outline-secondary" id="prevBtn" onclick="changeStep(-1)" style="display: none;">
                                     <i class="fas fa-arrow-left me-2"></i>Previous

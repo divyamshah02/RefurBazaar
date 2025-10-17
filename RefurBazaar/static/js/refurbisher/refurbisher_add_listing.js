@@ -2,26 +2,23 @@
 let API_ENDPOINTS = {}
 let CSRF_TOKEN = ""
 let currentStep = 1
-const totalSteps = 4
+const totalSteps = 2 // Reduced from 4 to 2 steps
 let selectedModel = null
 let modelAttributes = []
+let unitCounter = 0 // Track unit count for unique IDs
+const units = []
 
 /**
  * Initialize the add listing page
- * @param {object} apiEndpoints - Object containing all API endpoint URLs
- * @param {string} csrfToken - CSRF token for API requests
  */
 function initAddListing(apiEndpoints, csrfToken) {
   API_ENDPOINTS = apiEndpoints
   CSRF_TOKEN = csrfToken
 
-  console.log("[v0] Initializing add listing page with endpoints:", API_ENDPOINTS)
+  console.log("Initializing add listing page with endpoints:", API_ENDPOINTS)
 
-  // Initialize wizard
   updateStepDisplay()
   setupEventListeners()
-
-  // Load initial data
   loadCategories()
 }
 
@@ -32,7 +29,7 @@ function setupEventListeners() {
   document.getElementById("categorySelect").addEventListener("change", onCategoryChange)
   document.getElementById("brandSelect").addEventListener("change", onBrandChange)
   document.getElementById("modelSelect").addEventListener("change", onModelChange)
-  document.getElementById("quantityInput").addEventListener("change", updateDeviceDetails)
+  document.getElementById("addUnitBtn").addEventListener("click", addNewUnit)
 }
 
 /**
@@ -54,10 +51,10 @@ async function loadCategories() {
         categorySelect.appendChild(option)
       })
 
-      console.log("[v0] Loaded categories:", categories)
+      console.log("Loaded categories:", categories)
     }
   } catch (error) {
-    console.error("[v0] Failed to load categories:", error)
+    console.error("Failed to load categories:", error)
     showNotification("Error loading categories", "error")
   }
 }
@@ -95,10 +92,10 @@ async function onCategoryChange() {
         brandSelect.appendChild(option)
       })
 
-      console.log("[v0] Loaded brands for category:", category, brands)
+      console.log("Loaded brands for category:", category, brands)
     }
   } catch (error) {
-    console.error("[v0] Failed to load brands:", error)
+    console.error("Failed to load brands:", error)
     showNotification("Error loading brands", "error")
   }
 }
@@ -138,10 +135,10 @@ async function onBrandChange() {
         modelSelect.appendChild(option)
       })
 
-      console.log("[v0] Loaded models:", models)
+      console.log("Loaded models:", models)
     }
   } catch (error) {
-    console.error("[v0] Failed to load models:", error)
+    console.error("Failed to load models:", error)
     showNotification("Error loading models", "error")
   }
 }
@@ -155,6 +152,7 @@ async function onModelChange() {
   if (!modelId) {
     selectedModel = null
     modelAttributes = []
+    document.getElementById("selectedDeviceInfo").style.display = "none"
     return
   }
 
@@ -171,6 +169,13 @@ async function onModelChange() {
 
     if (success1 && response1.success) {
       selectedModel = response1.data.find((m) => m.id == modelId)
+
+      const brandName =
+        document.getElementById("brandSelect").options[document.getElementById("brandSelect").selectedIndex].text
+      const categoryName =
+        document.getElementById("categorySelect").options[document.getElementById("categorySelect").selectedIndex].text
+      document.getElementById("deviceInfoText").textContent = `${categoryName} - ${brandName} ${selectedModel.name}`
+      document.getElementById("selectedDeviceInfo").style.display = "block"
     }
 
     const [success2, response2] = await callApi(
@@ -182,162 +187,135 @@ async function onModelChange() {
 
     if (success2 && response2.success) {
       modelAttributes = response2.data
-      console.log("[v0] Selected model:", selectedModel)
-      console.log("[v0] Model attributes:", modelAttributes)
+      console.log("Selected model:", selectedModel)
+      console.log("Model attributes:", modelAttributes)
     }
   } catch (error) {
-    console.error("[v0] Failed to load model attributes:", error)
+    console.error("Failed to load model attributes:", error)
     showNotification("Error loading model attributes", "error")
   }
 }
 
 /**
- * Update device details when quantity changes
+ * Add a new unit to the listing
  */
-function updateDeviceDetails() {
-  const quantity = Number.parseInt(document.getElementById("quantityInput").value)
-  if (quantity > 0 && modelAttributes.length > 0) {
-    generateDeviceDetailForms(quantity)
-  }
-}
+function addNewUnit() {
+  unitCounter++
+  const unitId = `unit_${unitCounter}`
 
-/**
- * Generate device detail forms based on quantity and model attributes
- */
-function generateDeviceDetailForms(quantity) {
-  const container = document.getElementById("deviceDetailsContainer")
-  container.innerHTML = ""
+  const unitCard = document.createElement("div")
+  unitCard.className = "card mb-3 border-0 shadow-sm unit-card"
+  unitCard.id = unitId
+  unitCard.dataset.unitId = unitCounter
 
-  for (let i = 1; i <= quantity; i++) {
-    const deviceForm = document.createElement("div")
-    deviceForm.className = "device-form border rounded p-3 mb-3"
+  let attributesHtml = ""
+  modelAttributes.forEach((attrLink) => {
+    const attr = attrLink.attribute
+    const isRequired = attrLink.is_required
 
-    let formHtml = `<h6 class="mb-3">Device ${i} Details</h6><div class="row">`
+    if (attr.data_type === "choice" && attr.possible_values && attr.possible_values.length > 0) {
+      attributesHtml += `
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">${attr.name} ${isRequired ? "*" : ""}</label>
+            <select class="form-select" data-attr-id="${attr.id}" ${isRequired ? "required" : ""}>
+              <option value="">Select ${attr.name}</option>
+              ${attr.possible_values.map((val) => `<option value="${val}">${val}</option>`).join("")}
+            </select>
+          </div>
+        </div>
+      `
+    } else if (attr.data_type === "number") {
+      attributesHtml += `
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">${attr.name} ${isRequired ? "*" : ""}</label>
+            <input type="number" class="form-control" data-attr-id="${attr.id}" placeholder="Enter ${attr.name}" ${isRequired ? "required" : ""}>
+          </div>
+        </div>
+      `
+    } else {
+      attributesHtml += `
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">${attr.name} ${isRequired ? "*" : ""}</label>
+            <input type="text" class="form-control" data-attr-id="${attr.id}" placeholder="Enter ${attr.name}" ${isRequired ? "required" : ""}>
+          </div>
+        </div>
+      `
+    }
+  })
 
-    // Generate fields for each attribute
-    modelAttributes.forEach((attrLink, index) => {
-      const attr = attrLink.attribute
-      const isRequired = attrLink.is_required
-
-      if (attr.data_type === "choice" && attr.possible_values && attr.possible_values.length > 0) {
-        // Dropdown for choice attributes
-        formHtml += `
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">${attr.name} ${isRequired ? "*" : ""}</label>
-                            <select class="form-select" id="attr_${i}_${attr.id}" ${isRequired ? "required" : ""}>
-                                <option value="">Select ${attr.name}</option>
-                                ${attr.possible_values.map((val) => `<option value="${val}">${val}</option>`).join("")}
-                            </select>
-                        </div>
-                    </div>
-                `
-      } else if (attr.data_type === "number") {
-        // Number input
-        formHtml += `
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">${attr.name} ${isRequired ? "*" : ""}</label>
-                            <input type="number" class="form-control" id="attr_${i}_${attr.id}" placeholder="Enter ${attr.name}" ${isRequired ? "required" : ""}>
-                        </div>
-                    </div>
-                `
-      } else {
-        // Text input
-        formHtml += `
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">${attr.name} ${isRequired ? "*" : ""}</label>
-                            <input type="text" class="form-control" id="attr_${i}_${attr.id}" placeholder="Enter ${attr.name}" ${isRequired ? "required" : ""}>
-                        </div>
-                    </div>
-                `
+  unitCard.innerHTML = `
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0"><i class="fas fa-mobile-alt me-2"></i>Unit #${unitCounter}</h6>
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeUnit('${unitId}')">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label class="form-label">Quantity *</label>
+            <input type="number" class="form-control" data-field="quantity" min="1" value="1" required>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label class="form-label">Price per Unit (₹) *</label>
+            <input type="number" class="form-control" data-field="price" placeholder="Enter price" required>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label class="form-label">Condition *</label>
+            <select class="form-select" data-field="condition" required>
+              <option value="">Select Condition</option>
+              <option value="excellent">Excellent</option>
+              <option value="good">Good</option>
+              <option value="fair">Fair</option>
+              <option value="poor">Poor</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      ${
+        attributesHtml
+          ? `
+        <hr class="my-3">
+        <h6 class="mb-3">Device Specifications</h6>
+        <div class="row">
+          ${attributesHtml}
+        </div>
+      `
+          : ""
       }
-    })
+    </div>
+  `
 
-    formHtml += "</div>"
-    deviceForm.innerHTML = formHtml
-    container.appendChild(deviceForm)
-  }
+  document.getElementById("unitsContainer").appendChild(unitCard)
+  document.getElementById("emptyUnitsState").style.display = "none"
+
+  console.log("Added unit:", unitCounter)
 }
 
 /**
- * Generate quality assessment forms
+ * Remove a unit from the listing
  */
-function generateQualityAssessment() {
-  const quantity = Number.parseInt(document.getElementById("quantityInput").value)
-  const category = document.getElementById("categorySelect").value
-  const container = document.getElementById("qualityAssessmentContainer")
-  container.innerHTML = ""
+function removeUnit(unitId) {
+  const unitCard = document.getElementById(unitId)
+  if (unitCard) {
+    unitCard.remove()
+    console.log("Removed unit:", unitId)
 
-  // Quality check questions based on category
-  const qualityQuestions = {
-    mobile: [
-      "Screen condition",
-      "Camera functionality",
-      "Battery health",
-      "Charging port",
-      "Speaker/Microphone",
-      "Physical damage",
-      "Water damage",
-      "Touch responsiveness",
-    ],
-    laptop: [
-      "Screen condition",
-      "Keyboard functionality",
-      "Trackpad/Mouse",
-      "Battery health",
-      "Charging port",
-      "Physical damage",
-      "Performance issues",
-      "Overheating",
-    ],
-    tablet: [
-      "Screen condition",
-      "Touch responsiveness",
-      "Camera functionality",
-      "Battery health",
-      "Charging port",
-      "Physical damage",
-      "Water damage",
-      "Performance issues",
-    ],
-  }
-
-  const questions = qualityQuestions[category] || qualityQuestions.mobile
-
-  for (let i = 1; i <= quantity; i++) {
-    const assessmentForm = document.createElement("div")
-    assessmentForm.className = "assessment-form border rounded p-3 mb-3"
-    assessmentForm.innerHTML = `
-            <h6 class="mb-3">Device ${i} Quality Assessment</h6>
-            <div class="quality-check-grid">
-                ${questions
-                  .map((question) => {
-                    const fieldName = question.toLowerCase().replace(/\s+/g, "_")
-                    return `
-                        <div class="quality-check-item mb-4">
-                            <label class="form-label fw-bold d-block mb-2">${question}</label>
-                            <div class="d-flex flex-wrap gap-2">
-                                <input type="radio" class="btn-check" name="${fieldName}_${i}" id="${fieldName}_${i}_excellent" value="excellent">
-                                <label class="quality-chip excellent" for="${fieldName}_${i}_excellent">Excellent</label>
-
-                                <input type="radio" class="btn-check" name="${fieldName}_${i}" id="${fieldName}_${i}_good" value="good">
-                                <label class="quality-chip good" for="${fieldName}_${i}_good">Good</label>
-
-                                <input type="radio" class="btn-check" name="${fieldName}_${i}" id="${fieldName}_${i}_fair" value="fair">
-                                <label class="quality-chip fair" for="${fieldName}_${i}_fair">Fair</label>
-
-                                <input type="radio" class="btn-check" name="${fieldName}_${i}" id="${fieldName}_${i}_poor" value="poor">
-                                <label class="quality-chip poor" for="${fieldName}_${i}_poor">Poor</label>
-                            </div>
-                        </div>
-                    `
-                  })
-                  .join("")}
-            </div>
-        `
-    container.appendChild(assessmentForm)
+    // Show empty state if no units left
+    const remainingUnits = document.querySelectorAll(".unit-card")
+    if (remainingUnits.length === 0) {
+      document.getElementById("emptyUnitsState").style.display = "block"
+    }
   }
 }
 
@@ -356,11 +334,6 @@ function changeStep(direction) {
     return
   }
 
-  // Special handling for step 2 to 3 transition
-  if (currentStep === 2 && direction > 0) {
-    generateQualityAssessment()
-  }
-
   currentStep = newStep
   updateStepDisplay()
 }
@@ -374,43 +347,44 @@ function validateCurrentStep() {
       const category = document.getElementById("categorySelect").value
       const brand = document.getElementById("brandSelect").value
       const model = document.getElementById("modelSelect").value
-      const quantity = document.getElementById("quantityInput").value
 
-      if (!category || !brand || !model || !quantity) {
-        showNotification("Please fill in all required fields", "error")
+      if (!category || !brand || !model) {
+        showNotification("Please select category, brand, and model", "error")
         return false
       }
 
-      if (Number.parseInt(quantity) < 1) {
-        showNotification("Quantity must be at least 1", "error")
-        return false
-      }
-
-      // Generate device detail forms
-      if (modelAttributes.length > 0) {
-        generateDeviceDetailForms(Number.parseInt(quantity))
-      }
       return true
 
     case 2:
-      // Validate device details - check required attributes
-      const quantity2 = Number.parseInt(document.getElementById("quantityInput").value)
+      // Validate that at least one unit is added
+      const unitCards = document.querySelectorAll(".unit-card")
+      if (unitCards.length === 0) {
+        showNotification("Please add at least one unit", "error")
+        return false
+      }
 
-      for (let i = 1; i <= quantity2; i++) {
+      // Validate each unit
+      for (const unitCard of unitCards) {
+        const quantity = unitCard.querySelector('[data-field="quantity"]')?.value
+        const price = unitCard.querySelector('[data-field="price"]')?.value
+        const condition = unitCard.querySelector('[data-field="condition"]')?.value
+
+        if (!quantity || !price || !condition) {
+          showNotification("Please fill in all required fields for each unit", "error")
+          return false
+        }
+
+        // Validate required attributes
         for (const attrLink of modelAttributes) {
           if (attrLink.is_required) {
-            const attrValue = document.getElementById(`attr_${i}_${attrLink.attribute.id}`)?.value
+            const attrValue = unitCard.querySelector(`[data-attr-id="${attrLink.attribute.id}"]`)?.value
             if (!attrValue) {
-              showNotification(`Please fill in all required fields for Device ${i}`, "error")
+              showNotification(`Please fill in ${attrLink.attribute.name} for all units`, "error")
               return false
             }
           }
         }
       }
-      return true
-
-    case 3:
-      // Quality assessment is optional, so always return true
       return true
 
     default:
@@ -437,11 +411,9 @@ function updateStepDisplay() {
       stepElement.classList.remove("active", "completed")
     }
 
-    // Show/hide content
     contentElement.style.display = i === currentStep ? "block" : "none"
   }
 
-  // Update navigation buttons
   const prevBtn = document.getElementById("prevBtn")
   const nextBtn = document.getElementById("nextBtn")
   const submitBtn = document.getElementById("submitBtn")
@@ -465,20 +437,11 @@ async function submitListing() {
     return
   }
 
-  // Validate final step
-  const price = document.getElementById("priceInput").value
-  const condition = document.getElementById("conditionSelect").value
-
-  if (!price || !condition) {
-    showNotification("Please fill in price and condition", "error")
-    return
-  }
-
   try {
     // Collect form data
     const formData = collectFormData()
 
-    console.log("[v0] Submitting listing:", formData)
+    console.log("Submitting listing:", formData)
 
     // Show loading state
     const submitBtn = document.getElementById("submitBtn")
@@ -489,18 +452,18 @@ async function submitListing() {
     const [success, response] = await callApi("POST", API_ENDPOINTS.listings, formData, CSRF_TOKEN)
 
     if (success && response.success) {
-      console.log("[v0] Listing created successfully:", response.data)
+      console.log("Listing created successfully:", response.data)
       showNotification("Listing created successfully", "success")
 
       // Redirect to listings page after 2 seconds
       setTimeout(() => {
-        window.location.href = "refurbisher_listings.html"
+        window.location.href = "/refurbisher_listings/"
       }, 2000)
     } else {
       throw new Error(response.error || "Failed to create listing")
     }
   } catch (error) {
-    console.error("[v0] Failed to submit listing:", error)
+    console.error("Failed to submit listing:", error)
     showNotification("Error: " + error.message, "error")
 
     // Restore button state
@@ -514,57 +477,57 @@ async function submitListing() {
  * Collect form data from the listing form
  */
 function collectFormData() {
-  const quantity = Number.parseInt(document.getElementById("quantityInput").value)
   const modelId = document.getElementById("modelSelect").value
-  const price = document.getElementById("priceInput").value
-  const condition = document.getElementById("conditionSelect").value
+  const unitCards = document.querySelectorAll(".unit-card")
 
   const units = []
 
-  for (let i = 1; i <= quantity; i++) {
-    const unit = {
-      quantity: 1,
-      attributes: [],
-    }
+  unitCards.forEach((unitCard) => {
+    const quantity = Number.parseInt(unitCard.querySelector('[data-field="quantity"]')?.value)
+    const price = Number.parseFloat(unitCard.querySelector('[data-field="price"]')?.value)
+    const condition = unitCard.querySelector('[data-field="condition"]')?.value
 
-    // Collect attributes for this unit
+    const attributes = []
     modelAttributes.forEach((attrLink) => {
-      const attrValue = document.getElementById(`attr_${i}_${attrLink.attribute.id}`)?.value
+      const attrValue = unitCard.querySelector(`[data-attr-id="${attrLink.attribute.id}"]`)?.value
       if (attrValue) {
-        unit.attributes.push({
+        attributes.push({
           attribute_id: attrLink.attribute.id,
           value: attrValue,
         })
       }
     })
 
-    units.push(unit)
-  }
+    units.push({
+      quantity: quantity,
+      price: price,
+      condition: condition,
+      attributes: attributes,
+    })
+  })
 
   return {
     model_id: Number.parseInt(modelId),
-    price_per_unit: Number.parseFloat(price),
-    condition: condition,
     units: units,
   }
 }
 
 /**
  * Show a notification to the user
- * @param {string} message - The message to display
- * @param {string} type - The type of notification ('success' or 'error')
  */
 function showNotification(message, type) {
   const notification = document.createElement("div")
-  notification.className = `notification alert alert-${type}`
-  notification.textContent = message
+  notification.className = `alert alert-${type === "error" ? "danger" : "success"} alert-dismissible fade show`
+  notification.innerHTML = `
+    ${message}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  `
 
   const notificationContainer = document.getElementById("notificationContainer")
-  notificationContainer.innerHTML = "" // Clear previous notifications
+  notificationContainer.innerHTML = ""
   notificationContainer.appendChild(notification)
 
-  // Automatically hide the notification after 3 seconds
   setTimeout(() => {
-    notificationContainer.removeChild(notification)
-  }, 3000)
+    notification.remove()
+  }, 5000)
 }

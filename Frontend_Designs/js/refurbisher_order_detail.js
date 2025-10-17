@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 
 function initializeOrderDetail() {
-  console.log("[v0] Order detail page initialized")
+  console.log("Order detail page initialized")
 
   // Load order data (in real app, this would come from API)
   loadOrderData()
@@ -102,11 +102,11 @@ function loadOrderData() {
     },
   }
 
-  console.log("[v0] Order data loaded:", orderData)
+  console.log("Order data loaded:", orderData)
 }
 
 function downloadInvoice() {
-  console.log("[v0] Downloading invoice...")
+  console.log("Downloading invoice...")
 
   // Show loading state
   const btn = event.target.closest("button")
@@ -128,12 +128,12 @@ function downloadInvoice() {
     btn.innerHTML = originalText
     btn.disabled = false
 
-    console.log("[v0] Invoice download completed")
+    console.log("Invoice download completed")
   }, 2000)
 }
 
 function downloadShippingLabel() {
-  console.log("[v0] Downloading shipping label...")
+  console.log("Downloading shipping label...")
 
   // Show loading state
   const btn = event.target.closest("button")
@@ -155,7 +155,7 @@ function downloadShippingLabel() {
     btn.innerHTML = originalText
     btn.disabled = false
 
-    console.log("[v0] Shipping label download completed")
+    console.log("Shipping label download completed")
   }, 2000)
 }
 
@@ -170,7 +170,7 @@ function schedulePickup() {
     return
   }
 
-  console.log("[v0] Scheduling pickup:", {
+  console.log("Scheduling pickup:", {
     date: pickupDate,
     time: pickupTime,
     address: pickupAddress,
@@ -203,7 +203,7 @@ function schedulePickup() {
     btn.innerHTML = originalText
     btn.disabled = false
 
-    console.log("[v0] Pickup scheduled successfully")
+    console.log("Pickup scheduled successfully")
   }, 2000)
 }
 
@@ -222,7 +222,7 @@ function updateOrderStatus() {
     return
   }
 
-  console.log("[v0] Updating order status:", {
+  console.log("Updating order status:", {
     status: newStatus,
     tracking: trackingNumber,
     notes: statusNotes,
@@ -254,7 +254,7 @@ function updateOrderStatus() {
     btn.innerHTML = originalText
     btn.disabled = false
 
-    console.log("[v0] Order status updated successfully")
+    console.log("Order status updated successfully")
   }, 2000)
 }
 
@@ -327,7 +327,7 @@ function updatePageStatus(newStatus, trackingNumber) {
 }
 
 function contactCustomer() {
-  console.log("[v0] Contacting customer...")
+  console.log("Contacting customer...")
 
   // In real app, this could open a communication modal or redirect to messaging system
   const customerPhone = "+91 98765 43210"
@@ -352,13 +352,13 @@ function contactCustomer() {
 }
 
 function openChat() {
-  console.log("[v0] Opening chat with customer...")
+  console.log("Opening chat with customer...")
   // In real app, this would open a chat interface
   showNotification("Chat feature will be available soon!", "info")
 }
 
 function viewOnMap() {
-  console.log("[v0] Opening address on map...")
+  console.log("Opening address on map...")
 
   // In real app, this would open Google Maps or similar
   const address = "Flat 301, Green Valley Apartments, Sector 18, Noida, Uttar Pradesh 201301"
@@ -388,7 +388,7 @@ function showNotification(message, type = "info") {
     }
   }, 5000)
 
-  console.log(`[v0] Notification shown: ${message}`)
+  console.log(`Notification shown: ${message}`)
 }
 
 // Export functions for global access
