@@ -15,89 +15,12 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg main-navbar" id="navbar">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand me-auto" href="index.html">
-                <i class="fas fa-recycle me-2"></i>RefurBazar
-            </a>
-
-            <div class="navbar-search mx-auto d-none d-lg-block">
-                <div class="search-container">
-                    <input type="text" class="form-control search-input" placeholder="Search your products...">
-                    <button class="search-btn"><i class="fas fa-search"></i></button>
-                </div>
-            </div>
-
-            <div class="d-flex align-items-center ms-auto">
-                <div class="dropdown">
-                    <a href="#" class="nav-icon me-3 dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="fas fa-bell"></i><span class="badge">3</span>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#">New order received</a></li>
-                        <li><a class="dropdown-item" href="#">Profile verification pending</a></li>
-                        <li><a class="dropdown-item" href="#">Payment processed</a></li>
-                    </ul>
-                </div>
-                <div class="dropdown">
-                    <a href="#" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="fas fa-user me-2"></i>Divyam Shah
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="/refurbisher-profile">Profile</a></li>
-                        <li><a class="dropdown-item" href="#">Settings</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#">Logout</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </nav>
-
+    {% include 'refurbisher/nav.html' %}
     <div class="dashboard-container">
         <div class="container-fluid">
             <div class="row">
                 <div class="col-lg-3 col-md-4">
-                    <div class="dashboard-sidebar">
-                        <div class="text-center mb-4">
-                            <div class="avatar-lg mb-3">
-                                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" 
-                                     alt="Profile" class="rounded-circle" width="80" height="80">
-                            </div>
-                            <h5 class="mb-1">Divyam Shah</h5>
-                            <p class="text-muted mb-0">Refurbisher</p>
-                        </div>
-
-                        <nav>
-                            <ul class="dashboard-nav">
-                                <li class="dashboard-nav-item">
-                                    <a href="refurbisher_dashboard.html" class="dashboard-nav-link">
-                                        <i class="fas fa-tachometer-alt"></i>Dashboard
-                                    </a>
-                                </li>
-                                <li class="dashboard-nav-item">
-                                    <a href="/refurbisher-listings" class="dashboard-nav-link active">
-                                        <i class="fas fa-list"></i>My Listings
-                                    </a>
-                                </li>
-                                <li class="dashboard-nav-item">
-                                    <a href="refurbisher_orders.html" class="dashboard-nav-link">
-                                        <i class="fas fa-shopping-bag"></i>Orders
-                                    </a>
-                                </li>
-                                <li class="dashboard-nav-item">
-                                    <a href="refurbisher_analytics.html" class="dashboard-nav-link">
-                                        <i class="fas fa-chart-bar"></i>Analytics
-                                    </a>
-                                </li>
-                                <li class="dashboard-nav-item">
-                                    <a href="/refurbisher-profile" class="dashboard-nav-link">
-                                        <i class="fas fa-user"></i>Profile
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
+                    {% include 'refurbisher/menu.html' %}                    
                 </div>
 
                 <div class="col-lg-9 col-md-8">
