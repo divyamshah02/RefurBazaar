@@ -1,50 +1,75 @@
 from django.contrib import admin
-from .models import *
+from .models import (
+    Brand, ProductModel, AttributeMaster, ProductModelAttribute,
+    Listing, ListingUnit, ListingUnitAttribute
+)
 
 
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'created_at')
-    search_fields = ('name',)
+    list_display = ['name', 'is_active', 'created_at']
+    list_filter = ['is_active']
+    search_fields = ['name']
+
+
+class ProductModelAttributeInline(admin.TabularInline):
+    model = ProductModelAttribute
+    extra = 1
 
 
 @admin.register(ProductModel)
 class ProductModelAdmin(admin.ModelAdmin):
-    list_display = ('id', 'brand', 'name', 'category', 'is_active', 'created_at')
-    list_filter = ('category', 'is_active', 'brand')
-    search_fields = ('name', 'brand__name')
+    list_display = ['name', 'brand', 'category', 'is_active', 'created_at']
+    list_filter = ['category', 'brand', 'is_active']
+    search_fields = ['name', 'brand__name']
+    inlines = [ProductModelAttributeInline]
 
 
 @admin.register(AttributeMaster)
 class AttributeMasterAdmin(admin.ModelAdmin):
-    list_display = ('id', 'category', 'name', 'data_type', 'created_at')
-    list_filter = ('category',)
-    search_fields = ('name',)
+    list_display = ['name', 'category', 'data_type', 'is_active', 'display_order']
+    list_filter = ['category', 'data_type', 'is_active']
+    search_fields = ['name']
+    ordering = ['category', 'display_order', 'name']
 
 
 @admin.register(ProductModelAttribute)
 class ProductModelAttributeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'product_model', 'attribute', 'is_required')
-    list_filter = ('product_model__category', 'is_required')
-    search_fields = ('product_model__name', 'attribute__name')
+    list_display = ['product_model', 'attribute', 'is_required']
+    list_filter = ['is_required', 'product_model__category']
+    search_fields = ['product_model__name', 'attribute__name']
+
+
+class ListingUnitInline(admin.TabularInline):
+    model = ListingUnit
+    extra = 0
+    readonly_fields = ['created_at']
 
 
 @admin.register(Listing)
 class ListingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'model', 'refurbisher', 'price_per_unit', 'total_quantity', 'condition', 'status', 'created_at')
-    list_filter = ('status', 'condition', 'model__category')
-    search_fields = ('model__name', 'refurbisher__name')
+    list_display = ['listing_id', 'model', 'refurbisher', 'price_per_unit', 'total_quantity', 'condition', 'status', 'created_at']
+    list_filter = ['status', 'condition', 'model__category', 'created_at']
+    search_fields = ['listing_id', 'model__name', 'refurbisher__name']
+    readonly_fields = ['listing_id', 'created_at', 'updated_at']
+    inlines = [ListingUnitInline]  # Removed ListingImageInline
+
+
+class ListingUnitAttributeInline(admin.TabularInline):
+    model = ListingUnitAttribute
+    extra = 0
 
 
 @admin.register(ListingUnit)
 class ListingUnitAdmin(admin.ModelAdmin):
-    list_display = ('id', 'listing', 'quantity', 'imei_number', 'created_at')
-    list_filter = ('listing__condition',)
-    search_fields = ('listing__model__name', 'imei_number')
+    list_display = ['id', 'listing', 'quantity', 'created_at']  # Removed imei_number
+    list_filter = ['listing__status', 'created_at']
+    search_fields = ['listing__listing_id']  # Removed imei_number from search
+    inlines = [ListingUnitAttributeInline]
 
 
 @admin.register(ListingUnitAttribute)
 class ListingUnitAttributeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'listing_unit', 'attribute', 'value', 'created_at')
-    list_filter = ('attribute__category',)
-    search_fields = ('attribute__name', 'value')
+    list_display = ['listing_unit', 'attribute', 'value']
+    list_filter = ['attribute']
+    search_fields = ['listing_unit__listing__listing_id', 'value']
