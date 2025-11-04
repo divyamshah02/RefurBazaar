@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Detail - RefurBazar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+    <link href="/static/css/product-enhanced.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg main-navbar" id="navbar">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-recycle me-2"></i>RefurBazar
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-search mx-auto d-none d-lg-block">
+                    <div class="search-container">
+                        <input type="text" class="form-control search-input" placeholder="What are you looking for?" id="searchInput">
+                        <button class="search-btn"><i class="fas fa-search"></i></button>
+                        <div class="search-suggestions" id="searchSuggestions"></div>
+                    </div>
+                </div>
+                
+                <div class="d-flex align-items-center ms-auto">
+                    <a href="#" class="nav-icon me-3" id="wishlistBtn"><i class="fas fa-heart"></i><span class="badge" id="wishlistCount">0</span></a>
+                    <a href="/cart" class="nav-icon me-3" id="cartBtn"><i class="fas fa-shopping-cart"></i><span class="badge" id="cartCount">0</span></a>
+                    <a href="/account" class="btn btn-primary">My Account</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Category Navigation -->
+    <nav class="category-navbar">
+        <div class="container">
+            <div class="category-menu">
+                <div class="category-item-wrapper">
+                    <a href="/" class="category-item">
+                        <i class="fas fa-fire text-danger me-1"></i>
+                        Good deals
+                    </a>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="/shop?category=mobile" class="category-item">Smartphones</a>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="/shop?category=laptop" class="category-item">Laptops</a>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="/shop?category=tablet" class="category-item">Tablets</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="px-4 py-3" style="margin-top: 180px;">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <!-- Breadcrumb will be populated by JavaScript -->
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Product Detail -->
+    <div class="px-4 pb-5">
+        <div class="row g-4">
+            <!-- Product Images -->
+            <div class="col-lg-4">
+                <div class="product-gallery">
+                    <div class="main-image">
+                        <img src="/static/images/placeholder-product.png" alt="Product" id="mainImage">
+                    </div>
+                    <div class="thumbnail-images">
+                        <div class="swiper thumbnailSwiper">
+                            <div class="swiper-wrapper">
+                                <div class="swiper-slide">
+                                    <img src="/static/images/placeholder-product.png" alt="Product view" onclick="changeMainImage(this.src)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Details -->
+            <div class="col-lg-4">
+                <div class="product-details">
+                    <!-- Product Header -->
+                    <div class="product-header">
+                        <h1>Loading...</h1>
+                    </div>
+
+                    <!-- Condition Selection -->
+                    <div class="selection-section">
+                        <div class="section-header">
+                            <h6>Select the condition</h6>
+                            <div class="info-banner">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Refurbishers have restored devices to high quality based on a 25-point inspection.</span>
+                                <button class="compare-conditions-btn" onclick="toggleConditionsPanel()">
+                                    Compare conditions <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="condition-options">
+                            <div class="condition-grid">
+                                <!-- Conditions will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Storage Selection -->
+                    <div class="selection-section">
+                        <div class="section-header">
+                            <h6>Select storage</h6>
+                        </div>
+                        <div class="storage-options">
+                            <!-- Storage options will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Color Selection -->
+                    <div class="selection-section">
+                        <div class="section-header">
+                            <h6>Select the color</h6>
+                        </div>
+                        <div class="color-options">
+                            <!-- Color options will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Seller Cards -->
+                    <div class="sellers-section">
+                        <h6>Available from these sellers</h6>
+                        <div class="sellers-list" id="sellersList">
+                            <!-- Sellers will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Product Features -->
+                    <div class="product-features">
+                        <div class="feature-item">
+                            <i class="fas fa-truck text-success"></i>
+                            <span>Free delivery</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-unlock text-primary"></i>
+                            <span>Works with all carriers</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-undo text-warning"></i>
+                            <span>Free 30-day returns</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt text-info"></i>
+                            <span>1-year warranty</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Purchase Options -->
+            <div class="col-lg-4">
+                <div class="purchase-options">
+                    <div class="purchase-option">
+                        <div class="option-header">
+                            <input type="radio" name="purchase" id="buyNow" checked>
+                            <label for="buyNow">Buy Now</label>
+                            <span class="price">$0.00</span>
+                        </div>
+                        <div class="payment-methods">
+                            <span>Pay securely with Payment gateway</span>        
+                        </div>
+                        <button class="btn btn-primary w-100 mt-3" onclick="addToCart()">+ Add To Basket</button>
+                        
+                        <div class="purchase-benefits mt-3">
+                            <div class="benefit">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>FREE 5 Days Replacement</span>
+                            </div>
+                            <div class="benefit">
+                                <i class="fas fa-leaf"></i>
+                                <span>Better for the planet</span>
+                            </div>
+                            <div class="benefit">
+                                <i class="fas fa-mobile-alt"></i>
+                                <span>Own the device outright</span>
+                            </div>
+                            <div class="benefit">
+                                <i class="fas fa-user-friends"></i>
+                                <span>Refer a friend and get 10% off</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Specifications -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="product-tabs">
+                    <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="specs-tab" data-bs-toggle="tab" data-bs-target="#specs" type="button" role="tab">
+                                Specifications
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="condition-tab" data-bs-toggle="tab" data-bs-target="#condition" type="button" role="tab">
+                                Condition Details
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="warranty-tab" data-bs-toggle="tab" data-bs-target="#warranty" type="button" role="tab">
+                                Warranty & Returns
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="productTabsContent">
+                        <div class="tab-pane fade show active" id="specs" role="tabpanel">
+                            <div class="specifications-content">
+                                <div class="spec-overview">
+                                    <h5>Product Overview</h5>
+                                    <p>Detailed specifications will be available soon.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="condition" role="tabpanel">
+                            <div class="condition-details">
+                                <div class="condition-info-card">
+                                    <h6><i class="fas fa-star text-warning me-2"></i>Refurbished Quality</h6>
+                                    <p>This device has been professionally refurbished and tested to ensure optimal performance.</p>
+                                    <ul class="condition-features">
+                                        <li><i class="fas fa-check text-success me-2"></i>Battery health: 85%+ capacity</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Screen: No cracks or scratches</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>All functions tested and working</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="warranty" role="tabpanel">
+                            <div class="warranty-details">
+                                <div class="warranty-card">
+                                    <h6><i class="fas fa-shield-alt text-primary me-2"></i>1-Year Warranty</h6>
+                                    <p>All refurbished devices come with a comprehensive 1-year warranty covering hardware defects and functionality issues.</p>
+                                </div>
+                                <div class="warranty-card">
+                                    <h6><i class="fas fa-undo text-success me-2"></i>30-Day Returns</h6>
+                                    <p>Not satisfied? Return your device within 30 days for a full refund, no questions asked.</p>
+                                </div>
+                                <div class="warranty-card">
+                                    <h6><i class="fas fa-headset text-info me-2"></i>Customer Support</h6>
+                                    <p>24/7 customer support available to help with any questions or issues you may have.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conditions Comparison Side Panel -->
+    <div class="conditions-panel" id="conditionsPanel">
+        <div class="panel-overlay" onclick="toggleConditionsPanel()"></div>
+        <div class="panel-content">
+            <div class="panel-header">
+                <h4>Compare conditions</h4>
+                <button class="close-btn" onclick="toggleConditionsPanel()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="panel-body">
+                <div class="condition-comparison">
+                    <div class="comparison-header">
+                        <h5>Both tested. Perfected. Refurbished.</h5>
+                        <div class="carousel-dots">
+                            <span class="dot active" data-slide="0"></span>
+                            <span class="dot" data-slide="1"></span>
+                            <span class="dot" data-slide="2"></span>
+                            <span class="dot" data-slide="3"></span>
+                            <span class="dot" data-slide="4"></span>
+                            <span class="dot" data-slide="5"></span>
+                            <span class="dot" data-slide="6"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="inspection-carousel">
+                        <div class="carousel-slides">
+                            <div class="carousel-slide active" data-slide="0">
+                                <div class="slide-icon">
+                                    <i class="fas fa-sim-card"></i>
+                                </div>
+                                <div class="slide-content">
+                                    <h6>SIM and/or memory card reader</h6>
+                                    <p>This tests that SIM cards and memory cards are correctly read by the device.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="carousel-slide" data-slide="1">
+                                <div class="slide-icon">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                                <div class="slide-content">
+                                    <h6>Cameras</h6>
+                                    <p>All cameras are inspected for functionality, image capture and quality.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="carousel-slide" data-slide="2">
+                                <div class="slide-icon">
+                                    <i class="fas fa-trash-alt"></i>
+                                </div>
+                                <div class="slide-content">
+                                    <h6>Data deletion</h6>
+                                    <p>All personal data is completely wiped from the device.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="carousel-slide" data-slide="3">
+                                <div class="slide-icon">
+                                    <i class="fas fa-plug"></i>
+                                </div>
+                                <div class="slide-content">
+                                    <h6>Chargers and/or cables</h6>
+                                    <p>Charging functionality is tested to ensure proper power delivery.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="carousel-slide" data-slide="4">
+                                <div class="slide-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="slide-content">
+                                    <h6>GPS and/or positioning system</h6>
+                                    <p>Location services and GPS accuracy are tested.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="carousel-slide" data-slide="5">
+                                <div class="slide-icon">
+                                    <i class="fas fa-satellite-dish"></i>
+                                </div>
+                                <div class="slide-content">
+                                    <h6>External sensors</h6>
+                                    <p>All external sensors are tested for proper functionality.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="carousel-slide" data-slide="6">
+                                <div class="slide-icon">
+                                    <i class="fas fa-fingerprint"></i>
+                                </div>
+                                <div class="slide-content">
+                                    <h6>Biometric sensors</h6>
+                                    <p>Face ID, Touch ID, and other biometric methods are tested.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="carousel-navigation">
+                            <button class="carousel-btn prev" onclick="previousSlide()" disabled>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="carousel-btn next" onclick="nextSlide()">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="discover-section">
+                        <button class="discover-btn">Discover Verified Refurbished</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="/static/js/api_caller.js"></script>
+    <script src="/static/js/product-detail.js"></script>
+
+    <script>
+        window.onload = async function () {
+            // Get product ID from URL (assuming URL pattern like /product/123/)
+            const pathParts = window.location.pathname.split('/')
+            const productId = pathParts[pathParts.length - 2] || pathParts[pathParts.length - 1]
+            
+            const endpoints = {
+                product_detail_url: "{% url 'products-list' %}",
+                available_units_url: "{% url 'products-list' %}",
+                add_to_cart_url: "{% url 'cart-list' %}"  // Assuming you have a cart endpoint
+            }
+            
+            await initProductDetail(productId, endpoints, "{{csrf_token}}")
+        }
+    </script>
+</body>
+</html>

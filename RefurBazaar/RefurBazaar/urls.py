@@ -11,6 +11,7 @@ urlpatterns = [
     path('', include('FrontEnd.urls')),
     path('user-api/', include('UserDetail.urls')),
     path('product-api/', include('Product.urls')),
+    path('cart-api/', include('ShoppingCart.urls')),
     # path('marketplace-api/', include('MarketPlace.urls')),
     
     

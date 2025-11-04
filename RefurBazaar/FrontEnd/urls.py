@@ -5,6 +5,7 @@ from .views import *
 router = DefaultRouter()
 
 router.register(r'shop', ShopViewSet, basename='shop')
+router.register(r'product', ProductDetailViewSet, basename='product')
 
 ### Refurbisher Views ###
 router.register(r'refurbisher-profile', RefurbisherProfileViewSet, basename='refurbisher-profile')

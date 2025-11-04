@@ -208,6 +208,158 @@ class ProductModelViewSet(viewsets.ViewSet):
             "error": None
         }, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['get'], url_path='detail')
+    @handle_exceptions
+    def product_detail(self, request, pk=None):  # Renamed from 'detail' to 'product_detail' to avoid naming conflict with detail=True parameter
+        """
+        Get detailed product information including:
+        - Product model details
+        - Available attributes for this product
+        - Available attribute values from listing units
+        """
+        product_model = get_object_or_404(ProductModel, id=pk, is_active=True)
+        
+        # Serialize product model
+        product_data = ProductModelSerializer(product_model).data
+        
+        # Get attributes for this product model
+        model_attributes = ProductModelAttribute.objects.filter(
+            product_model=product_model
+        ).select_related('attribute')
+        
+        attributes_data = []
+        for pm_attr in model_attributes:
+            attr = pm_attr.attribute
+            
+            # Get unique values for this attribute from available listing units
+            available_values = ListingUnitAttribute.objects.filter(
+                listing_unit__listing__model=product_model,
+                listing_unit__listing__status='active',
+                listing_unit__is_available=True,
+                listing_unit__is_sold=False,
+                attribute=attr
+            ).values_list('value', flat=True).distinct().order_by('value')
+            
+            attributes_data.append({
+                'id': attr.id,
+                'name': attr.name,
+                'data_type': attr.data_type,
+                'possible_values': attr.possible_values,
+                'is_required': pm_attr.is_required,
+                'available_values': list(available_values)
+            })
+        
+        # Get price range for this product
+        price_range = ListingUnit.objects.filter(
+            listing__model=product_model,
+            listing__status='active',
+            is_available=True,
+            is_sold=False
+        ).aggregate(
+            min_price=Min('price'),
+            max_price=Max('price')
+        )
+        
+        # Get available conditions
+        conditions = ListingUnit.objects.filter(
+            listing__model=product_model,
+            listing__status='active',
+            is_available=True,
+            is_sold=False
+        ).values('condition').annotate(
+            count=Count('id'),
+            min_price=Min('price')
+        ).order_by('condition')
+        
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "user_unauthorized": False,
+            "data": {
+                "product": product_data,
+                "attributes": attributes_data,
+                "price_range": price_range,
+                "conditions": list(conditions)
+            },
+            "error": None
+        }, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['get'], url_path='available-units')
+    @handle_exceptions
+    def available_units(self, request, pk=None):
+        """
+        Get available listing units for a product based on selected attributes
+        Query params:
+         - condition: Filter by condition
+         - attribute filters: Pass as attribute_<id>=<value>
+        """
+        product_model = get_object_or_404(ProductModel, id=pk, is_active=True)
+        
+        # Base queryset
+        queryset = ListingUnit.objects.filter(
+            listing__model=product_model,
+            listing__status='active',
+            is_available=True,
+            is_sold=False
+        ).select_related('listing', 'listing__refurbisher')
+        
+        # Apply condition filter
+        condition = request.query_params.get('condition')
+        if condition:
+            queryset = queryset.filter(condition=condition)
+        
+        # Apply attribute filters
+        attribute_filters = {}
+        for key, value in request.query_params.items():
+            if key.startswith('attribute_'):
+                attr_id = key.replace('attribute_', '')
+                attribute_filters[attr_id] = value
+        
+        # Filter by attributes
+        for attr_id, attr_value in attribute_filters.items():
+            queryset = queryset.filter(
+                attributes__attribute_id=attr_id,
+                attributes__value=attr_value
+            )
+        
+        # Get distinct units (in case of multiple attribute filters)
+        queryset = queryset.distinct().order_by('price')
+        
+        # Serialize with refurbisher details
+        units_data = []
+        for unit in queryset:
+            unit_data = {
+                'id': unit.id,
+                'unit_number': unit.unit_number,
+                'price': float(unit.price),
+                'condition': unit.condition,
+                'condition_display': unit.get_condition_display(),
+                'refurbisher': {
+                    'id': unit.listing.refurbisher.user_id,
+                    'name': unit.listing.refurbisher.first_name,
+                    'email': unit.listing.refurbisher.email
+                },
+                'attributes': [
+                    {
+                        'name': attr.attribute.name,
+                        'value': attr.value
+                    }
+                    for attr in unit.attributes.all()
+                ]
+            }
+            units_data.append(unit_data)
+        
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "user_unauthorized": False,
+            "data": {
+                "units": units_data,
+                "total_count": len(units_data)
+            },
+            "error": None
+        }, status=status.HTTP_200_OK)
+
 
 class ProductModelAttributeViewSet(viewsets.ViewSet):
     """

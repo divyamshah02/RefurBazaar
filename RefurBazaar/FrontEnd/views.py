@@ -63,6 +63,13 @@ class ShopViewSet(viewsets.ViewSet):
         return render(request, 'shop.html')
 
 
+class ProductDetailViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def retrieve(self, request, pk):
+        return render(request, 'product-detail.html')
+
+
 ### Refurbisher Views ###
 class RefurbisherLoginViewSet(viewsets.ViewSet):
 
