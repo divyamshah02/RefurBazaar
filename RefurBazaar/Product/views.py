@@ -2,6 +2,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django.db.models import Min, Max, Count, Q
 from .models import *
 from .serializers import *
 from utils.decorators import *
@@ -66,6 +67,145 @@ class ProductModelViewSet(viewsets.ViewSet):
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": categories, "error": None
+        }, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['get'], url_path='shop')
+    @handle_exceptions
+    def shop(self, request):
+        """
+        Shop page endpoint with filters and aggregations
+        Query params:
+         - category: Filter by category
+         - brand_ids: Comma-separated brand IDs
+         - min_price: Minimum price filter
+         - max_price: Maximum price filter
+         - conditions: Comma-separated conditions (excellent,good,fair)
+         - sort_by: featured, price_low, price_high, newest
+        """
+        category = request.query_params.get('category', 'mobile')
+        brand_ids = request.query_params.get('brand_ids', '')
+        min_price = request.query_params.get('min_price')
+        max_price = request.query_params.get('max_price')
+        conditions = request.query_params.get('conditions', '')
+        sort_by = request.query_params.get('sort_by', 'featured')
+        
+        # Base queryset - get product models with active listings
+        queryset = ProductModel.objects.filter(
+            is_active=True,
+            category=category,
+            listings__status='active',
+            listings__units__is_available=True,
+            listings__units__is_sold=False
+        ).distinct()
+        print("Base Queryset:", queryset)
+        
+        # Apply brand filter
+        if brand_ids:
+            brand_id_list = [int(bid) for bid in brand_ids.split(',') if bid.strip()]
+            if brand_id_list:
+                queryset = queryset.filter(brand_id__in=brand_id_list)
+        
+        # Build filter for listing units with proper relationship path
+        units_filter = Q(
+            listings__status='active',
+            listings__units__is_available=True,
+            listings__units__is_sold=False
+        )
+        
+        # Apply price filters
+        if min_price:
+            units_filter &= Q(listings__units__price__gte=float(min_price))
+        if max_price:
+            units_filter &= Q(listings__units__price__lte=float(max_price))
+        
+        # Apply condition filters
+        if conditions:
+            condition_list = [c.strip() for c in conditions.split(',') if c.strip()]
+            if condition_list:
+                units_filter &= Q(listings__units__condition__in=condition_list)
+        
+        # Filter models that match the criteria
+        queryset = queryset.filter(units_filter).distinct()
+        
+        # Annotate with min price for each model
+        queryset = queryset.annotate(
+            min_price=Min('listings__units__price', filter=Q(
+                listings__status='active',
+                listings__units__is_available=True,
+                listings__units__is_sold=False
+            ))
+        )
+        
+        # Apply sorting
+        if sort_by == 'price_low':
+            queryset = queryset.order_by('min_price')
+        elif sort_by == 'price_high':
+            queryset = queryset.order_by('-min_price')
+        elif sort_by == 'newest':
+            queryset = queryset.order_by('-created_at')
+        else:  # featured
+            queryset = queryset.order_by('brand__name', 'name')
+        
+        # Serialize products with min_price
+        products = []
+        for model in queryset:
+            data = ProductModelSerializer(model).data
+            data['min_price'] = float(model.min_price) if model.min_price else 0
+            products.append(data)
+        
+        # Get available brands for this category with counts
+        brands = Brand.objects.filter(
+            models__category=category,
+            models__is_active=True,
+            models__listings__status='active',
+            models__listings__units__is_available=True,
+            models__listings__units__is_sold=False
+        ).annotate(
+            product_count=Count('models', distinct=True)
+        ).distinct().order_by('name')
+        
+        brands_data = [
+            {
+                'id': brand.id,
+                'name': brand.name,
+                'count': brand.product_count
+            }
+            for brand in brands
+        ]
+        
+        # Get condition counts for this category
+        condition_counts = ListingUnit.objects.filter(
+            listing__model__category=category,
+            listing__status='active',
+            is_available=True,
+            is_sold=False
+        ).values('condition').annotate(count=Count('id'))
+        
+        conditions_data = {item['condition']: item['count'] for item in condition_counts}
+        
+        # Get price range for this category
+        price_range = ListingUnit.objects.filter(
+            listing__model__category=category,
+            listing__status='active',
+            is_available=True,
+            is_sold=False
+        ).aggregate(
+            min_price=Min('price'),
+            max_price=Max('price')
+        )
+        
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "user_unauthorized": False,
+            "data": {
+                "products": products,
+                "brands": brands_data,
+                "conditions": conditions_data,
+                "price_range": price_range,
+                "total_count": len(products)
+            },
+            "error": None
         }, status=status.HTTP_200_OK)
 
 

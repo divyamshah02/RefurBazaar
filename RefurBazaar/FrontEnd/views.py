@@ -56,6 +56,14 @@ def check_authentication(required_role=None):
     return decorator
 
 
+class ShopViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'shop.html')
+
+
+### Refurbisher Views ###
 class RefurbisherLoginViewSet(viewsets.ViewSet):
 
     @handle_exceptions

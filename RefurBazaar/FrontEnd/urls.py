@@ -4,6 +4,9 @@ from .views import *
 
 router = DefaultRouter()
 
+router.register(r'shop', ShopViewSet, basename='shop')
+
+### Refurbisher Views ###
 router.register(r'refurbisher-profile', RefurbisherProfileViewSet, basename='refurbisher-profile')
 router.register(r'refurbisher-login', RefurbisherLoginViewSet, basename='refurbisher-login')
 router.register(r'refurbisher-logout', RefurbisherLogoutViewSet, basename='refurbisher-logout')
