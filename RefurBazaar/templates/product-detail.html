@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Detail - RefurBazar</title>
+    <title id="pageTitle">Product Detail - RefurBazar</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" rel="stylesheet">
@@ -33,8 +33,8 @@
                 
                 <div class="d-flex align-items-center ms-auto">
                     <a href="#" class="nav-icon me-3" id="wishlistBtn"><i class="fas fa-heart"></i><span class="badge" id="wishlistCount">0</span></a>
-                    <a href="/cart" class="nav-icon me-3" id="cartBtn"><i class="fas fa-shopping-cart"></i><span class="badge" id="cartCount">0</span></a>
-                    <a href="/account" class="btn btn-primary">My Account</a>
+                    <a href="/cart/" class="nav-icon me-3" id="cartBtn"><i class="fas fa-shopping-cart"></i><span class="badge" id="cartCount">0</span></a>
+                    <a href="/account/" class="btn btn-primary">My Account</a>
                 </div>
             </div>
         </div>
@@ -51,13 +51,22 @@
                     </a>
                 </div>
                 <div class="category-item-wrapper">
-                    <a href="/shop?category=mobile" class="category-item">Smartphones</a>
+                    <a href="/shop/?category=mobile" class="category-item">Smartphones</a>
                 </div>
                 <div class="category-item-wrapper">
-                    <a href="/shop?category=laptop" class="category-item">Laptops</a>
+                    <a href="/shop/?category=laptop" class="category-item">Laptops</a>
                 </div>
                 <div class="category-item-wrapper">
-                    <a href="/shop?category=tablet" class="category-item">Tablets</a>
+                    <a href="/shop/?category=tablet" class="category-item">Tablets</a>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="/shop/?category=gaming" class="category-item">Gaming consoles</a>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="/shop/?category=smartwatch" class="category-item">Smartwatches</a>
+                </div>
+                <div class="category-item-wrapper">
+                    <a href="/shop/?category=audio" class="category-item">Audio</a>
                 </div>
             </div>
         </div>
@@ -67,26 +76,47 @@
     <div class="px-4 py-3" style="margin-top: 180px;">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <!-- Breadcrumb will be populated by JavaScript -->
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="/shop/">Shop</a></li>
+                <li class="breadcrumb-item"><a href="#" id="breadcrumbCategory">Category</a></li>
+                <li class="breadcrumb-item active" id="breadcrumbProduct">Loading...</li>
             </ol>
         </nav>
     </div>
 
+    <!-- Loading State -->
+    <div id="loadingState" class="px-4 pb-5">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3 text-muted">Loading product details...</p>
+        </div>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="px-4 pb-5" style="display: none;">
+        <div class="text-center py-5">
+            <i class="fas fa-exclamation-circle" style="font-size: 64px; color: #dee2e6;"></i>
+            <h4 class="mt-3">Product Not Found</h4>
+            <p class="text-muted">The product you're looking for doesn't exist or is no longer available.</p>
+            <a href="/shop/" class="btn btn-primary">Back to Shop</a>
+        </div>
+    </div>
+
     <!-- Product Detail -->
-    <div class="px-4 pb-5">
+    <div class="px-4 pb-5" id="productContent" style="display: none;">
         <div class="row g-4">
             <!-- Product Images -->
             <div class="col-lg-4">
                 <div class="product-gallery">
                     <div class="main-image">
-                        <img src="/static/images/placeholder-product.png" alt="Product" id="mainImage">
+                        <img src="/placeholder.svg" alt="Product" id="mainImage">
                     </div>
                     <div class="thumbnail-images">
                         <div class="swiper thumbnailSwiper">
-                            <div class="swiper-wrapper">
-                                <div class="swiper-slide">
-                                    <img src="/static/images/placeholder-product.png" alt="Product view" onclick="changeMainImage(this.src)">
-                                </div>
+                            <div class="swiper-wrapper" id="thumbnailWrapper">
+                                <!-- Thumbnails populated by JS -->
                             </div>
                         </div>
                     </div>
@@ -98,7 +128,7 @@
                 <div class="product-details">
                     <!-- Product Header -->
                     <div class="product-header">
-                        <h1>Loading...</h1>
+                        <h1 id="productTitle">Loading...</h1>
                     </div>
 
                     <!-- Condition Selection -->
@@ -115,37 +145,22 @@
                         </div>
                         
                         <div class="condition-options">
-                            <div class="condition-grid">
-                                <!-- Conditions will be populated by JavaScript -->
+                            <div class="condition-grid" id="conditionGrid">
+                                <!-- Condition cards populated by JS -->
                             </div>
                         </div>
                     </div>
 
-                    <!-- Storage Selection -->
-                    <div class="selection-section">
-                        <div class="section-header">
-                            <h6>Select storage</h6>
-                        </div>
-                        <div class="storage-options">
-                            <!-- Storage options will be populated by JavaScript -->
-                        </div>
-                    </div>
-
-                    <!-- Color Selection -->
-                    <div class="selection-section">
-                        <div class="section-header">
-                            <h6>Select the color</h6>
-                        </div>
-                        <div class="color-options">
-                            <!-- Color options will be populated by JavaScript -->
-                        </div>
+                    <!-- Dynamic Attribute Filters Container -->
+                    <div id="attributeFiltersContainer">
+                        <!-- Storage, Color, and other attribute filters populated by JS -->
                     </div>
 
                     <!-- Seller Cards -->
                     <div class="sellers-section">
                         <h6>Available from these sellers</h6>
                         <div class="sellers-list" id="sellersList">
-                            <!-- Sellers will be populated by JavaScript -->
+                            <!-- Seller cards populated by JS -->
                         </div>
                     </div>
 
@@ -174,16 +189,17 @@
             <!-- Purchase Options -->
             <div class="col-lg-4">
                 <div class="purchase-options">
+                    <!-- Buy Now Option -->
                     <div class="purchase-option">
                         <div class="option-header">
                             <input type="radio" name="purchase" id="buyNow" checked>
                             <label for="buyNow">Buy Now</label>
-                            <span class="price">$0.00</span>
+                            <span class="price" id="displayPrice">₹0</span>
                         </div>
                         <div class="payment-methods">
                             <span>Pay securely with Payment gateway</span>        
                         </div>
-                        <button class="btn btn-primary w-100 mt-3" onclick="addToCart()">+ Add To Basket</button>
+                        <button class="btn btn-primary w-100 mt-3" id="addToCartBtn" disabled>+ Add To Basket</button>
                         
                         <div class="purchase-benefits mt-3">
                             <div class="benefit">
@@ -234,18 +250,19 @@
                             <div class="specifications-content">
                                 <div class="spec-overview">
                                     <h5>Product Overview</h5>
-                                    <p>Detailed specifications will be available soon.</p>
+                                    <p id="productDescription">Loading product specifications...</p>
                                 </div>
                             </div>
                         </div>
                         <div class="tab-pane fade" id="condition" role="tabpanel">
                             <div class="condition-details">
                                 <div class="condition-info-card">
-                                    <h6><i class="fas fa-star text-warning me-2"></i>Refurbished Quality</h6>
-                                    <p>This device has been professionally refurbished and tested to ensure optimal performance.</p>
+                                    <h6><i class="fas fa-star text-warning me-2"></i>Excellent Condition</h6>
+                                    <p>This device has been professionally refurbished and tested to ensure optimal performance. It may show minimal signs of wear but functions like new.</p>
                                     <ul class="condition-features">
                                         <li><i class="fas fa-check text-success me-2"></i>Battery health: 85%+ capacity</li>
                                         <li><i class="fas fa-check text-success me-2"></i>Screen: No cracks or scratches</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Body: Minor cosmetic wear possible</li>
                                         <li><i class="fas fa-check text-success me-2"></i>All functions tested and working</li>
                                     </ul>
                                 </div>
@@ -307,7 +324,7 @@
                                 </div>
                                 <div class="slide-content">
                                     <h6>SIM and/or memory card reader</h6>
-                                    <p>This tests that SIM cards and memory cards are correctly read by the device.</p>
+                                    <p>This tests that SIM cards and memory cards are correctly read by the device, and any trays or slots to insert or remove the card works properly.</p>
                                 </div>
                             </div>
                             
@@ -317,7 +334,7 @@
                                 </div>
                                 <div class="slide-content">
                                     <h6>Cameras</h6>
-                                    <p>All cameras are inspected for functionality, image capture and quality.</p>
+                                    <p>All cameras are inspected for functionality, image capture and quality. This includes video conferencing.</p>
                                 </div>
                             </div>
                             
@@ -327,7 +344,7 @@
                                 </div>
                                 <div class="slide-content">
                                     <h6>Data deletion</h6>
-                                    <p>All personal data is completely wiped from the device.</p>
+                                    <p>All personal data is completely wiped from the device using industry-standard data deletion methods.</p>
                                 </div>
                             </div>
                             
@@ -337,7 +354,7 @@
                                 </div>
                                 <div class="slide-content">
                                     <h6>Chargers and/or cables</h6>
-                                    <p>Charging functionality is tested to ensure proper power delivery.</p>
+                                    <p>Charging functionality is tested to ensure proper power delivery and connection stability.</p>
                                 </div>
                             </div>
                             
@@ -347,7 +364,7 @@
                                 </div>
                                 <div class="slide-content">
                                     <h6>GPS and/or positioning system</h6>
-                                    <p>Location services and GPS accuracy are tested.</p>
+                                    <p>Location services and GPS accuracy are tested to ensure proper navigation and location-based features.</p>
                                 </div>
                             </div>
                             
@@ -357,7 +374,7 @@
                                 </div>
                                 <div class="slide-content">
                                     <h6>External sensors</h6>
-                                    <p>All external sensors are tested for proper functionality.</p>
+                                    <p>All external sensors including accelerometer, gyroscope, and ambient light sensors are tested for proper functionality.</p>
                                 </div>
                             </div>
                             
@@ -367,7 +384,7 @@
                                 </div>
                                 <div class="slide-content">
                                     <h6>Biometric sensors</h6>
-                                    <p>Face ID, Touch ID, and other biometric methods are tested.</p>
+                                    <p>Face ID, Touch ID, and other biometric authentication methods are tested for accuracy and security.</p>
                                 </div>
                             </div>
                         </div>
@@ -396,19 +413,68 @@
     <script src="/static/js/product-detail.js"></script>
 
     <script>
+        // Initialize on page load
         window.onload = async function () {
-            // Get product ID from URL (assuming URL pattern like /product/123/)
-            const pathParts = window.location.pathname.split('/')
-            const productId = pathParts[pathParts.length - 2] || pathParts[pathParts.length - 1]
+            // Get product ID from URL
+            const urlParts = window.location.pathname.split('/');
+            const productId = urlParts[urlParts.length - 2]; // Assuming URL is /product/<id>/
             
-            const endpoints = {
-                product_detail_url: "{% url 'products-list' %}",
-                available_units_url: "{% url 'products-list' %}",
-                add_to_cart_url: "{% url 'cart-list' %}"  // Assuming you have a cart endpoint
-            }
-            
-            await initProductDetail(productId, endpoints, "{{csrf_token}}")
+            await initProductDetail(                
+                "/product-api/products/" + productId + "/detail/",
+                "/product-api/products/" + productId + "/available-units/",
+                "/cart-api/cart/",
+                "{{csrf_token}}",
+                productId
+            );
         }
+        
+        // Conditions panel toggle
+        function toggleConditionsPanel() {
+            const panel = document.getElementById('conditionsPanel');
+            panel.classList.toggle('active');
+        }
+        
+        // Carousel functionality
+        let currentSlide = 0;
+        const totalSlides = 7;
+        
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateCarousel();
+            }
+        }
+        
+        function previousSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateCarousel();
+            }
+        }
+        
+        function updateCarousel() {
+            // Update slides
+            document.querySelectorAll('.carousel-slide').forEach((slide, index) => {
+                slide.classList.toggle('active', index === currentSlide);
+            });
+            
+            // Update dots
+            document.querySelectorAll('.carousel-dots .dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+            
+            // Update navigation buttons
+            document.querySelector('.carousel-btn.prev').disabled = currentSlide === 0;
+            document.querySelector('.carousel-btn.next').disabled = currentSlide === totalSlides - 1;
+        }
+        
+        // Add click handlers to dots
+        document.querySelectorAll('.carousel-dots .dot').forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                currentSlide = index;
+                updateCarousel();
+            });
+        });
     </script>
 </body>
 </html>

@@ -1,498 +1,94 @@
 // Product Detail Page State
-let product_detail_url = null
-let available_units_url = null
-let add_to_cart_url = null
+let detail_api_url = null
+let units_api_url = null
+let cart_api_url = null
 let csrf_token = null
+let product_id = null
 
-let currentProduct = null
-const selectedFilters = {
-  condition: null,
-  attributes: {},
-}
+let productData = null
+let attributesData = []
+const selectedFilters = {}
 let availableUnits = []
+let selectedUnit = null
+let thumbnailSwiper = null
+
+// Condition options
+const CONDITION_OPTIONS = [
+  { value: "fair", label: "Fair", description: "Visible wear" },
+  { value: "good", label: "Good", description: "Minor wear" },
+  { value: "excellent", label: "Excellent", description: "Like new" },
+  { value: "premium", label: "Premium", description: "Perfect", icon: "fas fa-gem" },
+]
 
 // Initialize Product Detail Page
-async function initProductDetail(product_id, endpoints, csrf) {
-  product_detail_url = endpoints.product_detail_url
-  available_units_url = endpoints.available_units_url
-  add_to_cart_url = endpoints.add_to_cart_url
+async function initProductDetail(detail_url, units_url, cart_url, csrf, prod_id) {
+  detail_api_url = detail_url
+  units_api_url = units_url
+  cart_api_url = cart_url
   csrf_token = csrf
+  product_id = prod_id
 
-  await loadProductDetail(product_id)
-  initializeImageGallery()
-  initializeConditionsPanel()
+  await loadProductDetail()
 }
 
 // Load Product Detail
-async function loadProductDetail(product_id) {
+async function loadProductDetail() {
   showLoading()
 
-  const [success, response] = await callApi("GET", `${product_detail_url}${product_id}/detail/`, null, csrf_token)
-
-  hideLoading()
+  const [success, response] = await window.callApi("GET", detail_api_url, null, csrf_token)
 
   if (success && response.success) {
-    currentProduct = response.data
-    renderProductDetail(currentProduct)
+    productData = response.data.product
+    attributesData = response.data.attributes
 
-    // Pre-select first available options
-    preselectFilters()
-
-    // Load available units based on pre-selected filters
-    await loadAvailableUnits()
+    renderProductInfo()
+    renderFilters()
+    autoSelectFilters()
+    hideLoading()
   } else {
-    showError(response.error || "Failed to load product details")
+    showError()
   }
 }
 
-// Render Product Detail
-function renderProductDetail(data) {
-  const { product, attributes, conditions, price_range } = data
+// Render Product Info
+function renderProductInfo() {
+  document.getElementById("productTitle").textContent = productData.name
+  document.getElementById("breadcrumbProduct").textContent = `${productData.brand_name} ${productData.name}`
 
-  // Update product title
-  document.querySelector(".product-header h1").textContent = `${product.brand_name} ${product.name}`
-
-  // Update breadcrumb
-  const breadcrumb = document.querySelector(".breadcrumb")
-  if (breadcrumb) {
-    breadcrumb.innerHTML = `
-      <li class="breadcrumb-item"><a href="/">Home</a></li>
-      <li class="breadcrumb-item"><a href="/shop">Shop</a></li>
-      <li class="breadcrumb-item"><a href="/shop?category=${product.category}">${product.category_display || product.category}</a></li>
-      <li class="breadcrumb-item active">${product.brand_name} ${product.name}</li>
-    `
+  // Set product image
+  const mainImage = document.getElementById("mainImage")
+  if (productData.image) {
+    mainImage.src = productData.image
+  } else {
+    mainImage.src = "/placeholder.svg?height=400&width=400&query=" + encodeURIComponent(productData.name)
   }
+  mainImage.alt = `${productData.brand_name} ${productData.name}`
 
-  // Update product image if available
-  if (product.image) {
-    const mainImage = document.getElementById("mainImage")
-    if (mainImage) {
-      mainImage.src = product.image
-    }
+  initializeThumbnailGallery()
+
+  // Set product description
+  if (productData.description) {
+    document.getElementById("productDescription").textContent = productData.description
   }
-
-  // Render condition options
-  renderConditions(conditions)
-
-  // Render attribute filters (storage, color, etc.)
-  renderAttributes(attributes)
 }
 
-// Render Conditions
-function renderConditions(conditions) {
-  const conditionGrid = document.querySelector(".condition-grid")
-  if (!conditionGrid) return
+function initializeThumbnailGallery() {
+  const thumbnailWrapper = document.getElementById("thumbnailWrapper")
 
-  // Clear existing conditions
-  conditionGrid.innerHTML = ""
-
-  // Sort conditions by price (ascending)
-  const sortedConditions = conditions.sort((a, b) => Number.parseFloat(a.min_price) - Number.parseFloat(b.min_price))
-
-  sortedConditions.forEach((cond, index) => {
-    const isFirst = index === 0
-    const isLast = index === sortedConditions.length - 1
-    const conditionValue = cond.condition
-    const conditionLabel = conditionValue.charAt(0).toUpperCase() + conditionValue.slice(1)
-    const price = Number.parseFloat(cond.min_price)
-
-    const conditionCard = document.createElement("div")
-    conditionCard.className = "condition-card"
-    conditionCard.dataset.condition = conditionValue
-    conditionCard.dataset.price = price
-    conditionCard.dataset.count = cond.count
-
-    let priceDisplay = ""
-    if (isFirst) {
-      priceDisplay = `<p class="condition-price">From $${price.toFixed(2)}</p>`
-    } else if (isLast) {
-      priceDisplay = `<p class="condition-price">+ $${(price - Number.parseFloat(sortedConditions[0].min_price)).toFixed(2)}</p>`
-    } else {
-      priceDisplay = `<p class="condition-price">$${price.toFixed(2)}</p>`
-    }
-
-    conditionCard.innerHTML = `
-      <div class="condition-radio">
-        <input type="radio" name="condition" id="condition-${conditionValue}" value="${conditionValue}">
-        <label for="condition-${conditionValue}"></label>
-      </div>
-      <div class="condition-info">
-        <h6>${conditionLabel}</h6>
-        ${priceDisplay}
-      </div>
+  // Add main image as first thumbnail
+  const thumbnailsHTML = `
+        <div class="swiper-slide">
+            <img src="${productData.image || "/placeholder.svg?height=200&width=200&query=" + encodeURIComponent(productData.name)}" 
+                 alt="Main view" 
+                 onclick="changeMainImage(this.src)">
+        </div>
     `
 
-    conditionCard.addEventListener("click", function () {
-      document.querySelectorAll(".condition-card").forEach((c) => c.classList.remove("active"))
-      this.classList.add("active")
-      this.querySelector('input[type="radio"]').checked = true
+  thumbnailWrapper.innerHTML = thumbnailsHTML
 
-      selectedFilters.condition = conditionValue
-      loadAvailableUnits()
-    })
-
-    conditionGrid.appendChild(conditionCard)
-  })
-}
-
-// Render Attributes (Storage, Color, RAM, etc.)
-function renderAttributes(attributes) {
-  // Group attributes by type for better organization
-  const storageAttr = attributes.find((attr) => attr.name.toLowerCase() === "storage")
-  const colorAttr = attributes.find((attr) => attr.name.toLowerCase() === "color")
-  const otherAttrs = attributes.filter(
-    (attr) => attr.name.toLowerCase() !== "storage" && attr.name.toLowerCase() !== "color",
-  )
-
-  // Render storage if available
-  if (storageAttr && storageAttr.available_values.length > 0) {
-    renderStorageOptions(storageAttr)
-  } else {
-    // Hide storage section if not available
-    const storageSection = document.querySelector(".selection-section:has(.storage-options)")
-    if (storageSection) storageSection.style.display = "none"
-  }
-
-  // Render color if available
-  if (colorAttr && colorAttr.available_values.length > 0) {
-    renderColorOptions(colorAttr)
-  } else {
-    // Hide color section if not available
-    const colorSection = document.querySelector(".selection-section:has(.color-options)")
-    if (colorSection) colorSection.style.display = "none"
-  }
-
-  // Render other attributes dynamically
-  renderOtherAttributes(otherAttrs)
-}
-
-// Render Storage Options
-function renderStorageOptions(storageAttr) {
-  const storageOptions = document.querySelector(".storage-options")
-  if (!storageOptions) return
-
-  storageOptions.innerHTML = ""
-
-  storageAttr.available_values.forEach((value, index) => {
-    const storageCard = document.createElement("div")
-    storageCard.className = "storage-card"
-    storageCard.dataset.storage = value.toLowerCase().replace(/\s+/g, "-")
-    storageCard.dataset.attributeId = storageAttr.id
-    storageCard.dataset.value = value
-
-    storageCard.innerHTML = `
-      <div class="storage-info">
-        <h6>${value}</h6>
-        <p class="storage-price">Available</p>
-      </div>
-      <div class="storage-radio">
-        <input type="radio" name="storage" id="storage-${value.replace(/\s+/g, "-")}" value="${value}">
-        <label for="storage-${value.replace(/\s+/g, "-")}"></label>
-      </div>
-    `
-
-    storageCard.addEventListener("click", function () {
-      document.querySelectorAll(".storage-card").forEach((c) => c.classList.remove("active"))
-      this.classList.add("active")
-      this.querySelector('input[type="radio"]').checked = true
-
-      selectedFilters.attributes[storageAttr.id] = value
-      loadAvailableUnits()
-    })
-
-    storageOptions.appendChild(storageCard)
-  })
-}
-
-// Render Color Options
-function renderColorOptions(colorAttr) {
-  const colorOptions = document.querySelector(".color-options")
-  if (!colorOptions) return
-
-  colorOptions.innerHTML = ""
-
-  const colorMap = {
-    black: "#000000",
-    white: "#FFFFFF",
-    blue: "#4169e1",
-    red: "#dc3545",
-    green: "#28a745",
-    yellow: "#ffc107",
-    pink: "#ff69b4",
-    purple: "#8a2be2",
-    "space gray": "#5a5a5a",
-    silver: "#c0c0c0",
-    gold: "#ffd700",
-    starlight: "#f5f5dc",
-    midnight: "#191970",
-  }
-
-  colorAttr.available_values.forEach((value, index) => {
-    const colorCard = document.createElement("div")
-    colorCard.className = "color-card"
-    colorCard.dataset.color = value.toLowerCase().replace(/\s+/g, "-")
-    colorCard.dataset.attributeId = colorAttr.id
-    colorCard.dataset.value = value
-
-    const colorCode = colorMap[value.toLowerCase()] || "#6c757d"
-
-    colorCard.innerHTML = `
-      <div class="color-radio">
-        <input type="radio" name="color" id="color-${value.replace(/\s+/g, "-")}" value="${value}">
-        <label for="color-${value.replace(/\s+/g, "-")}"></label>
-      </div>
-      <div class="color-dot" style="background: ${colorCode};"></div>
-      <div class="color-info">
-        <h6>${value}</h6>
-        <p class="color-price">Available</p>
-      </div>
-    `
-
-    colorCard.addEventListener("click", function () {
-      document.querySelectorAll(".color-card").forEach((c) => c.classList.remove("active"))
-      this.classList.add("active")
-      this.querySelector('input[type="radio"]').checked = true
-
-      selectedFilters.attributes[colorAttr.id] = value
-      loadAvailableUnits()
-    })
-
-    colorOptions.appendChild(colorCard)
-  })
-}
-
-// Render Other Attributes (RAM, Processor, etc.)
-function renderOtherAttributes(attributes) {
-  const productDetails = document.querySelector(".product-details")
-  if (!productDetails) return
-
-  // Find the sellers section to insert before it
-  const sellersSection = document.querySelector(".sellers-section")
-
-  attributes.forEach((attr) => {
-    if (attr.available_values.length === 0) return
-
-    // Create a new selection section
-    const section = document.createElement("div")
-    section.className = "selection-section"
-    section.innerHTML = `
-      <div class="section-header">
-        <h6>Select ${attr.name}</h6>
-      </div>
-      <div class="attribute-options" data-attribute-id="${attr.id}"></div>
-    `
-
-    const optionsContainer = section.querySelector(".attribute-options")
-
-    attr.available_values.forEach((value) => {
-      const optionCard = document.createElement("div")
-      optionCard.className = "storage-card"
-      optionCard.dataset.attributeId = attr.id
-      optionCard.dataset.value = value
-
-      optionCard.innerHTML = `
-        <div class="storage-info">
-          <h6>${value}</h6>
-          <p class="storage-price">Available</p>
-        </div>
-        <div class="storage-radio">
-          <input type="radio" name="attr-${attr.id}" id="attr-${attr.id}-${value.replace(/\s+/g, "-")}" value="${value}">
-          <label for="attr-${attr.id}-${value.replace(/\s+/g, "-")}"></label>
-        </div>
-      `
-
-      optionCard.addEventListener("click", function () {
-        optionsContainer.querySelectorAll(".storage-card").forEach((c) => c.classList.remove("active"))
-        this.classList.add("active")
-        this.querySelector('input[type="radio"]').checked = true
-
-        selectedFilters.attributes[attr.id] = value
-        loadAvailableUnits()
-      })
-
-      optionsContainer.appendChild(optionCard)
-    })
-
-    // Insert before sellers section
-    if (sellersSection) {
-      productDetails.insertBefore(section, sellersSection)
-    } else {
-      productDetails.appendChild(section)
-    }
-  })
-}
-
-// Pre-select first available options
-function preselectFilters() {
-  // Pre-select first condition
-  const firstCondition = document.querySelector(".condition-card")
-  if (firstCondition) {
-    firstCondition.click()
-  }
-
-  // Pre-select first storage
-  const firstStorage = document.querySelector(".storage-card")
-  if (firstStorage) {
-    firstStorage.click()
-  }
-
-  // Pre-select first color
-  const firstColor = document.querySelector(".color-card")
-  if (firstColor) {
-    firstColor.click()
-  }
-
-  // Pre-select first option for other attributes
-  document.querySelectorAll(".attribute-options").forEach((container) => {
-    const firstOption = container.querySelector(".storage-card")
-    if (firstOption) {
-      firstOption.click()
-    }
-  })
-}
-
-// Load Available Units based on selected filters
-async function loadAvailableUnits() {
-  if (!selectedFilters.condition) return
-
-  // Build query params
-  const params = new URLSearchParams()
-  params.append("condition", selectedFilters.condition)
-
-  // Add attribute filters
-  Object.entries(selectedFilters.attributes).forEach(([attrId, value]) => {
-    params.append(`attribute_${attrId}`, value)
-  })
-
-  const url = `${available_units_url}${currentProduct.product.id}/available-units/?${params.toString()}`
-
-  const [success, response] = await callApi("GET", url, null, csrf_token)
-
-  if (success && response.success) {
-    availableUnits = response.data.units
-    renderSellers(availableUnits)
-    updatePriceDisplay(availableUnits)
-  } else {
-    renderSellers([])
-    showError("No units available for selected options")
-  }
-}
-
-// Render Sellers
-function renderSellers(units) {
-  const sellersList = document.getElementById("sellersList")
-  if (!sellersList) return
-
-  if (units.length === 0) {
-    sellersList.innerHTML = '<p class="text-muted">No sellers available for this configuration</p>'
-    return
-  }
-
-  sellersList.innerHTML = units
-    .map(
-      (unit, index) => `
-    <div class="seller-card ${index === 0 ? "selected" : ""}" data-unit-id="${unit.id}" onclick="selectSeller(this)">
-      <div class="seller-header">
-        <div class="seller-info">
-          <h6>${unit.refurbisher.name}</h6>
-          <div class="seller-rating">
-            <div class="stars">
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star-half-alt"></i>
-            </div>
-            <span>4.5/5</span>
-          </div>
-        </div>
-        <div class="seller-price">
-          <div class="price">$${Number.parseFloat(unit.price).toFixed(2)}</div>
-          <div class="shipping">Free shipping</div>
-        </div>
-      </div>
-      <div class="seller-features">
-        <div class="seller-feature">
-          <i class="fas fa-check"></i>
-          <span>${unit.condition_display} condition</span>
-        </div>
-        <div class="seller-feature">
-          <i class="fas fa-check"></i>
-          <span>1-year warranty</span>
-        </div>
-        <div class="seller-feature">
-          <i class="fas fa-check"></i>
-          <span>Free returns</span>
-        </div>
-      </div>
-    </div>
-  `,
-    )
-    .join("")
-}
-
-// Update Price Display
-function updatePriceDisplay(units) {
-  if (units.length === 0) return
-
-  const lowestPrice = Math.min(...units.map((u) => Number.parseFloat(u.price)))
-  const priceElement = document.querySelector(".option-header .price")
-
-  if (priceElement) {
-    priceElement.textContent = `$${lowestPrice.toFixed(2)}`
-  }
-}
-
-// Select Seller
-function selectSeller(sellerCard) {
-  document.querySelectorAll(".seller-card").forEach((card) => {
-    card.classList.remove("selected")
-  })
-  sellerCard.classList.add("selected")
-
-  // Update price in purchase section
-  const price = sellerCard.querySelector(".price").textContent
-  const priceElement = document.querySelector(".option-header .price")
-  if (priceElement) {
-    priceElement.textContent = price
-  }
-}
-
-// Add to Cart
-async function addToCart() {
-  const selectedSeller = document.querySelector(".seller-card.selected")
-  if (!selectedSeller) {
-    showError("Please select a seller")
-    return
-  }
-
-  const unitId = selectedSeller.dataset.unitId
-
-  const requestData = {
-    listing_unit_id: Number.parseInt(unitId),
-    quantity: 1,
-  }
-
-  const [success, response] = await callApi("POST", add_to_cart_url, requestData, csrf_token)
-
-  if (success && response.success) {
-    showSuccess("Product added to cart!")
-
-    // Update cart badge
-    const cartBadge = document.querySelector("#cartCount")
-    if (cartBadge) {
-      const currentCount = Number.parseInt(cartBadge.textContent) || 0
-      cartBadge.textContent = currentCount + 1
-    }
-  } else {
-    showError(response.error || "Failed to add to cart")
-  }
-}
-
-// Initialize Image Gallery
-function initializeImageGallery() {
-  if (typeof Swiper !== "undefined") {
-    new Swiper(".thumbnailSwiper", {
+  // Initialize Swiper
+  if (window.Swiper) {
+    thumbnailSwiper = new window.Swiper(".thumbnailSwiper", {
       spaceBetween: 10,
       slidesPerView: 4,
       freeMode: true,
@@ -505,115 +101,421 @@ function initializeImageGallery() {
   }
 }
 
-// Change Main Image
 function changeMainImage(src) {
-  const mainImage = document.getElementById("mainImage")
-  if (mainImage) {
-    mainImage.src = src
-  }
+  document.getElementById("mainImage").src = src
 }
 
-// Initialize Conditions Panel
-function initializeConditionsPanel() {
-  // Carousel functionality
-  let currentSlide = 0
-  const totalSlides = 7
+// Render Filters
+function renderFilters() {
+  renderConditionFilter()
 
-  window.toggleConditionsPanel = () => {
-    const panel = document.getElementById("conditionsPanel")
-    panel.classList.toggle("active")
+  renderAttributeFilters()
+}
 
-    if (panel.classList.contains("active")) {
-      document.body.style.overflow = "hidden"
-      currentSlide = 0
-      updateSlideDisplay()
-      updateCarouselNavigation()
-    } else {
-      document.body.style.overflow = ""
+function renderConditionFilter() {
+  const conditionGrid = document.getElementById("conditionGrid")
+
+  const conditionHTML = CONDITION_OPTIONS.map(
+    (condition) => `
+        <div class="condition-card" data-condition="${condition.value}" onclick="selectCondition('${condition.value}')">
+            <div class="condition-radio">
+                <input type="radio" name="condition" id="condition-${condition.value}" value="${condition.value}">
+                <label for="condition-${condition.value}"></label>
+            </div>
+            <div class="condition-info">
+                <h6>${condition.label}</h6>
+                <p class="condition-price">${condition.description}</p>
+                ${condition.icon ? `<i class="${condition.icon} condition-premium-icon"></i>` : ""}
+            </div>
+        </div>
+    `,
+  ).join("")
+
+  conditionGrid.innerHTML = conditionHTML
+}
+
+function renderAttributeFilters() {
+  const container = document.getElementById("attributeFiltersContainer")
+
+  if (attributesData.length === 0) {
+    container.innerHTML = ""
+    return
+  }
+
+  let filtersHTML = ""
+
+  attributesData.forEach((attr) => {
+    if (attr.available_values.length > 0) {
+      // Determine filter type based on attribute name
+      const attrNameLower = attr.name.toLowerCase()
+
+      if (attrNameLower.includes("storage") || attrNameLower.includes("memory")) {
+        // Storage-style filter
+        filtersHTML += renderStorageFilter(attr)
+      } else if (attrNameLower.includes("color") || attrNameLower.includes("colour")) {
+        // Color-style filter
+        filtersHTML += renderColorFilter(attr)
+      } else {
+        // Generic filter
+        filtersHTML += renderGenericFilter(attr)
+      }
     }
-  }
-
-  window.nextSlide = () => {
-    if (currentSlide < totalSlides - 1) {
-      currentSlide++
-      updateSlideDisplay()
-      updateCarouselNavigation()
-    }
-  }
-
-  window.previousSlide = () => {
-    if (currentSlide > 0) {
-      currentSlide--
-      updateSlideDisplay()
-      updateCarouselNavigation()
-    }
-  }
-
-  window.goToSlide = (slideIndex) => {
-    if (slideIndex >= 0 && slideIndex < totalSlides) {
-      currentSlide = slideIndex
-      updateSlideDisplay()
-      updateCarouselNavigation()
-    }
-  }
-
-  function updateSlideDisplay() {
-    const slides = document.querySelectorAll(".carousel-slide")
-    slides.forEach((slide, index) => {
-      slide.classList.toggle("active", index === currentSlide)
-    })
-
-    const dots = document.querySelectorAll(".dot")
-    dots.forEach((dot, index) => {
-      dot.classList.toggle("active", index === currentSlide)
-    })
-  }
-
-  function updateCarouselNavigation() {
-    const prevBtn = document.querySelector(".carousel-btn.prev")
-    const nextBtn = document.querySelector(".carousel-btn.next")
-
-    if (prevBtn) prevBtn.disabled = currentSlide === 0
-    if (nextBtn) nextBtn.disabled = currentSlide === totalSlides - 1
-  }
-
-  // Initialize dot navigation
-  document.querySelectorAll(".dot").forEach((dot, index) => {
-    dot.addEventListener("click", () => window.goToSlide(index))
   })
+
+  container.innerHTML = filtersHTML
 }
 
-// UI Helper Functions
-function showLoading() {
-  // Add loading spinner to product details
-  const productDetails = document.querySelector(".product-details")
-  if (productDetails) {
-    productDetails.style.opacity = "0.5"
-    productDetails.style.pointerEvents = "none"
+function renderStorageFilter(attr) {
+  return `
+        <div class="selection-section">
+            <div class="section-header">
+                <h6>Select ${attr.name}</h6>
+            </div>
+            <div class="storage-options">
+                ${attr.available_values
+                  .map(
+                    (value) => `
+                    <div class="storage-card" data-attribute="${attr.id}" data-value="${value}" 
+                         onclick="selectAttribute(${attr.id}, '${value}')">
+                        <div class="storage-info">
+                            <h6>${value}</h6>
+                            <p class="storage-price"></p>
+                        </div>
+                        <div class="storage-radio">
+                            <input type="radio" name="attribute-${attr.id}" id="attr-${attr.id}-${value}" value="${value}">
+                            <label for="attr-${attr.id}-${value}"></label>
+                        </div>
+                    </div>
+                `,
+                  )
+                  .join("")}
+            </div>
+        </div>
+    `
+}
+
+function renderColorFilter(attr) {
+  const colorMap = {
+    black: "#000000",
+    white: "#ffffff",
+    blue: "#4169e1",
+    red: "#ff0000",
+    green: "#00ff00",
+    pink: "#ff69b4",
+    purple: "#8a2be2",
+    gold: "#ffd700",
+    silver: "#c0c0c0",
+    gray: "#808080",
+    grey: "#808080",
+    "space gray": "#5a5a5a",
+    starlight: "#f5f5dc",
   }
+
+  return `
+        <div class="selection-section">
+            <div class="section-header">
+                <h6>Select ${attr.name}</h6>
+            </div>
+            <div class="color-options">
+                ${attr.available_values
+                  .map((value) => {
+                    const colorValue = colorMap[value.toLowerCase()] || "#cccccc"
+                    return `
+                        <div class="color-card" data-attribute="${attr.id}" data-value="${value}" 
+                             onclick="selectAttribute(${attr.id}, '${value}')">
+                            <div class="color-radio">
+                                <input type="radio" name="attribute-${attr.id}" id="attr-${attr.id}-${value}" value="${value}">
+                                <label for="attr-${attr.id}-${value}"></label>
+                            </div>
+                            <div class="color-dot" style="background: ${colorValue};"></div>
+                            <div class="color-info">
+                                <h6>${value}</h6>
+                                <p class="color-price"></p>
+                            </div>
+                        </div>
+                    `
+                  })
+                  .join("")}
+            </div>
+        </div>
+    `
+}
+
+function renderGenericFilter(attr) {
+  return `
+        <div class="selection-section">
+            <div class="section-header">
+                <h6>Select ${attr.name}</h6>
+            </div>
+            <div class="storage-options">
+                ${attr.available_values
+                  .map(
+                    (value) => `
+                    <div class="storage-card" data-attribute="${attr.id}" data-value="${value}" 
+                         onclick="selectAttribute(${attr.id}, '${value}')">
+                        <div class="storage-info">
+                            <h6>${value}</h6>
+                            <p class="storage-price"></p>
+                        </div>
+                        <div class="storage-radio">
+                            <input type="radio" name="attribute-${attr.id}" id="attr-${attr.id}-${value}" value="${value}">
+                            <label for="attr-${attr.id}-${value}"></label>
+                        </div>
+                    </div>
+                `,
+                  )
+                  .join("")}
+            </div>
+        </div>
+    `
+}
+
+function autoSelectFilters() {
+  // Auto-select first condition (excellent if available, otherwise first)
+  const excellentCondition = CONDITION_OPTIONS.find((c) => c.value === "excellent")
+  if (excellentCondition) {
+    selectCondition("excellent")
+  } else {
+    selectCondition(CONDITION_OPTIONS[0].value)
+  }
+
+  // Auto-select first value for each attribute
+  attributesData.forEach((attr) => {
+    if (attr.available_values.length > 0) {
+      selectAttribute(attr.id, attr.available_values[0])
+    }
+  })
+
+  // Load units with pre-selected filters
+  loadAvailableUnits()
+}
+
+function selectCondition(value) {
+  // Remove active class from all condition cards
+  document.querySelectorAll(".condition-card").forEach((card) => {
+    card.classList.remove("active")
+    const radio = card.querySelector('input[type="radio"]')
+    if (radio) radio.checked = false
+  })
+
+  // Add active class to selected card
+  const selectedCard = document.querySelector(`.condition-card[data-condition="${value}"]`)
+  if (selectedCard) {
+    selectedCard.classList.add("active")
+    const radio = selectedCard.querySelector('input[type="radio"]')
+    if (radio) radio.checked = true
+
+    // Update selected filters
+    selectedFilters["condition"] = value
+
+    // Load available units
+    loadAvailableUnits()
+  }
+}
+
+function selectAttribute(attrId, value) {
+  // Remove active class from all cards for this attribute
+  document.querySelectorAll(`[data-attribute="${attrId}"]`).forEach((card) => {
+    card.classList.remove("active")
+    const radio = card.querySelector('input[type="radio"]')
+    if (radio) radio.checked = false
+  })
+
+  // Add active class to selected card
+  const selectedCard = document.querySelector(`[data-attribute="${attrId}"][data-value="${value}"]`)
+  if (selectedCard) {
+    selectedCard.classList.add("active")
+    const radio = selectedCard.querySelector('input[type="radio"]')
+    if (radio) radio.checked = true
+
+    // Update selected filters
+    selectedFilters[`attribute_${attrId}`] = value
+
+    // Load available units
+    loadAvailableUnits()
+  }
+}
+
+// Load Available Units
+async function loadAvailableUnits() {
+  // Build query params from selected filters
+  const params = new URLSearchParams()
+
+  for (const [key, value] of Object.entries(selectedFilters)) {
+    params.append(key, value)
+  }
+
+  const url = `${units_api_url}?${params.toString()}`
+
+  const [success, response] = await window.callApi("GET", url, null, csrf_token)
+
+  if (success && response.success) {
+    availableUnits = response.data.units
+    renderSellers()
+  } else {
+    showSellersError()
+  }
+}
+
+// Render Sellers
+function renderSellers() {
+  const sellersContainer = document.getElementById("sellersList")
+
+  if (availableUnits.length === 0) {
+    sellersContainer.innerHTML = `
+            <div class="text-center py-4">
+                <i class="fas fa-box-open" style="font-size: 48px; color: #dee2e6;"></i>
+                <p class="text-muted mt-3">No sellers available for the selected options.</p>
+                <p class="small text-muted">Try selecting different options.</p>
+            </div>
+        `
+    document.getElementById("addToCartBtn").disabled = true
+    updatePrice(null)
+    return
+  }
+
+  sellersContainer.innerHTML = availableUnits
+    .map(
+      (unit, index) => `
+        <div class="seller-card ${index === 0 ? "selected" : ""}" onclick="selectSeller(${unit.id})">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="seller-name">${unit.refurbisher.name}</div>
+                    <div class="seller-attributes small text-muted mt-1">
+                        ${unit.condition_display}
+                        ${unit.attributes.length > 0 ? " • " + unit.attributes.map((attr) => attr.value).join(" • ") : ""}
+                    </div>
+                </div>
+                <div class="text-end">
+                    <div class="seller-price">₹${formatPrice(unit.price)}</div>
+                </div>
+            </div>
+        </div>
+    `,
+    )
+    .join("")
+
+  // Auto-select first unit
+  if (availableUnits.length > 0) {
+    selectedUnit = availableUnits[0]
+    updatePrice(selectedUnit.price)
+    document.getElementById("addToCartBtn").disabled = false
+  }
+}
+
+// Select Seller
+function selectSeller(unitId) {
+  // Remove selected class from all cards
+  document.querySelectorAll(".seller-card").forEach((card) => {
+    card.classList.remove("selected")
+  })
+
+  // Add selected class to clicked card
+  event.currentTarget.classList.add("selected")
+
+  // Update selected unit
+  selectedUnit = availableUnits.find((unit) => unit.id === unitId)
+  updatePrice(selectedUnit.price)
+  document.getElementById("addToCartBtn").disabled = false
+}
+
+// Update Price Display
+function updatePrice(price) {
+  const priceElement = document.getElementById("displayPrice")
+  if (price) {
+    priceElement.textContent = `₹${formatPrice(price)}`
+  } else {
+    priceElement.textContent = "₹0"
+  }
+}
+
+// Add to Cart
+document.addEventListener("DOMContentLoaded", () => {
+  const addToCartBtn = document.getElementById("addToCartBtn")
+  if (addToCartBtn) {
+    addToCartBtn.addEventListener("click", async () => {
+      if (!selectedUnit) {
+        showToast("Please select a product option", "warning")
+        return
+      }
+
+      const payload = {
+        listing_unit_id: selectedUnit.id,
+      }
+
+      const [success, response] = await window.callApi("POST", cart_api_url, payload, csrf_token)
+
+      if (success && response.success) {
+        showToast("Product added to cart!", "success")
+        // Update cart count
+        const cartCount = document.getElementById("cartCount")
+        if (cartCount) {
+          cartCount.textContent = Number.parseInt(cartCount.textContent) + 1
+        }
+      } else {
+        showToast(response.error || "Failed to add to cart", "danger")
+      }
+    })
+  }
+})
+
+// Helper Functions
+function showLoading() {
+  document.getElementById("loadingState").style.display = "block"
+  document.getElementById("productContent").style.display = "none"
+  document.getElementById("errorState").style.display = "none"
 }
 
 function hideLoading() {
-  const productDetails = document.querySelector(".product-details")
-  if (productDetails) {
-    productDetails.style.opacity = "1"
-    productDetails.style.pointerEvents = "auto"
+  document.getElementById("loadingState").style.display = "none"
+  document.getElementById("productContent").style.display = "block"
+}
+
+function showError() {
+  document.getElementById("loadingState").style.display = "none"
+  document.getElementById("productContent").style.display = "none"
+  document.getElementById("errorState").style.display = "block"
+}
+
+function showSellersError() {
+  const sellersContainer = document.getElementById("sellersList")
+  sellersContainer.innerHTML = `
+        <div class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>Failed to load sellers. Please try again.
+        </div>
+    `
+}
+
+function formatPrice(price) {
+  return new Intl.NumberFormat("en-IN").format(Math.round(price))
+}
+
+function showToast(message, type = "info") {
+  // Create toast notification
+  const toastHTML = `
+        <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `
+
+  // Add toast container if it doesn't exist
+  let toastContainer = document.querySelector(".toast-container")
+  if (!toastContainer) {
+    toastContainer = document.createElement("div")
+    toastContainer.className = "toast-container position-fixed top-0 end-0 p-3"
+    document.body.appendChild(toastContainer)
   }
-}
 
-function showError(message) {
-  console.error(message)
-  // You can implement a toast notification here
-  alert(message)
-}
+  toastContainer.insertAdjacentHTML("beforeend", toastHTML)
+  const toastElement = toastContainer.lastElementChild
+  const toast = new window.bootstrap.Toast(toastElement)
+  toast.show()
 
-function showSuccess(message) {
-  console.log(message)
-  // You can implement a toast notification here
-  alert(message)
+  // Remove toast after it's hidden
+  toastElement.addEventListener("hidden.bs.toast", () => {
+    toastElement.remove()
+  })
 }
-
-// Make functions globally available
-window.addToCart = addToCart
-window.selectSeller = selectSeller
-window.changeMainImage = changeMainImage

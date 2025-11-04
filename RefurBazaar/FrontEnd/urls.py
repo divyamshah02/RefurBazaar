@@ -6,6 +6,7 @@ router = DefaultRouter()
 
 router.register(r'shop', ShopViewSet, basename='shop')
 router.register(r'product', ProductDetailViewSet, basename='product')
+router.register(r'cart', CartViewSet, basename='cart')
 
 ### Refurbisher Views ###
 router.register(r'refurbisher-profile', RefurbisherProfileViewSet, basename='refurbisher-profile')
