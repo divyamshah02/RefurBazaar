@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import base64
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -26,6 +27,7 @@ INSTALLED_APPS = [
     'UserDetail',
     'Product',
     'ShoppingCart',
+    'Order',
 ]
 
 MIDDLEWARE = [
@@ -104,3 +106,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+def base64_to_text(b64_text):
+    # Decode the Base64 string back to bytes, then to text
+    return base64.b64decode(b64_text.encode()).decode()
+
+RAZORPAY_KEY_ID = base64_to_text("cnpwX2xpdmVfUjVFMkdsQUtjeWVpZEQ=")
+RAZORPAY_KEY_SECRET = base64_to_text("UkFYTXVZcGs2TEJkejcxTnBtTjRrVUdP")

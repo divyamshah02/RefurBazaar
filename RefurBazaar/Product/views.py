@@ -728,7 +728,7 @@ class ListingUnitViewSet(viewsets.ViewSet):
         }, status=status.HTTP_200_OK)
 
 
-class SeedDataViewSet(viewsets.ViewSet):
+class Seed_oldDataViewSet(viewsets.ViewSet):
     """
     Seed initial data for testing.
     Usage: POST /api/products/seed-data/seed/
@@ -908,6 +908,149 @@ class SeedDataViewSet(viewsets.ViewSet):
                 "brands_created": len(brands),
                 "models_created": len(created_models),
                 "attributes_created": len(attr_masters)
+            },
+            "error": None
+        }, status=status.HTTP_201_CREATED)
+
+
+
+
+import pandas as pd
+from django.db import transaction
+from rest_framework import status, viewsets
+from rest_framework.response import Response
+from .models import Brand, ProductModel, AttributeMaster, ProductModelAttribute
+from utils.decorators import handle_exceptions
+
+
+class SeedDataViewSet(viewsets.ViewSet):
+    """
+    Seed data directly from 'device_catalog_parent_child' Excel file.
+    """
+
+    @handle_exceptions
+    def list(self, request):
+        file_path = r"C:\Users\Divyam Shah\OneDrive\Desktop\Dynamic Labz\Clients\Clients\EcoReco\RefurBazaar\RefurBazaar\Product\Copy of device_catalog_parent_child(1) (1).xlsx"
+        df = pd.read_excel(file_path, sheet_name="Sheet1")
+
+        df = df.fillna('')
+
+        created_brands, created_models, created_attrs = 0, 0, 0
+
+        with transaction.atomic():
+            for _, meta_row in df[df['row_type'] == 'META'].iterrows():
+                brand_name = str(meta_row['brand']).strip()
+                category = str(meta_row['category']).lower().strip()
+                model_name = str(meta_row['model_name']).strip()
+                processor = str(meta_row['processor']).strip()
+                generation = str(meta_row['generation']).strip()
+                os = str(meta_row['os']).strip()
+                screen_size = str(meta_row['screen_size']).strip()
+                touch = str(meta_row['touch']).strip()
+                accessories = str(meta_row['accessories']).strip()
+                description = str(meta_row['description']).strip()
+
+                if not brand_name or not model_name:
+                    continue
+
+                # Create Brand
+                brand, _ = Brand.objects.get_or_create(name=brand_name)
+                created_brands += 1
+
+                # Create ProductModel
+                product, created = ProductModel.objects.get_or_create(
+                    brand=brand,
+                    name=model_name,
+                    category=category,
+                    defaults={
+                        "description": description or f"{brand_name} {model_name} {processor} {generation}",
+                        "is_active": True
+                    }
+                )
+                if created:
+                    created_models += 1
+
+                # Create common attributes (processor, generation, etc.)
+                common_attrs = {
+                    "Processor": processor,
+                    "Generation": generation,
+                    "OS": os,
+                    "Screen Size": screen_size,
+                    "Touch": touch,
+                    "Accessories": accessories,
+                }
+
+                for attr_name, attr_value in common_attrs.items():
+                    if not attr_value:
+                        continue
+
+                    attr_obj, _ = AttributeMaster.objects.get_or_create(
+                        category=category,
+                        name=attr_name,
+                        defaults={
+                            "data_type": "choice",
+                            "possible_values": [attr_value],
+                            "is_active": True,
+                        }
+                    )
+                    if attr_value not in attr_obj.possible_values:
+                        attr_obj.possible_values.append(attr_value)
+                        attr_obj.save(update_fields=["possible_values"])
+                        created_attrs += 1
+
+                    ProductModelAttribute.objects.get_or_create(
+                        product_model=product,
+                        attribute=attr_obj,
+                        defaults={"is_required": False}
+                    )
+
+                # Add all child ATTR rows for this model
+                child_rows = df[(df['row_type'] == 'ATTR') & (df['model_name'] == model_name)]
+                for _, attr_row in child_rows.iterrows():
+                    ram = str(attr_row['ram']).strip()
+                    storage = str(attr_row['storage']).strip()
+                    color = str(attr_row['color']).strip()
+                    grade = str(attr_row['Grade']).strip()
+
+                    for attr_name, attr_value in {
+                        "RAM": ram,
+                        "Storage": storage,
+                        "Color": color,
+                        "Grade": grade
+                    }.items():
+                        if not attr_value:
+                            continue
+
+                        attr_obj, _ = AttributeMaster.objects.get_or_create(
+                            category=category,
+                            name=attr_name,
+                            defaults={
+                                "data_type": "choice",
+                                "possible_values": [attr_value],
+                                "is_active": True,
+                            }
+                        )
+
+                        if attr_value not in attr_obj.possible_values:
+                            attr_obj.possible_values.append(attr_value)
+                            attr_obj.save(update_fields=["possible_values"])
+                            created_attrs += 1
+
+                        ProductModelAttribute.objects.get_or_create(
+                            product_model=product,
+                            attribute=attr_obj,
+                            defaults={"is_required": True}
+                        )
+
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "user_unauthorized": False,
+            "data": {
+                "message": "Excel seed data processed successfully.",
+                "brands_created": created_brands,
+                "models_created": created_models,
+                "attributes_created_or_updated": created_attrs,
             },
             "error": None
         }, status=status.HTTP_201_CREATED)

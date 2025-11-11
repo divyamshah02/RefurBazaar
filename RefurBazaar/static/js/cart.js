@@ -13,7 +13,7 @@ function init(csrf, listUrl, clearUrl) {
 
 async function loadCart() {
   try {
-    const response = await window.callApi("GET", cartListUrl, null, csrfToken)
+    const [success, response] = await window.callApi("GET", cartListUrl, null, csrfToken)
     console.log("Cart Load Response:", response)
     if (response.success && response.data) {
       cartData = response.data
@@ -138,7 +138,7 @@ async function removeFromCart(cartItemId) {
   }
 
   try {
-    const response = await window.callApi("DELETE", `${cartListUrl}${cartItemId}/`, null, csrfToken)
+    const [success, response] = await window.callApi("DELETE", `${cartListUrl}${cartItemId}/`, null, csrfToken)
 
     if (response.success) {
       showToast("Item removed from cart!", "info")
@@ -158,7 +158,7 @@ async function clearCart() {
   }
 
   try {
-    const response = await window.callApi("POST", cartClearUrl, { cart_id: cartData.cart_id }, csrfToken)
+    const [success, response] = await window.callApi("POST", cartClearUrl, { cart_id: cartData.cart_id }, csrfToken)
 
     if (response.success) {
       showToast("Cart cleared!", "info")

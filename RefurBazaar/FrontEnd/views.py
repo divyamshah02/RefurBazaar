@@ -76,6 +76,12 @@ class CartViewSet(viewsets.ViewSet):
     def list(self, request):
         return render(request, 'cart.html')
 
+class CheckoutViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'checkout.html')
+
 
 ### Refurbisher Views ###
 class RefurbisherLoginViewSet(viewsets.ViewSet):

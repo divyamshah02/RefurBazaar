@@ -106,3 +106,25 @@ class OTPVerification(models.Model):
 
     def __str__(self):
         return f"{self.mobile} - {self.otp}"
+
+
+class Address(models.Model):
+    """
+    Separate table to store multiple addresses for customers.
+    We link using user_id string to allow compatibility with order model.
+    """
+    user_id = models.CharField(max_length=12)  # links to User.user_id
+    address_line = models.TextField()
+    city = models.CharField(max_length=50)
+    state = models.CharField(max_length=50)
+    pincode = models.CharField(max_length=10)
+    address_name = models.CharField(max_length=100, blank=True, null=True)  # e.g. Home, Office
+    is_default = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.address_name or 'Address'} - {self.city}, {self.state}"
+

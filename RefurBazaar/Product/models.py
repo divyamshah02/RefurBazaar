@@ -2,6 +2,8 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from UserDetail.models import User
 import uuid
+from django.utils import timezone
+from datetime import timedelta
 
 
 class Brand(models.Model):
@@ -138,6 +140,8 @@ class ListingUnit(models.Model):
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES)
     is_available = models.BooleanField(default=True)
     is_sold = models.BooleanField(default=False)
+    half_sold = models.BooleanField(default=False, help_text="Temporarily held during checkout")
+    half_sold_at = models.DateTimeField(null=True, blank=True, help_text="When product was marked as half sold")
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -152,6 +156,27 @@ class ListingUnit(models.Model):
             self.unit_number = (max_unit or 0) + 1
         
         super().save(*args, **kwargs)
+    
+    def mark_half_sold(self):
+        """Mark product as temporarily held during Razorpay order creation"""
+        self.half_sold = True
+        self.half_sold_at = timezone.now()
+        self.is_available = False
+        self.save()
+    
+    def release_half_sold(self):
+        """Release temporary hold if payment not completed"""
+        self.half_sold = False
+        self.half_sold_at = None
+        self.is_available = True if not self.is_sold else False
+        self.save()
+    
+    def is_half_sold_expired(self):
+        """Check if half_sold hold has expired (10 minutes)"""
+        if not self.half_sold or not self.half_sold_at:
+            return False
+        expiry_time = self.half_sold_at + timedelta(minutes=10)
+        return timezone.now() > expiry_time
     
     def __str__(self):
         return f"{self.listing.listing_id} - Unit #{self.unit_number}"

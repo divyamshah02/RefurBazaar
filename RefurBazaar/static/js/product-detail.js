@@ -17,7 +17,7 @@ const CONDITION_OPTIONS = [
   { value: "fair", label: "Fair", description: "Visible wear" },
   { value: "good", label: "Good", description: "Minor wear" },
   { value: "excellent", label: "Excellent", description: "Like new" },
-  { value: "premium", label: "Premium", description: "Perfect", icon: "fas fa-gem" },
+  // { value: "premium", label: "Premium", description: "Perfect", icon: "fas fa-gem" },
 ]
 
 // Initialize Product Detail Page
