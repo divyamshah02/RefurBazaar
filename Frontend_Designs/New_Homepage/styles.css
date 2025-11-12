@@ -372,15 +372,15 @@ img {
   padding: 12px 0;
 }
 
-.navbar-brand {
+/* .navbar-brand {
   display: flex;
   align-items: center;
-}
+} */
 
 /* Updated logo size for better visibility */
 .logo {
-  height: 65px;
-  width: auto;
+  height: auto;
+  width: 105px;
   transition: var(--transition-base);
   object-fit: contain;
 }
