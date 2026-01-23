@@ -453,6 +453,14 @@ async function submitListing() {
         window.location.href = "/refurbisher-listings/"
       }, 2000)
     } else {
+      // Check for profile validation errors
+      if (window.handleApiError && window.handleApiError(response)) {
+        // Restore button state
+        const submitBtn = document.getElementById("submitBtn")
+        submitBtn.disabled = false
+        submitBtn.innerHTML = '<i class="fas fa-check me-2"></i>Create Listing'
+        return
+      }
       throw new Error(response.error || "Failed to create listing")
     }
   } catch (error) {

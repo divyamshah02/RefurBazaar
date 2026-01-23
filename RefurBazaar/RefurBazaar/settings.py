@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'Product',
     'ShoppingCart',
     'Order',
+    'Admin',
 ]
 
 MIDDLEWARE = [
@@ -111,5 +112,5 @@ def base64_to_text(b64_text):
     # Decode the Base64 string back to bytes, then to text
     return base64.b64decode(b64_text.encode()).decode()
 
-RAZORPAY_KEY_ID = base64_to_text("cnpwX2xpdmVfUjVFMkdsQUtjeWVpZEQ=")
-RAZORPAY_KEY_SECRET = base64_to_text("UkFYTXVZcGs2TEJkejcxTnBtTjRrVUdP")
+RAZORPAY_KEY_ID = base64_to_text("cnpwX3Rlc3RfUzV6OXlXcFh0d0VkVVg=")
+RAZORPAY_KEY_SECRET = base64_to_text("NTAyaldFeDBWUFE1b2RuSkJQVzNJblNS")

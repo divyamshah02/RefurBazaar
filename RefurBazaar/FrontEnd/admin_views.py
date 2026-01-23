@@ -1,0 +1,52 @@
+from django.shortcuts import render, redirect
+from rest_framework import viewsets
+from utils.decorators import handle_exceptions, check_authentication
+
+
+class AdminDashboardPageViewSet(viewsets.ViewSet):
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def list(self, request):
+        return render(request, 'admin/dashboard.html')
+
+
+class AdminOrdersPageViewSet(viewsets.ViewSet):
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def list(self, request):
+        return render(request, 'admin/orders.html')
+
+
+class AdminOrderDetailPageViewSet(viewsets.ViewSet):
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def list(self, request):
+        return render(request, 'admin/order_detail.html')
+
+
+class AdminRefurbishersPageViewSet(viewsets.ViewSet):
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def list(self, request):
+        return render(request, 'admin/refurbishers.html')
+
+
+class AdminPendingRefurbishersPageViewSet(viewsets.ViewSet):
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def list(self, request):
+        return render(request, 'admin/pending_refurbishers.html')
+
+
+class AdminRefurbisherDetailPageViewSet(viewsets.ViewSet):
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def list(self, request):
+        return render(request, 'admin/refurbisher_detail.html')
+
+
+class AdminCustomersPageViewSet(viewsets.ViewSet):
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def list(self, request):
+        return render(request, 'admin/customers.html')

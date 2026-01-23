@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refurbisher Details - RefurBazaar Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    {% include 'admin/components/sidebar.html' %}
+    
+    <div class="main-content" style="margin-left: 260px; padding: 30px;">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <a href="/admin-refurbishers/" class="btn btn-outline-secondary btn-sm mb-2">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Refurbishers
+                    </a>
+                    <h2 class="mb-0" id="refurbisherTitle">Refurbisher Details</h2>
+                </div>
+                <div id="approvalActions" style="display: none;">
+                    <button onclick="approveRefurbisher()" class="btn btn-success btn-lg me-2">
+                        <i class="fas fa-check me-2"></i>APPROVE REFURBISHER
+                    </button>
+                    <button onclick="rejectRefurbisher()" class="btn btn-danger btn-lg">
+                        <i class="fas fa-times me-2"></i>REJECT
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Approval Alert -->
+            <div id="approvalAlert" class="alert alert-warning alert-dismissible fade show mb-4" role="alert" style="display: none;">
+                <h5 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Pending Approval</h5>
+                <p class="mb-0">This refurbisher has completed their profile and is waiting for your approval. Review all information below and click <strong>APPROVE</strong> to activate their account or <strong>REJECT</strong> to deny access.</p>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            
+            <div class="row">
+                <!-- Refurbisher Info -->
+                <div class="col-md-8">
+                    <!-- Basic Info -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0"><i class="fas fa-user me-2"></i>Basic Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>User ID:</strong> <span id="userId"></span></p>
+                                    <p><strong>Name:</strong> <span id="userName"></span></p>
+                                    <p><strong>Email:</strong> <span id="userEmail"></span></p>
+                                    <p><strong>Phone:</strong> <span id="userPhone"></span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Joined:</strong> <span id="joinedDate"></span></p>
+                                    <p><strong>Status:</strong> <span id="approvalStatus"></span></p>
+                                    <p><strong>Profile Complete:</strong> <span id="profileComplete"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Company Info -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0"><i class="fas fa-building me-2"></i>Company Information</h5>
+                        </div>
+                        <div class="card-body" id="companyInfo">
+                            <p class="text-muted">Loading...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Documents -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Documents</h5>
+                        </div>
+                        <div class="card-body" id="documentsSection">
+                            <p class="text-muted">Loading...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Listings -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Listings</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Listing ID</th>
+                                            <th>Product</th>
+                                            <th>Units</th>
+                                            <th>Status</th>
+                                            <th>Created</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="listingsTable">
+                                        <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Orders -->
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Orders</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Order ID</th>
+                                            <th>Customer</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ordersTable">
+                                        <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stats -->
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Statistics</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-1">Total Listings</h6>
+                                <h3 id="totalListings">0</h3>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-1">Total Orders</h6>
+                                <h3 id="totalOrders">0</h3>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-1">Total Revenue</h6>
+                                <h3 id="totalRevenue">₹0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/api_caller.js"></script>
+    <script src="/static/js/admin/refurbisher_detail.js"></script>
+    <script>
+        const csrfToken_p = '{{ csrf_token }}';
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId_p = urlParams.get('user_id');
+        const detailApiUrl_p = `/admin-api/dashboard/${userId_p}/refurbisher-detail/`;
+        const approveApiUrl_p = `/admin-api/dashboard/${userId_p}/approve-refurbisher/`;
+        
+        InitializeRefurbisherDetail(csrfToken_p, detailApiUrl_p, approveApiUrl_p, userId_p);
+    </script>
+</body>
+</html>

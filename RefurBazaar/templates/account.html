@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - RefurBazar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- OTP Login Modal (Non-closable) -->
+    <div class="modal fade" id="otpLoginModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px;">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">Login Required</h5>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="mobile-input-section">
+                        <i class="fas fa-mobile-alt fa-3x mb-3" style="color: var(--primary-color);"></i>
+                        <h6 class="mb-3">Enter your mobile number to continue</h6>
+                        <div class="mb-3">
+                            <input type="tel" class="form-control form-control-lg text-center" id="mobileNumber" placeholder="Enter mobile number" maxlength="10">
+                            <div class="invalid-feedback" id="mobileError"></div>
+                        </div>
+                        <button class="btn btn-primary btn-lg w-100" onclick="sendOTP()">
+                            <span id="sendOtpText">Send OTP</span>
+                            <span id="sendOtpLoader" class="spinner-border spinner-border-sm ms-2" style="display: none;"></span>
+                        </button>
+                    </div>
+
+                    <div id="otp-input-section" style="display: none;">
+                        <i class="fas fa-key fa-3x mb-3" style="color: var(--primary-color);"></i>
+                        <h6 class="mb-3">Enter the OTP sent to <span id="displayMobile"></span></h6>
+                        <div class="mb-3">
+                            <input type="text" class="form-control form-control-lg text-center" id="otpCode" placeholder="Enter 6-digit OTP" maxlength="6">
+                            <div class="invalid-feedback" id="otpError"></div>
+                        </div>
+                        <button class="btn btn-primary btn-lg w-100 mb-2" onclick="verifyOTP()">
+                            <span id="verifyOtpText">Verify OTP</span>
+                            <span id="verifyOtpLoader" class="spinner-border spinner-border-sm ms-2" style="display: none;"></span>
+                        </button>
+                        <button class="btn btn-outline-secondary w-100" onclick="goBackToMobile()">
+                            <i class="fas fa-arrow-left me-2"></i>Change Mobile Number
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg main-navbar" id="navbar">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-recycle me-2"></i>RefurBazar
+            </a>
+            
+            <div class="d-flex align-items-center ms-auto">
+                <a href="/cart/" class="nav-icon me-3" id="cartBtn"><i class="fas fa-shopping-cart"></i><span class="badge" id="cartCount">0</span></a>
+                <a href="/account/" class="btn btn-primary">My Account</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="px-4 py-3" style="margin-top: 100px;">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active">My Account</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Account Content -->
+    <section class="py-5 px-4">
+        <div class="container-fluid">
+            <div class="row">
+                <!-- Account Sidebar -->
+                <div class="col-lg-3 mb-4">
+                    <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                        <div class="card-body p-0">
+                            <div class="list-group list-group-flush">
+                                <a href="#" class="list-group-item list-group-item-action active" data-section="profile" style="border-radius: 20px 20px 0 0;">
+                                    <i class="fas fa-user me-3"></i>Profile
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action" data-section="orders">
+                                    <i class="fas fa-shopping-bag me-3"></i>My Orders
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action" data-section="addresses">
+                                    <i class="fas fa-map-marker-alt me-3"></i>Addresses
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action text-danger" onclick="logout()" style="border-radius: 0 0 20px 20px;">
+                                    <i class="fas fa-sign-out-alt me-3"></i>Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Content -->
+                <div class="col-lg-9">
+                    <!-- Profile Section -->
+                    <div id="profile-section" class="account-section">
+                        <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                            <div class="card-header bg-white border-bottom p-4">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-user me-2" style="color: var(--primary-color);"></i>
+                                    Profile Information
+                                </h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <form id="profile-form">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="firstName" class="form-label">First Name *</label>
+                                            <input type="text" class="form-control" id="firstName" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="lastName" class="form-label">Last Name *</label>
+                                            <input type="text" class="form-control" id="lastName" required>
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="email" class="form-label">Email Address *</label>
+                                            <input type="email" class="form-control" id="email" required>
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="phone" class="form-label">Phone Number *</label>
+                                            <input type="tel" class="form-control" id="phone" required disabled>
+                                            <small class="text-muted">Phone number cannot be changed</small>
+                                        </div>
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save me-2"></i>Update Profile
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Orders Section -->
+                    <div id="orders-section" class="account-section" style="display: none;">
+                        <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                            <div class="card-header bg-white border-bottom p-4">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-shopping-bag me-2" style="color: var(--primary-color);"></i>
+                                            My Orders
+                                        </h5>
+                                    </div>
+                                    <div class="col-auto">
+                                        <select class="form-select form-select-sm" id="orderFilter">
+                                            <option value="">All Orders</option>
+                                            <option value="pending">Pending</option>
+                                            <option value="confirmed">Confirmed</option>
+                                            <option value="processing">Processing</option>
+                                            <option value="shipped">Shipped</option>
+                                            <option value="delivered">Delivered</option>
+                                            <option value="cancelled">Cancelled</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body p-4">
+                                <div id="orders-list">
+                                    <!-- Orders will be populated here -->
+                                </div>
+                                <div id="orders-pagination" class="d-flex justify-content-center mt-4">
+                                    <!-- Pagination will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Addresses Section -->
+                    <div id="addresses-section" class="account-section" style="display: none;">
+                        <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                            <div class="card-header bg-white border-bottom p-4">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-map-marker-alt me-2" style="color: var(--primary-color);"></i>
+                                            Saved Addresses
+                                        </h5>
+                                    </div>
+                                    <div class="col-auto">
+                                        <button class="btn btn-primary btn-sm" onclick="showAddAddressModal()">
+                                            <i class="fas fa-plus me-2"></i>Add Address
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body p-4">
+                                <div id="addresses-list" class="row g-3">
+                                    <!-- Addresses will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Add Address Modal -->
+    <div class="modal fade" id="addAddressModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="border-radius: 20px;">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title" id="addAddressModalLabel">Add New Address</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="address-form">
+                        <input type="hidden" id="addressId">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label for="addressName" class="form-label">Address Name *</label>
+                                <input type="text" class="form-control" id="addressName" placeholder="Home, Office, etc." required>
+                            </div>
+                            <div class="col-12">
+                                <label for="addressLine" class="form-label">Address *</label>
+                                <textarea class="form-control" id="addressLine" rows="2" placeholder="Street address" required></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="addressCity" class="form-label">City *</label>
+                                <input type="text" class="form-control" id="addressCity" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="addressState" class="form-label">State *</label>
+                                <input type="text" class="form-control" id="addressState" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="addressPincode" class="form-label">Pincode *</label>
+                                <input type="text" class="form-control" id="addressPincode" maxlength="6" required>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="isDefaultAddress">
+                                    <label class="form-check-label" for="isDefaultAddress">
+                                        Set as default address
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveAddress()">Save Address</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/api_caller.js"></script>
+    <script src="/static/js/account.js"></script>
+    
+    <script>
+        const csrfToken = "{{ csrf_token }}";
+        InitializeAccount(
+            csrfToken,
+            "/user-api/user-detail-api/",
+            "/user-api/user-detail-api/",
+            "/order-api/my-orders/",
+            "/user-api/user-detail-api/"
+        );
+    </script>
+
+    <style>
+        .account-section {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .list-group-item-action:hover {
+            background-color: var(--primary-light);
+        }
+
+        .list-group-item-action.active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .order-card {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .address-card {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+        }
+
+        .address-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .status-badge {
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+        }
+    </style>
+
+</body>
+</html>

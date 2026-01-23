@@ -1,6 +1,23 @@
 from rest_framework import serializers
-from .models import Order, OrderItem
+from .models import Order, OrderItem, DevicePhoto
 from Product.serializers import ListingUnitSerializer
+
+
+class DevicePhotoSerializer(serializers.ModelSerializer):
+    """Serializer for device photos"""
+    photo_url = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = DevicePhoto
+        fields = ['id', 'photo', 'photo_url', 'uploaded_at']
+    
+    def get_photo_url(self, obj):
+        if obj.photo:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.photo.url)
+            return obj.photo.url
+        return None
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -9,13 +26,17 @@ class OrderItemSerializer(serializers.ModelSerializer):
     brand_name = serializers.SerializerMethodField()
     model_name = serializers.SerializerMethodField()
     product_image = serializers.SerializerMethodField()
+    fulfillment_status_display = serializers.CharField(source='get_fulfillment_status_display', read_only=True)
+    device_photos = DevicePhotoSerializer(many=True, read_only=True)
     
     class Meta:
         model = OrderItem
         fields = [
             'id', 'listing_unit', 'price_at_purchase', 'condition_at_purchase',
             'refurbisher', 'refurbisher_name', 'brand_name', 'model_name',
-            'product_image', 'created_at'
+            'product_image', 'device_imei', 'device_photos', 'verification_notes',
+            'verified_at', 'fulfillment_status', 'fulfillment_status_display',
+            'packed_at', 'rejection_reason', 'rejected_at', 'created_at', 'updated_at'
         ]
     
     def get_brand_name(self, obj):
@@ -102,3 +123,22 @@ class PaymentVerificationSerializer(serializers.Serializer):
     razorpay_order_id = serializers.CharField()
     razorpay_payment_id = serializers.CharField()
     razorpay_signature = serializers.CharField()
+
+
+class OrderItemVerificationSerializer(serializers.Serializer):
+    """Serializer for refurbisher to verify device and upload details"""
+    device_imei = serializers.CharField(max_length=50, required=True)
+    verification_notes = serializers.CharField(required=False, allow_blank=True)
+
+
+class OrderItemActionSerializer(serializers.Serializer):
+    """Serializer for refurbisher actions (pack/reject)"""
+    action = serializers.ChoiceField(choices=['pack', 'reject'], required=True)
+    rejection_reason = serializers.CharField(required=False, allow_blank=True)
+    
+    def validate(self, data):
+        if data['action'] == 'reject' and not data.get('rejection_reason'):
+            raise serializers.ValidationError({
+                'rejection_reason': 'Rejection reason is required when rejecting an item'
+            })
+        return data

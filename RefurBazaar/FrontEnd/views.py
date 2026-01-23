@@ -83,6 +83,34 @@ class CheckoutViewSet(viewsets.ViewSet):
         return render(request, 'checkout.html')
 
 
+class OrderSuccessViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'order-success.html')
+
+
+class OrderDetailViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'order-detail.html')
+
+
+class AccountViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'account.html')
+
+class LogoutViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        logout(request)
+        return redirect('account-list')
+
+
 ### Refurbisher Views ###
 class RefurbisherLoginViewSet(viewsets.ViewSet):
 
@@ -120,6 +148,22 @@ class RefurbisherListingDetailViewSet(viewsets.ViewSet):
     @check_authentication(required_role='refurbisher')
     def list(self, request):
         return render(request, 'refurbisher/refurbisher_listing_detail.html')
+
+
+class RefurbisherOrdersViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    @check_authentication(required_role='refurbisher')
+    def list(self, request):
+        return render(request, 'refurbisher/refurbisher_orders.html')
+
+
+class RefurbisherOrderDetailViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    @check_authentication(required_role='refurbisher')
+    def list(self, request):
+        return render(request, 'refurbisher/refurbisher_order_detail.html')
 
 
 class RefurbisherLogoutViewSet(viewsets.ViewSet):

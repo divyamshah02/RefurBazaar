@@ -26,6 +26,11 @@ async function loadProfileData() {
     renderProfileData()
     populateForms()
     calculateProfileCompletion()
+    
+    // Show profile status alert if validation function exists
+    if (window.checkProfileStatus) {
+      window.checkProfileStatus(companyProfileData)
+    }
   } else {
     showErrorMessage(response.error || "Failed to load profile data")
   }
@@ -289,7 +294,7 @@ async function saveDocuments() {
     `${profile_url}${profileData.id}/`,
     formData,
     csrf_token,
-    true, // multipart form data
+    true // media_upload flag for file uploads
   )
 
   if (success && response.success) {

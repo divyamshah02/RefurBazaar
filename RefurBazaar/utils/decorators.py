@@ -95,3 +95,87 @@ def check_authentication(required_role=None):
 
         return _wrapped_view
     return decorator
+
+
+def check_refurbisher_profile():
+    '''Checks if refurbisher has completed profile and is approved by admin'''
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(self, request, *args, **kwargs):
+            user = request.user
+            
+            # First check authentication
+            if not user.is_authenticated:
+                return Response(
+                    {
+                        "success": False,
+                        "user_not_logged_in": True,
+                        "user_unauthorized": False,
+                        "profile_incomplete": False,
+                        "profile_not_approved": False,
+                        "data": None,
+                        "error": "User not authenticated"
+                    }, status=status.HTTP_401_UNAUTHORIZED
+                )
+            
+            # Check if user is refurbisher
+            if getattr(user, "role", None) != 'refurbisher':
+                return Response(
+                    {
+                        "success": False,
+                        "user_not_logged_in": False,
+                        "user_unauthorized": True,
+                        "profile_incomplete": False,
+                        "profile_not_approved": False,
+                        "data": None,
+                        "error": "User role must be refurbisher"
+                    }, status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Check if company profile exists
+            company_profile = getattr(user, 'company_profile', None)
+            if not company_profile:
+                return Response(
+                    {
+                        "success": False,
+                        "user_not_logged_in": False,
+                        "user_unauthorized": False,
+                        "profile_incomplete": True,
+                        "profile_not_approved": False,
+                        "data": None,
+                        "error": "Please complete your profile first"
+                    }, status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Check if profile is complete
+            if not company_profile.is_profile_complete:
+                return Response(
+                    {
+                        "success": False,
+                        "user_not_logged_in": False,
+                        "user_unauthorized": False,
+                        "profile_incomplete": True,
+                        "profile_not_approved": False,
+                        "data": None,
+                        "error": "Please complete all required profile fields (Personal Info, Business Details, Documents, and Payment Information)"
+                    }, status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Check if profile is approved by admin
+            if not company_profile.is_approved:
+                return Response(
+                    {
+                        "success": False,
+                        "user_not_logged_in": False,
+                        "user_unauthorized": False,
+                        "profile_incomplete": False,
+                        "profile_not_approved": True,
+                        "data": None,
+                        "error": "Your profile is pending admin approval. Please wait for approval before adding listings or accessing orders."
+                    }, status=status.HTTP_403_FORBIDDEN
+                )
+            
+            return view_func(self, request, *args, **kwargs)
+
+        return _wrapped_view
+    return decorator

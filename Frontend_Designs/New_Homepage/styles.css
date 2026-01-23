@@ -385,9 +385,9 @@ img {
   object-fit: contain;
 }
 
-.navbar.scrolled .logo {
+/* .navbar.scrolled .logo {
   height: 50px;
-}
+} */
 
 .navbar-nav {
   gap: 8px;

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Detail - RefurBazar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+    <link href="/static/css/refurbisher/refurbisher_dash.css" rel="stylesheet">
+</head>
+
+<body>
+    {% include 'refurbisher/nav.html' %}
+    
+    <div class="dashboard-container">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-3 col-md-4">
+                    <div class="dashboard-sidebar">
+                        <div class="text-center mb-4">
+                            <div class="avatar-lg mb-3">
+                                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" 
+                                     alt="Profile" class="rounded-circle" width="80" height="80">
+                            </div>
+                            <h5 class="mb-1">{{user.first_name}} {{user.last_name}}</h5>
+                            <p class="text-muted mb-0">Refurbisher</p>
+                        </div>
+
+                        <nav>
+                            <ul class="dashboard-nav">
+                                <li class="dashboard-nav-item">
+                                    <a href="/refurbisher-listings" class="dashboard-nav-link">
+                                        <i class="fas fa-list"></i>My Listings
+                                    </a>
+                                </li>
+                                <li class="dashboard-nav-item">
+                                    <a href="/refurbisher-orders" class="dashboard-nav-link active">
+                                        <i class="fas fa-shopping-bag"></i>Orders
+                                    </a>
+                                </li>
+                                <li class="dashboard-nav-item">
+                                    <a href="/refurbisher-profile" class="dashboard-nav-link">
+                                        <i class="fas fa-user"></i>Profile
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+                <div class="col-lg-9 col-md-8">
+                    <div class="dashboard-main">
+                        <div class="dashboard-header">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <a href="/refurbisher-orders" class="text-decoration-none text-muted mb-2 d-inline-block">
+                                        <i class="fas fa-arrow-left me-2"></i>Back to Orders
+                                    </a>
+                                    <h2 class="mb-2">Order Details</h2>
+                                    <p class="text-muted mb-0" id="orderIdDisplay">Loading...</p>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <span class="badge bg-primary fs-6" id="orderStatusBadge">
+                                        <i class="fas fa-clock me-1"></i>Loading...
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Loading State -->
+                        <div class="text-center py-5" id="loadingState">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="text-muted mt-3">Loading order details...</p>
+                        </div>
+
+                        <!-- Order Content -->
+                        <div id="orderContent" class="d-none">
+                            <!-- Customer Information -->
+                            <div class="dashboard-card mb-4">
+                                <div class="card-header">
+                                    <h4 class="card-title">Customer Information</h4>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Name:</strong> <span id="customerName"></span></p>
+                                        <p><strong>Email:</strong> <span id="customerEmail"></span></p>
+                                        <p><strong>Phone:</strong> <span id="customerPhone"></span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Shipping Address:</strong></p>
+                                        <p class="text-muted" id="shippingAddress"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Order Items -->
+                            <div class="dashboard-card mb-4">
+                                <div class="card-header">
+                                    <h4 class="card-title">Order Items</h4>
+                                </div>
+                                <div id="orderItemsContainer">
+                                    <!-- Items will be populated here -->
+                                </div>
+                            </div>
+
+                            <!-- Order Summary -->
+                            <div class="dashboard-card">
+                                <div class="card-header">
+                                    <h4 class="card-title">Order Summary</h4>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 ms-auto">
+                                        <table class="table table-borderless">
+                                            <tbody>
+                                                <tr>
+                                                    <td>Your Items Subtotal:</td>
+                                                    <td class="text-end"><strong id="yourSubtotal">₹0.00</strong></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Order Date:</td>
+                                                    <td class="text-end" id="orderDate"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Payment Status:</td>
+                                                    <td class="text-end" id="paymentStatus"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Device Verification Modal -->
+    <div class="modal fade" id="verifyDeviceModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Verify Device</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="verifyDeviceForm">
+                        <input type="hidden" id="verifyItemId">
+                        <div class="mb-3">
+                            <label class="form-label">IMEI / Identification Number *</label>
+                            <input type="text" class="form-control" id="deviceIMEI" required placeholder="Enter IMEI or serial number">
+                            <small class="text-muted">This helps in tracking and warranty purposes</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Device Photos</label>
+                            <input type="file" class="form-control" id="devicePhotos" accept="image/*" multiple>
+                            <small class="text-muted d-block mt-2">You can select multiple photos at once. Maximum 5 photos allowed.</small>
+                            <div id="photoPreviewContainer" class="mt-3 d-flex flex-wrap gap-2">
+                                <!-- Photo previews will appear here -->
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Verification Notes (Optional)</label>
+                            <textarea class="form-control" id="verificationNotes" rows="3" placeholder="Any additional notes about the device condition"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitVerification">
+                        <i class="fas fa-check me-2"></i>Verify Device
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Item Modal -->
+    <div class="modal fade" id="rejectItemModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reject Order Item</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="rejectItemForm">
+                        <input type="hidden" id="rejectItemId">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Rejecting this item will make it available again in your inventory.
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Reason for Rejection *</label>
+                            <textarea class="form-control" id="rejectionReason" rows="4" required placeholder="Please provide a detailed reason for rejecting this order"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="submitRejection">
+                        <i class="fas fa-times-circle me-2"></i>Reject Item
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/api_caller.js"></script>
+    <script src="/static/js/refurbisher/refurbisher_order_detail.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('order_id');
+            const csrfToken = '{{ csrf_token }}';
+            const orderDetailUrl = `/order-api/${orderId}/refurbisher-order-detail/`;
+            const verifyItemUrl = '/order-api/{item_id}/verify-item/';
+            const itemActionUrl = '/order-api/{item_id}/item-action/';
+            
+            InitializeRefurbisherOrderDetail(csrfToken, orderId, orderDetailUrl, verifyItemUrl, itemActionUrl);
+        });
+    </script>
+</body>
+
+</html>

@@ -90,10 +90,33 @@ class CompanyProfile(models.Model):
     bank_name = models.CharField(max_length=255, null=True, blank=True)
     branch_name = models.CharField(max_length=255, null=True, blank=True)
 
+    # Profile validation fields
+    is_approved = models.BooleanField(default=True, help_text="Admin approval status")
+    is_profile_complete = models.BooleanField(default=False, help_text="Whether all required fields are filled")
+    approved_at = models.DateTimeField(null=True, blank=True)
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_profiles')
+
     created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.company_name or 'Unnamed Company'} ({self.user.user_id})"
+    
+    def check_profile_completion(self):
+        """Check if all required fields are filled"""
+        required_fields = [
+            self.first_name, self.last_name, self.email, self.contact_number,
+            self.business_type, self.company_name, self.gst_registration_no,
+            self.address_line_1, self.city, self.state, self.pincode,
+            self.return_address_line_1,
+            self.gst_certificate, self.identity_proof, self.address_proof,
+            self.account_holder_name, self.account_number, self.ifsc_code,
+            self.bank_name, self.branch_name
+        ]
+        is_complete = all(field for field in required_fields)
+        self.is_profile_complete = is_complete
+        self.save(update_fields=['is_profile_complete'])
+        return is_complete
 
 
 class OTPVerification(models.Model):
@@ -127,4 +150,3 @@ class Address(models.Model):
 
     def __str__(self):
         return f"{self.address_name or 'Address'} - {self.city}, {self.state}"
-

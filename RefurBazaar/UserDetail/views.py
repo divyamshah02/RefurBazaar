@@ -120,21 +120,30 @@ class UserDetailViewSet(viewsets.ViewSet):
 
         # --- If refurbisher, handle CompanyProfile ---
         if role == 'refurbisher':
-            data = request.data.copy()
-            data['user'] = user.id
-
             # Check if company profile exists for this refurbisher
             company_profile = getattr(user, 'company_profile', None)
 
             if company_profile:
-                # Update existing profile
-                serializer = CompanyProfileSerializer(company_profile, data=data, partial=True)
+                # Update existing profile - handle both FILES and DATA
+                serializer = CompanyProfileSerializer(
+                    company_profile, 
+                    data=request.data, 
+                    partial=True,
+                    context={'request': request}
+                )
             else:
                 # Create new profile
-                serializer = CompanyProfileSerializer(data=data)
+                data = request.data.copy()
+                data['user'] = user.id
+                serializer = CompanyProfileSerializer(
+                    data=data,
+                    context={'request': request}
+                )
 
             if serializer.is_valid():
-                serializer.save()
+                company_profile = serializer.save()
+                # Check if profile is complete
+                is_complete = company_profile.check_profile_completion()
             else:
                 return Response({
                     "success": False,
@@ -144,10 +153,22 @@ class UserDetailViewSet(viewsets.ViewSet):
                     "error": serializer.errors
                 }, status=status.HTTP_400_BAD_REQUEST)
 
+        # Return updated user and company profile data
+        user_data = UserSerializer(user).data
+        company_data = None
+        if role == 'refurbisher':
+            company = getattr(user, 'company_profile', None)
+            if company:
+                company_data = CompanyProfileSerializer(company).data
+
         return Response({
             "success": True,
             "user_not_logged_in": False,
             "user_unauthorized": False,
-            "data": "User details updated successfully.",
+            "data": {
+                "message": "User details updated successfully.",
+                "user": user_data,
+                "company_profile": company_data
+            },
             "error": None
         }, status=status.HTTP_200_OK)

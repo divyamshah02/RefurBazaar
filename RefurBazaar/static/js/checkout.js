@@ -3,19 +3,41 @@ let cartListUrl = null
 let createOrderUrl = null
 let verifyPaymentUrl = null
 let addressesUrl = null
+let otpUrl = null
 let cartData = null
 let userAddresses = []
+let isUserLoggedIn = false
+let currentOtpId = null
+let resendTimerInterval = null
 
-function init(csrf, cartUrl, orderUrl, verifyUrl, addrUrl) {
+function init(csrf, cartUrl, orderUrl, verifyUrl, addrUrl, otpEndpoint) {
   csrfToken = csrf
   cartListUrl = cartUrl
   createOrderUrl = orderUrl
   verifyPaymentUrl = verifyUrl
   addressesUrl = addrUrl
+  otpUrl = otpEndpoint
 
+  checkUserAuth()
   loadCart()
-  loadAddresses()
   setupEventListeners()
+  setupOtpModal()
+}
+
+async function checkUserAuth() {
+  try {
+    const [success, response] = await callApi("GET", addressesUrl, null, csrfToken)
+
+    if (response.success && !response.user_not_logged_in) {
+      isUserLoggedIn = true
+      loadAddresses()
+    } else {
+      isUserLoggedIn = false
+    }
+  } catch (error) {
+    console.log("[v0] User not logged in")
+    isUserLoggedIn = false
+  }
 }
 
 async function loadCart() {
@@ -88,6 +110,8 @@ function updateCartBadge(data) {
 }
 
 async function loadAddresses() {
+  if (!isUserLoggedIn) return
+
   try {
     const [success, response] = await callApi("GET", addressesUrl, null, csrfToken)
 
@@ -152,29 +176,23 @@ function renderSavedAddresses() {
 }
 
 function selectAddress(index) {
-  // Update border
   document.querySelectorAll(".address-card").forEach((card) => card.classList.remove("border-primary"))
   event.currentTarget.classList.add("border-primary")
 
-  // Fill form
   fillAddressFields(userAddresses[index])
 
-  // Check radio
   document.getElementById(`address${index}`).checked = true
 }
 
 function selectNewAddress() {
-  // Update border
   document.querySelectorAll(".address-card").forEach((card) => card.classList.remove("border-primary"))
   event.currentTarget.classList.add("border-primary")
 
-  // Clear form
   document.getElementById("address").value = ""
   document.getElementById("city").value = ""
   document.getElementById("state").value = ""
   document.getElementById("pincode").value = ""
 
-  // Check radio
   document.getElementById("addressNew").checked = true
 }
 
@@ -186,7 +204,6 @@ function fillAddressFields(address) {
 }
 
 function setupEventListeners() {
-  // Billing address toggle
   const billingSameCheckbox = document.getElementById("billingSameAsShipping")
   if (billingSameCheckbox) {
     billingSameCheckbox.addEventListener("change", function () {
@@ -201,6 +218,114 @@ async function placeOrder() {
     return
   }
 
+  if (!isUserLoggedIn) {
+    const phone = document.getElementById("phone").value.trim()
+    if (!phone || phone.length !== 10) {
+      showToast("Please enter a valid 10-digit phone number", "error")
+      return
+    }
+    await sendOtpForCheckout(phone)
+    return
+  }
+
+  await proceedWithOrder()
+}
+
+async function sendOtpForCheckout(mobile) {
+  try {
+    const requestData = { mobile: mobile }
+    const [success, response] = await callApi("POST", otpUrl, requestData, csrfToken)
+
+    if (success && response.success) {
+      currentOtpId = response.data.otp_id
+
+      if (response.data.otp) {
+        console.log("[v0] OTP for testing:", response.data.otp)
+        setTimeout(() => {
+          fillOtpForTesting(response.data.otp)
+        }, 500)
+      }
+
+      showOtpModal(mobile)
+      startResendTimer()
+      showToast("OTP sent successfully!", "success")
+    } else {
+      showToast(response.error || "Failed to send OTP. Please try again.", "error")
+    }
+  } catch (error) {
+    console.error("[v0] Error sending OTP:", error)
+    showToast("Failed to send OTP. Please try again.", "error")
+  }
+}
+
+function getCSRFToken() {
+  const name = "csrftoken"
+  const cookies = document.cookie.split(";")
+
+  for (let cookie of cookies) {
+    cookie = cookie.trim()
+    if (cookie.startsWith(name + "=")) {
+      return decodeURIComponent(cookie.substring(name.length + 1))
+    }
+  }
+  return null
+}
+
+async function verifyOtpAndPlaceOrder() {
+  const otpInputs = document.querySelectorAll(".otp-input")
+  const otp = Array.from(otpInputs)
+    .map((input) => input.value)
+    .join("")
+
+  if (otp.length !== 6) {
+    showOtpError("Please enter the complete 6-digit OTP")
+    return
+  }
+
+  if (!currentOtpId) {
+    showOtpError("Invalid session. Please request a new OTP.")
+    return
+  }
+
+  const verifyBtn = document.getElementById("verifyOtpBtn")
+  setButtonLoading(verifyBtn, true)
+  hideOtpError()
+  hideOtpSuccess()
+
+  const requestData = {
+    otp: otp,
+    role: "customer",
+  }
+
+  try {
+    const [success, response] = await callApi("PUT", `${otpUrl}${currentOtpId}/`, requestData, csrfToken)
+
+    setButtonLoading(verifyBtn, false)
+
+    if (success && response.success && response.data.otp_verified) {
+      isUserLoggedIn = true
+      showOtpSuccess("OTP verified successfully!")
+      csrfToken = getCSRFToken()
+      setTimeout(async () => {
+        hideOtpModal()
+        await proceedWithOrder()
+      }, 1000)
+    } else {
+      showOtpError(response.data?.message || "Invalid OTP. Please try again.")
+      clearOtpInputs()
+      document.querySelector(".otp-input").focus()
+    }
+  } catch (error) {
+    setButtonLoading(verifyBtn, false)
+    console.error("[v0] Error verifying OTP:", error)
+    showOtpError("Failed to verify OTP. Please try again.")
+    clearOtpInputs()
+    document.querySelector(".otp-input").focus()
+  }
+}
+
+async function proceedWithOrder() {
+  csrfToken = getCSRFToken()
   const billingSame = document.getElementById("billingSameAsShipping").checked
   const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value
 
@@ -232,10 +357,8 @@ async function placeOrder() {
       const order = response.data
 
       if (paymentMethod === "razorpay" && order.razorpay_order) {
-        // Initiate Razorpay payment
         initiateRazorpayPayment(order)
       } else {
-        // COD success
         showToast("Order placed successfully!", "success")
         setTimeout(() => {
           window.location.href = `/order-success?order_id=${order.order_id}`
@@ -249,6 +372,186 @@ async function placeOrder() {
     console.error("[v0] Error placing order:", error)
     showToast("Failed to place order. Please try again.", "error")
     hideLoading()
+  }
+}
+
+function setupOtpModal() {
+  setupOtpInputs()
+  setupOtpForm()
+  setupResendOtp()
+}
+
+function setupOtpInputs() {
+  const otpInputs = document.querySelectorAll(".otp-input")
+
+  otpInputs.forEach((input, index) => {
+    input.addEventListener("input", (e) => {
+      const value = e.target.value.replace(/[^0-9]/g, "")
+      e.target.value = value
+
+      if (value.length === 1) {
+        e.target.classList.add("filled")
+        if (index < otpInputs.length - 1) {
+          otpInputs[index + 1].focus()
+        }
+      } else {
+        e.target.classList.remove("filled")
+      }
+    })
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Backspace" && !e.target.value && index > 0) {
+        otpInputs[index - 1].focus()
+        otpInputs[index - 1].value = ""
+        otpInputs[index - 1].classList.remove("filled")
+      }
+    })
+
+    input.addEventListener("paste", (e) => {
+      e.preventDefault()
+      const pastedData = e.clipboardData.getData("text").replace(/[^0-9]/g, "")
+
+      if (pastedData.length === 6) {
+        otpInputs.forEach((inp, idx) => {
+          inp.value = pastedData[idx] || ""
+          if (pastedData[idx]) {
+            inp.classList.add("filled")
+          }
+        })
+        otpInputs[5].focus()
+      }
+    })
+  })
+}
+
+function setupOtpForm() {
+  const otpForm = document.getElementById("otpVerificationForm")
+  otpForm.addEventListener("submit", async (e) => {
+    e.preventDefault()
+    await verifyOtpAndPlaceOrder()
+  })
+}
+
+function setupResendOtp() {
+  const resendLink = document.getElementById("resendOtpLink")
+  resendLink.addEventListener("click", async (e) => {
+    e.preventDefault()
+    if (!resendLink.classList.contains("disabled")) {
+      const phone = document.getElementById("phone").value.trim()
+      await sendOtpForCheckout(phone)
+    }
+  })
+}
+
+function showOtpModal(mobile) {
+  const formattedMobile = `+91 ${mobile.slice(0, 5)} ${mobile.slice(5)}`
+  document.getElementById("otpPhoneDisplay").textContent = formattedMobile
+
+  document.getElementById("otpModalBackdrop").classList.add("active")
+  document.getElementById("otpModal").classList.add("active")
+
+  clearOtpInputs()
+  setTimeout(() => {
+    document.querySelector(".otp-input").focus()
+  }, 300)
+}
+
+function hideOtpModal() {
+  document.getElementById("otpModalBackdrop").classList.remove("active")
+  document.getElementById("otpModal").classList.remove("active")
+  clearOtpInputs()
+  stopResendTimer()
+}
+
+function clearOtpInputs() {
+  const otpInputs = document.querySelectorAll(".otp-input")
+  otpInputs.forEach((input) => {
+    input.value = ""
+    input.classList.remove("filled")
+  })
+}
+
+function fillOtpForTesting(otp) {
+  if (otp && otp.length === 6) {
+    const otpInputs = document.querySelectorAll(".otp-input")
+    otpInputs.forEach((input, index) => {
+      input.value = otp[index]
+      input.classList.add("filled")
+    })
+  }
+}
+
+function startResendTimer() {
+  const resendLink = document.getElementById("resendOtpLink")
+  const resendTimer = document.getElementById("resendTimer")
+  const timerCount = document.getElementById("timerCount")
+
+  let timeLeft = 30
+
+  resendLink.classList.add("disabled")
+  resendTimer.style.display = "inline"
+
+  stopResendTimer()
+
+  resendTimerInterval = setInterval(() => {
+    timeLeft--
+    timerCount.textContent = timeLeft
+
+    if (timeLeft <= 0) {
+      stopResendTimer()
+      resendLink.classList.remove("disabled")
+      resendTimer.style.display = "none"
+    }
+  }, 1000)
+}
+
+function stopResendTimer() {
+  if (resendTimerInterval) {
+    clearInterval(resendTimerInterval)
+    resendTimerInterval = null
+  }
+}
+
+function showOtpError(message) {
+  const errorDiv = document.getElementById("otpErrorMessage")
+  errorDiv.textContent = message
+  errorDiv.classList.remove("d-none")
+
+  setTimeout(() => {
+    hideOtpError()
+  }, 5000)
+}
+
+function hideOtpError() {
+  const errorDiv = document.getElementById("otpErrorMessage")
+  errorDiv.classList.add("d-none")
+}
+
+function showOtpSuccess(message) {
+  const successDiv = document.getElementById("otpSuccessMessage")
+  successDiv.textContent = message
+  successDiv.classList.remove("d-none")
+}
+
+function hideOtpSuccess() {
+  const successDiv = document.getElementById("otpSuccessMessage")
+  successDiv.classList.add("d-none")
+}
+
+function setButtonLoading(button, isLoading) {
+  if (isLoading) {
+    button.classList.add("btn-loading")
+    button.disabled = true
+    const loader = document.createElement("span")
+    loader.className = "loader"
+    button.appendChild(loader)
+  } else {
+    button.classList.remove("btn-loading")
+    button.disabled = false
+    const loader = button.querySelector(".loader")
+    if (loader) {
+      loader.remove()
+    }
   }
 }
 
@@ -323,7 +626,6 @@ function validateForm() {
     }
   })
 
-  // Validate billing if not same as shipping
   const billingSame = document.getElementById("billingSameAsShipping").checked
   if (!billingSame) {
     const billingFields = ["billingAddress", "billingCity", "billingState", "billingPincode"]
@@ -421,3 +723,4 @@ function createToastContainer() {
   document.body.appendChild(container)
   return container
 }
+

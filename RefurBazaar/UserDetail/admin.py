@@ -32,7 +32,7 @@ class CompanyProfileAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ("Company Information", {
-            "fields": ("user", "company_name", "business_type", "gst_registration_no", "business_license")
+            "fields": ("user", "company_name", "business_type", "gst_registration_no", "business_license", "is_approved", "is_profile_complete", "approved_at", "approved_by")
         }),
         ("Contact Details", {
             "fields": ("first_name", "last_name", "email", "contact_number", "alternate_contact_number")

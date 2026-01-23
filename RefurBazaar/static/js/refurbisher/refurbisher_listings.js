@@ -50,19 +50,21 @@ function setupEventListeners() {
 }
 
 /**
- * Load user information
+ * Load user information and check profile status
  */
 async function loadUserInfo() {
   try {
     const [success, response] = await callApi("GET", API_URLS.userDetail)
     if (response.success && response.data) {
       const userName =
-        response.data.first_name && response.data.last_name
-          ? `${response.data.first_name} ${response.data.last_name}`
-          : response.data.name || "User"
+        response.data.user?.first_name && response.data.user?.last_name
+          ? `${response.data.user.first_name} ${response.data.user.last_name}`
+          : response.data.user?.name || "User"
 
-      // document.getElementById("user-name").textContent = userName
-      // document.getElementById("sidebar-user-name").textContent = userName
+      // Show profile validation alert if available
+      if (window.checkProfileStatus) {
+        window.checkProfileStatus(response.data.company_profile)
+      }
     }
   } catch (error) {
     console.error("Error loading user info:", error)
@@ -447,10 +449,3 @@ function showNotification(message, type = "info") {
     }
   }, 5000)
 }
-
-/**
- * Call API helper function
- * @param {string} method - HTTP method
- * @param {string} url - API endpoint URL
- * @param {Object} data - Data to send in request body (optional)
- */

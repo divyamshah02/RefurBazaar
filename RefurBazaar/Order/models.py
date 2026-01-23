@@ -104,6 +104,16 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     """Order items - each item references a unique ListingUnit"""
+    
+    FULFILLMENT_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('device_verified', 'Device Verified'),
+        ('packed', 'Packed'),
+        ('shipped', 'Shipped'),
+        ('delivered', 'Delivered'),
+        ('rejected', 'Rejected'),
+    ]
+    
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     listing_unit = models.OneToOneField(ListingUnit, on_delete=models.PROTECT)
     
@@ -115,10 +125,35 @@ class OrderItem(models.Model):
     refurbisher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sold_items')
     refurbisher_name = models.CharField(max_length=200)
     
+    # Device verification details (filled by refurbisher)
+    device_imei = models.CharField(max_length=50, null=True, blank=True, help_text="IMEI or identification number")
+    verification_notes = models.TextField(null=True, blank=True, help_text="Notes from refurbisher during verification")
+    verified_at = models.DateTimeField(null=True, blank=True)
+    
+    # Fulfillment status
+    fulfillment_status = models.CharField(max_length=20, choices=FULFILLMENT_STATUS_CHOICES, default='pending')
+    packed_at = models.DateTimeField(null=True, blank=True)
+    rejection_reason = models.TextField(null=True, blank=True)
+    rejected_at = models.DateTimeField(null=True, blank=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         ordering = ['created_at']
     
     def __str__(self):
         return f"OrderItem {self.id} - {self.order.order_id}"
+
+
+class DevicePhoto(models.Model):
+    """Device photos uploaded by refurbisher during verification"""
+    order_item = models.ForeignKey(OrderItem, on_delete=models.CASCADE, related_name='device_photos')
+    photo = models.ImageField(upload_to='device_photos/%Y/%m/%d/', help_text="Device verification photo")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['uploaded_at']
+    
+    def __str__(self):
+        return f"Photo for OrderItem {self.order_item.id}"

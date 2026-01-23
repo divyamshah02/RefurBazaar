@@ -13,6 +13,7 @@ urlpatterns = [
     path('product-api/', include('Product.urls')),
     path('cart-api/', include('ShoppingCart.urls')),
     path('order-api/', include('Order.urls')),
+    path('admin-api/', include('Admin.urls')),
     # path('marketplace-api/', include('MarketPlace.urls')),
     
     

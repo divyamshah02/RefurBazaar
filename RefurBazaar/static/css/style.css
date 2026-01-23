@@ -4352,12 +4352,12 @@ body {
   border-bottom: none;
 }
 
-.cart-item:hover {
+/* .cart-item:hover {
   background: var(--bg-light);
   border-radius: 12px;
   margin: 0 -1rem;
   padding: 2rem 1rem;
-}
+} */
 
 .cart-item .item-image {
   flex-shrink: 0;

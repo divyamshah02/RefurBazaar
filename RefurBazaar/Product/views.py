@@ -392,7 +392,7 @@ class ProductModelAttributeViewSet(viewsets.ViewSet):
 class ListingViewSet(viewsets.ViewSet):
 
     @handle_exceptions
-    @check_authentication(required_role='refurbisher')
+    @check_refurbisher_profile()
     def create(self, request):
         """
         Create Listing with units and attributes.
@@ -482,7 +482,7 @@ class ListingViewSet(viewsets.ViewSet):
         }, status=status.HTTP_201_CREATED)
     
     @handle_exceptions
-    @check_authentication(required_role='refurbisher')  # Added authentication to ensure only logged-in refurbishers can list
+    @check_refurbisher_profile()
     def list(self, request):
         model_id = request.query_params.get('model_id')
         status_filter = request.query_params.get('status')

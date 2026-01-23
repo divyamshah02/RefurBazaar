@@ -1,0 +1,25 @@
+<div class="d-flex" id="wrapper">
+    <!-- Sidebar -->
+    <div class="bg-dark" id="sidebar-wrapper" style="min-height: 100vh; width: 250px; position: fixed;">
+        <div class="sidebar-heading text-white p-4 border-bottom border-secondary">
+            <h4 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Admin Panel</h4>
+        </div>
+        <div class="list-group list-group-flush">
+            <a href="/admin-dashboard/" class="list-group-item list-group-item-action bg-dark text-white border-secondary {% if request.path == '/admin-dashboard/' %}active{% endif %}">
+                <i class="fas fa-chart-line me-2"></i>Dashboard
+            </a>
+            <a href="/admin-orders/" class="list-group-item list-group-item-action bg-dark text-white border-secondary {% if request.path == '/admin-orders/' %}active{% endif %}">
+                <i class="fas fa-shopping-cart me-2"></i>Orders
+            </a>
+            <a href="/admin-refurbishers/" class="list-group-item list-group-item-action bg-dark text-white border-secondary {% if request.path == '/admin-refurbishers/' %}active{% endif %}">
+                <i class="fas fa-store me-2"></i>Refurbishers
+            </a>
+            <a href="/admin-pending-refurbishers/" class="list-group-item list-group-item-action bg-dark text-white border-secondary {% if request.path == '/admin-pending-refurbishers/' %}active{% endif %}">
+                <i class="fas fa-clock me-2"></i>Pending Approvals
+            </a>
+            <a href="/admin-customers/" class="list-group-item list-group-item-action bg-dark text-white border-secondary {% if request.path == '/admin-customers/' %}active{% endif %}">
+                <i class="fas fa-users me-2"></i>Customers
+            </a>
+        </div>
+    </div>
+</div>
