@@ -31,6 +31,8 @@ router.register(r'admin-order-detail', AdminOrderDetailPageViewSet, basename='ad
 router.register(r'admin-refurbishers', AdminRefurbishersPageViewSet, basename='admin-refurbishers')
 router.register(r'admin-pending-refurbishers', AdminPendingRefurbishersPageViewSet, basename='admin-pending-refurbishers')
 router.register(r'admin-refurbisher-detail', AdminRefurbisherDetailPageViewSet, basename='admin-refurbisher-detail')
+router.register(r'admin-listings', AdminListingsPageViewSet, basename='admin-listings')
+router.register(r'admin-listing-detail', AdminListingDetailPageViewSet, basename='admin-listing-detail')
 router.register(r'admin-customers', AdminCustomersPageViewSet, basename='admin-customers')
 
 urlpatterns = [

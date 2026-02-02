@@ -1,0 +1,517 @@
+/* Cart Page Specific Styles - Revibe Layout */
+
+.cart-page-wrapper {
+  background: #f8f9fa;
+  min-height: 100vh;
+  padding-bottom: 3rem;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  background: transparent;
+  font-size: 0.875rem;
+}
+
+.breadcrumb-item a {
+  color: #6c757d;
+  text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+  color: #495057;
+}
+
+.breadcrumb-item.active {
+  color: #212529;
+}
+
+/* Cashback Banner */
+.cashback-banner {
+  background: linear-gradient(90deg, #e6f7ff 0%, #d4edff 100%);
+  border: 1px solid #91d5ff;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.cashback-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.cashback-icon {
+  width: 50px;
+  height: 50px;
+  margin-right: 1rem;
+}
+
+.cashback-text {
+  display: flex;
+  align-items: center;
+  color: #0958d9;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.cashback-text i {
+  color: #0958d9;
+}
+
+/* Cart Table */
+.cart-table-wrapper {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.cart-table {
+  width: 100%;
+  margin: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.cart-table thead {
+  background: #f8f9fa;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.cart-table thead th {
+  padding: 1rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #495057;
+  text-align: left;
+  border: none;
+}
+
+.cart-table thead th:last-child {
+  width: 60px;
+}
+
+.cart-table tbody tr {
+  border-bottom: 1px solid #e9ecef;
+  transition: background-color 0.2s ease;
+}
+
+.cart-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.cart-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.cart-table td {
+  padding: 1.5rem 1.5rem;
+  vertical-align: middle;
+}
+
+/* Product Cell */
+.product-cell {
+  min-width: 300px;
+}
+
+.product-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.product-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #f8f9fa;
+  flex-shrink: 0;
+}
+
+.product-details {
+  flex: 1;
+}
+
+.product-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #212529;
+  margin: 0 0 0.25rem 0;
+  line-height: 1.3;
+}
+
+.product-specs {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Price Cell */
+.price-cell {
+  text-align: left;
+  min-width: 120px;
+}
+
+.item-price {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+/* Quantity Cell */
+.quantity-cell {
+  text-align: center;
+  min-width: 140px;
+}
+
+.quantity-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 2px solid #e9ecef;
+  border-radius: 50px;
+  padding: 0.25rem 0.5rem;
+  background: white;
+}
+
+.qty-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: #6c757d;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  font-size: 0.75rem;
+}
+
+.qty-btn:hover:not(:disabled) {
+  background: #f8f9fa;
+  color: #212529;
+}
+
+.qty-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.quantity {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #212529;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Total Cell */
+.total-cell {
+  text-align: left;
+  min-width: 120px;
+}
+
+.item-total {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+/* Remove Cell */
+.remove-cell {
+  text-align: center;
+  width: 60px;
+}
+
+.remove-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: #6c757d;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  font-size: 1.125rem;
+}
+
+.remove-btn:hover {
+  background: #fee;
+  color: #dc3545;
+}
+
+/* Order Summary Card */
+.order-summary-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 170px;
+}
+
+.order-summary-card h5 {
+  font-size: 1.25rem;
+  color: #212529;
+  margin-bottom: 1.5rem;
+}
+
+/* Summary Total */
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.summary-total-label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #495057;
+}
+
+.summary-total-amount {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+/* Checkout Button */
+.btn-checkout {
+  background: linear-gradient(135deg, #c026d3 0%, #a21caf 100%);
+  color: white;
+  border: none;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(192, 38, 211, 0.3);
+}
+
+.btn-checkout:hover {
+  background: linear-gradient(135deg, #a21caf 0%, #86198f 100%);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(192, 38, 211, 0.4);
+}
+
+.checkout-note {
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin: 0;
+  padding: 0;
+}
+
+/* Payment Secure Section */
+.payment-secure {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.secure-icon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1rem;
+}
+
+.payment-secure > div:first-child {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #212529;
+}
+
+.payment-logos {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 3rem;
+}
+
+.payment-logos i {
+  font-size: 2rem;
+  color: #495057;
+}
+
+/* BNPL Section */
+.bnpl-section h6 {
+  font-size: 0.875rem;
+  color: #212529;
+}
+
+.bnpl-logos {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.bnpl-badge {
+  padding: 0.5rem 1rem;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #495057;
+}
+
+/* Trust Badges Inline */
+.trust-badges-inline {
+  display: flex;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.trust-badge-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+}
+
+.trust-badge-item i {
+  font-size: 1.75rem;
+  color: #495057;
+}
+
+.trust-badge-item div {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.trust-badge-item strong {
+  color: #212529;
+  font-weight: 600;
+}
+
+.trust-badge-item span {
+  color: #6c757d;
+  font-weight: 400;
+}
+
+/* Empty Cart Message */
+#emptyCartMessage {
+  background: white;
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+  .order-summary-card {
+    position: static;
+    margin-top: 2rem;
+  }
+  
+  .cart-table-wrapper {
+    overflow-x: auto;
+  }
+  
+  .product-cell {
+    min-width: 250px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .cart-table thead {
+    display: none;
+  }
+  
+  .cart-table tbody tr {
+    display: block;
+    margin-bottom: 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    background: white;
+  }
+  
+  .cart-table td {
+    display: block;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    border: none;
+  }
+  
+  .cart-table td:first-child {
+    padding-top: 1rem;
+  }
+  
+  .cart-table td:last-child {
+    padding-bottom: 1rem;
+  }
+  
+  .product-cell,
+  .price-cell,
+  .quantity-cell,
+  .total-cell,
+  .remove-cell {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .remove-cell {
+    text-align: left;
+  }
+  
+  .cart-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    display: inline-block;
+    margin-right: 0.5rem;
+    color: #495057;
+  }
+  
+  .product-cell::before,
+  .remove-cell::before {
+    display: none;
+  }
+  
+  .cashback-banner {
+    padding: 1rem;
+  }
+  
+  .cashback-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .trust-badges-inline {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .trust-badge-item {
+    flex-direction: row;
+    justify-content: flex-start;
+    text-align: left;
+  }
+  
+  .trust-badge-item i {
+    font-size: 1.5rem;
+  }
+}

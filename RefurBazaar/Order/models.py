@@ -123,7 +123,7 @@ class OrderItem(models.Model):
     
     # Refurbisher info
     refurbisher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sold_items')
-    refurbisher_name = models.CharField(max_length=200)
+    refurbisher_name = models.CharField(max_length=200, blank=True, null=True)
     
     # Device verification details (filled by refurbisher)
     device_imei = models.CharField(max_length=50, null=True, blank=True, help_text="IMEI or identification number")

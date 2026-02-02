@@ -30,100 +30,103 @@ async function loadCart() {
 
 function renderCart(data) {
   const container = document.getElementById("cartItemsContainer")
-  const cartActions = document.getElementById("cartActions")
+  const cartTableWrapper = document.getElementById("cartTableWrapper")
   const cartSummary = document.getElementById("cartSummary")
-  const trustBadges = document.getElementById("trustBadges")
+  // const cashbackBanner = document.getElementById("cashbackBanner")
+  const emptyCartMessage = document.getElementById("emptyCartMessage")
 
   if (!data.items || data.items.length === 0) {
     showEmptyCart()
     return
   }
 
-  // Show cart actions and summary
-  cartActions.style.display = "block"
+  // Show cart table, summary and cashback banner
+  cartTableWrapper.style.display = "block"
   cartSummary.style.display = "block"
-  trustBadges.style.display = "block"
+  // cashbackBanner.style.display = "block"
+  emptyCartMessage.style.display = "none"
 
   // Update cart item count in header
   document.getElementById("cartItemCount").textContent =
     `${data.items.length} item${data.items.length !== 1 ? "s" : ""} in your cart`
 
-  // Render each cart item
+  // Render each cart item as table row
   container.innerHTML = data.items
     .map((item, index) => {
       const unit = item.listing_unit
-      const attributes = unit.attributes.map((attr) => `${attr.value}`).join(" • ")
+      const attributes = unit.attributes.map((attr) => `${attr.value}`).join(" / ")
       const imageUrl = unit.image || "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=120&h=120&fit=crop"
 
       return `
-            <div class="cart-item-wrapper mb-4" data-item-id="${item.id}" data-unit-id="${unit.id}">
-                <div class="cart-item">
-                    <div class="item-image-container">
-                        <img src="${imageUrl}" alt="${unit.model_name}" class="item-image">
-                    </div>
-                    <div class="item-details">
-                        <h5 class="item-title">${unit.brand_name} ${unit.model_name} - ${attributes}</h5>
-                        <p class="item-condition">${unit.condition.charAt(0).toUpperCase() + unit.condition.slice(1)} Condition • ${unit.refurbisher_name}</p>
-                        <div class="item-features">
-                            <span class="feature-badge">1 Year Warranty</span>
-                            <span class="feature-badge">Free Shipping</span>
-                        </div>
-                        <div class="item-actions">
-                            <button class="btn btn-link text-danger p-0" onclick="removeFromCart(${item.id})">
-                                <i class="fas fa-trash"></i> Remove
-                            </button>
+            <tr class="cart-item-row" data-item-id="${item.id}" data-unit-id="${unit.id}">
+                <td class="product-cell">
+                    <div class="product-info">
+                        <img src="${imageUrl}" alt="${unit.model_name}" class="product-image">
+                        <div class="product-details">
+                            <h6 class="product-name">${unit.brand_name} ${unit.model_name}</h6>
+                            <p class="product-specs">${attributes} / ${unit.condition.charAt(0).toUpperCase() + unit.condition.slice(1)}</p>
                         </div>
                     </div>
-                    <div class="item-quantity">
-                        <div class="quantity-controls">
-                            <button class="btn btn-outline-secondary btn-sm" disabled>-</button>
-                            <span class="quantity">1</span>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="increaseQuantity(${item.id}, ${unit.id}, '${unit.model_name}', '${unit.condition}', ${JSON.stringify(unit.attributes).replace(/"/g, "&quot;")}, '${unit.refurbisher_name}')">+</button>
-                        </div>
+                </td>
+                <td class="price-cell">
+                    <span class="item-price">₹${Number.parseFloat(unit.price).toLocaleString("en-US")}</span>
+                </td>
+                <td class="quantity-cell">
+                    <div class="quantity-controls">
+                        <button class="qty-btn" disabled>
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <span class="quantity">1</span>
+                        <button class="qty-btn" onclick="increaseQuantity(${item.id}, ${unit.id}, '${unit.model_name}', '${unit.condition}', ${JSON.stringify(unit.attributes).replace(/"/g, "&quot;")}, '${unit.refurbisher_name}')">
+                            <i class="fas fa-plus"></i>
+                        </button>
                     </div>
-                    <div class="item-price">
-                        <div class="current-price">₹${Number.parseFloat(unit.price).toLocaleString("en-IN")}</div>
-                    </div>
-                </div>
-            </div>
+                </td>
+                <td class="total-cell">
+                    <span class="item-total">₹${Number.parseFloat(unit.price).toLocaleString("en-US")}</span>
+                </td>
+                <td class="remove-cell">
+                    <button class="remove-btn" onclick="removeFromCart(${item.id})" title="Remove item">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </td>
+            </tr>
         `
     })
     .join("")
 }
 
 function showEmptyCart() {
-  const container = document.getElementById("cartItemsContainer")
-  const cartActions = document.getElementById("cartActions")
+  const cartTableWrapper = document.getElementById("cartTableWrapper")
   const cartSummary = document.getElementById("cartSummary")
-  const trustBadges = document.getElementById("trustBadges")
+  // const cashbackBanner = document.getElementById("cashbackBanner")
+  const emptyCartMessage = document.getElementById("emptyCartMessage")
 
-  cartActions.style.display = "none"
+  cartTableWrapper.style.display = "none"
   cartSummary.style.display = "none"
-  trustBadges.style.display = "none"
+  // cashbackBanner.style.display = "none"
+  emptyCartMessage.style.display = "block"
 
   document.getElementById("cartItemCount").textContent = "0 items in your cart"
 
-  container.innerHTML = `
-        <div class="text-center py-5">
-            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
-            <h5 class="text-muted">Your cart is empty</h5>
-            <p class="text-muted mb-4">Looks like you haven't added any items to your cart yet.</p>
-            <a href="/shop" class="btn btn-primary">Continue Shopping</a>
-        </div>
-    `
+  // Update cart badge in navbar
+  const cartBadge = document.getElementById("cartCount")
+  if (cartBadge) {
+    cartBadge.textContent = 0
+  }
 }
 
 function updateCartSummary(data) {
   if (!data.items || data.items.length === 0) return
 
   const subtotal = Number.parseFloat(data.total_price)
-  const tax = Math.round(subtotal * 0.18)
-  const total = subtotal + tax
+  const total = subtotal
 
-  document.getElementById("summaryItemCount").textContent = data.items.length
-  document.getElementById("summarySubtotal").textContent = `₹${subtotal.toLocaleString("en-IN")}`
-  document.getElementById("summaryTax").textContent = `₹${tax.toLocaleString("en-IN")}`
-  document.getElementById("summaryTotal").textContent = `₹${total.toLocaleString("en-IN")}`
+  document.getElementById("summaryTotal").textContent = `₹${total.toLocaleString("en-US", {minimumFractionDigits: 0, maximumFractionDigits: 0})}`
+
+  // Update cashback banner
+  // const cashbackAmount = Math.floor(total * 0.05) // 5% cashback example
+  // document.getElementById("cashbackAmount").textContent = `${cashbackAmount} ₹Cashback`
 
   // Update cart badge in navbar
   const cartBadge = document.getElementById("cartCount")

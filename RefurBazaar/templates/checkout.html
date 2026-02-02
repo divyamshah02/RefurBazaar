@@ -235,75 +235,93 @@
     </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg main-navbar" id="navbar">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand" href="index.html">
-                <i class="fas fa-recycle me-2"></i>RefurBazar
-            </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <div class="navbar-search mx-auto d-none d-lg-block">
-                    <div class="search-container">
-                        <input type="text" class="form-control search-input" placeholder="What are you looking for?" id="searchInput">
-                        <button class="search-btn"><i class="fas fa-search"></i></button>
-                        <div class="search-suggestions" id="searchSuggestions"></div>
+    <!-- Primary Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
+        <div class="container-fluid px-4 d-flex align-items-center">
+
+            <!-- LEFT -->
+            <div class="navbar-left d-flex align-items-center">
+                <a class="navbar-brand" href="/">
+                    <img src="/static/images/refurbazaar-final-logo.png" alt="RefurBazaar" height="90">
+                </a>
+            </div>
+
+            <!-- CENTER -->
+            <div class="navbar-center flex-grow-1 d-flex justify-content-center">
+                <div class="search-container">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="What are you looking for..." id="searchInput">
+                        <button class="btn btn-search" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
                     </div>
                 </div>
-                
-                <div class="d-flex align-items-center ms-auto">
-                    <a href="#" class="nav-icon me-3" id="wishlistBtn"><i class="fas fa-heart"></i><span class="badge" id="wishlistCount">0</span></a>
-                    <a href="/cart" class="nav-icon me-3" id="cartBtn"><i class="fas fa-shopping-cart"></i><span class="badge" id="cartCount">0</span></a>
-                    <a href="account.html" class="btn btn-primary">My Account</a>
-                </div>
             </div>
+
+            <!-- RIGHT -->
+            <div class="navbar-right d-flex align-items-center">
+                <ul class="navbar-nav flex-row align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="far fa-user"></i></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="wishlistBtn">
+                            <i class="far fa-heart"></i>
+                            <span class="badge" id="wishlistCount" style="display:none;">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="cartBtn">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="badge" id="cartCount" style="display:none;">0</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
         </div>
     </nav>
 
-    <!-- Category Navigation Menu -->
-    <nav class="category-navbar">
-        <div class="container">
-            <div class="category-menu">
-                <div class="category-item-wrapper">
-                    <a href="index.html" class="category-item">
-                        <i class="fas fa-fire text-danger me-1"></i>
-                        Good deals
-                    </a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Smartphones</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Laptops</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Tablets</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Gaming consoles</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Smartwatches</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Audio</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Home appliances</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">More</a>
-                </div>
-            </div>
+    <!-- Secondary Navigation (Category Nav) -->
+    <div class="secondary-nav">
+        <div class="container-fluid px-4">
+            <ul class="nav justify-content-center flex-wrap">
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="fas fa-fire"></i> End of Year Sale</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">iPhones</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Samsung</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">MacBooks</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Laptops</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">iPads</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Accessories and Audio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">For Businesses</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Need Help?</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="fas fa-bolt"></i> RefurBazar Express</a>
+                </li>
+            </ul>
         </div>
-    </nav>
+    </div>
 
     <!-- Checkout Page -->
-    <div class="container py-5" style="margin-top: 180px;">
+    <div class="container py-5" style="max-width: 95%;">
         <div class="row">
             <div class="col-lg-8">
                 <div class="checkout-form">
@@ -500,7 +518,7 @@
             </div>
 
             <button type="submit" class="btn btn-verify-otp w-100" id="verifyOtpBtn">
-                <span class="btn-text">Verify & Continue</span>
+                <span class="text-white">Verify & Continue</span>
             </button>
         </form>
 

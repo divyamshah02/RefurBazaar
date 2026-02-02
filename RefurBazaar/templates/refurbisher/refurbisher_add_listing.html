@@ -53,7 +53,7 @@
                             </div>
 
                             <!-- Step 1: Device Selection -->
-                            <div class="wizard-content" id="content1">
+                            <div class="wizard-content" id="content1" style="min-height: 0px;">
                                 <h4 class="mb-4">Step 1: Select Device</h4>
                                 <div class="row">
                                     <div class="col-md-4">
@@ -83,19 +83,25 @@
                                 </div>
                                 
                                 <!-- Selected Device Info -->
-                                <div id="selectedDeviceInfo" class="alert alert-info mt-4" style="display: none;">
+                                <!-- <div id="selectedDeviceInfo" class="alert alert-info mt-4" style="display: none;">
                                     <h6 class="mb-2"><i class="fas fa-info-circle me-2"></i>Selected Device</h6>
                                     <p class="mb-0" id="deviceInfoText"></p>
-                                </div>
+                                </div> -->
                             </div>
 
                             <!-- Step 2: Add Units -->
                             <div class="wizard-content" id="content2" style="display: none;">
+                                <!-- Selected Device Info -->
+                                <div id="selectedDeviceInfo" class="alert alert-info mb-4">
+                                    <h6 class="mb-2"><i class="fas fa-info-circle me-2"></i>Selected Device</h6>
+                                    <p class="mb-0" id="deviceInfoText"></p>
+                                </div>
+
                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                     <h4 class="mb-0">Step 2: Add Units</h4>
-                                    <button type="button" class="btn btn-primary" id="addUnitBtn">
+                                    <!-- <button type="button" class="btn btn-primary" id="addUnitBtn">
                                         <i class="fas fa-plus me-2"></i>Add Unit
-                                    </button>
+                                    </button> -->
                                 </div>
 
                                 <!-- Condition Guidelines Card -->
@@ -103,7 +109,7 @@
                                     <div class="card-body">
                                         <h6 class="mb-3"><i class="fas fa-clipboard-check me-2"></i>Condition Guidelines</h6>
                                         <div class="row g-3">
-                                            <div class="col-md-6 col-lg-3">
+                                            <div class="col-md-6 col-lg-4">
                                                 <div class="condition-guide excellent">
                                                     <div class="condition-badge">Excellent</div>
                                                     <ul class="condition-criteria">
@@ -114,7 +120,7 @@
                                                     </ul>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6 col-lg-3">
+                                            <div class="col-md-6 col-lg-4">
                                                 <div class="condition-guide good">
                                                     <div class="condition-badge">Good</div>
                                                     <ul class="condition-criteria">
@@ -125,7 +131,7 @@
                                                     </ul>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6 col-lg-3">
+                                            <div class="col-md-6 col-lg-4">
                                                 <div class="condition-guide fair">
                                                     <div class="condition-badge">Fair</div>
                                                     <ul class="condition-criteria">
@@ -136,17 +142,6 @@
                                                     </ul>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6 col-lg-3">
-                                                <div class="condition-guide poor">
-                                                    <div class="condition-badge">Poor</div>
-                                                    <ul class="condition-criteria">
-                                                        <li>Battery <70%</li>
-                                                        <li>Heavy wear</li>
-                                                        <li>Multiple issues</li>
-                                                        <li>Deep scratches/dents</li>
-                                                    </ul>
-                                                </div>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -154,6 +149,13 @@
                                 <!-- Units Container -->
                                 <div id="unitsContainer">
                                     <!-- Units will be dynamically added here -->
+                                </div>
+
+                                <div class="text-center">
+                                    <p>Have more units with different specs?</p>
+                                    <button type="button" class="btn btn-primary" id="addUnitBtn">
+                                        <i class="fas fa-plus me-2"></i>Add Unit
+                                    </button>
                                 </div>
 
                                 <!-- Empty State -->

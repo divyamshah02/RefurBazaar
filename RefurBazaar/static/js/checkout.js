@@ -92,11 +92,13 @@ function updateOrderSummary(data) {
   if (!data.items || data.items.length === 0) return
 
   const subtotal = Number.parseFloat(data.total_price)
-  const shipping = 50.0
-  const tax = Math.round(subtotal * 0.18)
-  const total = subtotal + shipping + tax
+  const shipping = 0
+  // const tax = Math.round(subtotal * 0.18)
+  const total_before_tax = Math.round((subtotal * 100) / 118)
+  const tax = Math.round(subtotal - total_before_tax)
+  const total = total_before_tax + shipping + tax
 
-  document.getElementById("summarySubtotal").textContent = `₹${subtotal.toLocaleString("en-IN")}`
+  document.getElementById("summarySubtotal").textContent = `₹${total_before_tax.toLocaleString("en-IN")}`
   document.getElementById("summaryShipping").textContent = `₹${shipping.toLocaleString("en-IN")}`
   document.getElementById("summaryTax").textContent = `₹${tax.toLocaleString("en-IN")}`
   document.getElementById("summaryTotal").textContent = `₹${total.toLocaleString("en-IN")}`

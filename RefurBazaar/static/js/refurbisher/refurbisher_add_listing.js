@@ -169,13 +169,6 @@ async function onModelChange() {
 
     if (success1 && response1.success) {
       selectedModel = response1.data.find((m) => m.id == modelId)
-
-      const brandName =
-        document.getElementById("brandSelect").options[document.getElementById("brandSelect").selectedIndex].text
-      const categoryName =
-        document.getElementById("categorySelect").options[document.getElementById("categorySelect").selectedIndex].text
-      document.getElementById("deviceInfoText").textContent = `${categoryName} - ${brandName} ${selectedModel.name}`
-      document.getElementById("selectedDeviceInfo").style.display = "block"
     }
 
     const [success2, response2] = await callApi(
@@ -270,7 +263,6 @@ function addNewUnit() {
               <option value="excellent">Excellent</option>
               <option value="good">Good</option>
               <option value="fair">Fair</option>
-              <option value="poor">Poor</option>
             </select>
           </div>
         </div>
@@ -287,11 +279,41 @@ function addNewUnit() {
       `
           : ""
       }
+
+      <!-- More Units Section -->
+      <div class="mt-4 pt-3 border-top">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" data-field="hasmoreqty" id="moreUnits_${unitCounter}" data-unit-id="${unitCounter}">
+          <label class="form-check-label" for="moreUnits_${unitCounter}">
+            Have more units? (same specifications & price)
+          </label>
+        </div>
+        
+        <div id="quantityContainer_${unitCounter}" style="display: none;" class="mt-3">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">Quantity of same units *</label>
+                <input type="number" class="form-control" data-field="quantity" min="1" placeholder="e.g., 5" value="1">
+                <small class="text-muted">Total units with same specs will be: 1 + quantity entered here</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `
 
   document.getElementById("unitsContainer").appendChild(unitCard)
   document.getElementById("emptyUnitsState").style.display = "none"
+
+  // Add event listener for the checkbox
+  const checkbox = unitCard.querySelector(`#moreUnits_${unitCounter}`)
+  const quantityContainer = unitCard.querySelector(`#quantityContainer_${unitCounter}`)
+  
+  checkbox.addEventListener("change", function() {
+    quantityContainer.style.display = this.checked ? "block" : "none"
+  })
 
   console.log("Added unit:", unitCounter)
 }
@@ -330,6 +352,22 @@ function changeStep(direction) {
 
   currentStep = newStep
   updateStepDisplay()
+
+  // If moving to step 2, show device info and auto-add first unit
+  if (currentStep === 2) {
+    showSelectedDeviceInfo()
+    addNewUnit() // Auto-click add unit button
+  }
+}
+
+/**
+ * Show selected device info at the top of step 2
+ */
+function showSelectedDeviceInfo() {
+  const brandName = document.getElementById("brandSelect").options[document.getElementById("brandSelect").selectedIndex].text
+  const categoryName = document.getElementById("categorySelect").options[document.getElementById("categorySelect").selectedIndex].text
+  document.getElementById("deviceInfoText").textContent = `${categoryName} - ${brandName} ${selectedModel.name}`
+  document.getElementById("selectedDeviceInfo").style.display = ""
 }
 
 /**
@@ -486,6 +524,11 @@ function collectFormData() {
   unitCards.forEach((unitCard) => {
     const price = Number.parseFloat(unitCard.querySelector('[data-field="price"]')?.value)
     const condition = unitCard.querySelector('[data-field="condition"]')?.value
+    // const hasMoreUnits = unitCard.querySelector('[data-field="quantity"]')?.parentElement?.parentElement?.parentElement?.previousElementSibling?.querySelector('input[type="checkbox"]')?.checked || false
+    const hasMoreUnits = unitCard.querySelector('[data-field="hasmoreqty"]')?.checked || false
+    console.log(hasMoreUnits)
+    const quantity = hasMoreUnits ? Number.parseInt(unitCard.querySelector('[data-field="quantity"]')?.value || 1) : 0
+    console.log(quantity)
 
     const attributes = []
     modelAttributes.forEach((attrLink) => {
@@ -498,11 +541,23 @@ function collectFormData() {
       }
     })
 
+    // Create the base unit
     units.push({
       price: price,
       condition: condition,
       attributes: attributes,
     })
+
+    // If more units selected, create additional units with same specs
+    if (hasMoreUnits && quantity > 0) {
+      for (let i = 0; i < quantity; i++) {
+        units.push({
+          price: price,
+          condition: condition,
+          attributes: attributes,
+        })
+      }
+    }
   })
 
   return {

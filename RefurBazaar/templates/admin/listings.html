@@ -1,0 +1,762 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listings Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px 30px;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card.active {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        }
+
+        .stat-card.pending {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .stat-card.rejected {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        .stat-card h3 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .filters {
+            background: white;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-group label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .filter-group select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .container {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .listings-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table thead {
+            background: #f9f9f9;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #666;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        .table td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .table tbody tr:hover {
+            background: #fafafa;
+        }
+
+        .listing-id {
+            font-weight: 600;
+            color: #667eea;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .listing-id:hover {
+            text-decoration: underline;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .badge-draft {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-pending-approval {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .badge-active {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .badge-rejected {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .badge-sold {
+            background: #f3e5f5;
+            color: #6a1b9a;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+
+        .btn-view {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: #5568d3;
+        }
+
+        .btn-approve {
+            background: #84fab0;
+            color: #333;
+        }
+
+        .btn-approve:hover {
+            background: #67e89d;
+        }
+
+        .btn-reject {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background: #ee5a52;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .refurbisher-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-body textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-cancel {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-cancel:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-submit {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background: #5568d3;
+        }
+
+        @media (max-width: 768px) {
+            .table {
+                font-size: 12px;
+            }
+
+            .table th, .table td {
+                padding: 10px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+
+            .search-box {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Listings Management</h1>
+        <div style="font-size: 14px; color: #666;">
+            <i class="fas fa-user-circle" style="margin-right: 8px;"></i>
+            Admin Dashboard
+        </div>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-card">
+            <h3 id="totalCount">0</h3>
+            <p>Total Listings</p>
+        </div>
+        <div class="stat-card active">
+            <h3 id="activeCount">0</h3>
+            <p>Active Listings</p>
+        </div>
+        <div class="stat-card pending">
+            <h3 id="pendingCount">0</h3>
+            <p>Pending Approval</p>
+        </div>
+        <div class="stat-card rejected">
+            <h3 id="rejectedCount">0</h3>
+            <p>Rejected</p>
+        </div>
+    </div>
+
+    <div class="filters">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search by Listing ID, Product, or Refurbisher...">
+        </div>
+        <div class="filter-group">
+            <label>Status:</label>
+            <select id="statusFilter">
+                <option value="">All Statuses</option>
+                <option value="draft">Draft</option>
+                <option value="pending_approval">Pending Approval</option>
+                <option value="active">Active</option>
+                <option value="rejected">Rejected</option>
+                <option value="sold">Sold</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="listings-table">
+            <div id="loadingState" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Loading listings...</p>
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <i class="fas fa-inbox"></i>
+                <h3>No Listings Found</h3>
+                <p>There are no listings matching your criteria.</p>
+            </div>
+
+            <table class="table" id="listingsTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Listing ID</th>
+                        <th>Product</th>
+                        <th>Refurbisher</th>
+                        <th>Units</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="listingsBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Rejection Modal -->
+    <div class="modal" id="rejectModal">
+        <div class="modal-content">
+            <div class="modal-header">Reject Listing</div>
+            <div class="modal-body">
+                <p>Please provide a reason for rejecting this listing:</p>
+                <textarea id="rejectionReason" placeholder="Enter rejection reason..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeRejectModal()">Cancel</button>
+                <button class="btn btn-submit" onclick="confirmReject()">Reject</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const config = {
+            csrfToken: '{{ csrf_token }}',
+            apiBaseUrl: '/api/products',
+            endpoints: {
+                listings: '/api/products/listings/',
+                approve: (id) => `/api/products/listings/${id}/approve/`,
+                reject: (id) => `/api/products/listings/${id}/reject/`
+            }
+        };
+
+        // State
+        let allListings = [];
+        let currentRejectListingId = null;
+
+        // Initialize
+        function InitializeListingsAdmin() {
+            loadListings();
+            setupEventListeners();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', debounce(filterListings, 300));
+            document.getElementById('statusFilter').addEventListener('change', filterListings);
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        async function callApi(url, options = {}) {
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': config.csrfToken
+                }
+            };
+
+            const mergedOptions = {
+                ...defaultOptions,
+                ...options,
+                headers: {
+                    ...defaultOptions.headers,
+                    ...options.headers
+                }
+            };
+
+            try {
+                const response = await fetch(url, mergedOptions);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'API Error');
+                }
+
+                return data;
+            } catch (error) {
+                console.error('[v0] API Error:', error);
+                showNotification('Error: ' + error.message, 'error');
+                throw error;
+            }
+        }
+
+        async function loadListings() {
+            try {
+                showLoading(true);
+                const response = await callApi(config.endpoints.listings);
+                allListings = response.data || [];
+                updateStats();
+                filterListings();
+                showLoading(false);
+            } catch (error) {
+                console.error('[v0] Failed to load listings:', error);
+                showLoading(false);
+            }
+        }
+
+        function updateStats() {
+            const stats = {
+                total: allListings.length,
+                active: allListings.filter(l => l.status === 'active').length,
+                pending: allListings.filter(l => l.status === 'pending_approval').length,
+                rejected: allListings.filter(l => l.status === 'rejected').length
+            };
+
+            document.getElementById('totalCount').textContent = stats.total;
+            document.getElementById('activeCount').textContent = stats.active;
+            document.getElementById('pendingCount').textContent = stats.pending;
+            document.getElementById('rejectedCount').textContent = stats.rejected;
+        }
+
+        function filterListings() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            const filtered = allListings.filter(listing => {
+                const matchesSearch = !searchTerm || 
+                    listing.listing_id.toLowerCase().includes(searchTerm) ||
+                    listing.model_name.toLowerCase().includes(searchTerm) ||
+                    listing.refurbisher_name.toLowerCase().includes(searchTerm);
+
+                const matchesStatus = !statusFilter || listing.status === statusFilter;
+
+                return matchesSearch && matchesStatus;
+            });
+
+            renderListings(filtered);
+        }
+
+        function renderListings(listings) {
+            const table = document.getElementById('listingsTable');
+            const tbody = document.getElementById('listingsBody');
+            const emptyState = document.getElementById('emptyState');
+
+            tbody.innerHTML = '';
+
+            if (listings.length === 0) {
+                table.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            table.style.display = 'table';
+            emptyState.style.display = 'none';
+
+            listings.forEach(listing => {
+                const row = createListingRow(listing);
+                tbody.appendChild(row);
+            });
+        }
+
+        function createListingRow(listing) {
+            const row = document.createElement('tr');
+            const createdDate = new Date(listing.created_at).toLocaleDateString();
+            const statusBadgeClass = `badge-${listing.status}`;
+
+            row.innerHTML = `
+                <td>
+                    <a href="/admin/listings/${listing.id}/" class="listing-id">
+                        ${listing.listing_id}
+                    </a>
+                </td>
+                <td>
+                    <div>
+                        <strong>${listing.brand_name} ${listing.model_name}</strong>
+                        <br>
+                        <small style="color: #999;">${listing.category_display}</small>
+                    </div>
+                </td>
+                <td>
+                    <div class="refurbisher-info">
+                        <div class="avatar">${listing.refurbisher_name.charAt(0).toUpperCase()}</div>
+                        <div>${listing.refurbisher_name}</div>
+                    </div>
+                </td>
+                <td>
+                    <strong>${listing.total_quantity}</strong> units<br>
+                    <small style="color: #999;">${listing.available_units_count} available</small>
+                </td>
+                <td>
+                    <span class="badge ${statusBadgeClass}">${listing.status_display}</span>
+                </td>
+                <td>${createdDate}</td>
+                <td>
+                    <div class="actions">
+                        <a href="/admin/listings/${listing.id}/" class="btn btn-view">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        ${listing.status === 'pending_approval' ? `
+                            <button class="btn btn-approve" onclick="approveListing(${listing.id})">
+                                <i class="fas fa-check"></i> Approve
+                            </button>
+                            <button class="btn btn-reject" onclick="openRejectModal(${listing.id})">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
+                        ` : ''}
+                    </div>
+                </td>
+            `;
+
+            return row;
+        }
+
+        async function approveListing(listingId) {
+            if (!confirm('Are you sure you want to approve this listing?')) {
+                return;
+            }
+
+            try {
+                await callApi(config.endpoints.approve(listingId), { method: 'POST' });
+                showNotification('Listing approved successfully!', 'success');
+                loadListings();
+            } catch (error) {
+                console.error('[v0] Failed to approve listing:', error);
+            }
+        }
+
+        function openRejectModal(listingId) {
+            currentRejectListingId = listingId;
+            document.getElementById('rejectionReason').value = '';
+            document.getElementById('rejectModal').classList.add('active');
+        }
+
+        function closeRejectModal() {
+            document.getElementById('rejectModal').classList.remove('active');
+            currentRejectListingId = null;
+        }
+
+        async function confirmReject() {
+            if (!currentRejectListingId) return;
+
+            const reason = document.getElementById('rejectionReason').value.trim();
+            if (!reason) {
+                alert('Please provide a rejection reason.');
+                return;
+            }
+
+            try {
+                await callApi(config.endpoints.reject(currentRejectListingId), {
+                    method: 'POST',
+                    body: JSON.stringify({ reason })
+                });
+                showNotification('Listing rejected successfully!', 'success');
+                closeRejectModal();
+                loadListings();
+            } catch (error) {
+                console.error('[v0] Failed to reject listing:', error);
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingState').style.display = show ? 'block' : 'none';
+            document.getElementById('listingsTable').style.display = show ? 'none' : 'table';
+            document.getElementById('emptyState').style.display = 'none';
+        }
+
+        function showNotification(message, type = 'info') {
+            console.log(`[v0] ${type.toUpperCase()}: ${message}`);
+            // You can add a toast notification library here
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', InitializeListingsAdmin);
+    </script>
+</body>
+</html>

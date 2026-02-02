@@ -44,6 +44,18 @@ class AdminRefurbisherDetailPageViewSet(viewsets.ViewSet):
     def list(self, request):
         return render(request, 'admin/refurbisher_detail.html')
 
+class AdminListingsPageViewSet(viewsets.ViewSet):
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def list(self, request):
+        return render(request, 'admin/listings.html')
+
+class AdminListingDetailPageViewSet(viewsets.ViewSet):
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def list(self, request):
+        return render(request, 'admin/listing_detail.html')
+
 
 class AdminCustomersPageViewSet(viewsets.ViewSet):
     @handle_exceptions

@@ -203,28 +203,50 @@ function renderProducts() {
 
   productsContainer.innerHTML = allProducts
     .map(
-      (product) => `
-    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-      <div class="product-card">
-        <div class="product-image">
-          <img src="${product.image || "/static/images/placeholder-product.jpg"}" 
-               alt="${product.brand_name} ${product.name}">
-          <div class="product-badge">Refurbished</div>
+      (product) => {
+        // Extract storage/attributes info
+        const storage = product.storage || "128GB"
+        const colorVariants = product.colors || ["#000000", "#E5C8A8", "#C0C0C0"]
+        const colorName = product.color_name || "Black"
+        
+        // Color circles HTML
+        const colorCircles = colorVariants.slice(0, 3).map(color => {
+          return `<span class="color-dot" style="background-color: ${color};"></span>`
+        }).join("")
+        
+        // Calculate original price (30% markup for display)
+        const originalPrice = Math.round(product.min_price * 1.3)
+
+        return `
+    <div class="product-grid-item">
+      <div class="product-card" onclick="window.location.href='/product/${product.id}/'">
+        <div class="product-badge">
+          <i class="fas fa-bolt"></i>
         </div>
-        <div class="product-info">
-          <div class="product-brand">${product.brand_name}</div>
-          <h5 class="product-name">${product.name}</h5>
-          <div class="product-price">
-            <span class="current-price">₹${formatPrice(product.min_price)}</span>
-            <span class="price-label">Starting from</span>
+        <div class="wishlist-btn" onclick="event.stopPropagation(); addToWishlist(${product.id})">
+          <i class="far fa-heart"></i>
+        </div>
+        <img src="${product.image || "/static/images/iPhone 16 Pro.png"}" 
+             alt="${product.brand_name} ${product.name}" class="product-img">
+        
+        <h5 class="product-title">${product.brand_name} ${product.name}</h5>
+        
+        <div class="product-variants">
+          <div class="color-options mb-2">
+            ${colorCircles}
+            <span class="color-text">+${colorName}</span>
           </div>
-          <a href="/product/${product.id}/" class="btn btn-primary btn-sm w-100">
-            View Options
-          </a>
+          <div class="product-specs">${storage}</div>
+        </div>
+        
+        <div class="product-pricing">
+          <span class="price-original">₹${formatPrice(originalPrice)}</span>
+          <span class="product-price">₹${formatPrice(product.min_price)}</span>
         </div>
       </div>
     </div>
-  `,
+  `
+      },
     )
     .join("")
 }
@@ -331,4 +353,38 @@ function showError(message) {
 
 function formatPrice(price) {
   return new Intl.NumberFormat("en-IN").format(Math.round(price))
+}
+
+// Add to Wishlist
+function addToWishlist(productId) {
+  console.log(`[v0] Adding product ${productId} to wishlist`)
+  
+  // Update wishlist badge
+  const wishlistBadge = document.getElementById("wishlistCount")
+  if (wishlistBadge) {
+    const currentCount = Number.parseInt(wishlistBadge.textContent) || 0
+    wishlistBadge.textContent = currentCount + 1
+    wishlistBadge.style.display = "inline-block"
+  }
+  
+  // Show toast notification (optional)
+  showToast("Added to wishlist!", "success")
+}
+
+// Show Toast Notification
+function showToast(message, type = "info") {
+  const alertClass = type === "success" ? "alert-success" : type === "error" ? "alert-danger" : "alert-info"
+  
+  const toast = document.createElement("div")
+  toast.className = `alert ${alertClass} position-fixed top-0 end-0 m-3`
+  toast.style.zIndex = "9999"
+  toast.innerHTML = `
+    <i class="fas fa-check-circle me-2"></i>${message}
+  `
+  
+  document.body.appendChild(toast)
+  
+  setTimeout(() => {
+    toast.remove()
+  }, 3000)
 }

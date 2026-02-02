@@ -159,7 +159,7 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             "success": True,
             "user_not_logged_in": False,
             "user_unauthorized": False,
-            "data": data,
+            "data": data[::-1],
             "error": None
         }, status=status.HTTP_200_OK)
 

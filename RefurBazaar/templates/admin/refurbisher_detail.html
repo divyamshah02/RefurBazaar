@@ -3,90 +3,563 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Refurbisher Details - RefurBazaar Admin</title>
+    <title>Refurbisher Details - Admin Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="/static/css/style.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --light-bg: #f9fafb;
+            --border: #e5e7eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: #1f2937;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-title h2 {
+            font-size: 28px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .header-subtitle {
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .approval-alert {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid var(--warning);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .approval-alert.show {
+            display: block;
+        }
+
+        .approval-alert h5 {
+            color: #92400e;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .approval-alert p {
+            color: #b45309;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 20px;
+        }
+
+        .card-header h5 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-header i {
+            color: var(--primary);
+            font-size: 18px;
+        }
+
+        .card-body {
+            padding: 20px;
+            background-color: #fff;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            padding: 15px;
+            background-color: var(--light-bg);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .info-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #9ca3af;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 15px;
+            color: #1f2937;
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        .info-value.link {
+            color: var(--primary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .info-value.link:hover {
+            text-decoration: underline;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 6px;
+        }
+
+        .badge-success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-warning {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-danger {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .table {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .table thead th {
+            background-color: var(--light-bg);
+            border-bottom: 2px solid var(--border);
+            color: #6b7280;
+            font-weight: 600;
+            padding: 12px;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        .table tbody td {
+            padding: 12px;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table tbody tr:hover {
+            background-color: var(--light-bg);
+        }
+
+        .document-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background-color: var(--light-bg);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .document-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .document-name i {
+            color: var(--primary);
+            font-size: 18px;
+        }
+
+        .document-status {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #5568d3;
+            color: white;
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #059669;
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+            color: white;
+        }
+
+        .btn-outline-secondary {
+            background-color: transparent;
+            color: #6b7280;
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: var(--light-bg);
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .nav-link {
+            color: #6b7280;
+            border: none;
+            padding: 12px 16px;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background-color: transparent;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            margin-bottom: 15px;
+            color: #d1d5db;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+
+            .header-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .action-buttons {
+                width: 100%;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     {% include 'admin/components/sidebar.html' %}
     
-    <div class="main-content" style="margin-left: 260px; padding: 30px;">
+    <div class="main-content">
         <div class="container-fluid">
+            <!-- Back Button -->
+            <a href="/admin-refurbishers/" class="btn btn-outline-secondary back-button">
+                <i class="fas fa-arrow-left"></i>Back to Refurbishers
+            </a>
+
             <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="header-section">
                 <div>
-                    <a href="/admin-refurbishers/" class="btn btn-outline-secondary btn-sm mb-2">
-                        <i class="fas fa-arrow-left me-2"></i>Back to Refurbishers
-                    </a>
-                    <h2 class="mb-0" id="refurbisherTitle">Refurbisher Details</h2>
+                    <h2 id="refurbisherTitle">Refurbisher Details</h2>
+                    <p class="header-subtitle" id="refurbisherSubtitle">Loading...</p>
                 </div>
-                <div id="approvalActions" style="display: none;">
-                    <button onclick="approveRefurbisher()" class="btn btn-success btn-lg me-2">
-                        <i class="fas fa-check me-2"></i>APPROVE REFURBISHER
+                <div class="action-buttons">
+                    <button id="approveBtn" class="btn btn-success" onclick="approveRefurbisher()" style="display: none;">
+                        <i class="fas fa-check me-2"></i>Activate Refurbisher
                     </button>
-                    <button onclick="rejectRefurbisher()" class="btn btn-danger btn-lg">
-                        <i class="fas fa-times me-2"></i>REJECT
+                    <button id="rejectBtn" class="btn btn-danger" onclick="rejectRefurbisher()" style="display: none;">
+                        <i class="fas fa-times me-2"></i>Reject
                     </button>
                 </div>
             </div>
-            
+
             <!-- Approval Alert -->
-            <div id="approvalAlert" class="alert alert-warning alert-dismissible fade show mb-4" role="alert" style="display: none;">
-                <h5 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Pending Approval</h5>
-                <p class="mb-0">This refurbisher has completed their profile and is waiting for your approval. Review all information below and click <strong>APPROVE</strong> to activate their account or <strong>REJECT</strong> to deny access.</p>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div class="approval-alert" id="approvalAlert">
+                <h5><i class="fas fa-exclamation-triangle me-2"></i>Pending Activation</h5>
+                <p>This refurbisher has completed their profile and is waiting for admin approval to activate their account and start selling.</p>
             </div>
-            
-            <div class="row">
-                <!-- Refurbisher Info -->
-                <div class="col-md-8">
-                    <!-- Basic Info -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-white">
-                            <h5 class="mb-0"><i class="fas fa-user me-2"></i>Basic Information</h5>
+
+            <!-- Statistics -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <i class="fas fa-list"></i>
+                    <div class="stat-value" id="totalListings">0</div>
+                    <div class="stat-label">Total Listings</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-shopping-cart"></i>
+                    <div class="stat-value" id="totalOrders">0</div>
+                    <div class="stat-label">Total Orders</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-rupee-sign"></i>
+                    <div class="stat-value" id="totalRevenue">₹0</div>
+                    <div class="stat-label">Total Revenue</div>
+                </div>
+            </div>
+
+            <!-- Tabs for Content -->
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#basicInfo" role="tab">
+                        <i class="fas fa-user me-2"></i>Personal Info
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#companyInfo" role="tab">
+                        <i class="fas fa-building me-2"></i>Company Details
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#documents" role="tab">
+                        <i class="fas fa-file-alt me-2"></i>Documents
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#bankInfo" role="tab">
+                        <i class="fas fa-university me-2"></i>Bank Details
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#listings" role="tab">
+                        <i class="fas fa-box me-2"></i>Listings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#orders" role="tab">
+                        <i class="fas fa-receipt me-2"></i>Orders
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <!-- Personal Info Tab -->
+                <div id="basicInfo" class="tab-pane fade show active">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-user-circle"></i>Personal Information</h5>
                         </div>
                         <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p><strong>User ID:</strong> <span id="userId"></span></p>
-                                    <p><strong>Name:</strong> <span id="userName"></span></p>
-                                    <p><strong>Email:</strong> <span id="userEmail"></span></p>
-                                    <p><strong>Phone:</strong> <span id="userPhone"></span></p>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">User ID</div>
+                                    <div class="info-value" id="userId">-</div>
                                 </div>
-                                <div class="col-md-6">
-                                    <p><strong>Joined:</strong> <span id="joinedDate"></span></p>
-                                    <p><strong>Status:</strong> <span id="approvalStatus"></span></p>
-                                    <p><strong>Profile Complete:</strong> <span id="profileComplete"></span></p>
+                                <div class="info-item">
+                                    <div class="info-label">Full Name</div>
+                                    <div class="info-value" id="userName">-</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Email Address</div>
+                                    <div class="info-value" id="userEmail">-</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Primary Phone</div>
+                                    <div class="info-value" id="userPhone">-</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Alternate Phone</div>
+                                    <div class="info-value" id="alternatePhone">-</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Member Since</div>
+                                    <div class="info-value" id="joinedDate">-</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Profile Status</div>
+                                    <div class="info-value"><span id="profileComplete" class="badge">-</span></div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Activation Status</div>
+                                    <div class="info-value"><span id="approvalStatus" class="badge">-</span></div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Company Info -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-white">
-                            <h5 class="mb-0"><i class="fas fa-building me-2"></i>Company Information</h5>
+                </div>
+
+                <!-- Company Info Tab -->
+                <div id="companyInfo" class="tab-pane fade">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-building"></i>Company Information</h5>
                         </div>
-                        <div class="card-body" id="companyInfo">
+                        <div class="card-body" id="companyInfoBody">
                             <p class="text-muted">Loading...</p>
                         </div>
                     </div>
-                    
-                    <!-- Documents -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-white">
-                            <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Documents</h5>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-map-marker-alt"></i>Address Information</h5>
                         </div>
-                        <div class="card-body" id="documentsSection">
+                        <div class="card-body" id="addressInfoBody">
                             <p class="text-muted">Loading...</p>
                         </div>
                     </div>
-                    
-                    <!-- Listings -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-white">
-                            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Listings</h5>
+                </div>
+
+                <!-- Documents Tab -->
+                <div id="documents" class="tab-pane fade">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-file-contract"></i>Verification Documents</h5>
+                        </div>
+                        <div class="card-body" id="documentsBody">
+                            <p class="text-muted">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bank Info Tab -->
+                <div id="bankInfo" class="tab-pane fade">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-university"></i>Bank Account Details</h5>
+                        </div>
+                        <div class="card-body" id="bankInfoBody">
+                            <p class="text-muted">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Listings Tab -->
+                <div id="listings" class="tab-pane fade">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-box"></i>Product Listings</h5>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -95,23 +568,25 @@
                                         <tr>
                                             <th>Listing ID</th>
                                             <th>Product</th>
-                                            <th>Units</th>
+                                            <th>Available Units</th>
                                             <th>Status</th>
-                                            <th>Created</th>
+                                            <th>Created Date</th>
                                         </tr>
                                     </thead>
                                     <tbody id="listingsTable">
-                                        <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                                        <tr><td colspan="5" class="text-center text-muted">Loading...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Orders -->
+                </div>
+
+                <!-- Orders Tab -->
+                <div id="orders" class="tab-pane fade">
                     <div class="card">
-                        <div class="card-header bg-white">
-                            <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Orders</h5>
+                        <div class="card-header">
+                            <h5><i class="fas fa-receipt"></i>Recent Orders</h5>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -122,36 +597,13 @@
                                             <th>Customer</th>
                                             <th>Amount</th>
                                             <th>Status</th>
-                                            <th>Date</th>
+                                            <th>Order Date</th>
                                         </tr>
                                     </thead>
                                     <tbody id="ordersTable">
-                                        <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                                        <tr><td colspan="5" class="text-center text-muted">Loading...</td></tr>
                                     </tbody>
                                 </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Stats -->
-                <div class="col-md-4">
-                    <div class="card mb-4">
-                        <div class="card-header bg-white">
-                            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Statistics</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <h6 class="text-muted mb-1">Total Listings</h6>
-                                <h3 id="totalListings">0</h3>
-                            </div>
-                            <div class="mb-3">
-                                <h6 class="text-muted mb-1">Total Orders</h6>
-                                <h3 id="totalOrders">0</h3>
-                            </div>
-                            <div class="mb-3">
-                                <h6 class="text-muted mb-1">Total Revenue</h6>
-                                <h3 id="totalRevenue">₹0</h3>
                             </div>
                         </div>
                     </div>

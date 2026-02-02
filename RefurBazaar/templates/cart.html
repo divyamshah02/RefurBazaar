@@ -8,155 +8,213 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="/static/css/style.css" rel="stylesheet">
+    <link href="/static/css/cart.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Updated Main Navbar -->
-    <nav class="navbar navbar-expand-lg main-navbar" id="navbar">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-recycle me-2"></i>RefurBazar
-            </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <div class="navbar-search mx-auto d-none d-lg-block">
-                    <div class="search-container">
-                        <input type="text" class="form-control search-input" placeholder="What are you looking for?" id="searchInput">
-                        <button class="search-btn"><i class="fas fa-search"></i></button>
-                        <div class="search-suggestions" id="searchSuggestions"></div>
+    <!-- Primary Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
+        <div class="container-fluid px-4 d-flex align-items-center">
+
+            <!-- LEFT -->
+            <div class="navbar-left d-flex align-items-center">
+                <a class="navbar-brand" href="/">
+                    <img src="/static/images/refurbazaar-final-logo.png" alt="RefurBazaar" height="90">
+                </a>
+            </div>
+
+            <!-- CENTER -->
+            <div class="navbar-center flex-grow-1 d-flex justify-content-center">
+                <div class="search-container">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="What are you looking for..." id="searchInput">
+                        <button class="btn btn-search" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
                     </div>
                 </div>
-                
-                <div class="d-flex align-items-center ms-auto">
-                    <a href="#" class="nav-icon me-3" id="wishlistBtn"><i class="fas fa-heart"></i><span class="badge" id="wishlistCount">0</span></a>
-                    <a href="/cart" class="nav-icon me-3" id="cartBtn"><i class="fas fa-shopping-cart"></i><span class="badge" id="cartCount">0</span></a>
-                    <a href="/account" class="btn btn-primary">My Account</a>
-                </div>
             </div>
+
+            <!-- RIGHT -->
+            <div class="navbar-right d-flex align-items-center">
+                <ul class="navbar-nav flex-row align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="far fa-user"></i></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="wishlistBtn">
+                            <i class="far fa-heart"></i>
+                            <span class="badge" id="wishlistCount" style="display:none;">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="cartBtn">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="badge" id="cartCount" style="display:none;">0</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
         </div>
     </nav>
 
-    <!-- Category Navbar -->
-    <nav class="category-navbar">
-        <div class="container">
-            <div class="category-menu">
-                <div class="category-item-wrapper">
-                    <a href="/" class="category-item">
-                        <i class="fas fa-fire text-danger me-1"></i>
-                        Good deals
-                    </a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Smartphones</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Laptops</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Tablets</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Gaming consoles</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Smartwatches</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Audio</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Home appliances</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">More</a>
-                </div>
-            </div>
+    <!-- Secondary Navigation (Category Nav) -->
+    <div class="secondary-nav">
+        <div class="container-fluid px-4">
+            <ul class="nav justify-content-center flex-wrap">
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="fas fa-fire"></i> End of Year Sale</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">iPhones</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Samsung</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">MacBooks</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Laptops</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">iPads</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Accessories and Audio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">For Businesses</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Need Help?</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="fas fa-bolt"></i> RefurBazar Express</a>
+                </li>
+            </ul>
         </div>
-    </nav>
+    </div>
 
     <!-- Cart Page -->
-    <div class="container py-5" style="margin-top: 150px;">
-        <div class="row">
-            <div class="cart-header mb-4">
-                <h2 class="fw-bold">Shopping Cart</h2>
-                <p class="text-muted mb-0" id="cartItemCount">0 items in your cart</p>
-            </div>
-            <div class="col-lg-8">
-                <div class="cart-items" id="cartItemsContainer">
-                    <!-- Cart items will be dynamically loaded here -->
-                </div>
+    <div class="cart-page-wrapper">
+        <!-- Breadcrumb -->
+        <div class="container" style="max-width: 95%">
+            <nav aria-label="breadcrumb" class="py-3">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Your Cart</li>
+                </ol>
+            </nav>
+        </div>
 
-                <div class="cart-actions mt-4" id="cartActions" style="display: none;">
-                    <a href="/shop" class="btn btn-outline-primary">
-                        <i class="fas fa-arrow-left"></i> Continue Shopping
-                    </a>
-                    <!-- <button class="btn btn-outline-danger ms-2" onclick="clearCart()">
-                        <i class="fas fa-trash"></i> Clear Cart
-                    </button> -->
-                </div>
-            </div>
+        <div class="container" style="max-width: 95%">
+            <div class="row">
+                <div class="col-lg-8">
+                    <h2 class="fw-bold mb-1">Your Cart</h2>
+                    <p class="text-muted mb-4" id="cartItemCount">0 items in your cart</p>
 
-            <div class="col-lg-4">
-                <div class="cart-summary" id="cartSummary" style="display: none;">
-                    <h5 class="fw-bold mb-4">Order Summary</h5>
-                    
-                    <div class="summary-row">
-                        <span>Subtotal (<span id="summaryItemCount">0</span> items)</span>
-                        <span class="fw-semibold" id="summarySubtotal">₹0</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Shipping</span>
-                        <span class="text-success fw-semibold">Free</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Tax (18% GST)</span>
-                        <span class="fw-semibold" id="summaryTax">₹0</span>
-                    </div>
-                    <div class="summary-row total">
-                        <span class="fw-bold">Total</span>
-                        <span class="fw-bold fs-5" id="summaryTotal">₹0</span>
-                    </div>
-                    <div class="total-savings">
-                        <small class="text-success fw-semibold" id="summarySavings">You save ₹0 compared to new!</small>
-                    </div>
-
-                    <div class="promo-code mt-4">
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Enter promo code" id="promoCodeInput">
-                            <button class="btn btn-outline-primary" type="button" onclick="applyPromoCode()">Apply</button>
+                    <!-- Cashback Banner -->
+                    <!-- <div class="cashback-banner mb-4" id="cashbackBanner" style="display: none;">
+                        <div class="cashback-content">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='50' font-size='60'%3E💵%3C/text%3E%3C/svg%3E" alt="Cashback" class="cashback-icon">
+                            <div class="cashback-text">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <span id="cashbackAmount">100 ₹Cashback</span>
+                            </div>
                         </div>
+                    </div> -->
+
+                    <!-- Cart Table -->
+                    <div class="cart-table-wrapper" id="cartTableWrapper" style="display: none;">
+                        <table class="cart-table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="cartItemsContainer">
+                                <!-- Cart items will be dynamically loaded here -->
+                            </tbody>
+                        </table>
                     </div>
 
-                    <a href="/checkout" class="btn btn-primary btn-lg w-100 mt-4">
-                        <i class="fas fa-lock me-2"></i>Proceed to Checkout
-                    </a>
-
-                    <div class="payment-options mt-3">
-                        <small class="text-muted">We accept:</small>
-                        <div class="payment-icons">
-                            <i class="fab fa-cc-visa"></i>
-                            <i class="fab fa-cc-mastercard"></i>
-                            <i class="fab fa-cc-paypal"></i>
-                            <i class="fas fa-university"></i>
-                        </div>
+                    <!-- Empty Cart Message -->
+                    <div id="emptyCartMessage" class="text-center py-5">
+                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Your cart is empty</h5>
+                        <p class="text-muted mb-4">Looks like you haven't added any items to your cart yet.</p>
+                        <a href="/shop" class="btn btn-primary">Continue Shopping</a>
                     </div>
                 </div>
 
-                <div class="trust-badges mt-4" id="trustBadges" style="display: none;">
-                    <div class="trust-item">
-                        <i class="fas fa-shield-alt text-success"></i>
-                        <span>Secure Checkout</span>
-                    </div>
-                    <div class="trust-item">
-                        <i class="fas fa-truck text-primary"></i>
-                        <span>Free Shipping</span>
-                    </div>
-                    <div class="trust-item">
-                        <i class="fas fa-undo text-warning"></i>
-                        <span>5-Day Exchange</span>
+                <div class="col-lg-4">
+                    <div class="order-summary-card" id="cartSummary" style="display: none;">
+                        <h5 class="fw-bold mb-4">Order Summary</h5>
+                        
+                        <div class="summary-total mb-4">
+                            <span class="summary-total-label">Total</span>
+                            <span class="summary-total-amount" id="summaryTotal">₹0</span>
+                        </div>
+
+                        <a href="/checkout" class="btn btn-primary btn-lg w-100 mb-3">
+                            Proceed To Checkout
+                        </a>
+                        
+                        <p class="checkout-note text-center mb-4">Proceed to Checkout to select your Payment Method</p>
+
+                        <!-- Payment Methods -->                       
+                        <div class="payment-secure row mb-4">
+                            <div class="col-6 d-flex align-items-center mb-3">
+                                <div class="secure-icon">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                <span class="ms-2">100% Secure Payment</span>
+                            </div>
+                            <div class="col-6 payment-logos text-end align-items-end">
+                                <i class="fab fa-cc-visa"></i>
+                                <i class="fab fa-cc-mastercard"></i>          
+                                <i class="fab fa-brands fa-dark fa-google-pay"></i>          
+                            </div>
+                        </div>
+
+                        <!-- Buy Now Pay Later -->
+                        <!-- <div class="bnpl-section mb-4">
+                            <h6 class="fw-semibold mb-3">Buy Now, Pay Later</h6>
+                            <div class="bnpl-logos">
+                                <span class="bnpl-badge">tabby</span>
+                                <span class="bnpl-badge">tamara</span>
+                            </div>
+                        </div> -->
+
+                        <!-- Trust Badges -->
+                        <div class="trust-badges-inline">
+                            <div class="trust-badge-item">
+                                <i class="fas fa-shipping-fast"></i>
+                                <div>
+                                    <strong>Free</strong>
+                                    <span>Delivery</span>
+                                </div>
+                            </div>
+                            <div class="trust-badge-item">
+                                <i class="fas fa-undo-alt"></i>
+                                <div>
+                                    <strong>7 Days</strong>
+                                    <span>Return</span>
+                                </div>
+                            </div>
+                            <div class="trust-badge-item">
+                                <i class="fas fa-shield-alt"></i>
+                                <div>
+                                    <strong>6 Months</strong>
+                                    <span>Warranty</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

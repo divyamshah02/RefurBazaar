@@ -5,597 +5,334 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shop - RefurBazar</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <link href="/static/css/style.css" rel="stylesheet">
-    
-    <!-- Adding inline styles to fix product card styling without modifying style.css -->
-    <style>
-        .product-card {
-            background: #fff;
-            border-radius: 20px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .product-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
-        }
-        
-        .product-image {
-            position: relative;
-            width: 100%;
-            height: 250px;
-            overflow: hidden;
-            background: #f8f9fa;
-        }
-        
-        .product-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-        
-        .product-card:hover .product-image img {
-            transform: scale(1.1);
-        }
-        
-        .product-badge {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            background: rgba(25, 135, 84, 0.9);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        .product-info {
-            padding: 20px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .product-brand {
-            font-size: 12px;
-            color: #6c757d;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-        
-        .product-name {
-            font-size: 18px;
-            font-weight: 700;
-            color: #212529;
-            margin-bottom: 12px;
-            line-height: 1.3;
-        }
-        
-        .product-price {
-            margin-top: auto;
-            margin-bottom: 16px;
-        }
-        
-        .current-price {
-            font-size: 24px;
-            font-weight: 800;
-            color: #0d6efd;
-            display: block;
-        }
-        
-        .price-label {
-            font-size: 12px;
-            color: #6c757d;
-            display: block;
-            margin-top: 4px;
-        }
-        
-        .product-info .btn {
-            margin-top: auto;
-        }
-    </style>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Custom CSS -->
+    <!-- <link href="/static/css/style.css" rel="stylesheet"> -->
+    <link href="/static/css/shop.css" rel="stylesheet">
 </head>
 
 <body>
-    <!-- Updated main header layout with full width, logo left, account button right, search center -->
-    <nav class="navbar navbar-expand-lg main-navbar" id="navbar">
+    <!-- Promotional Banner -->
+    <div class="promo-banner">
         <div class="container-fluid px-4">
+            <p class="mb-0 text-center">GET 100 OFF YOUR ORDER WITH CODE <strong>REFUR100</strong> AND ENJOY 200 CASHBACK!</p>
+        </div>
+    </div>
 
-            <!-- Logo extreme left -->
-            <a class="navbar-brand me-auto" href="#home">
-                <i class="fas fa-recycle me-2"></i>RefurBazar
-            </a>
+    <!-- Primary Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
+        <div class="container-fluid px-4 d-flex align-items-center">
 
-            <!-- Center Search Bar (hidden on mobile) -->
-            <div class="navbar-search mx-auto d-none d-lg-block">
+            <!-- LEFT -->
+            <div class="navbar-left d-flex align-items-center">
+                <a class="navbar-brand" href="/">
+                    <img src="/static/images/refurbazaar-final-logo.png" alt="RefurBazaar" height="90">
+                </a>
+            </div>
+
+            <!-- CENTER -->
+            <div class="navbar-center flex-grow-1 d-flex justify-content-center">
                 <div class="search-container">
-                    <input type="text" class="form-control search-input" placeholder="What are you looking for?"
-                        id="searchInput">
-                    <button class="search-btn"><i class="fas fa-search"></i></button>
-                    <div class="search-suggestions" id="searchSuggestions"></div>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="What are you looking for..." id="searchInput">
+                        <button class="btn btn-search" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Right side icons/buttons -->
-            <div class="d-flex align-items-center ms-auto">
-                <a href="#" class="nav-icon me-3" id="wishlistBtn">
-                    <i class="fas fa-heart"></i><span class="badge" id="wishlistCount">0</span>
-                </a>
-                <a href="#" class="nav-icon me-3" id="cartBtn">
-                    <i class="fas fa-shopping-cart"></i><span class="badge" id="cartCount">0</span>
-                </a>
-                <a href="#" class="btn btn-primary">My Account</a>
+            <!-- RIGHT -->
+            <div class="navbar-right d-flex align-items-center">
+                <ul class="navbar-nav flex-row align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="far fa-user"></i></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="wishlistBtn">
+                            <i class="far fa-heart"></i>
+                            <span class="badge" id="wishlistCount" style="display:none;">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="cartBtn">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="badge" id="cartCount" style="display:none;">0</span>
+                        </a>
+                    </li>
+                </ul>
             </div>
 
         </div>
     </nav>
 
-    <!-- Fixed category navigation menu with proper dropdown styling and removed scroll bars -->
-    <nav class="category-navbar">
-        <div class="container">
-            <div class="category-menu">
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item active">
-                        <i class="fas fa-fire text-danger me-1"></i>
-                        Good deals
-                    </a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Smartphones</a>
-                    <div class="category-dropdown">
-                        <div class="dropdown-content">
-                            <div class="category-grid">
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #FFE5E5, #FFB3BA);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=150&h=100&fit=crop"
-                                            alt="iPhone">
-                                    </div>
-                                    <h4>iPhone</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #E5F3FF, #B3D9FF);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=150&h=100&fit=crop"
-                                            alt="Samsung Galaxy">
-                                    </div>
-                                    <h4>Samsung Galaxy</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #E5FFE5, #B3FFB3);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=150&h=100&fit=crop"
-                                            alt="Google Pixel">
-                                    </div>
-                                    <h4>Google Pixel</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #FFF5E5, #FFE5B3);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1511707171634-5e560c06d30e?w=150&h=100&fit=crop"
-                                            alt="Android smartphones">
-                                    </div>
-                                    <h4>Android smartphones</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #F0E5FF, #D9B3FF);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=150&h=100&fit=crop"
-                                            alt="Smartphone Accessories">
-                                    </div>
-                                    <h4>Smartphone Accessories</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Laptops</a>
-                    <div class="category-dropdown">
-                        <div class="dropdown-content">
-                            <div class="category-grid">
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #F5F5F5, #E0E0E0);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=150&h=100&fit=crop"
-                                            alt="MacBook">
-                                    </div>
-                                    <h4>MacBook</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #E5F3FF, #B3D9FF);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=150&h=100&fit=crop"
-                                            alt="Windows Laptops">
-                                    </div>
-                                    <h4>Windows Laptops</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #FFE5E5, #FFB3BA);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1525547719578-7efd1f1555ed?w=150&h=100&fit=crop"
-                                            alt="Gaming Laptops">
-                                    </div>
-                                    <h4>Gaming Laptops</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #E5FFE5, #B3FFB3);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=150&h=100&fit=crop"
-                                            alt="Business Laptops">
-                                    </div>
-                                    <h4>Business Laptops</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Tablets</a>
-                    <div class="category-dropdown">
-                        <div class="dropdown-content">
-                            <div class="category-grid">
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #F5F5F5, #E0E0E0);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1544244015066-f7347c490ee2?w=150&h=100&fit=crop"
-                                            alt="iPad">
-                                    </div>
-                                    <h4>iPad</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #E5F3FF, #B3D9FF);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1561154464666-fbf93132d53d?w=150&h=100&fit=crop"
-                                            alt="Android Tablets">
-                                    </div>
-                                    <h4>Android Tablets</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #E5FFE5, #B3FFB3);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1585792180666-fbf93132d53d?w=150&h=100&fit=crop"
-                                            alt="Surface Tablets">
-                                    </div>
-                                    <h4>Surface Tablets</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Gaming consoles</a>
-                    <div class="category-dropdown">
-                        <div class="dropdown-content">
-                            <div class="category-grid">
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #000033, #000066);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=150&h=100&fit=crop"
-                                            alt="PlayStation">
-                                    </div>
-                                    <h4 style="color: white;">PlayStation</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #003300, #006600);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=150&h=100&fit=crop"
-                                            alt="Xbox">
-                                    </div>
-                                    <h4 style="color: white;">Xbox</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #FF3333, #FF6666);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1578662996489-7aacd43bd3b1?w=150&h=100&fit=crop"
-                                            alt="Nintendo">
-                                    </div>
-                                    <h4 style="color: white;">Nintendo</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Smartwatches</a>
-                    <div class="category-dropdown">
-                        <div class="dropdown-content">
-                            <div class="category-grid">
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #F5F5F5, #E0E0E0);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=150&h=100&fit=crop"
-                                            alt="Apple Watch">
-                                    </div>
-                                    <h4>Apple Watch</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #E5F3FF, #B3D9FF);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=150&h=100&fit=crop"
-                                            alt="Samsung Galaxy Watch">
-                                    </div>
-                                    <h4>Samsung Galaxy Watch</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #FFE5E5, #FFB3BA);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-15516986181dfe5d97d256?w=150&h=100&fit=crop"
-                                            alt="Fitness Trackers">
-                                    </div>
-                                    <h4>Fitness Trackers</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Audio</a>
-                    <div class="category-dropdown">
-                        <div class="dropdown-content">
-                            <div class="category-grid">
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #F5F5F5, #E0E0E0);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=150&h=100&fit=crop"
-                                            alt="Headphones">
-                                    </div>
-                                    <h4>Headphones</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #E5F3FF, #B3D9FF);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=150&h=100&fit=crop"
-                                            alt="Earbuds">
-                                    </div>
-                                    <h4>Earbuds</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #E5FFE5, #B3FFB3);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=150&h=100&fit=crop"
-                                            alt="Speakers">
-                                    </div>
-                                    <h4>Speakers</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">Home appliances</a>
-                    <div class="category-dropdown">
-                        <div class="dropdown-content">
-                            <div class="category-grid">
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #FFE5E5, #FFB3BA);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-15569091589ebf69173e03?w=150&h=100&fit=crop"
-                                            alt="Kitchen Appliances">
-                                    </div>
-                                    <h4>Kitchen Appliances</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #E5F3FF, #B3D9FF);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=150&h=100&fit=crop"
-                                            alt="Smart Home">
-                                    </div>
-                                    <h4>Smart Home</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #E5FFE5, #B3FFB3);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=150&h=100&fit=crop"
-                                            alt="Cleaning Appliances">
-                                    </div>
-                                    <h4>Cleaning Appliances</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="#" class="category-item">More</a>
-                    <div class="category-dropdown">
-                        <div class="dropdown-content">
-                            <div class="category-grid">
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #F0E5FF, #D9B3FF);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1550009158536-85ae29035b6d?w=150&h=100&fit=crop"
-                                            alt="Cameras">
-                                    </div>
-                                    <h4>Cameras</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #FFF5E5, #FFE5B3);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=150&h=100&fit=crop"
-                                            alt="Accessories">
-                                    </div>
-                                    <h4>Accessories</h4>
-                                </div>
-                                <div class="category-card"
-                                    style="background: linear-gradient(135deg, #E5F5FF, #B3E5FF);">
-                                    <div class="category-image">
-                                        <img src="https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=150&h=100&fit=crop"
-                                            alt="Others">
-                                    </div>
-                                    <h4>Others</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Secondary Navigation (Category Nav) -->
+    <div class="secondary-nav">
+        <div class="container-fluid px-4">
+            <ul class="nav justify-content-center flex-wrap">
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="fas fa-fire"></i> End of Year Sale</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">iPhones</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Samsung</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">MacBooks</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Laptops</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">iPads</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Accessories and Audio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">For Businesses</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Need Help?</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="fas fa-bolt"></i> RefurBazar Express</a>
+                </li>
+            </ul>
         </div>
-    </nav>
+    </div>
 
-    <!-- Shop Page -->
-    <div class="container-fluid py-4" style="margin-top: 180px;">
-        <div class="row">
-            <!-- Filters Sidebar -->
-            <div class="col-lg-2 col-md-3">
-                <div class="filters-sidebar">
-                    <div class="filter-header">
-                        <h6>Filters</h6>
-                        <button class="btn btn-link btn-sm text-danger" onclick="clearFilters()">Clear All</button>
-                    </div>
+    <!-- Shop Section -->
+    <section class="shop-section py-5">
+        <div class="container-fluid px-5">
+            <div class="row">
+                <!-- Filters Sidebar -->
+                <div class="col-lg-2 col-md-3 mb-4">
+                    <div class="filters-sidebar">
+                        <div class="filter-header">
+                            <h5>Filters</h5>
+                            <button class="btn btn-link btn-sm p-0 text-decoration-none" onclick="clearFilters()">Clear All</button>
+                        </div>
 
-                    <!-- Dynamic Category Filter Section -->
-                    <div class="filter-section">
-                        <h6>Category</h6>
-                        <div class="filter-options">
-                            <select class="form-select form-select-sm" id="categorySelect">
+                        <!-- Category Filter -->
+                        <div class="filter-section">
+                            <h6>Category</h6>
+                            <select class="form-select" id="categorySelect">
                                 <option value="mobile">Smartphones</option>
                                 <option value="laptop">Laptops</option>
                                 <option value="tablet">Tablets</option>
                                 <option value="accessory">Accessories</option>
                             </select>
                         </div>
-                    </div>
 
-                    <!-- Dynamic Brand Filter Section -->
-                    <div class="filter-section">
-                        <h6>Brand</h6>
-                        <div class="filter-options" id="brandFilters">
-                            <!-- Dynamic brand checkboxes will be populated here -->
-                        </div>
-                    </div>
-
-                    <!-- Price Filter -->
-                    <div class="filter-section">
-                        <h6>Price Range</h6>
-                        <div class="price-range">
-                            <div class="row">
-                                <div class="col-6">
-                                    <input type="number" class="form-control form-control-sm" placeholder="Min"
-                                        id="minPrice">
+                        <!-- Condition Filter -->
+                        <div class="filter-section">
+                            <h6>Condition</h6>
+                            <div class="filter-options">
+                                <div class="form-check">
+                                    <input class="form-check-input condition-filter" type="checkbox" id="excellent" value="excellent">
+                                    <label class="form-check-label" for="excellent">
+                                        Excellent <span class="count" id="excellentCount">(0)</span>
+                                    </label>
                                 </div>
-                                <div class="col-6">
-                                    <input type="number" class="form-control form-control-sm" placeholder="Max"
-                                        id="maxPrice">
+                                <div class="form-check">
+                                    <input class="form-check-input condition-filter" type="checkbox" id="good" value="good">
+                                    <label class="form-check-label" for="good">
+                                        Good <span class="count" id="goodCount">(0)</span>
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input condition-filter" type="checkbox" id="fair" value="fair">
+                                    <label class="form-check-label" for="fair">
+                                        Fair <span class="count" id="fairCount">(0)</span>
+                                    </label>
                                 </div>
                             </div>
-                            <div class="price-suggestions mt-2">
-                                <button class="btn btn-outline-secondary btn-sm" onclick="setPriceRange(0, 25000)">Under
-                                    ₹25K</button>
-                                <button class="btn btn-outline-secondary btn-sm"
-                                    onclick="setPriceRange(25000, 50000)">₹25K - ₹50K</button>
-                                <button class="btn btn-outline-secondary btn-sm"
-                                    onclick="setPriceRange(50000, 100000)">₹50K - ₹1L</button>
-                                <button class="btn btn-outline-secondary btn-sm"
-                                    onclick="setPriceRange(100000, 999999)">Above ₹1L</button>
+                        </div>
+
+                        <!-- Brand Filter -->
+                        <div class="filter-section">
+                            <h6>Brand</h6>
+                            <div class="filter-options" id="brandFilters">
+                                <!-- Dynamically populated -->
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Condition Filter (Dynamic) -->
-                    <div class="filter-section">
-                        <h6>Condition</h6>
-                        <div class="filter-options">
-                            <div class="form-check">
-                                <input class="form-check-input condition-filter" type="checkbox" id="excellent" value="excellent">
-                                <label class="form-check-label" for="excellent">
-                                    Excellent <span class="count" id="excellentCount">(0)</span>
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input condition-filter" type="checkbox" id="good" value="good">
-                                <label class="form-check-label" for="good">
-                                    Good <span class="count" id="goodCount">(0)</span>
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input condition-filter" type="checkbox" id="fair" value="fair">
-                                <label class="form-check-label" for="fair">
-                                    Fair <span class="count" id="fairCount">(0)</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Products Grid -->
-            <div class="col-lg-10 col-md-9">
-                <div class="products-header">
-                    <div class="results-info">
-                        <h4 id="categoryTitle">Smartphones</h4>
-                        <p class="text-muted" id="resultsCount">Loading...</p>
-                    </div>
-                    <div class="sort-options">
-                        <select class="form-select" id="sortBy">
-                            <option value="featured">Featured</option>
-                            <option value="price_low">Price: Low to High</option>
-                            <option value="price_high">Price: High to Low</option>
-                            <option value="newest">Newest First</option>
-                        </select>
-                        <div class="view-toggle">
-                            <button class="btn btn-outline-secondary btn-sm active" onclick="setGridView()">
-                                <i class="fas fa-th"></i>
-                            </button>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="setListView()">
-                                <i class="fas fa-list"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Products grid with dynamic content -->
-                <div class="products-grid" id="productsGrid">
-                    <div class="row" id="productsContainer">
-                        <!-- Products will be dynamically populated here -->
-                        <div class="col-12 text-center py-5">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
+                        <!-- Price Range Filter -->
+                        <div class="filter-section">
+                            <h6>Price Range</h6>
+                            <div class="price-range">
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input type="number" class="form-control form-control-sm" placeholder="Min" id="minPrice">
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="number" class="form-control form-control-sm" placeholder="Max" id="maxPrice">
+                                    </div>
+                                </div>
+                                <div class="price-suggestions mt-2">
+                                    <button class="btn btn-outline-secondary btn-sm w-100 mb-1" onclick="setPriceRange(0, 25000)">Under ₹25K</button>
+                                    <button class="btn btn-outline-secondary btn-sm w-100 mb-1" onclick="setPriceRange(25000, 50000)">₹25K - ₹50K</button>
+                                    <button class="btn btn-outline-secondary btn-sm w-100 mb-1" onclick="setPriceRange(50000, 100000)">₹50K - ₹1L</button>
+                                    <button class="btn btn-outline-secondary btn-sm w-100" onclick="setPriceRange(100000, 999999)">Above ₹1L</button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Empty state message -->
-                <div class="empty-state text-center py-5" id="emptyState" style="display: none;">
-                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                    <h4 class="text-muted">No products found</h4>
-                    <p class="text-muted">We don't have any products matching your filters. Try adjusting your search!</p>
-                    <button class="btn btn-primary" onclick="clearFilters()">Clear Filters</button>
-                </div>
+                <!-- Products Grid -->
+                <div class="col-lg-10 col-md-9">
+                    <div class="products-header">
+                        <div class="results-info">
+                            <h4 id="categoryTitle">Smartphones</h4>
+                            <p class="text-muted" id="resultsCount">Loading...</p>
+                        </div>
+                        <div class="sort-options">
+                            <select class="form-select" id="sortBy">
+                                <option value="featured">Featured</option>
+                                <option value="price_low">Price: Low to High</option>
+                                <option value="price_high">Price: High to Low</option>
+                                <option value="newest">Newest First</option>
+                            </select>
+                            <div class="view-toggle">
+                                <button class="btn btn-outline-secondary btn-sm active" onclick="setGridView()">
+                                    <i class="fas fa-th"></i>
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="setListView()">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
-                <!-- Pagination -->
-                <nav class="pagination-nav mt-4" id="paginationNav" style="display: none;">
-                    <ul class="pagination justify-content-center">
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#" tabindex="-1">Previous</a>
-                        </li>
-                        <li class="page-item active">
-                            <a class="page-link" href="#">1</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">Next</a>
-                        </li>
-                    </ul>
-                </nav>
+                    <!-- Products grid with dynamic content -->
+                    <div class="product-grid" id="productsGrid">
+                        <div class="row products-grid" id="productsContainer">
+                            <!-- Products will be dynamically populated here -->
+                            <div class="col-12 text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Empty state message -->
+                    <div class="empty-state text-center py-5" id="emptyState" style="display: none;">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No products found</h4>
+                        <p class="text-muted">We don't have any products matching your filters. Try adjusting your search!</p>
+                        <button class="btn btn-primary" onclick="clearFilters()">Clear Filters</button>
+                    </div>
+
+                    <!-- Pagination -->
+                    <nav class="pagination-nav mt-5" id="paginationNav" style="display: none;">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1">Previous</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Footer -->
+    <footer class="footer py-5 bg-dark text-white">
+        <div class="container-fluid px-5">
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-recycle me-2"></i>RefurBazar</h5>
+                    <p class="text-light">Your trusted marketplace for certified refurbished electronics. Quality devices at unbeatable prices.</p>
+                    <div class="social-links mt-3">
+                        <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-lg"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-instagram fa-lg"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-linkedin fa-lg"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="fw-bold mb-3">Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">About Us</a></li>
+                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">How It Works</a></li>
+                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">Quality Check</a></li>
+                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">Warranty Info</a></li>
+                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">Blog</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="fw-bold mb-3">Customer Support</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">Contact Us</a></li>
+                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">Shipping Info</a></li>
+                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">Returns & Refunds</a></li>
+                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">FAQs</a></li>
+                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">Track Order</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="fw-bold mb-3">Newsletter</h5>
+                    <p class="text-light">Subscribe to get special offers and updates</p>
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control" placeholder="Your email">
+                        <button class="btn btn-primary" type="button">Subscribe</button>
+                    </div>
+                    <div class="payment-methods mt-4">
+                        <p class="small text-light mb-2">We Accept:</p>
+                        <i class="fab fa-cc-visa fa-2x text-light me-2"></i>
+                        <i class="fab fa-cc-mastercard fa-2x text-light me-2"></i>
+                        <i class="fab fa-cc-paypal fa-2x text-light"></i>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4 bg-light">
+
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0 text-light">&copy; 2026 RefurBazar. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <a href="#" class="text-light text-decoration-none me-3">Privacy Policy</a>
+                    <a href="#" class="text-light text-decoration-none me-3">Terms of Service</a>
+                    <a href="#" class="text-light text-decoration-none">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- API Caller and Shop JavaScript -->
     <script src="/static/js/api_caller.js"></script>
     <script src="/static/js/shop.js"></script>
 

@@ -1,38 +1,238 @@
-    <nav class="navbar navbar-expand-lg main-navbar" id="navbar">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand me-auto" href="index.html">
-                <i class="fas fa-recycle me-2"></i>RefurBazar
-            </a>
+<style>
+    #navbar {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+    }
 
-            <div class="navbar-search mx-auto d-none d-lg-block">
-                <div class="search-container">
-                    <input type="text" class="form-control search-input" placeholder="Search your products...">
-                    <button class="search-btn"><i class="fas fa-search"></i></button>
-                </div>
-            </div>
+    .main-navbar {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--glass-border);
+        transition: all 0.3s ease;
+    }
 
-            <div class="d-flex align-items-center ms-auto">
-                <div class="dropdown">
-                    <a href="#" class="nav-icon me-3 dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="fas fa-bell"></i><span class="badge">3</span>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#">New order received</a></li>
-                        <li><a class="dropdown-item" href="#">Profile verification pending</a></li>
-                        <li><a class="dropdown-item" href="#">Payment processed</a></li>
-                    </ul>
-                </div>
-                <div class="dropdown">
-                    <a href="#" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="fas fa-user me-2"></i>{{user.first_name}} {{user.last_name}}
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="/refurbisher-profile">Profile</a></li>
-                        <li><a class="dropdown-item" href="#">Settings</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="/refurbisher-logout/">Logout</a></li>
-                    </ul>
-                </div>
+    .main-navbar .container-fluid {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .navbar-brand {
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 800;
+        font-size: 2rem;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-decoration: none;
+        position: relative;
+        white-space: nowrap;
+    }
+
+    .navbar-brand i {
+        margin-right: 0.5rem;
+    }
+
+    .navbar-brand::after {
+        content: "✨";
+        position: absolute;
+        top: -5px;
+        right: -20px;
+        font-size: 1rem;
+        animation: sparkle 2s infinite;
+    }
+
+    @keyframes sparkle {
+
+        0%,
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        50% {
+            opacity: 0.5;
+            transform: scale(1.2);
+        }
+    }
+
+    .navbar-search {
+        flex: 1;
+        max-width: 500px;
+        margin: 0 2rem;
+    }
+
+    .search-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-input {
+        width: 100%;
+        border: 2px solid var(--border-color);
+        border-radius: 50px;
+        padding: 0.75rem 3rem 0.75rem 1.5rem;
+        font-size: 0.95rem;
+        background: #fff;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 116, 232, 0.1);
+    }
+
+    .search-btn {
+        position: absolute;
+        right: 6px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: none;
+        background: var(--gradient-primary);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .search-btn:hover {
+        transform: scale(1.05);
+        box-shadow: var(--shadow-md);
+    }
+
+    .main-navbar .d-flex {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .nav-icon {
+        position: relative;
+        font-size: 1.2rem;
+        color: var(--text-dark);
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .nav-icon:hover {
+        color: var(--primary-color);
+        transform: translateY(-2px);
+    }
+
+    .nav-icon .badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--secondary-color);
+        color: #fff;
+        font-size: 0.7rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dropdown-menu {
+        border: none;
+        border-radius: 12px;
+        box-shadow: var(--shadow-lg);
+        padding: 0.5rem 0;
+    }
+
+    .dropdown-item {
+        font-size: 0.9rem;
+        padding: 0.6rem 1.2rem;
+        transition: all 0.2s ease;
+    }
+
+    .dropdown-item:hover {
+        background: var(--primary-light);
+        color: var(--primary-color);
+    }
+
+    .btn-primary {
+        background: var(--gradient-primary);
+        border: none;
+        font-weight: 600;
+        padding: 0.6rem 1.5rem;
+        border-radius: 50px;
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .dropdown-toggle::after {
+        transition: transform 0.3s ease;
+    }
+
+    .dropdown-toggle[aria-expanded="true"]::after {
+        transform: rotate(180deg);
+    }
+
+    @media (max-width: 991.98px) {
+        .navbar-search {
+            display: none !important;
+        }
+
+        .navbar-brand {
+            font-size: 1.6rem;
+        }
+    }
+</style>
+<nav class="navbar navbar-expand-lg main-navbar" id="navbar">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand me-auto" href="index.html">
+            <i class="fas fa-recycle me-2"></i>RefurBazar
+        </a>
+
+        <div class="navbar-search mx-auto d-none d-lg-block">
+            <div class="search-container">
+                <input type="text" class="form-control search-input" placeholder="Search your products...">
+                <button class="search-btn"><i class="fas fa-search"></i></button>
             </div>
         </div>
-    </nav>
+
+        <div class="d-flex align-items-center ms-auto">
+            <div class="dropdown">
+                <a href="#" class="nav-icon me-3 dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="fas fa-bell"></i><span class="badge">3</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">New order received</a></li>
+                    <li><a class="dropdown-item" href="#">Profile verification pending</a></li>
+                    <li><a class="dropdown-item" href="#">Payment processed</a></li>
+                </ul>
+            </div>
+            <div class="dropdown">
+                <a href="#" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="fas fa-user me-2"></i>{{user.first_name}} {{user.last_name}}
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="/refurbisher-profile">Profile</a></li>
+                    <li><a class="dropdown-item" href="#">Settings</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="/refurbisher-logout/">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>

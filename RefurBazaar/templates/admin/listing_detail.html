@@ -1,0 +1,864 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listing Details</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn:hover {
+            color: #5568d3;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .badge-draft {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-pending-approval {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .badge-active {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .badge-rejected {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title i {
+            color: #667eea;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .product-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .product-info h3 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .product-info p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .units-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .units-table thead {
+            background: #f9f9f9;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .units-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .units-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .units-table tbody tr:hover {
+            background: #fafafa;
+        }
+
+        .condition-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .condition-excellent {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .condition-good {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .condition-fair {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .condition-poor {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .availability {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .availability.available {
+            color: #388e3c;
+        }
+
+        .availability.sold {
+            color: #c62828;
+        }
+
+        .sidebar-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .action-item:last-child {
+            border-bottom: none;
+        }
+
+        .action-label {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .action-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .refurbisher-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .refurbisher-title {
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .refurbisher-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .refurbisher-info {
+            font-size: 13px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .btn-approve {
+            background: #84fab0;
+            color: #333;
+        }
+
+        .btn-approve:hover {
+            background: #67e89d;
+        }
+
+        .btn-reject {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background: #ee5a52;
+        }
+
+        .btn:last-child {
+            margin-bottom: 0;
+        }
+
+        .rejection-info {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid #c62828;
+        }
+
+        .rejection-info p {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .rejection-info strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .modal-body textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 100px;
+            margin-bottom: 15px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-cancel {
+            background: #f0f0f0;
+            color: #333;
+            width: auto;
+            margin: 0;
+        }
+
+        .btn-cancel:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-submit {
+            background: #667eea;
+            color: white;
+            width: auto;
+            margin: 0;
+        }
+
+        .btn-submit:hover {
+            background: #5568d3;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-left {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div>
+                <h1 id="listingId">LST-XXXX</h1>
+                <span class="status-badge" id="statusBadge"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="loadingState" class="loading">
+            <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                <div style="border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
+            </div>
+            <p>Loading listing details...</p>
+        </div>
+
+        <div id="contentContainer" style="display: none;">
+            <div class="content">
+                <div>
+                    <!-- Product Information -->
+                    <div class="card">
+                        <div class="product-info">
+                            <h3 id="productName">Product Name</h3>
+                            <p id="productBrand">Brand</p>
+                            <p id="productCategory">Category</p>
+                        </div>
+
+                        <!-- Listing Info -->
+                        <div class="section">
+                            <div class="section-title">
+                                <i class="fas fa-info-circle"></i>
+                                Listing Information
+                            </div>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">Listing ID</div>
+                                    <div class="info-value" id="detailListingId">-</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Total Units</div>
+                                    <div class="info-value" id="totalUnits">0</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Available Units</div>
+                                    <div class="info-value" id="availableUnits">0</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Status</div>
+                                    <div class="info-value" id="detailStatus">-</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Created</div>
+                                    <div class="info-value" id="createdDate">-</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Last Updated</div>
+                                    <div class="info-value" id="updatedDate">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Units -->
+                        <div class="section">
+                            <div class="section-title">
+                                <i class="fas fa-cube"></i>
+                                Available Units
+                            </div>
+                            <table class="units-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Price</th>
+                                        <th>Condition</th>
+                                        <th>Status</th>
+                                        <th>Attributes</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="unitsBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div>
+                    <!-- Refurbisher Info -->
+                    <div class="refurbisher-card">
+                        <div class="refurbisher-title">Refurbisher</div>
+                        <div class="refurbisher-name" id="refurbisherName">-</div>
+                        <div class="refurbisher-info" id="refurbisherInfo">
+                            <p>Email: <span id="refurbisherEmail">-</span></p>
+                            <p>Phone: <span id="refurbisherPhone">-</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Actions (for pending approvals) -->
+                    <div id="adminActions" class="sidebar-card" style="display: none;">
+                        <div class="sidebar-title">
+                            <i class="fas fa-tasks"></i>
+                            Admin Actions
+                        </div>
+
+                        <div id="rejectionInfo" style="display: none; margin-bottom: 15px;">
+                            <div class="rejection-info">
+                                <strong>Rejection Reason:</strong>
+                                <p id="rejectionReasonText"></p>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-approve" id="approveBtn" onclick="approveListing()" style="display: none;">
+                            <i class="fas fa-check"></i> Approve Listing
+                        </button>
+                        <button class="btn btn-reject" id="rejectBtn" onclick="openRejectModal()" style="display: none;">
+                            <i class="fas fa-times"></i> Reject Listing
+                        </button>
+                    </div>
+
+                    <!-- Statistics -->
+                    <div class="sidebar-card">
+                        <div class="sidebar-title">
+                            <i class="fas fa-chart-bar"></i>
+                            Statistics
+                        </div>
+                        <div class="action-item">
+                            <span class="action-label">Avg Price</span>
+                            <span class="action-value" id="avgPrice">-</span>
+                        </div>
+                        <div class="action-item">
+                            <span class="action-label">Min Price</span>
+                            <span class="action-value" id="minPrice">-</span>
+                        </div>
+                        <div class="action-item">
+                            <span class="action-label">Max Price</span>
+                            <span class="action-value" id="maxPrice">-</span>
+                        </div>
+                        <div class="action-item">
+                            <span class="action-label">Sold Units</span>
+                            <span class="action-value" id="soldUnits">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejection Modal -->
+    <div class="modal" id="rejectModal">
+        <div class="modal-content">
+            <div class="modal-header">Reject Listing</div>
+            <div class="modal-body">
+                <p>Please provide a reason for rejecting this listing:</p>
+                <textarea id="rejectionReason" placeholder="Enter rejection reason..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeRejectModal()">Cancel</button>
+                <button class="btn btn-submit" onclick="confirmReject()">Reject</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+
+    <script>
+        // Configuration
+        const config = {
+            csrfToken: '{{ csrf_token }}',
+            listingId: '{{ listing_id }}',
+            endpoints: {
+                listing: `/api/products/listings/{{ listing_id }}/`,
+                approve: `/api/products/listings/{{ listing_id }}/approve/`,
+                reject: `/api/products/listings/{{ listing_id }}/reject/`
+            }
+        };
+
+        let currentListing = null;
+
+        // Initialize
+        function InitializeListingDetail() {
+            loadListingDetails();
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        async function callApi(url, options = {}) {
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': config.csrfToken
+                }
+            };
+
+            const mergedOptions = {
+                ...defaultOptions,
+                ...options,
+                headers: {
+                    ...defaultOptions.headers,
+                    ...options.headers
+                }
+            };
+
+            try {
+                const response = await fetch(url, mergedOptions);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'API Error');
+                }
+
+                return data;
+            } catch (error) {
+                console.error('[v0] API Error:', error);
+                alert('Error: ' + error.message);
+                throw error;
+            }
+        }
+
+        async function loadListingDetails() {
+            try {
+                const response = await callApi(config.endpoints.listing);
+                currentListing = response.data;
+                renderListingDetails();
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('contentContainer').style.display = 'block';
+            } catch (error) {
+                console.error('[v0] Failed to load listing:', error);
+                document.getElementById('loadingState').innerHTML = '<p>Failed to load listing details.</p>';
+            }
+        }
+
+        function renderListingDetails() {
+            const listing = currentListing;
+
+            // Header
+            document.getElementById('listingId').textContent = listing.listing_id;
+            document.getElementById('statusBadge').textContent = listing.status_display;
+            document.getElementById('statusBadge').className = `status-badge badge-${listing.status}`;
+
+            // Product Info
+            document.getElementById('productName').textContent = `${listing.brand_name} ${listing.model_name}`;
+            document.getElementById('productBrand').textContent = `Brand: ${listing.brand_name}`;
+            document.getElementById('productCategory').textContent = `Category: ${listing.category_display}`;
+
+            // Listing Info
+            document.getElementById('detailListingId').textContent = listing.listing_id;
+            document.getElementById('totalUnits').textContent = listing.total_quantity;
+            document.getElementById('availableUnits').textContent = listing.available_units_count;
+            document.getElementById('detailStatus').textContent = listing.status_display;
+            document.getElementById('createdDate').textContent = new Date(listing.created_at).toLocaleDateString();
+            document.getElementById('updatedDate').textContent = new Date(listing.updated_at).toLocaleDateString();
+
+            // Refurbisher Info
+            document.getElementById('refurbisherName').textContent = listing.refurbisher_name;
+            document.getElementById('refurbisherEmail').textContent = listing.refurbisher_name;
+            document.getElementById('refurbisherPhone').textContent = 'N/A';
+
+            // Admin Actions
+            const adminActions = document.getElementById('adminActions');
+            const approveBtn = document.getElementById('approveBtn');
+            const rejectBtn = document.getElementById('rejectBtn');
+            const rejectionInfo = document.getElementById('rejectionInfo');
+
+            if (listing.status === 'pending_approval') {
+                adminActions.style.display = 'block';
+                approveBtn.style.display = 'width: 100%;';
+                rejectBtn.style.display = 'width: 100%;';
+                rejectionInfo.style.display = 'none';
+            } else if (listing.status === 'rejected') {
+                adminActions.style.display = 'block';
+                approveBtn.style.display = 'none';
+                rejectBtn.style.display = 'none';
+                rejectionInfo.style.display = 'block';
+                document.getElementById('rejectionReasonText').textContent = listing.rejection_reason || 'No reason provided';
+            }
+
+            // Units
+            renderUnits(listing.units);
+
+            // Statistics
+            calculateStatistics(listing.units);
+        }
+
+        function renderUnits(units) {
+            const tbody = document.getElementById('unitsBody');
+            tbody.innerHTML = '';
+
+            units.forEach(unit => {
+                const row = document.createElement('tr');
+                const availabilityClass = unit.is_sold ? 'sold' : 'available';
+                const availabilityText = unit.is_sold ? 'Sold' : (unit.is_available ? 'Available' : 'Unavailable');
+                const conditionClass = `condition-${unit.condition}`;
+
+                const attributes = unit.attributes.map(a => `${a.attribute_name}: ${a.value}`).join(', ');
+
+                row.innerHTML = `
+                    <td>${unit.unit_number}</td>
+                    <td><strong>₹${parseFloat(unit.price).toLocaleString('en-IN', {minimumFractionDigits: 0})}</strong></td>
+                    <td><span class="condition-badge ${conditionClass}">${unit.condition_display}</span></td>
+                    <td><span class="availability ${availabilityClass}">${availabilityText}</span></td>
+                    <td><small>${attributes || 'N/A'}</small></td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        }
+
+        function calculateStatistics(units) {
+            if (units.length === 0) {
+                document.getElementById('avgPrice').textContent = '-';
+                document.getElementById('minPrice').textContent = '-';
+                document.getElementById('maxPrice').textContent = '-';
+                return;
+            }
+
+            const prices = units.map(u => parseFloat(u.price));
+            const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+            const soldUnits = units.filter(u => u.is_sold).length;
+
+            const formatPrice = (price) => `₹${price.toLocaleString('en-IN', {minimumFractionDigits: 0})}`;
+
+            document.getElementById('avgPrice').textContent = formatPrice(avgPrice);
+            document.getElementById('minPrice').textContent = formatPrice(minPrice);
+            document.getElementById('maxPrice').textContent = formatPrice(maxPrice);
+            document.getElementById('soldUnits').textContent = soldUnits;
+        }
+
+        async function approveListing() {
+            if (!confirm('Are you sure you want to approve this listing?')) {
+                return;
+            }
+
+            try {
+                const response = await callApi(config.endpoints.approve, { method: 'POST' });
+                currentListing = response.data;
+                renderListingDetails();
+                alert('Listing approved successfully!');
+            } catch (error) {
+                console.error('[v0] Failed to approve listing:', error);
+            }
+        }
+
+        function openRejectModal() {
+            document.getElementById('rejectionReason').value = '';
+            document.getElementById('rejectModal').classList.add('active');
+        }
+
+        function closeRejectModal() {
+            document.getElementById('rejectModal').classList.remove('active');
+        }
+
+        async function confirmReject() {
+            const reason = document.getElementById('rejectionReason').value.trim();
+            if (!reason) {
+                alert('Please provide a rejection reason.');
+                return;
+            }
+
+            try {
+                const response = await callApi(config.endpoints.reject, {
+                    method: 'POST',
+                    body: JSON.stringify({ reason })
+                });
+                currentListing = response.data;
+                renderListingDetails();
+                closeRejectModal();
+                alert('Listing rejected successfully!');
+            } catch (error) {
+                console.error('[v0] Failed to reject listing:', error);
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', InitializeListingDetail);
+    </script>
+</body>
+</html>

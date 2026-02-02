@@ -1,0 +1,79 @@
+XX +91 still not fiexd
+
+
+In the refurbisher form make the button only abled when al lthe reqwuired docs are uploaded
+
+udate the data to the proper admin UI not basic admin
+all users/ listings should be not in stack latest on top
+
+
+
+
+-- while dsiplaying the info display it to the 2nd stage not on 1st
+
+and remov the poor conmdition
+
+align the conditon slector to the price input
+
+
+
+remove the processor related to the brand only - pple - m1,2 andfor thoer all
+
+
+add the screen size as manual and give exaple on the lable only nubmes allowed
+
+mke the color input also manaul text no options
+
+remove the grade options orm the list
+
+
+multiple stock of same unit and add unit buttons in the end as well 
+
+
+in the step 2 f adding units one unit autmatically added and in the end content of - " add more units of this devices / add more stock of this unit / this is it"
+
+NO ----ask the user t oener the qty of stock of the device selecerd and in next stp create that many numbers of rows for units directly
+
+
+ask user that same condition more units than enter stock or add unit with dirfferent conditions
+
+
+cehck thelayout of listing detial
+
+if already have a listing than show that lsiting already has update that or create a new
+
+extra warranty
+
+
+
+add a i button for conditions and open from right the info
+
+
+dynamic slection of processor 
+
+
+dont add 1 t othe unit number if more units are ther
+
+remov th tick mark and change the text to pause the listing
+
+
+and ram and storge in fel
+
+rmeove the min and max 
++ black color
+
+slider with min and max control
+
++ number of colors
+
+add an i button on the total
+
+
+carbon emission 
+
+
+COD open points
+
+remove order note
+
+add the icons of payments method
