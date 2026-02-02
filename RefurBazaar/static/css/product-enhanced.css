@@ -1074,7 +1074,7 @@
 }
 
 /* Purchase Options */
-.purchase-options {
+/* .purchase-options {
   background: white;
   border-radius: 20px;
   padding: 2rem;
@@ -1083,6 +1083,28 @@
   position: sticky;
   top: 11rem;
   height: fit-content;
+} */
+
+
+/* Update this block in product-enhanced.css */
+.purchase-options {
+  background: white;
+  border-radius: 16px;       /* Slightly rounder corners */
+  padding: 1.5rem !important; /* Force padding to make box bigger */
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08); /* Nicer shadow */
+  border: 1px solid #e9ecef;
+  
+  position: relative; 
+  top: auto; 
+  width: 100%;
+}
+
+/* Add this to product-enhanced.css */
+.sticky-top {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 100px; /* Adjust based on your navbar height */
+    z-index: 10;
 }
 
 .purchase-option {

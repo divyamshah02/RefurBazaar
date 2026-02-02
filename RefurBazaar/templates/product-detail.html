@@ -9,71 +9,76 @@
     <link href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" rel="stylesheet">
     <link href="/static/css/style.css" rel="stylesheet">
     <link href="/static/css/product-enhanced.css" rel="stylesheet">
+    <!-- Added Navbar css -->
+    <link rel="stylesheet" href="/static/css/navbar.css">
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg main-navbar" id="navbar">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-recycle me-2"></i>RefurBazar
-            </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <div class="navbar-search mx-auto d-none d-lg-block">
-                    <div class="search-container">
-                        <input type="text" class="form-control search-input" placeholder="What are you looking for?" id="searchInput">
-                        <button class="search-btn"><i class="fas fa-search"></i></button>
+    <nav class="navbar-main">
+        <div class="container-fluid px-3 px-lg-5">
+            <div class="d-flex align-items-center justify-content-between navbar-container">
+    
+                <div class="brand-col d-flex align-items-center">
+                    <a class="brand-logo" href="/">
+                        <img src="/static/images/refurbazaar-final-logo.png" alt="RefurBazaar">
+                    </a>
+                </div>
+    
+                <div class="search-col flex-grow-1 d-flex justify-content-center px-lg-4">
+                    <div class="search-wrapper">
+                        <form class="search-input-group">
+                            <input type="search" class="form-control" placeholder="Search for iPhones, Laptops..."
+                                aria-label="Search" id="searchInput">
+                            <button class="btn" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
                         <div class="search-suggestions" id="searchSuggestions"></div>
                     </div>
                 </div>
-                
-                <div class="d-flex align-items-center ms-auto">
-                    <a href="#" class="nav-icon me-3" id="wishlistBtn"><i class="fas fa-heart"></i><span class="badge" id="wishlistCount">0</span></a>
-                    <a href="/cart/" class="nav-icon me-3" id="cartBtn"><i class="fas fa-shopping-cart"></i><span class="badge" id="cartCount">0</span></a>
-                    <a href="/account/" class="btn btn-primary">My Account</a>
+    
+                <div class="icons-col d-flex align-items-center gap-2 gap-lg-3">
+                    <a href="/account/" class="nav-icon-btn" aria-label="Profile">
+                        <i class="far fa-user"></i>
+                    </a>
+                    <a href="#" class="nav-icon-btn" aria-label="Wishlist" id="wishlistBtn">
+                        <i class="far fa-heart"></i>
+                        <span class="badge rounded-pill bg-danger cart-count" id="wishlistCount"
+                            style="display:none;">0</span>
+                    </a>
+                    <a href="/cart/" class="nav-icon-btn" aria-label="Cart" id="cartBtn">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="badge rounded-pill bg-danger cart-count" id="cartCount">0</span>
+                    </a>
                 </div>
+    
             </div>
         </div>
     </nav>
 
     <!-- Category Navigation -->
-    <nav class="category-navbar">
-        <div class="container">
-            <div class="category-menu">
-                <div class="category-item-wrapper">
-                    <a href="/" class="category-item">
-                        <i class="fas fa-fire text-danger me-1"></i>
-                        Good deals
-                    </a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="/shop/?category=mobile" class="category-item">Smartphones</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="/shop/?category=laptop" class="category-item">Laptops</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="/shop/?category=tablet" class="category-item">Tablets</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="/shop/?category=gaming" class="category-item">Gaming consoles</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="/shop/?category=smartwatch" class="category-item">Smartwatches</a>
-                </div>
-                <div class="category-item-wrapper">
-                    <a href="/shop/?category=audio" class="category-item">Audio</a>
-                </div>
+    <div class="secondary-nav">
+        <div class="container-fluid">
+            <div class="d-flex">
+                <a href="/" class="cat-link highlight-red">
+                    End of Year Sale <i class="fas fa-fire ms-1"></i>
+                </a>
+                <a href="/shop/?category=mobile" class="cat-link">iPhones</a>
+                <a href="/shop/?category=samsung" class="cat-link">Samsung</a>
+                <a href="/shop/?category=macbook" class="cat-link">MacBooks</a>
+                <a href="/shop/?category=laptop" class="cat-link">Laptops</a>
+                <a href="/shop/?category=tablet" class="cat-link">iPads</a>
+                <a href="/shop/?category=accessories" class="cat-link">Accessories</a>
+                <a href="/business/" class="cat-link">For Business</a>
+                <a href="/express/" class="cat-link highlight-blue">
+                    RefurBazaar Express <i class="fas fa-bolt ms-1"></i>
+                </a>
             </div>
         </div>
-    </nav>
+    </div>
 
     <!-- Breadcrumb -->
-    <div class="px-4 py-3" style="margin-top: 180px;">
+    <div class="px-4 py-3">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/">Home</a></li>
@@ -107,123 +112,105 @@
     <!-- Product Detail -->
     <div class="px-4 pb-5" id="productContent" style="display: none;">
         <div class="row g-4">
-            <!-- Product Images -->
-            <div class="col-lg-4">
-                <div class="product-gallery">
+            <div class="col-lg-6">
+                <div class="product-gallery sticky-top" style="top: 100px; z-index: 1;">
                     <div class="main-image">
                         <img src="/placeholder.svg" alt="Product" id="mainImage">
                     </div>
                     <div class="thumbnail-images">
                         <div class="swiper thumbnailSwiper">
                             <div class="swiper-wrapper" id="thumbnailWrapper">
-                                <!-- Thumbnails populated by JS -->
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Product Details -->
-            <div class="col-lg-4">
-                <div class="product-details">
-                    <!-- Product Header -->
-                    <div class="product-header">
-                        <h1 id="productTitle">Loading...</h1>
-                    </div>
-
-                    <!-- Condition Selection -->
-                    <div class="selection-section">
-                        <div class="section-header">
-                            <h6>Select the condition</h6>
-                            <div class="info-banner">
-                                <i class="fas fa-shield-alt"></i>
-                                <span>Refurbishers have restored devices to high quality based on a 25-point inspection.</span>
-                                <button class="compare-conditions-btn" onclick="toggleConditionsPanel()">
-                                    Compare conditions <i class="fas fa-chevron-right"></i>
-                                </button>
+        
+            <div class="col-lg-6">
+            
+                <div class="product-header mb-3">
+                    <h1 id="productTitle" class="h3 fw-bold mb-0">Loading...</h1>
+                </div>
+            
+                <div class="purchase-options mb-4 sticky-top-mobile" style="padding: 1.5rem;">
+                    <div class="purchase-option border-0 p-0 mb-0">
+                
+                        <input type="radio" name="purchase" id="buyNow" checked class="d-none">
+                
+                        <div class="d-flex align-items-center justify-content-between gap-3 mb-3 py-2">
+                
+                            <div class="price-area flex-grow-1">
+                                <small class="text-muted d-block fw-medium" style="font-size: 0.85rem; margin-bottom: 2px;">Total
+                                    Price</small>
+                                <span class="price h2 fw-bold m-0 text-primary" id="displayPrice">₹0</span>
+                            </div>
+                
+                            <button class="btn btn-primary px-5 py-2 shadow-sm" id="addToCartBtn"
+                                style="height: 50px; font-weight: 600;" disabled>
+                                <i class="fas fa-shopping-cart me-2"></i>Add to Basket
+                            </button>
+                        </div>
+                
+                        <div class="d-flex justify-content-between align-items-center bg-light rounded px-3 py-2 mt-2">
+                            <small class="text-muted" style="font-size: 0.75rem;">
+                                <i class="fas fa-lock me-1"></i>Secure Pay
+                            </small>
+                            <div class="d-flex gap-3">
+                                <small class="text-success fw-bold" style="font-size: 0.75rem;">
+                                    <i class="fas fa-undo me-1"></i>7-Day Return
+                                </small>
+                                <small class="text-success fw-bold" style="font-size: 0.75rem;">
+                                    <i class="fas fa-shield-alt me-1"></i>Warranty
+                                </small>
                             </div>
                         </div>
-                        
+                
+                    </div>
+                </div>
+            
+                <div class="product-details">
+            
+                    <div class="selection-section mt-0 pt-0 border-top-0">
+                        <div class="section-header d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">Condition</h6>
+                            <button class="btn btn-link p-0 text-decoration-none" style="font-size: 0.75rem;"
+                                onclick="toggleConditionsPanel()">
+                                Compare <i class="fas fa-chevron-right ms-1"></i>
+                            </button>
+                        </div>
                         <div class="condition-options">
                             <div class="condition-grid" id="conditionGrid">
-                                <!-- Condition cards populated by JS -->
                             </div>
                         </div>
                     </div>
-
-                    <!-- Dynamic Attribute Filters Container -->
+            
                     <div id="attributeFiltersContainer">
-                        <!-- Storage, Color, and other attribute filters populated by JS -->
                     </div>
-
-                    <!-- Seller Cards -->
+            
                     <div class="sellers-section">
-                        <h6>Available from these sellers</h6>
+                        <h6 class="mb-2">Available from</h6>
                         <div class="sellers-list" id="sellersList">
-                            <!-- Seller cards populated by JS -->
                         </div>
                     </div>
-
-                    <!-- Product Features -->
-                    <div class="product-features">
-                        <div class="feature-item">
-                            <i class="fas fa-truck text-success"></i>
-                            <span>Free delivery</span>
-                        </div>
-                        <div class="feature-item">
-                            <i class="fas fa-unlock text-primary"></i>
-                            <span>Works with all carriers</span>
-                        </div>
-                        <div class="feature-item">
-                            <i class="fas fa-undo text-warning"></i>
-                            <span>Free 7-day returns</span>
-                        </div>
-                        <div class="feature-item">
-                            <i class="fas fa-shield-alt text-info"></i>
-                            <span>6-month warranty</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Purchase Options -->
-            <div class="col-lg-4">
-                <div class="purchase-options">
-                    <!-- Buy Now Option -->
-                    <div class="purchase-option">
-                        <div class="option-header">
-                            <input type="radio" name="purchase" id="buyNow" checked>
-                            <label for="buyNow">Buy Now</label>
-                            <span class="price" id="displayPrice">₹0</span>
-                        </div>
-                        <div class="payment-methods">
-                            <span>Pay securely with Payment gateway</span>        
-                        </div>
-                        <button class="btn btn-primary w-100 mt-3" id="addToCartBtn" disabled>+ Add To Basket</button>
-                        
-                        <div class="purchase-benefits mt-3">
-                            <div class="benefit">
-                                <i class="fas fa-shield-alt"></i>
-                                <span>FREE 7 Days Replacement</span>
+            
+                    <div class="product-features mt-3 py-2 bg-white border-0">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.8rem;">
+                                    <i class="fas fa-truck text-success"></i> Free Delivery
+                                </div>
                             </div>
-                            <div class="benefit">
-                                <i class="fas fa-leaf"></i>
-                                <span>Better for the planet</span>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.8rem;">
+                                    <i class="fas fa-unlock text-primary"></i> Unlocked
+                                </div>
                             </div>
-                            <div class="benefit">
-                                <i class="fas fa-mobile-alt"></i>
-                                <span>Own the device outright</span>
-                            </div>
-                            <!-- <div class="benefit">
-                                <i class="fas fa-user-friends"></i>
-                                <span>Refer a friend and get 10% off</span>
-                            </div> -->
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
+            
         <!-- Product Specifications -->
         <div class="row mt-5">
             <div class="col-12">
@@ -246,7 +233,7 @@
                         </li>
                     </ul>
                     <div class="tab-content" id="productTabsContent">
-                        <div class="tab-pane fade show active" id="specs" role="tabpanel">
+                        <div class="tab-pane show active" id="specs" role="tabpanel">
                             <div class="specifications-content">
                                 <div class="spec-overview">
                                     <h5>Product Overview</h5>
