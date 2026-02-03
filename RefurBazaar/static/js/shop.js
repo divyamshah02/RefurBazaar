@@ -234,7 +234,7 @@ function renderProducts() {
         <div class="product-variants">
           <div class="color-options mb-2">
             ${colorCircles}
-            <span class="color-text">+${colorName}</span>
+            <span class="color-text">+2</span>
           </div>
           <div class="product-specs">${storage}</div>
         </div>

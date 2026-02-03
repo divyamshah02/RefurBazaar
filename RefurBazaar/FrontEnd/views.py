@@ -55,6 +55,12 @@ def check_authentication(required_role=None):
         return _wrapped_view
     return decorator
 
+class IndexViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'index.html')
+
 
 class ShopViewSet(viewsets.ViewSet):
 

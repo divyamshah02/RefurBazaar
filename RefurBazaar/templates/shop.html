@@ -23,13 +23,51 @@
     <!-- Custom CSS -->
     <!-- <link href="/static/css/style.css" rel="stylesheet"> -->
     <link href="/static/css/shop.css" rel="stylesheet">
+
+<style>
+    .range-slider {
+    position: relative;
+    height: 30px;
+}
+
+.range-slider input[type="range"] {
+    position: absolute;
+    width: 100%;
+    pointer-events: none;
+    appearance: none;
+    height: 4px;
+    background: #e5e5e5;
+    border-radius: 5px;
+}
+
+.range-slider input[type="range"]::-webkit-slider-thumb {
+    pointer-events: auto;
+    appearance: none;
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background: #761fe3;
+    cursor: pointer;
+}
+
+.range-slider input[type="range"]::-moz-range-thumb {
+    pointer-events: auto;
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background: #761fe3;
+    cursor: pointer;
+}
+
+</style>
 </head>
 
 <body>
     <!-- Promotional Banner -->
     <div class="promo-banner">
         <div class="container-fluid px-4">
-            <p class="mb-0 text-center">GET 100 OFF YOUR ORDER WITH CODE <strong>REFUR100</strong> AND ENJOY 200 CASHBACK!</p>
+            <p class="mb-0 text-center">GET 100 OFF YOUR ORDER WITH CODE <strong>REFUR100</strong> AND ENJOY 200
+                CASHBACK!</p>
         </div>
     </div>
 
@@ -48,7 +86,8 @@
             <div class="navbar-center flex-grow-1 d-flex justify-content-center">
                 <div class="search-container">
                     <div class="input-group">
-                        <input type="text" class="form-control" placeholder="What are you looking for..." id="searchInput">
+                        <input type="text" class="form-control" placeholder="What are you looking for..."
+                            id="searchInput">
                         <button class="btn btn-search" type="button">
                             <i class="fas fa-search"></i>
                         </button>
@@ -127,7 +166,8 @@
                     <div class="filters-sidebar">
                         <div class="filter-header">
                             <h5>Filters</h5>
-                            <button class="btn btn-link btn-sm p-0 text-decoration-none" onclick="clearFilters()">Clear All</button>
+                            <button class="btn btn-link btn-sm p-0 text-decoration-none" onclick="clearFilters()">Clear
+                                All</button>
                         </div>
 
                         <!-- Category Filter -->
@@ -146,19 +186,22 @@
                             <h6>Condition</h6>
                             <div class="filter-options">
                                 <div class="form-check">
-                                    <input class="form-check-input condition-filter" type="checkbox" id="excellent" value="excellent">
+                                    <input class="form-check-input condition-filter" type="checkbox" id="excellent"
+                                        value="excellent">
                                     <label class="form-check-label" for="excellent">
                                         Excellent <span class="count" id="excellentCount">(0)</span>
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input condition-filter" type="checkbox" id="good" value="good">
+                                    <input class="form-check-input condition-filter" type="checkbox" id="good"
+                                        value="good">
                                     <label class="form-check-label" for="good">
                                         Good <span class="count" id="goodCount">(0)</span>
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input condition-filter" type="checkbox" id="fair" value="fair">
+                                    <input class="form-check-input condition-filter" type="checkbox" id="fair"
+                                        value="fair">
                                     <label class="form-check-label" for="fair">
                                         Fair <span class="count" id="fairCount">(0)</span>
                                     </label>
@@ -175,7 +218,7 @@
                         </div>
 
                         <!-- Price Range Filter -->
-                        <div class="filter-section">
+                        <!-- <div class="filter-section">
                             <h6>Price Range</h6>
                             <div class="price-range">
                                 <div class="row g-2">
@@ -192,6 +235,39 @@
                                     <button class="btn btn-outline-secondary btn-sm w-100 mb-1" onclick="setPriceRange(50000, 100000)">₹50K - ₹1L</button>
                                     <button class="btn btn-outline-secondary btn-sm w-100" onclick="setPriceRange(100000, 999999)">Above ₹1L</button>
                                 </div>
+                            </div>
+                        </div> -->
+
+                        <div class="filter-section">
+                            <h6 class="mb-2">Price</h6>
+
+                            <div class="price-values">
+                                <span>₹ <span id="minPriceDisplay">0</span></span>
+                                <span>to</span>
+                                <span>₹ <span id="maxPriceDisplay">100000</span></span>
+                            </div>
+
+                            <!-- THESE ARE THE ONLY TWO VALUES YOU SHOULD READ IN YOUR FILTER LOGIC -->
+                            <input type="hidden" id="minPrice" value="0">
+                            <input type="hidden" id="maxPrice" value="100000">
+
+                            <div class="range-slider">
+                                <input
+                                    type="range"
+                                    id="minPriceRange"
+                                    min="0"
+                                    max="100000"
+                                    step="500"
+                                    value="0"
+                                >
+                                <input
+                                    type="range"
+                                    id="maxPriceRange"
+                                    min="0"
+                                    max="100000"
+                                    step="500"
+                                    value="100000"
+                                >
                             </div>
                         </div>
                     </div>
@@ -238,7 +314,8 @@
                     <div class="empty-state text-center py-5" id="emptyState" style="display: none;">
                         <i class="fas fa-search fa-3x text-muted mb-3"></i>
                         <h4 class="text-muted">No products found</h4>
-                        <p class="text-muted">We don't have any products matching your filters. Try adjusting your search!</p>
+                        <p class="text-muted">We don't have any products matching your filters. Try adjusting your
+                            search!</p>
                         <button class="btn btn-primary" onclick="clearFilters()">Clear Filters</button>
                     </div>
 
@@ -267,7 +344,8 @@
             <div class="row g-4">
                 <div class="col-lg-3 col-md-6">
                     <h5 class="fw-bold mb-3"><i class="fas fa-recycle me-2"></i>RefurBazar</h5>
-                    <p class="text-light">Your trusted marketplace for certified refurbished electronics. Quality devices at unbeatable prices.</p>
+                    <p class="text-light">Your trusted marketplace for certified refurbished electronics. Quality
+                        devices at unbeatable prices.</p>
                     <div class="social-links mt-3">
                         <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-lg"></i></a>
                         <a href="#" class="text-white me-3"><i class="fab fa-twitter fa-lg"></i></a>
@@ -331,7 +409,7 @@
 
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- API Caller and Shop JavaScript -->
     <script src="/static/js/api_caller.js"></script>
     <script src="/static/js/shop.js"></script>
@@ -341,6 +419,49 @@
             await initShop("{% url 'products-shop' %}", "{{csrf_token}}")
         }
     </script>
+
+    <script>
+const minRange = document.getElementById("minPriceRange");
+const maxRange = document.getElementById("maxPriceRange");
+
+const minInput = document.getElementById("minPrice");
+const maxInput = document.getElementById("maxPrice");
+
+const minDisplay = document.getElementById("minPriceDisplay");
+const maxDisplay = document.getElementById("maxPriceDisplay");
+
+function syncPriceRange() {
+    let min = parseInt(minRange.value);
+    let max = parseInt(maxRange.value);
+
+    // Hard constraint: min can never exceed max
+    if (min > max) {
+        if (event.target === minRange) {
+            minRange.value = max;
+            min = max;
+        } else {
+            maxRange.value = min;
+            max = min;
+        }
+    }
+
+    // Single source of truth (USE THESE FOR API)
+    minInput.value = min;
+    maxInput.value = max;
+
+    // UI display
+    minDisplay.textContent = min.toLocaleString("en-IN");
+    maxDisplay.textContent = max.toLocaleString("en-IN");
+}
+
+minRange.addEventListener("input", syncPriceRange);
+maxRange.addEventListener("input", syncPriceRange);
+
+// Init
+syncPriceRange();
+</script>
+
+
 </body>
 
 </html>
