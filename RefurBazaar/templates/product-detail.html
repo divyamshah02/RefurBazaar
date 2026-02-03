@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,19 +12,186 @@
     <link href="/static/css/product-enhanced.css" rel="stylesheet">
     <!-- Added Navbar css -->
     <link rel="stylesheet" href="/static/css/navbar.css">
+    <style>
+        /* ===== Simple Tabs Wrapper ===== */
+.simple-tabs {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* ===== Tab Buttons ===== */
+.tab-buttons {
+    display: flex;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 16px 12px;
+    background: transparent;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s ease;
+}
+
+.tab-btn:hover {
+    color: #111827;
+}
+
+.tab-btn.active {
+    color: #2563eb;
+    background: #ffffff;
+}
+
+/* Active underline */
+.tab-btn.active::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    right: 20%;
+    height: 3px;
+    background: #2563eb;
+    border-radius: 3px 3px 0 0;
+}
+
+/* ===== Panels ===== */
+.tab-panels {
+    padding: 24px;
+}
+
+.tab-panel {
+    display: none;
+    animation: fadeUp 0.25s ease;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+/* ===== Typography ===== */
+.tab-panel h5 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #111827;
+}
+
+.lead-text {
+    color: #4b5563;
+    margin-bottom: 16px;
+}
+
+/* ===== Specs Grid ===== */
+.spec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.spec-grid div {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.spec-grid span {
+    display: block;
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.spec-grid strong {
+    font-size: 0.9rem;
+    color: #111827;
+}
+
+/* ===== Check List ===== */
+.check-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.check-list li {
+    position: relative;
+    padding-left: 26px;
+    margin-bottom: 10px;
+    color: #374151;
+}
+
+.check-list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: #16a34a;
+    font-weight: 700;
+}
+
+/* ===== Info Cards ===== */
+.info-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.info-card {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.info-card h6 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #111827;
+}
+
+.info-card p {
+    font-size: 0.85rem;
+    color: #4b5563;
+    margin: 0;
+}
+
+/* ===== Animation ===== */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+    </style>
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar-main">
         <div class="container-fluid px-3 px-lg-5">
             <div class="d-flex align-items-center justify-content-between navbar-container">
-    
+
                 <div class="brand-col d-flex align-items-center">
                     <a class="brand-logo" href="/">
                         <img src="/static/images/refurbazaar-final-logo.png" alt="RefurBazaar">
                     </a>
                 </div>
-    
+
                 <div class="search-col flex-grow-1 d-flex justify-content-center px-lg-4">
                     <div class="search-wrapper">
                         <form class="search-input-group">
@@ -36,7 +204,7 @@
                         <div class="search-suggestions" id="searchSuggestions"></div>
                     </div>
                 </div>
-    
+
                 <div class="icons-col d-flex align-items-center gap-2 gap-lg-3">
                     <a href="/account/" class="nav-icon-btn" aria-label="Profile">
                         <i class="far fa-user"></i>
@@ -51,7 +219,7 @@
                         <span class="badge rounded-pill bg-danger cart-count" id="cartCount">0</span>
                     </a>
                 </div>
-    
+
             </div>
         </div>
     </nav>
@@ -60,9 +228,9 @@
     <div class="secondary-nav">
         <div class="container-fluid">
             <div class="d-flex">
-                <a href="/" class="cat-link highlight-red">
+                <!-- <a href="/" class="cat-link highlight-red">
                     End of Year Sale <i class="fas fa-fire ms-1"></i>
-                </a>
+                </a> -->
                 <a href="/shop/?category=mobile" class="cat-link">iPhones</a>
                 <a href="/shop/?category=samsung" class="cat-link">Samsung</a>
                 <a href="/shop/?category=macbook" class="cat-link">MacBooks</a>
@@ -83,7 +251,7 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/">Home</a></li>
                 <li class="breadcrumb-item"><a href="/shop/">Shop</a></li>
-                <li class="breadcrumb-item"><a href="#" id="breadcrumbCategory">Category</a></li>
+                <!-- <li class="breadcrumb-item"><a href="#" id="breadcrumbCategory">Category</a></li> -->
                 <li class="breadcrumb-item active" id="breadcrumbProduct">Loading...</li>
             </ol>
         </nav>
@@ -115,7 +283,7 @@
             <div class="col-lg-6">
                 <div class="product-gallery sticky-top" style="top: 100px; z-index: 1;">
                     <div class="main-image">
-                        <img src="/placeholder.svg" alt="Product" id="mainImage">
+                        <img src="/static/images/iPhone 16 Pro.png" alt="Product" id="mainImage">
                     </div>
                     <div class="thumbnail-images">
                         <div class="swiper thumbnailSwiper">
@@ -125,32 +293,33 @@
                     </div>
                 </div>
             </div>
-        
+
             <div class="col-lg-6">
-            
+
                 <div class="product-header mb-3">
                     <h1 id="productTitle" class="h3 fw-bold mb-0">Loading...</h1>
                 </div>
-            
+
                 <div class="purchase-options mb-4 sticky-top-mobile" style="padding: 1.5rem;">
                     <div class="purchase-option border-0 p-0 mb-0">
-                
+
                         <input type="radio" name="purchase" id="buyNow" checked class="d-none">
-                
+
                         <div class="d-flex align-items-center justify-content-between gap-3 mb-3 py-2">
-                
+
                             <div class="price-area flex-grow-1">
-                                <small class="text-muted d-block fw-medium" style="font-size: 0.85rem; margin-bottom: 2px;">Total
+                                <small class="text-muted d-block fw-medium"
+                                    style="font-size: 0.85rem; margin-bottom: 2px;">Total
                                     Price</small>
                                 <span class="price h2 fw-bold m-0 text-primary" id="displayPrice">₹0</span>
                             </div>
-                
+
                             <button class="btn btn-primary px-5 py-2 shadow-sm" id="addToCartBtn"
                                 style="height: 50px; font-weight: 600;" disabled>
                                 <i class="fas fa-shopping-cart me-2"></i>Add to Basket
                             </button>
                         </div>
-                
+
                         <div class="d-flex justify-content-between align-items-center bg-light rounded px-3 py-2 mt-2">
                             <small class="text-muted" style="font-size: 0.75rem;">
                                 <i class="fas fa-lock me-1"></i>Secure Pay
@@ -164,12 +333,12 @@
                                 </small>
                             </div>
                         </div>
-                
+
                     </div>
                 </div>
-            
+
                 <div class="product-details">
-            
+
                     <div class="selection-section mt-0 pt-0 border-top-0">
                         <div class="section-header d-flex justify-content-between align-items-center mb-2">
                             <h6 class="mb-0">Condition</h6>
@@ -183,16 +352,16 @@
                             </div>
                         </div>
                     </div>
-            
+
                     <div id="attributeFiltersContainer">
                     </div>
-            
+
                     <div class="sellers-section">
                         <h6 class="mb-2">Available from</h6>
                         <div class="sellers-list" id="sellersList">
                         </div>
                     </div>
-            
+
                     <div class="product-features mt-3 py-2 bg-white border-0">
                         <div class="row g-2">
                             <div class="col-6">
@@ -210,24 +379,27 @@
                 </div>
             </div>
         </div>
-            
+
         <!-- Product Specifications -->
-        <div class="row mt-5">
+        <!-- <div class="row mt-5">
             <div class="col-12">
                 <div class="product-tabs">
                     <ul class="nav nav-tabs" id="productTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="specs-tab" data-bs-toggle="tab" data-bs-target="#specs" type="button" role="tab">
+                            <button class="nav-link active" id="specs-tab" data-bs-toggle="tab" data-bs-target="#specs"
+                                type="button" role="tab">
                                 Specifications
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="condition-tab" data-bs-toggle="tab" data-bs-target="#condition" type="button" role="tab">
+                            <button class="nav-link" id="condition-tab" data-bs-toggle="tab" data-bs-target="#condition"
+                                type="button" role="tab">
                                 Condition Details
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="warranty-tab" data-bs-toggle="tab" data-bs-target="#warranty" type="button" role="tab">
+                            <button class="nav-link" id="warranty-tab" data-bs-toggle="tab" data-bs-target="#warranty"
+                                type="button" role="tab">
                                 Warranty & Returns
                             </button>
                         </li>
@@ -245,12 +417,17 @@
                             <div class="condition-details">
                                 <div class="condition-info-card">
                                     <h6><i class="fas fa-star text-warning me-2"></i>Excellent Condition</h6>
-                                    <p>This device has been professionally refurbished and tested to ensure optimal performance. It may show minimal signs of wear but functions like new.</p>
+                                    <p>This device has been professionally refurbished and tested to ensure optimal
+                                        performance. It may show minimal signs of wear but functions like new.</p>
                                     <ul class="condition-features">
-                                        <li><i class="fas fa-check text-success me-2"></i>Battery health: 85%+ capacity</li>
-                                        <li><i class="fas fa-check text-success me-2"></i>Screen: No cracks or scratches</li>
-                                        <li><i class="fas fa-check text-success me-2"></i>Body: Minor cosmetic wear possible</li>
-                                        <li><i class="fas fa-check text-success me-2"></i>All functions tested and working</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Battery health: 85%+ capacity
+                                        </li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Screen: No cracks or scratches
+                                        </li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Body: Minor cosmetic wear
+                                            possible</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>All functions tested and
+                                            working</li>
                                     </ul>
                                 </div>
                             </div>
@@ -259,22 +436,96 @@
                             <div class="warranty-details">
                                 <div class="warranty-card">
                                     <h6><i class="fas fa-shield-alt text-primary me-2"></i>1-Year Warranty</h6>
-                                    <p>All refurbished devices come with a comprehensive 1-year warranty covering hardware defects and functionality issues.</p>
+                                    <p>All refurbished devices come with a comprehensive 1-year warranty covering
+                                        hardware defects and functionality issues.</p>
                                 </div>
                                 <div class="warranty-card">
                                     <h6><i class="fas fa-undo text-success me-2"></i>30-Day Returns</h6>
-                                    <p>Not satisfied? Return your device within 30 days for a full refund, no questions asked.</p>
+                                    <p>Not satisfied? Return your device within 30 days for a full refund, no questions
+                                        asked.</p>
                                 </div>
                                 <div class="warranty-card">
                                     <h6><i class="fas fa-headset text-info me-2"></i>Customer Support</h6>
-                                    <p>24/7 customer support available to help with any questions or issues you may have.</p>
+                                    <p>24/7 customer support available to help with any questions or issues you may
+                                        have.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
+
+<div class="row mt-5">
+    <div class="col-12">
+
+        <section class="simple-tabs">
+
+            <!-- Tab Buttons -->
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="specs">Specifications</button>
+                <button class="tab-btn" data-tab="condition">Condition</button>
+                <button class="tab-btn" data-tab="warranty">Warranty & Returns</button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-panels">
+
+                <div class="tab-panel active" id="specs">
+                    <h5>Product Specifications</h5>
+
+                    <div class="spec-grid">
+                        <div><span>Brand</span><strong>Apple</strong></div>
+                        <div><span>Model</span><strong>iPhone 13 Pro</strong></div>
+                        <div><span>Storage</span><strong>128 GB</strong></div>
+                        <div><span>Color</span><strong>Graphite</strong></div>
+                        <div><span>Network</span><strong>Unlocked</strong></div>
+                    </div>
+                </div>
+
+                <div class="tab-panel" id="condition">
+                    <h5>Condition Details</h5>
+
+                    <p class="lead-text">
+                        Professionally refurbished and fully tested to ensure peak performance.
+                    </p>
+
+                    <ul class="check-list">
+                        <li>Battery health 85% or higher</li>
+                        <li>Screen free from cracks</li>
+                        <li>All buttons & ports tested</li>
+                        <li>Factory reset & sanitized</li>
+                    </ul>
+                </div>
+
+                <div class="tab-panel" id="warranty">
+                    <h5>Warranty & Returns</h5>
+
+                    <div class="info-cards">
+                        <div class="info-card">
+                            <h6>6-Month Warranty</h6>
+                            <p>Covers hardware defects and functionality issues.</p>
+                        </div>
+
+                        <div class="info-card">
+                            <h6>7-Day Returns</h6>
+                            <p>Full refund if you’re not satisfied.</p>
+                        </div>
+
+                        <div class="info-card">
+                            <h6>Customer Support</h6>
+                            <p>Available 7 days a week.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+</div>
+
     </div>
 
     <!-- Conditions Comparison Side Panel -->
@@ -287,7 +538,7 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            
+
             <div class="panel-body">
                 <div class="condition-comparison">
                     <div class="comparison-header">
@@ -302,7 +553,7 @@
                             <span class="dot" data-slide="6"></span>
                         </div>
                     </div>
-                    
+
                     <div class="inspection-carousel">
                         <div class="carousel-slides">
                             <div class="carousel-slide active" data-slide="0">
@@ -311,71 +562,78 @@
                                 </div>
                                 <div class="slide-content">
                                     <h6>SIM and/or memory card reader</h6>
-                                    <p>This tests that SIM cards and memory cards are correctly read by the device, and any trays or slots to insert or remove the card works properly.</p>
+                                    <p>This tests that SIM cards and memory cards are correctly read by the device, and
+                                        any trays or slots to insert or remove the card works properly.</p>
                                 </div>
                             </div>
-                            
+
                             <div class="carousel-slide" data-slide="1">
                                 <div class="slide-icon">
                                     <i class="fas fa-camera"></i>
                                 </div>
                                 <div class="slide-content">
                                     <h6>Cameras</h6>
-                                    <p>All cameras are inspected for functionality, image capture and quality. This includes video conferencing.</p>
+                                    <p>All cameras are inspected for functionality, image capture and quality. This
+                                        includes video conferencing.</p>
                                 </div>
                             </div>
-                            
+
                             <div class="carousel-slide" data-slide="2">
                                 <div class="slide-icon">
                                     <i class="fas fa-trash-alt"></i>
                                 </div>
                                 <div class="slide-content">
                                     <h6>Data deletion</h6>
-                                    <p>All personal data is completely wiped from the device using industry-standard data deletion methods.</p>
+                                    <p>All personal data is completely wiped from the device using industry-standard
+                                        data deletion methods.</p>
                                 </div>
                             </div>
-                            
+
                             <div class="carousel-slide" data-slide="3">
                                 <div class="slide-icon">
                                     <i class="fas fa-plug"></i>
                                 </div>
                                 <div class="slide-content">
                                     <h6>Chargers and/or cables</h6>
-                                    <p>Charging functionality is tested to ensure proper power delivery and connection stability.</p>
+                                    <p>Charging functionality is tested to ensure proper power delivery and connection
+                                        stability.</p>
                                 </div>
                             </div>
-                            
+
                             <div class="carousel-slide" data-slide="4">
                                 <div class="slide-icon">
                                     <i class="fas fa-map-marker-alt"></i>
                                 </div>
                                 <div class="slide-content">
                                     <h6>GPS and/or positioning system</h6>
-                                    <p>Location services and GPS accuracy are tested to ensure proper navigation and location-based features.</p>
+                                    <p>Location services and GPS accuracy are tested to ensure proper navigation and
+                                        location-based features.</p>
                                 </div>
                             </div>
-                            
+
                             <div class="carousel-slide" data-slide="5">
                                 <div class="slide-icon">
                                     <i class="fas fa-satellite-dish"></i>
                                 </div>
                                 <div class="slide-content">
                                     <h6>External sensors</h6>
-                                    <p>All external sensors including accelerometer, gyroscope, and ambient light sensors are tested for proper functionality.</p>
+                                    <p>All external sensors including accelerometer, gyroscope, and ambient light
+                                        sensors are tested for proper functionality.</p>
                                 </div>
                             </div>
-                            
+
                             <div class="carousel-slide" data-slide="6">
                                 <div class="slide-icon">
                                     <i class="fas fa-fingerprint"></i>
                                 </div>
                                 <div class="slide-content">
                                     <h6>Biometric sensors</h6>
-                                    <p>Face ID, Touch ID, and other biometric authentication methods are tested for accuracy and security.</p>
+                                    <p>Face ID, Touch ID, and other biometric authentication methods are tested for
+                                        accuracy and security.</p>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="carousel-navigation">
                             <button class="carousel-btn prev" onclick="previousSlide()" disabled>
                                 <i class="fas fa-chevron-left"></i>
@@ -385,7 +643,7 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="discover-section">
                         <button class="discover-btn">Discover Verified Refurbished</button>
                     </div>
@@ -405,8 +663,8 @@
             // Get product ID from URL
             const urlParts = window.location.pathname.split('/');
             const productId = urlParts[urlParts.length - 2]; // Assuming URL is /product/<id>/
-            
-            await initProductDetail(                
+
+            await initProductDetail(
                 "/product-api/products/" + productId + "/detail/",
                 "/product-api/products/" + productId + "/available-units/",
                 "/cart-api/cart/",
@@ -414,47 +672,47 @@
                 productId
             );
         }
-        
+
         // Conditions panel toggle
         function toggleConditionsPanel() {
             const panel = document.getElementById('conditionsPanel');
             panel.classList.toggle('active');
         }
-        
+
         // Carousel functionality
         let currentSlide = 0;
         const totalSlides = 7;
-        
+
         function nextSlide() {
             if (currentSlide < totalSlides - 1) {
                 currentSlide++;
                 updateCarousel();
             }
         }
-        
+
         function previousSlide() {
             if (currentSlide > 0) {
                 currentSlide--;
                 updateCarousel();
             }
         }
-        
+
         function updateCarousel() {
             // Update slides
             document.querySelectorAll('.carousel-slide').forEach((slide, index) => {
                 slide.classList.toggle('active', index === currentSlide);
             });
-            
+
             // Update dots
             document.querySelectorAll('.carousel-dots .dot').forEach((dot, index) => {
                 dot.classList.toggle('active', index === currentSlide);
             });
-            
+
             // Update navigation buttons
             document.querySelector('.carousel-btn.prev').disabled = currentSlide === 0;
             document.querySelector('.carousel-btn.next').disabled = currentSlide === totalSlides - 1;
         }
-        
+
         // Add click handlers to dots
         document.querySelectorAll('.carousel-dots .dot').forEach((dot, index) => {
             dot.addEventListener('click', () => {
@@ -462,6 +720,22 @@
                 updateCarousel();
             });
         });
+
+
     </script>
+    <script>
+document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.tab).classList.add("active");
+    });
+});
+</script>
+
+
 </body>
+
 </html>

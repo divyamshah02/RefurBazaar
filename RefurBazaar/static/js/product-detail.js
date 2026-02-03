@@ -60,7 +60,7 @@ function renderProductInfo() {
   if (productData.image) {
     mainImage.src = productData.image
   } else {
-    mainImage.src = "/placeholder.svg?height=400&width=400&query=" + encodeURIComponent(productData.name)
+    mainImage.src = "/static/images/iPhone 16 Pro.png"
   }
   mainImage.alt = `${productData.brand_name} ${productData.name}`
 
@@ -78,7 +78,7 @@ function initializeThumbnailGallery() {
   // Add main image as first thumbnail
   const thumbnailsHTML = `
         <div class="swiper-slide">
-            <img src="${productData.image || "/placeholder.svg?height=200&width=200&query=" + encodeURIComponent(productData.name)}" 
+            <img src="${productData.image || "/static/images/iPhone 16 Pro.png"}" 
                  alt="Main view" 
                  onclick="changeMainImage(this.src)">
         </div>
