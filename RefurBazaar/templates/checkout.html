@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -47,8 +48,13 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes slideUp {
@@ -56,6 +62,7 @@
                 opacity: 0;
                 transform: translate(-50%, -40%);
             }
+
             to {
                 opacity: 1;
                 transform: translate(-50%, -50%);
@@ -176,6 +183,381 @@
             pointer-events: none;
         }
 
+        /* Order Summary Card Styles */
+        .order-summary-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(111, 186, 44, 0.08);
+            border: 1px solid rgba(111, 186, 44, 0.1);
+            position: sticky;
+            top: 170px;
+        }
+
+        .order-summary-card h5 {
+            font-size: 1.25rem;
+            color: #212529;
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+        }
+
+        /* E-Waste Savings Card */
+        .ewaste-savings-card {
+            background: linear-gradient(135deg, rgba(111, 186, 44, 0.08) 0%, rgba(111, 186, 44, 0.03) 100%);
+            border: 2px solid rgba(111, 186, 44, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .ewaste-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .ewaste-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #6fba2c, #5a9e22);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .ewaste-text {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .ewaste-label {
+            font-size: 0.75rem;
+            color: #6c757d;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .ewaste-amount {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #6fba2c;
+        }
+
+        .ewaste-progress {
+            margin: 1rem 0;
+        }
+
+        .progress {
+            background: rgba(111, 186, 44, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #6fba2c, #5a9e22);
+            height: 100%;
+            transition: width 0.6s ease;
+            border-radius: 10px;
+        }
+
+        .ewaste-footer {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        /* Order Items */
+        .order-items {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid rgba(111, 186, 44, 0.1);
+        }
+
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(111, 186, 44, 0.02);
+            border-radius: 10px;
+            border: 1px solid rgba(111, 186, 44, 0.1);
+        }
+
+        .order-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            flex-shrink: 0;
+            border: 2px solid rgba(111, 186, 44, 0.1);
+        }
+
+        .order-item h6 {
+            margin: 0 0 0.25rem 0;
+            font-weight: 700;
+            color: #212529;
+            font-size: 0.9rem;
+        }
+
+        .order-item small {
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+
+        .order-item strong {
+            font-weight: 800;
+            color: #6fba2c;
+        }
+
+        /* Summary Breakdown */
+        .summary-breakdown {
+            background: linear-gradient(135deg, rgba(111, 186, 44, 0.05), rgba(111, 186, 44, 0.02));
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(111, 186, 44, 0.1);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            font-size: 0.95rem;
+            color: #495057;
+        }
+
+        .summary-row span:last-child {
+            font-weight: 600;
+            color: #212529;
+        }
+
+        /* Summary Total Section */
+        .summary-total-section {
+            background: linear-gradient(135deg, rgba(111, 186, 44, 0.08), rgba(111, 186, 44, 0.03));
+            border: 2px solid rgba(111, 186, 44, 0.2);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .total-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .total-value-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .summary-total-amount {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6fba2c, #5a9e22);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .info-btn {
+            width: 32px;
+            height: 32px;
+            border: 2px solid rgba(111, 186, 44, 0.3);
+            background: rgba(111, 186, 44, 0.05);
+            color: #6fba2c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            padding: 0;
+        }
+
+        .info-btn:hover {
+            background: rgba(111, 186, 44, 0.1);
+            border-color: rgba(111, 186, 44, 0.5);
+            transform: scale(1.1);
+        }
+
+        /* Breakdown Details */
+        .breakdown-details {
+            background: linear-gradient(135deg, rgba(111, 186, 44, 0.08), rgba(111, 186, 44, 0.03));
+            border: 1px solid rgba(111, 186, 44, 0.2);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            font-size: 0.95rem;
+        }
+
+        .breakdown-label {
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .breakdown-value {
+            font-weight: 700;
+            color: #212529;
+        }
+
+        .breakdown-item.total {
+            padding-top: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .breakdown-item.total .breakdown-label {
+            color: #212529;
+            font-weight: 700;
+        }
+
+        .breakdown-item.total .breakdown-value {
+            background: linear-gradient(135deg, #6fba2c, #5a9e22);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.25rem;
+        }
+
+        .breakdown-divider {
+            height: 1px;
+            background: rgba(111, 186, 44, 0.2);
+            margin: 0.75rem 0;
+        }
+
+        /* Checkout Button */
+        .btn-checkout {
+            background: linear-gradient(135deg, #6fba2c, #5a9e22);
+            color: white;
+            border: none;
+            font-weight: 700;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(111, 186, 44, 0.3);
+        }
+
+        .btn-checkout:hover {
+            background: linear-gradient(135deg, #5a9e22, #6fba2c);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(111, 186, 44, 0.4);
+        }
+
+        /* Security Badges */
+        .security-badges {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .security-badge {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, rgba(111, 186, 44, 0.05), rgba(111, 186, 44, 0.02));
+            border: 1px solid rgba(111, 186, 44, 0.1);
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #212529;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .security-badge:hover {
+            background: linear-gradient(135deg, rgba(111, 186, 44, 0.1), rgba(111, 186, 44, 0.05));
+            border-color: rgba(111, 186, 44, 0.2);
+        }
+
+        .security-badge i {
+            color: #6fba2c;
+            font-size: 1rem;
+        }
+
+        /* Trust Badges Inline */
+        .trust-badges-inline {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .trust-badge-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, rgba(111, 186, 44, 0.05), rgba(111, 186, 44, 0.02));
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(111, 186, 44, 0.1);
+        }
+
+        .trust-badge-item:hover {
+            background: linear-gradient(135deg, rgba(111, 186, 44, 0.1), rgba(111, 186, 44, 0.05));
+            transform: translateY(-2px);
+        }
+
+        .trust-badge-item i {
+            font-size: 1.75rem;
+            color: #6fba2c;
+        }
+
+        .trust-badge-item div {
+            display: flex;
+            flex-direction: column;
+            font-size: 0.75rem;
+            line-height: 1.2;
+        }
+
+        .trust-badge-item strong {
+            color: #212529;
+            font-weight: 700;
+        }
+
+        .trust-badge-item span {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
         .btn-verify-otp {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
@@ -214,7 +596,9 @@
         }
 
         @keyframes spin {
-            to { transform: translate(-50%, -50%) rotate(360deg); }
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
         }
 
         @media (max-width: 576px) {
@@ -234,6 +618,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Primary Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
@@ -250,7 +635,8 @@
             <div class="navbar-center flex-grow-1 d-flex justify-content-center">
                 <div class="search-container">
                     <div class="input-group">
-                        <input type="text" class="form-control" placeholder="What are you looking for..." id="searchInput">
+                        <input type="text" class="form-control" placeholder="What are you looking for..."
+                            id="searchInput">
                         <button class="btn btn-search" type="button">
                             <i class="fas fa-search"></i>
                         </button>
@@ -384,7 +770,7 @@
                                 Billing address same as shipping
                             </label>
                         </div>
-                        
+
                         <div id="billingAddressSection" style="display: none;">
                             <h4 class="mt-4">Billing Address</h4>
                             <div class="mb-3">
@@ -421,7 +807,7 @@
                                     </div>
                                 </label>
                             </div>
-                            <div class="payment-option">
+                            <div class="payment-option" style="display: none;">
                                 <input type="radio" name="paymentMethod" id="cod" value="cod">
                                 <label for="cod" class="payment-card">
                                     <div class="payment-info">
@@ -436,51 +822,119 @@
                     <!-- Order Notes -->
                     <div class="checkout-section">
                         <h4>Order Notes (Optional)</h4>
-                        <textarea class="form-control" id="orderNotes" rows="3" placeholder="Any special instructions for delivery..."></textarea>
+                        <textarea class="form-control" id="orderNotes" rows="3"
+                            placeholder="Any special instructions for delivery..."></textarea>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-4">
-                <div class="order-summary">
-                    <h5>Order Summary</h5>
-                    
+                <div class="order-summary-card">
+                    <h5 class="fw-bold mb-4">Order Summary</h5>
                     <div class="order-items" id="orderItemsContainer">
                         <!-- Order items will be dynamically loaded here -->
                     </div>
 
-                    <div class="summary-calculations">
+                    <div class="summary-breakdown" style="display: none;">
                         <div class="summary-row">
                             <span>Subtotal</span>
                             <span id="summarySubtotal">₹0</span>
                         </div>
                         <div class="summary-row">
                             <span>Shipping</span>
-                            <span id="summaryShipping">₹50</span>
+                            <span id="summaryShipping">₹0</span>
                         </div>
                         <div class="summary-row">
                             <span>Tax</span>
                             <span id="summaryTax">₹0</span>
                         </div>
-                        <hr>
-                        <div class="summary-row total">
-                            <span>Total</span>
-                            <span id="summaryTotal">₹0</span>
+                    </div>
+
+                    <div class="summary-total-section">
+                        <div class="total-row">
+                            <span class="total-label">Total</span>
+                            <div class="total-value-wrapper">
+                                <span class="summary-total-amount" id="summaryTotal">₹0</span>
+                                <button type="button" class="info-btn" id="toggleBreakdown" title="View breakdown">
+                                    <i class="fas fa-info-circle"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <button class="btn btn-primary btn-lg w-100 mt-3" onclick="placeOrder()">
+                    <!-- Detailed Breakdown Modal (Hidden by default) -->
+                    <div class="breakdown-details" id="breakdownDetails" style="display: none;">
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Subtotal</span>
+                            <span class="breakdown-value" id="breakdownSubtotal">₹0</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Shipping</span>
+                            <span class="breakdown-value" id="breakdownShipping">₹0</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Tax (18%)</span>
+                            <span class="breakdown-value" id="breakdownTax">₹0</span>
+                        </div>
+                        <div class="breakdown-divider"></div>
+                        <div class="breakdown-item total">
+                            <span class="breakdown-label">Total Amount</span>
+                            <span class="breakdown-value" id="breakdownTotal">₹0</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-checkout btn-lg w-100 mt-4" onclick="placeOrder()">
                         <i class="fas fa-lock me-2"></i>Place Order
                     </button>
 
-                    <div class="security-info mt-3">
-                        <div class="security-item">
-                            <i class="fas fa-shield-alt text-success"></i>
-                            <span>SSL Secured Checkout</span>
+                    <div class="payment-secure row mb-4">
+                        <div class="col-6 d-flex align-items-center">
+                            <div class="secure-icon">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <span class="ms-2">100% Secure Payment</span>
                         </div>
-                        <div class="security-item">
-                            <i class="fas fa-lock text-primary"></i>
+                        <div class="col-6 payment-logos text-end">
+                            <i class="fab fa-cc-visa"></i>
+                            <i class="fab fa-cc-mastercard"></i>
+                            <i class="fab fa-brands fa-dark fa-google-pay"></i>
+                        </div>
+                    </div>
+
+                    <!-- Security Info
+                    <div class="security-badges mt-4">
+                        <div class="security-badge">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>SSL Secured</span>
+                        </div>
+                        <div class="security-badge">
+                            <i class="fas fa-lock"></i>
                             <span>256-bit Encryption</span>
+                        </div>
+                    </div> -->
+
+                    <!-- Trust Badges -->
+                    <div class="trust-badges-inline mt-4">
+                        <div class="trust-badge-item">
+                            <i class="fas fa-shipping-fast"></i>
+                            <div>
+                                <strong>Free</strong>
+                                <span>Delivery</span>
+                            </div>
+                        </div>
+                        <div class="trust-badge-item">
+                            <i class="fas fa-undo-alt"></i>
+                            <div>
+                                <strong>7 Days</strong>
+                                <span>Return</span>
+                            </div>
+                        </div>
+                        <div class="trust-badge-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <div>
+                                <strong>6 Months</strong>
+                                <span>Warranty</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -523,7 +977,7 @@
         </form>
 
         <div class="resend-otp-text">
-            Didn't receive OTP? 
+            Didn't receive OTP?
             <a class="resend-link" id="resendOtpLink">Resend OTP</a>
             <span id="resendTimer" style="display: none;"> in <span id="timerCount">30</span>s</span>
         </div>
@@ -545,4 +999,5 @@
         }
     </script>
 </body>
+
 </html>

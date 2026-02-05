@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shopping Cart - RefurBazar</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link href="/static/css/style.css" rel="stylesheet">
     <link href="/static/css/cart.css" rel="stylesheet">
 </head>
+
 <body>
     <!-- Primary Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
@@ -26,7 +30,8 @@
             <div class="navbar-center flex-grow-1 d-flex justify-content-center">
                 <div class="search-container">
                     <div class="input-group">
-                        <input type="text" class="form-control" placeholder="What are you looking for..." id="searchInput">
+                        <input type="text" class="form-control" placeholder="What are you looking for..."
+                            id="searchInput">
                         <button class="btn btn-search" type="button">
                             <i class="fas fa-search"></i>
                         </button>
@@ -150,12 +155,34 @@
                         <p class="text-muted mb-4">Looks like you haven't added any items to your cart yet.</p>
                         <a href="/shop" class="btn btn-primary">Continue Shopping</a>
                     </div>
+
+                    <!-- E-Waste Saved Section -->
+                    <div class="ewaste-savings-card my-4">
+                        <div class="ewaste-header">
+                            <div class="ewaste-icon">
+                                <i class="fas fa-leaf"></i>
+                            </div>
+                            <div class="ewaste-text">
+                                <div class="ewaste-label">E-Waste Saved</div>
+                                <div class="ewaste-amount" id="eWasteSaved">0 kg</div>
+                            </div>
+                        </div>
+                        <div class="ewaste-progress">
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar" id="eWasteBar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="ewaste-footer text-center">
+                            <small class="text-muted">by choosing refurbished</small>
+                        </div>
+                    </div>
+
                 </div>
 
                 <div class="col-lg-4">
                     <div class="order-summary-card" id="cartSummary" style="display: none;">
                         <h5 class="fw-bold mb-4">Order Summary</h5>
-                        
+
                         <div class="summary-total mb-4">
                             <span class="summary-total-label">Total</span>
                             <span class="summary-total-amount" id="summaryTotal">₹0</span>
@@ -164,21 +191,21 @@
                         <a href="/checkout" class="btn btn-primary btn-lg w-100 mb-3">
                             Proceed To Checkout
                         </a>
-                        
+
                         <p class="checkout-note text-center mb-4">Proceed to Checkout to select your Payment Method</p>
 
-                        <!-- Payment Methods -->                       
+                        <!-- Payment Methods -->
                         <div class="payment-secure row mb-4">
-                            <div class="col-6 d-flex align-items-center mb-3">
+                            <div class="col-6 d-flex align-items-center">
                                 <div class="secure-icon">
                                     <i class="fas fa-lock"></i>
                                 </div>
                                 <span class="ms-2">100% Secure Payment</span>
                             </div>
-                            <div class="col-6 payment-logos text-end align-items-end">
+                            <div class="col-6 payment-logos text-end">
                                 <i class="fab fa-cc-visa"></i>
-                                <i class="fab fa-cc-mastercard"></i>          
-                                <i class="fab fa-brands fa-dark fa-google-pay"></i>          
+                                <i class="fab fa-cc-mastercard"></i>
+                                <i class="fab fa-brands fa-dark fa-google-pay"></i>
                             </div>
                         </div>
 
@@ -222,7 +249,8 @@
     </div>
 
     <!-- Similar Units Modal -->
-    <div class="modal fade" id="similarUnitsModal" tabindex="-1" aria-labelledby="similarUnitsModalLabel" aria-hidden="true">
+    <div class="modal fade" id="similarUnitsModal" tabindex="-1" aria-labelledby="similarUnitsModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -240,13 +268,14 @@
     <script src="/static/js/api_caller.js"></script>
     <script src="/static/js/cart.js"></script>
     <script>
-         window.onload = async function () {
+        window.onload = async function () {
             await init(
-                    '{{ csrf_token }}',
-                    '/cart-api/cart/',
-                    '/cart-api/cart/clear/'
-                );
+                '{{ csrf_token }}',
+                '/cart-api/cart/',
+                '/cart-api/cart/clear/'
+            );
         }
     </script>
 </body>
+
 </html>

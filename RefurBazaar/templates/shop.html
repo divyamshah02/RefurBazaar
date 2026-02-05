@@ -23,106 +23,83 @@
     <!-- Custom CSS -->
     <!-- <link href="/static/css/style.css" rel="stylesheet"> -->
     <link href="/static/css/shop.css" rel="stylesheet">
+    
 
-<style>
-    body {
-        background-color: var(--gray-50);
-    }
-</style>
+    <style>
+        body {
+            background-color: var(--gray-50);
+        }
+    </style>
 </head>
 
 <body>
     <!-- Promotional Banner -->
-    <div class="promo-banner">
-        <div class="container-fluid px-4">
-            <p class="mb-0 text-center">GET 100 OFF YOUR ORDER WITH CODE <strong>REFUR100</strong> AND ENJOY 200
-                CASHBACK!</p>
+    <!-- <div class="promo-banner">
+        <div class="container-fluid px-3">
+            <p class="mb-0">
+                GET ₹100 OFF WITH CODE <strong>REFUR100</strong> + ₹200 CASHBACK!
+            </p>
         </div>
-    </div>
+    </div> -->
 
-    <!-- Primary Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
-        <div class="container-fluid px-4 d-flex align-items-center">
+    <!-- Primary Navigation (Navbar) -->
+    <nav class="navbar-main">
+        <div class="container-fluid px-3 px-lg-5">
+            <div class="d-flex align-items-center justify-content-between navbar-container">
 
-            <!-- LEFT -->
-            <div class="navbar-left d-flex align-items-center">
-                <a class="navbar-brand" href="/">
-                    <img src="/static/images/refurbazaar-final-logo.png" alt="RefurBazaar" height="90">
-                </a>
-            </div>
+                <div class="brand-col d-flex align-items-center">
+                    <a class="brand-logo" href="index.html">
+                        <img src="/static/images/homepage/refurbazaar-20final-20logo.png" alt="RefurBazaar">
+                    </a>
+                </div>
 
-            <!-- CENTER -->
-            <div class="navbar-center flex-grow-1 d-flex justify-content-center">
-                <div class="search-container">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="What are you looking for..."
-                            id="searchInput">
-                        <button class="btn btn-search" type="button">
-                            <i class="fas fa-search"></i>
-                        </button>
+                <div class="search-col flex-grow-1 d-flex justify-content-center px-lg-4">
+                    <div class="search-wrapper">
+                        <form class="search-input-group">
+                            <input type="search" class="form-control" placeholder="Search for iPhones, Laptops..."
+                                aria-label="Search">
+                            <button class="btn" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
                     </div>
                 </div>
-            </div>
 
-            <!-- RIGHT -->
-            <div class="navbar-right d-flex align-items-center">
-                <ul class="navbar-nav flex-row align-items-center">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="far fa-user"></i></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" id="wishlistBtn">
-                            <i class="far fa-heart"></i>
-                            <span class="badge" id="wishlistCount" style="display:none;">0</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" id="cartBtn">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span class="badge" id="cartCount" style="display:none;">0</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
+                <div class="icons-col d-flex align-items-center gap-2 gap-lg-3">
+                    <a href="#" class="nav-icon-btn" aria-label="Profile">
+                        <i class="far fa-user"></i>
+                    </a>
+                    <a href="#" class="nav-icon-btn" aria-label="Wishlist">
+                        <i class="far fa-heart"></i>
+                    </a>
+                    <a href="#" class="nav-icon-btn" aria-label="Cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="badge rounded-pill bg-danger cart-count">2</span>
+                    </a>
+                </div>
 
+            </div>
         </div>
     </nav>
 
     <!-- Secondary Navigation (Category Nav) -->
     <div class="secondary-nav">
-        <div class="container-fluid px-4">
-            <ul class="nav justify-content-center flex-wrap">
-                <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fas fa-fire"></i> End of Year Sale</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">iPhones</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Samsung</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">MacBooks</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Laptops</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">iPads</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Accessories and Audio</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">For Businesses</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Need Help?</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fas fa-bolt"></i> RefurBazar Express</a>
-                </li>
-            </ul>
+        <div class="container-fluid">
+            <div class="d-flex">
+                <a href="/shop/?category=sale" class="cat-link highlight-red">
+                    End of Year Sale <i class="fas fa-fire ms-1"></i>
+                </a>
+                <a href="/shop/?category=mobile" class="cat-link">iPhones</a>
+                <a href="/shop/?category=mobile" class="cat-link">Samsung</a>
+                <a href="/shop/?category=laptop" class="cat-link">MacBooks</a>
+                <a href="/shop/?category=laptop" class="cat-link">Laptops</a>
+                <a href="/shop/?category=tablet" class="cat-link">iPads</a>
+                <a href="/shop/?category=accessory" class="cat-link">Accessories</a>
+                <a href="/shop/?category=laptop" class="cat-link">For Business</a>
+                <a href="/shop/?category=express" class="cat-link highlight-blue">
+                    RefurBazaar Express <i class="fas fa-bolt ms-1"></i>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -208,24 +185,10 @@
 
                             <!-- Range Sliders -->
                             <div class="range-slider-container">
-                                <input
-                                    type="range"
-                                    id="minPriceRange"
-                                    min="0"
-                                    max="250000"
-                                    step="1000"
-                                    value="0"
-                                    class="range-input range-input-min"
-                                >
-                                <input
-                                    type="range"
-                                    id="maxPriceRange"
-                                    min="0"
-                                    max="250000"
-                                    step="1000"
-                                    value="250000"
-                                    class="range-input range-input-max"
-                                >
+                                <input type="range" id="minPriceRange" min="0" max="250000" step="1000" value="0"
+                                    class="range-input range-input-min">
+                                <input type="range" id="maxPriceRange" min="0" max="250000" step="1000" value="250000"
+                                    class="range-input range-input-max">
                             </div>
 
                             <!-- Quick Price Suggestions -->
@@ -386,45 +349,45 @@
     </script>
 
     <script>
-const minRange = document.getElementById("minPriceRange");
-const maxRange = document.getElementById("maxPriceRange");
+        const minRange = document.getElementById("minPriceRange");
+        const maxRange = document.getElementById("maxPriceRange");
 
-const minInput = document.getElementById("minPrice");
-const maxInput = document.getElementById("maxPrice");
+        const minInput = document.getElementById("minPrice");
+        const maxInput = document.getElementById("maxPrice");
 
-const minDisplay = document.getElementById("minPriceDisplay");
-const maxDisplay = document.getElementById("maxPriceDisplay");
+        const minDisplay = document.getElementById("minPriceDisplay");
+        const maxDisplay = document.getElementById("maxPriceDisplay");
 
-function syncPriceRange() {
-    let min = parseInt(minRange.value);
-    let max = parseInt(maxRange.value);
+        function syncPriceRange() {
+            let min = parseInt(minRange.value);
+            let max = parseInt(maxRange.value);
 
-    // Hard constraint: min can never exceed max
-    if (min > max) {
-        if (event.target === minRange) {
-            minRange.value = max;
-            min = max;
-        } else {
-            maxRange.value = min;
-            max = min;
+            // Hard constraint: min can never exceed max
+            if (min > max) {
+                if (event.target === minRange) {
+                    minRange.value = max;
+                    min = max;
+                } else {
+                    maxRange.value = min;
+                    max = min;
+                }
+            }
+
+            // Single source of truth (USE THESE FOR API)
+            minInput.value = min;
+            maxInput.value = max;
+
+            // UI display
+            minDisplay.textContent = min.toLocaleString("en-IN");
+            maxDisplay.textContent = max.toLocaleString("en-IN");
         }
-    }
 
-    // Single source of truth (USE THESE FOR API)
-    minInput.value = min;
-    maxInput.value = max;
+        minRange.addEventListener("input", syncPriceRange);
+        maxRange.addEventListener("input", syncPriceRange);
 
-    // UI display
-    minDisplay.textContent = min.toLocaleString("en-IN");
-    maxDisplay.textContent = max.toLocaleString("en-IN");
-}
-
-minRange.addEventListener("input", syncPriceRange);
-maxRange.addEventListener("input", syncPriceRange);
-
-// Init
-syncPriceRange();
-</script>
+        // Init
+        syncPriceRange();
+    </script>
 
 
 </body>

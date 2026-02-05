@@ -1,10 +1,15 @@
 :root {
-  --primary-color: #6bb044; /* updated */
-  --primary-dark: #568e38;  /* optional: darker shade of new primary */
-  --primary-light: #e6f3dd; /* optional: lighter shade of new primary */
-  --secondary-color: #1a4685; /* updated */
-  --gradient-primary: linear-gradient(135deg, #6bb044 0%, #1a4685 100%); /* updated gradient */
-  
+  --primary-color: #6bb044;
+  /* updated */
+  --primary-dark: #568e38;
+  /* optional: darker shade of new primary */
+  --primary-light: #e6f3dd;
+  /* optional: lighter shade of new primary */
+  --secondary-color: #1a4685;
+  /* updated */
+  --gradient-primary: linear-gradient(135deg, #6bb044 0%, #1a4685 100%);
+  /* updated gradient */
+
   /* keep the rest as is */
   --accent-color: #ff6b35;
   --purple: #8b5cf6;
@@ -101,6 +106,7 @@ body {
 }
 
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0px) rotate(0deg);
@@ -544,6 +550,7 @@ body {
 
 
 @keyframes sparkle {
+
   0%,
   100% {
     opacity: 1;
@@ -667,7 +674,7 @@ body {
 
 /* Mobile Navbar Styles */
 @media (max-width: 991.98px) {
-  
+
   /* Mobile Authentication Buttons */
   .d-flex.gap-2 {
     flex-direction: column;
@@ -692,7 +699,8 @@ body {
   align-items: center;
   position: relative;
   overflow: hidden;
-  margin-top: 150px; /* Adjusted for both navbars */
+  margin-top: 150px;
+  /* Adjusted for both navbars */
   padding-top: 50px;
 }
 
@@ -2706,6 +2714,7 @@ body {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -3011,6 +3020,7 @@ body {
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -3070,6 +3080,7 @@ body {
 
 /* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -3093,6 +3104,7 @@ body {
 }
 
 @media (min-width: 768px) {
+
   .categorySwiper .swiper-slide,
   .brandsSwiper .swiper-slide {
     width: calc(33.333% - 20px);
@@ -3101,6 +3113,7 @@ body {
 }
 
 @media (min-width: 1200px) {
+
   .categorySwiper .swiper-slide,
   .brandsSwiper .swiper-slide {
     width: calc(25% - 20px);
@@ -3401,11 +3414,13 @@ body {
 .hero-slider-section {
   position: relative;
   overflow: hidden;
-  margin-top: 150px; /* Account for both navbars */
+  margin-top: 150px;
+  /* Account for both navbars */
 }
 
 .hero-slider-container {
-  height: 50vh; /* Top half of viewport */
+  height: 50vh;
+  /* Top half of viewport */
   position: relative;
 }
 
@@ -3477,7 +3492,8 @@ body {
 
 /* Categories section styling for bottom half */
 .categories-section {
-  min-height: 50vh; /* Bottom half of viewport */
+  min-height: 50vh;
+  /* Bottom half of viewport */
   display: flex;
   align-items: center;
   background: #f8f9fa;
@@ -3505,11 +3521,13 @@ body {
 /* Responsive adjustments for mobile devices */
 @media (max-width: 991.98px) {
   .hero-slider-container {
-    height: 40vh; /* Smaller on tablet */
+    height: 40vh;
+    /* Smaller on tablet */
   }
 
   .categories-section {
-    min-height: 60vh; /* More space for categories on tablet */
+    min-height: 60vh;
+    /* More space for categories on tablet */
   }
 
   .hero-slider-section .slide-content h2 {
@@ -3524,7 +3542,8 @@ body {
 
 @media (max-width: 767.98px) {
   .hero-slider-section {
-    margin-top: 120px; /* Adjust for mobile navbar height */
+    margin-top: 120px;
+    /* Adjust for mobile navbar height */
   }
 
   .hero-slider-container {
@@ -5246,7 +5265,7 @@ body {
   transition: all 0.3s ease;
 }
 
-.address-option input[type="radio"]:checked + .address-card {
+.address-option input[type="radio"]:checked+.address-card {
   border-color: var(--primary-color);
   background: var(--primary-light);
 }
@@ -5284,7 +5303,7 @@ body {
   transition: all 0.3s ease;
 }
 
-.delivery-option input[type="radio"]:checked + .delivery-card {
+.delivery-option input[type="radio"]:checked+.delivery-card {
   border-color: var(--primary-color);
   background: var(--primary-light);
 }
@@ -5321,7 +5340,7 @@ body {
   transition: all 0.3s ease;
 }
 
-.payment-option input[type="radio"]:checked + .payment-card {
+.payment-option input[type="radio"]:checked+.payment-card {
   border-color: var(--primary-color);
   background: var(--primary-light);
 }
@@ -5719,25 +5738,25 @@ body {
   background: #f1f1f1;
 }
 
-.btn-check:checked + .quality-chip.excellent {
+.btn-check:checked+.quality-chip.excellent {
   background: #28a745;
   color: #fff;
   border-color: #28a745;
 }
 
-.btn-check:checked + .quality-chip.good {
+.btn-check:checked+.quality-chip.good {
   background: #0d6efd;
   color: #fff;
   border-color: #0d6efd;
 }
 
-.btn-check:checked + .quality-chip.fair {
+.btn-check:checked+.quality-chip.fair {
   background: #ffc107;
   color: #000;
   border-color: #ffc107;
 }
 
-.btn-check:checked + .quality-chip.poor {
+.btn-check:checked+.quality-chip.poor {
   background: #dc3545;
   color: #fff;
   border-color: #dc3545;
@@ -5761,7 +5780,8 @@ body {
 
 .navbar-left,
 .navbar-right {
-  min-width: 180px; /* keeps center truly centered */
+  min-width: 180px;
+  /* keeps center truly centered */
 }
 
 .search-container {
@@ -5838,3 +5858,49 @@ body {
 .secondary-nav .nav-link i {
   margin-left: 5px;
 }
+
+.payment-secure {
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(111, 186, 44, 0.05), rgba(111, 186, 44, 0.02));
+  border-radius: 12px;
+  border: 1px solid rgba(111, 186, 44, 0.1);
+}
+
+.secure-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--primary-color), #5a9e22);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.payment-secure>div:first-child {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #212529;
+}
+
+.payment-logos {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 3rem;
+}
+
+.payment-logos i {
+  font-size: 2rem;
+  color: #495057;
+  transition: all 0.3s ease;
+}
+
+.payment-logos i:hover {
+  color: var(--primary-color);
+  transform: scale(1.1);
+}
+

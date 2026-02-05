@@ -93,16 +93,41 @@ function updateOrderSummary(data) {
 
   const subtotal = Number.parseFloat(data.total_price)
   const shipping = 0
-  // const tax = Math.round(subtotal * 0.18)
   const total_before_tax = Math.round((subtotal * 100) / 118)
   const tax = Math.round(subtotal - total_before_tax)
   const total = total_before_tax + shipping + tax
 
+  // Update summary display
   document.getElementById("summarySubtotal").textContent = `₹${total_before_tax.toLocaleString("en-IN")}`
   document.getElementById("summaryShipping").textContent = `₹${shipping.toLocaleString("en-IN")}`
   document.getElementById("summaryTax").textContent = `₹${tax.toLocaleString("en-IN")}`
   document.getElementById("summaryTotal").textContent = `₹${total.toLocaleString("en-IN")}`
+
+  // Update breakdown display
+  document.getElementById("breakdownSubtotal").textContent = `₹${total_before_tax.toLocaleString("en-IN")}`
+  document.getElementById("breakdownShipping").textContent = `₹${shipping.toLocaleString("en-IN")}`
+  document.getElementById("breakdownTax").textContent = `₹${tax.toLocaleString("en-IN")}`
+  document.getElementById("breakdownTotal").textContent = `₹${total.toLocaleString("en-IN")}`
 }
+
+// Setup breakdown toggle functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const toggleBtn = document.getElementById('toggleBreakdown')
+  const breakdownDetails = document.getElementById('breakdownDetails')
+
+  if (toggleBtn && breakdownDetails) {
+    toggleBtn.addEventListener('click', function(e) {
+      e.preventDefault()
+      if (breakdownDetails.style.display === 'none') {
+        breakdownDetails.style.display = 'block'
+        toggleBtn.classList.add('active')
+      } else {
+        breakdownDetails.style.display = 'none'
+        toggleBtn.classList.remove('active')
+      }
+    })
+  }
+})
 
 function updateCartBadge(data) {
   const cartBadge = document.getElementById("cartCount")
@@ -725,4 +750,3 @@ function createToastContainer() {
   document.body.appendChild(container)
   return container
 }
-

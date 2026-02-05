@@ -3330,3 +3330,233 @@ footer .social-icons a:hover {
     grid-template-columns: repeat(1, 1fr);
   }
 }
+
+/* Main navbar all styling till end */
+/* Main Navbar */
+.navbar-main {
+  background-color: rgba(255, 255, 255, 0.95);
+
+  /* ADD THIS LINE for Safari/Mobile support */
+  position: -webkit-sticky;
+  position: sticky;
+
+  top: 0;
+  z-index: 1020;
+  min-height: 70px;
+  padding: 0.5rem 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.brand-logo img {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Search Bar */
+.search-wrapper {
+  width: 100%;
+  max-width: 600px;
+}
+
+.search-input-group {
+  display: flex;
+  width: 100%;
+}
+
+.search-input-group .form-control {
+  border-radius: 50px 0 0 50px;
+  border: 1px solid var(--gray-200);
+  border-right: none;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+  background: var(--gray-50);
+
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.search-input-group .form-control:focus {
+  background: white;
+  box-shadow: 0 4px 12px rgba(111, 186, 44, 0.15);
+  /* Soft green glow */
+  border-color: var(--primary-green);
+  padding-left: 1.5rem;
+  /* Slight shift for effect */
+}
+
+.search-input-group .btn {
+  border-radius: 0 50px 50px 0;
+  border: 1px solid var(--primary-green);
+  border-left: none;
+  background: var(--primary-green);
+  color: var(--white);
+  padding: 0 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.search-input-group .btn:hover {
+  background: #5a9e22;
+  border-color: #5a9e22;
+}
+
+/* Nav Icons */
+.nav-icon-btn {
+  color: var(--dark);
+  font-size: 1.25rem;
+  padding: 0.5rem;
+  position: relative;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-icon-btn:hover {
+  color: var(--primary-green);
+}
+
+.cart-count {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 0.9rem !important;
+  padding: 0.25em 0.5em;
+  transform: translate(25%, -25%);
+  background-color: #dc3545;
+}
+
+/* Secondary Nav (Categories) */
+.secondary-nav {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+
+  /* ADD THIS LINE for Safari/Mobile support */
+  position: -webkit-sticky;
+  position: sticky;
+
+  /* CHANGE THIS from 70px to 80px to prevent overlap */
+  top: 75px;
+
+  z-index: 1010;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Add this NEW pseudo-element to create the fade mask */
+.secondary-nav::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 40px;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 1));
+  pointer-events: none;
+  /* Allows clicking through the fade */
+  z-index: 10;
+}
+
+.secondary-nav .container-fluid {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.secondary-nav .container-fluid::-webkit-scrollbar {
+  display: none;
+}
+
+.secondary-nav .d-flex {
+  width: 100%;
+  justify-content: flex-start;
+  /* Default Mobile */
+}
+
+
+.cat-link {
+  display: inline-block;
+  padding: 0.8rem 1.2rem;
+  color: var(--gray-700);
+  font-weight: 500;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cat-link:hover {
+  color: var(--primary-green);
+  background: var(--gray-50);
+}
+
+.cat-link.highlight-red {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.cat-link.highlight-blue {
+  color: var(--primary-blue);
+  font-weight: 600;
+}
+
+/* Responsive Nav Logic */
+@media (min-width: 992px) {
+  .secondary-nav .d-flex {
+    justify-content: flex-start;
+  }
+
+  .secondary-nav .container-fluid {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+
+@media (min-width: 1400px) {
+  .secondary-nav .d-flex {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 991px) {
+  .navbar-container {
+    flex-wrap: wrap;
+    gap: 0;
+  }
+
+  .brand-col {
+    order: 1;
+    flex: 1;
+  }
+
+  .icons-col {
+    order: 2;
+  }
+
+  .search-col {
+    order: 3;
+    width: 100%;
+    margin-top: 12px;
+  }
+
+  .search-wrapper {
+    max-width: 100%;
+  }
+
+  .secondary-nav .d-flex {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .cat-link {
+    font-size: 0.85rem;
+    padding: 0.8rem 1rem;
+  }
+}

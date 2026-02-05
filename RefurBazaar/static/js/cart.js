@@ -124,6 +124,35 @@ function updateCartSummary(data) {
 
   document.getElementById("summaryTotal").textContent = `₹${total.toLocaleString("en-US", {minimumFractionDigits: 0, maximumFractionDigits: 0})}`
 
+  // Calculate E-waste savings based on product categories
+  let totalEWasteSaved = 0
+  const eWasteByCategory = {
+    mobile: 0.15, // kg - average smartphone weight
+    laptop: 2.5,  // kg - average laptop weight
+    tablet: 0.5,  // kg - average tablet weight
+    accessory: 0.1, // kg
+    other: 0.2
+  }
+
+  data.items.forEach(item => {
+    const unit = item.listing_unit
+    const category = unit.category?.toLowerCase() || 'other'
+    const eWastePerUnit = eWasteByCategory[category] || eWasteByCategory['other']
+    totalEWasteSaved += eWastePerUnit
+  })
+
+  // Update E-waste display
+  const eWasteSavedElement = document.getElementById('eWasteSaved')
+  const eWasteBar = document.getElementById('eWasteBar')
+  if (eWasteSavedElement) {
+    eWasteSavedElement.textContent = `${totalEWasteSaved.toFixed(2)} kg`
+    // Set progress bar width (max 100%, scale to 10kg = 100%)
+    const progressWidth = Math.min((totalEWasteSaved / 10) * 100, 100)
+    if (eWasteBar) {
+      eWasteBar.style.width = progressWidth + '%'
+    }
+  }
+
   // Update cashback banner
   // const cashbackAmount = Math.floor(total * 0.05) // 5% cashback example
   // document.getElementById("cashbackAmount").textContent = `${cashbackAmount} ₹Cashback`

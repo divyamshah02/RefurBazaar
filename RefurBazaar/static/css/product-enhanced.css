@@ -1,5 +1,17 @@
 /* Enhanced Product Detail Styles */
 
+/* ===== Premium Design System ===== */
+:root {
+  --primary-gradient: #6fba2c;
+  --primary-color: #6fba2c;
+  --secondary-color: #5a9e22;
+  --accent-color: #6fba2c;
+  --success-color: #10b981;
+  --shadow-sm: 0 2px 8px rgba(111, 186, 44, 0.08);
+  --shadow-md: 0 4px 16px rgba(111, 186, 44, 0.12);
+  --shadow-lg: 0 8px 32px rgba(111, 186, 44, 0.15);
+}
+
 /* Reduce overall font sizes and spacing for more professional look */
 
 /* Current Selection Badge */
@@ -11,13 +23,19 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: #f8f9fa;
-  padding: 0.4rem 0.6rem;
-  border-radius: 4px;
-  border: 1px solid #e9ecef;
-  font-weight: 500;
-  color: #495057;
+  background: rgba(111, 186, 44, 0.1);
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid rgba(111, 186, 44, 0.2);
+  font-weight: 600;
+  color: #6fba2c;
   font-size: 0.8rem;
+  transition: all 0.3s ease;
+}
+
+.selection-badge:hover {
+  background: rgba(111, 186, 44, 0.15);
+  border-color: rgba(111, 186, 44, 0.4);
 }
 
 /* Price Section Enhancement */
@@ -31,7 +49,7 @@
 .current-price {
   font-size: 1.75rem !important;
   font-weight: 700 !important;
-  color: #000 !important;
+  color: #6fba2c !important;
   margin-bottom: 0.4rem !important;
 }
 
@@ -49,12 +67,13 @@
 }
 
 .savings {
-  background: #d4edda;
-  color: #155724;
-  padding: 0.15rem 0.35rem;
-  border-radius: 3px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+  color: #10b981;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 /* Selection Sections */
@@ -73,9 +92,9 @@
 }
 
 .section-header h6 {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #212529;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #6fba2c;
   margin-bottom: 0.4rem;
 }
 
@@ -84,72 +103,75 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  background: #e3f2fd;
-  padding: 0.6rem;
-  border-radius: 4px;
+  background: rgba(111, 186, 44, 0.08);
+  padding: 0.8rem;
+  border-radius: 8px;
   margin-top: 0.6rem;
   font-size: 0.75rem;
-  color: #1565c0;
+  color: #6fba2c;
+  border: 1px solid rgba(111, 186, 44, 0.15);
+  font-weight: 600;
 }
 
 .compare-conditions-btn {
-  background: none;
-  border: none;
-  color: #1565c0;
-  font-weight: 600;
-  text-decoration: underline;
+  background: rgba(111, 186, 44, 0.1);
+  border: 1px solid rgba(111, 186, 44, 0.2);
+  color: #6fba2c;
+  font-weight: 700;
+  text-decoration: none;
   cursor: pointer;
-  margin-left: auto;
-  display: flex;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
-  font-size: 0.75rem;
-  padding: 0.2rem 0.4rem;
-  border-radius: 3px;
-  transition: all 0.2s ease;
+  gap: 0.4rem;
+  font-size: 0.8rem;
 }
 
 .compare-conditions-btn:hover {
-  color: #0d47a1;
-  background: rgba(13, 71, 161, 0.05);
+  background: rgba(111, 186, 44, 0.15);
+  border-color: rgba(111, 186, 44, 0.4);
+  transform: translateX(2px);
 }
 
-/* Condition Options - BackMarket style */
+/* Condition Options - Modern card style */
 .condition-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-  gap: 0.6rem;
+  gap: 0.8rem;
 }
 
 .condition-card {
-  border: 1.5px solid #e9ecef;
-  border-radius: 6px;
-  padding: 0.6rem;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 0.8rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   position: relative;
-  background: white;
-  min-height: 70px;
+  background: linear-gradient(135deg, #ffffff, #f9fafb);
+  min-height: 80px;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
 .condition-card:hover {
-  border-color: #007bff;
-  box-shadow: 0 1px 4px rgba(0, 123, 255, 0.15);
+  border-color: #6fba2c;
+  box-shadow: 0 4px 12px rgba(111, 186, 44, 0.15);
+  transform: translateY(-2px);
 }
 
 .condition-card.active {
-  border-color: #007bff;
-  background: #f8f9ff;
-  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.2);
+  border: 2px solid #6fba2c;
+  background: rgba(111, 186, 44, 0.05);
+  box-shadow: 0 6px 20px rgba(111, 186, 44, 0.2);
 }
 
 .condition-radio {
   position: absolute;
-  top: 0.4rem;
-  right: 0.4rem;
+  top: 0.6rem;
+  right: 0.6rem;
 }
 
 .condition-radio input[type="radio"] {
@@ -157,9 +179,9 @@
 }
 
 .condition-radio label {
-  width: 14px;
-  height: 14px;
-  border: 1.5px solid #dee2e6;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #dee2e6;
   border-radius: 50%;
   display: block;
   cursor: pointer;
@@ -167,14 +189,14 @@
 }
 
 .condition-card.active .condition-radio label {
-  border-color: #007bff;
-  background: #007bff;
+  border-color: #6fba2c;
+  background: #6fba2c;
 }
 
 .condition-card.active .condition-radio label::after {
   content: "";
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
   background: white;
   border-radius: 50%;
   position: absolute;
@@ -184,8 +206,8 @@
 }
 
 .condition-info h6 {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 700;
   color: #212529;
   margin-bottom: 0.2rem;
 }
@@ -198,15 +220,15 @@
 
 .condition-current {
   font-size: 0.75rem;
-  color: #007bff;
-  font-weight: 600;
+  color: #6fba2c;
+  font-weight: 700;
   margin: 0;
 }
 
 .condition-premium-icon {
-  color: #ffc107;
+  color: #fbbf24;
   margin-left: 0.2rem;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
 }
 
 /* Storage Options - BackMarket card style */
@@ -244,7 +266,8 @@
 .storage-radio {
   position: absolute;
   top: 0.5rem;
-  right: 0.5rem; /* Changed from left to right */
+  right: 0.5rem;
+  /* Changed from left to right */
 }
 
 .storage-radio input[type="radio"] {
@@ -1089,22 +1112,26 @@
 /* Update this block in product-enhanced.css */
 .purchase-options {
   background: white;
-  border-radius: 16px;       /* Slightly rounder corners */
-  padding: 1.5rem !important; /* Force padding to make box bigger */
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08); /* Nicer shadow */
+  border-radius: 16px;
+  /* Slightly rounder corners */
+  padding: 1.5rem !important;
+  /* Force padding to make box bigger */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  /* Nicer shadow */
   border: 1px solid #e9ecef;
-  
-  position: relative; 
-  top: auto; 
+
+  position: relative;
+  top: auto;
   width: 100%;
 }
 
 /* Add this to product-enhanced.css */
 .sticky-top {
-    position: -webkit-sticky;
-    position: sticky;
-    top: 100px; /* Adjust based on your navbar height */
-    z-index: 10;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 100px;
+  /* Adjust based on your navbar height */
+  z-index: 10;
 }
 
 .purchase-option {
@@ -1127,11 +1154,11 @@
   margin-bottom: 0;
 }
 
-.purchase-option input[type="radio"]:checked + .option-header {
+.purchase-option input[type="radio"]:checked+.option-header {
   color: var(--primary-color);
 }
 
-.purchase-option input[type="radio"]:checked ~ * {
+.purchase-option input[type="radio"]:checked~* {
   border-color: var(--primary-color);
 }
 
@@ -1268,7 +1295,7 @@
   accent-color: var(--primary-color);
 }
 
-.purchase-option input[type="radio"]:checked + .option-header label {
+.purchase-option input[type="radio"]:checked+.option-header label {
   color: var(--primary-color);
 }
 
@@ -1277,6 +1304,155 @@
   border-color: var(--primary-color);
   background: linear-gradient(135deg, rgba(107, 176, 68, 0.05) 0%, rgba(26, 70, 133, 0.05) 100%);
   box-shadow: var(--shadow-md);
+}
+
+/* ===== Modern Button Styles ===== */
+#addToCartBtn {
+  background: #6fba2c !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  padding: 12px 28px !important;
+  height: auto !important;
+  transition: all 0.3s ease !important;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(111, 186, 44, 0.3) !important;
+}
+
+#addToCartBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(111, 186, 44, 0.4) !important;
+}
+
+#addToCartBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+#addToCartBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Seller Cards */
+.seller-card {
+  border: 1.5px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1rem;
+  background: linear-gradient(135deg, #ffffff, #f9fafb);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.seller-card::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(111, 186, 44, 0.05), transparent);
+  border-radius: 50%;
+}
+
+.seller-card:hover {
+  border-color: #6fba2c;
+  box-shadow: 0 6px 20px rgba(111, 186, 44, 0.1);
+  transform: translateY(-2px);
+}
+
+.seller-card.selected {
+  border-color: #6fba2c;
+  background: linear-gradient(135deg, rgba(111, 186, 44, 0.05), rgba(111, 186, 44, 0.02));
+  box-shadow: 0 8px 24px rgba(111, 186, 44, 0.15);
+}
+
+.seller-card.selected::after {
+  content: "";
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 18px;
+  height: 18px;
+  background: #6fba2c;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seller-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.8rem;
+  position: relative;
+  z-index: 1;
+}
+
+.seller-info h6 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 0.3rem;
+}
+
+.seller-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.seller-rating i {
+  color: #fbbf24;
+}
+
+.seller-price {
+  text-align: right;
+  position: relative;
+  z-index: 1;
+}
+
+.seller-price .price {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #6fba2c;
+}
+
+.seller-price .shipping {
+  font-size: 0.75rem;
+  color: #10b981;
+  margin-top: 0.2rem;
+  font-weight: 600;
+}
+
+.seller-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.8rem;
+  position: relative;
+  z-index: 1;
+}
+
+.seller-feature {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  background: rgba(111, 186, 44, 0.05);
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+}
+
+.seller-feature i {
+  color: #10b981;
+  font-weight: 700;
 }
 
 /* Responsive improvements */
@@ -1301,6 +1477,7 @@
   .condition-grid {
     grid-template-columns: 1fr;
   }
+
   /* 
   .action-buttons {
     flex-direction: column;
