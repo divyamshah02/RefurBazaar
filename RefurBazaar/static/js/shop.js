@@ -21,6 +21,7 @@ async function initShop(api_url, csrf) {
   setupPriceFilters()
   setupConditionFilters()
   setupSortFilter()
+  initCategoryFromQueryParam()
 
   // Load initial data
   await loadShopData()
@@ -59,22 +60,43 @@ function setupBrandFilters() {
 
 // Setup Price Filters
 function setupPriceFilters() {
+  const minPriceRange = document.getElementById("minPriceRange")
+  const maxPriceRange = document.getElementById("maxPriceRange")
+  const minPriceDisplay = document.getElementById("minPriceDisplay")
+  const maxPriceDisplay = document.getElementById("maxPriceDisplay")
   const minPriceInput = document.getElementById("minPrice")
   const maxPriceInput = document.getElementById("maxPrice")
 
   let priceTimeout
 
-  const handlePriceChange = () => {
+  const updatePriceDisplay = () => {
+    const minVal = Number.parseInt(minPriceRange.value)
+    const maxVal = Number.parseInt(maxPriceRange.value)
+
+    // Ensure min is not greater than max
+    if (minVal > maxVal) {
+      minPriceRange.value = maxVal
+    }
+
+    // Update display
+    minPriceDisplay.textContent = formatPrice(minVal)
+    maxPriceDisplay.textContent = formatPrice(maxVal)
+
+    // Update hidden inputs for API
+    minPriceInput.value = minVal
+    maxPriceInput.value = maxVal
+
+    // Clear existing timeout and set new one
     clearTimeout(priceTimeout)
     priceTimeout = setTimeout(async () => {
-      minPrice = minPriceInput.value ? Number.parseFloat(minPriceInput.value) : null
-      maxPrice = maxPriceInput.value ? Number.parseFloat(maxPriceInput.value) : null
+      minPrice = minVal
+      maxPrice = maxVal
       await loadShopData()
-    }, 500)
+    }, 300)
   }
 
-  minPriceInput.addEventListener("input", handlePriceChange)
-  maxPriceInput.addEventListener("input", handlePriceChange)
+  minPriceRange.addEventListener("input", updatePriceDisplay)
+  maxPriceRange.addEventListener("input", updatePriceDisplay)
 }
 
 // Setup Condition Filters
@@ -280,8 +302,12 @@ function updateCategoryTitle() {
 
 // Set Price Range
 function setPriceRange(min, max) {
+  document.getElementById("minPriceRange").value = min
+  document.getElementById("maxPriceRange").value = max
   document.getElementById("minPrice").value = min
   document.getElementById("maxPrice").value = max
+  document.getElementById("minPriceDisplay").textContent = formatPrice(min)
+  document.getElementById("maxPriceDisplay").textContent = formatPrice(max)
   minPrice = min
   maxPrice = max
   loadShopData()
@@ -297,8 +323,12 @@ function clearFilters() {
   sortBy = "featured"
 
   // Reset UI
-  document.getElementById("minPrice").value = ""
-  document.getElementById("maxPrice").value = ""
+  document.getElementById("minPriceRange").value = 0
+  document.getElementById("maxPriceRange").value = 250000
+  document.getElementById("minPrice").value = 0
+  document.getElementById("maxPrice").value = 250000
+  document.getElementById("minPriceDisplay").textContent = formatPrice(0)
+  document.getElementById("maxPriceDisplay").textContent = formatPrice(250000)
   document.getElementById("sortBy").value = "featured"
 
   // Uncheck all brand checkboxes
@@ -388,3 +418,40 @@ function showToast(message, type = "info") {
     toast.remove()
   }, 3000)
 }
+
+/* =========================================
+   AUTO-SELECT CATEGORY FROM QUERY PARAM
+   ========================================= */
+function initCategoryFromQueryParam() {
+  // Get URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const categoryParam = urlParams.get('category');
+  
+  console.log('[v0] Checking for category query param:', categoryParam);
+  
+  if (categoryParam) {
+    // Get the category select element
+    const categorySelect = document.getElementById('categorySelect');
+    
+    if (categorySelect) {
+      // Set the select value to the category param
+      categorySelect.value = categoryParam;
+      
+      // Trigger change event to update filters
+      categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+      
+      console.log('[v0] Category auto-selected:', categoryParam);
+      
+      // Scroll to the products section
+      setTimeout(() => {
+        const productsSection = document.querySelector('.products-header');
+        if (productsSection) {
+          productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 300);
+    }
+  }
+}
+
+// Call this function when the page loads
+// document.addEventListener('DOMContentLoaded', initCategoryFromQueryParam);

@@ -305,70 +305,228 @@ document.addEventListener("DOMContentLoaded", () => {
       impactObserver.observe(number)
     })
   }
-})
 
+  // Initialize New Category Carousels
+  const iphonesCarousel = document.getElementById("iphonesCarousel")
+  if (iphonesCarousel) {
+    new window.bootstrap.Carousel(iphonesCarousel, {
+      interval: false, // Don't auto-slide
+      wrap: true
+    })
+  }
 
-/* =========================================
-   QUALITY MODAL LOGIC
-   ========================================= */
-function openQualityModal() {
-    const modal = document.getElementById('qualityModal');
-    if (modal) {
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Stop scrolling
-    }
-}
+  const samsungCarousel = document.getElementById("samsungCarousel")
+  if (samsungCarousel) {
+    new window.bootstrap.Carousel(samsungCarousel, {
+      interval: false,
+      wrap: true
+    })
+  }
 
-function closeQualityModal(event) {
-    // Close if clicked on overlay OR close button
-    if (event.target.id === 'qualityModal' || event.target.closest('.modal-close-btn')) {
-        const modal = document.getElementById('qualityModal');
-        if (modal) {
-            modal.classList.remove('active');
-            document.body.style.overflow = 'auto'; // Restore scrolling
-        }
-    }
-}
+  /* =========================================
+     QUALITY MODAL LOGIC
+     ========================================= */
+  function openQualityModal() {
+      const modal = document.getElementById('qualityModal');
+      if (modal) {
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden'; // Stop scrolling
+      }
+  }
 
+  function closeQualityModal(event) {
+      // Close if clicked on overlay OR close button
+      if (event.target.id === 'qualityModal' || event.target.closest('.modal-close-btn')) {
+          const modal = document.getElementById('qualityModal');
+          if (modal) {
+              modal.classList.remove('active');
+              document.body.style.overflow = 'auto'; // Restore scrolling
+          }
+      }
+  }
 
-// Initialize New Category Carousels
-const iphonesCarousel = document.getElementById("iphonesCarousel")
-if (iphonesCarousel) {
-  new bootstrap.Carousel(iphonesCarousel, {
-    interval: false, // Don't auto-slide
-    wrap: true
-  })
-}
+  document.addEventListener('click', closeQualityModal);
 
-const samsungCarousel = document.getElementById("samsungCarousel")
-if (samsungCarousel) {
-  new bootstrap.Carousel(samsungCarousel, {
-    interval: false,
-    wrap: true
-  })
-}
+  /* =========================================
+     BACK TO TOP LOGIC
+     ========================================= */
+  const backToTopBtn = document.getElementById("backToTop");
 
-/* =========================================
-  BACK TO TOP LOGIC
-========================================= */
-const backToTopBtn = document.getElementById("backToTop");
-
-if (backToTopBtn) {
-  // Show button when scrolling down 300px
-  window.addEventListener("scroll", () => {
-    if (window.scrollY > 300) {
-      backToTopBtn.classList.add("show");
-    } else {
-      backToTopBtn.classList.remove("show");
-    }
-  });
-
-  // Smooth scroll to top on click
-  backToTopBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
+  if (backToTopBtn) {
+    // Show button when scrolling down 300px
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 300) {
+        backToTopBtn.classList.add("show");
+      } else {
+        backToTopBtn.classList.remove("show");
+      }
     });
+
+    // Smooth scroll to top on click
+    backToTopBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    });
+  }
+
+  /* =========================================
+     LIVE COUNTDOWN TIMER (Fixed Date)
+     ========================================= */
+  function startCountdown() {
+      // -----------------------------------------------------------------
+      // CONFIGURATION: Set your specific end date here
+      // Format: (Year, MonthIndex, Day, Hour, Minute, Second)
+      // IMPORTANT: Month is 0-indexed (0 = Jan, 1 = Feb, ... 11 = Dec)
+      // Example below: February 14, 2026 at 11:59:59 PM
+      // -----------------------------------------------------------------
+      const deadline = new Date(2026, 1, 14, 23, 59, 59); 
+
+      function updateTimer() {
+          const now = new Date().getTime();
+          const t = deadline.getTime() - now;
+
+          // If the sale is over
+          if (t < 0) {
+              clearInterval(timerInterval);
+              
+              // Optional: Change text to "EXPIRED" or "00"
+              const parts = document.querySelectorAll('.timer-part');
+              parts.forEach(part => part.textContent = "00");
+              
+              const mobileTimer = document.querySelector('.compact-timer.d-md-none span');
+              if (mobileTimer) mobileTimer.textContent = "Sale Ended";
+              
+              return;
+          }
+
+          // Calculate time parts
+          const days = Math.floor(t / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((t % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((t % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((t % (1000 * 60)) / 1000);
+
+          // Update Desktop Timer (The red boxes)
+          const parts = document.querySelectorAll('.timer-part');
+          if (parts.length >= 4) {
+              parts[0].textContent = days.toString().padStart(2, '0');
+              parts[1].textContent = hours.toString().padStart(2, '0');
+              parts[2].textContent = minutes.toString().padStart(2, '0');
+              parts[3].textContent = seconds.toString().padStart(2, '0');
+          }
+
+          // Update Mobile Timer (The text strip)
+          const mobileTimer = document.querySelector('.compact-timer.d-md-none span');
+          if (mobileTimer) {
+              mobileTimer.textContent = `Ends in: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+          }
+      }
+
+      updateTimer(); // Run immediately so there is no 1-second delay
+      const timerInterval = setInterval(updateTimer, 1000);
+  }
+
+  startCountdown(); // Start the countdown timer when the DOM is loaded
+
+/* =========================================
+   CONTACT FORM HANDLER
+   ========================================= */
+const contactForm = document.getElementById('contactForm');
+if (contactForm) {
+  contactForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+      name: document.getElementById('contactName').value,
+      email: document.getElementById('contactEmail').value,
+      phone: document.getElementById('contactPhone').value,
+      subject: document.getElementById('contactSubject').value,
+      message: document.getElementById('contactMessage').value
+    };
+    
+    console.log('[v0] Contact form submitted:', formData);
+    
+    // Show success message
+    const submitBtn = contactForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = '✓ Message Sent!';
+    submitBtn.disabled = true;
+    submitBtn.style.background = 'var(--primary-green)';
+    submitBtn.style.transform = 'scale(1.05)';
+    
+    // Add success animation
+    contactForm.style.opacity = '0.8';
+    
+    // Reset form after 2 seconds
+    setTimeout(() => {
+      contactForm.reset();
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+      submitBtn.style.background = '';
+      submitBtn.style.transform = '';
+      contactForm.style.opacity = '1';
+    }, 2000);
   });
 }
+
+/* =========================================
+   INQUIRY FORM HANDLER
+   ========================================= */
+const inquiryForm = document.getElementById('inquiryForm');
+if (inquiryForm) {
+  inquiryForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+      name: document.getElementById('inquiryName').value,
+      email: document.getElementById('inquiryEmail').value,
+      phone: document.getElementById('inquiryPhone').value,
+      location: document.getElementById('inquiryLocation').value,
+      experience: document.getElementById('inquiryExperience').value,
+      specialization: document.getElementById('inquirySpecialization').value,
+      message: document.getElementById('inquiryMessage').value
+    };
+    
+    console.log('[v0] Inquiry form submitted:', formData);
+    
+    // Show success message
+    const submitBtn = inquiryForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = '✓ Application Submitted!';
+    submitBtn.disabled = true;
+    submitBtn.style.background = 'var(--success)';
+    submitBtn.style.transform = 'scale(1.05)';
+    
+    // Add success animation
+    inquiryForm.style.opacity = '0.8';
+    
+    // Reset form after 2 seconds
+    setTimeout(() => {
+      inquiryForm.reset();
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+      submitBtn.style.background = '';
+      submitBtn.style.transform = '';
+      inquiryForm.style.opacity = '1';
+    }, 2000);
+  });
+}
+
+/* =========================================
+   FORM INPUT ANIMATIONS
+   ========================================= */
+const formInputs = document.querySelectorAll('.contact-input, .inquiry-input');
+formInputs.forEach(input => {
+  input.addEventListener('focus', function() {
+    this.parentElement.style.transform = 'scale(1.02)';
+    this.parentElement.style.transformOrigin = 'center';
+  });
+  
+  input.addEventListener('blur', function() {
+    this.parentElement.style.transform = 'scale(1)';
+  });
+});
+
+})
