@@ -135,306 +135,120 @@
   transform: translateX(2px);
 }
 
-/* Condition Options - Modern card style */
-.condition-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-  gap: 0.8rem;
-}
+/* ===== Compact Variant Pickers (Amazon Style + Left Align) ===== */
 
-.condition-card {
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
-  padding: 0.8rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  background: linear-gradient(135deg, #ffffff, #f9fafb);
-  min-height: 80px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.condition-card:hover {
-  border-color: #6fba2c;
-  box-shadow: 0 4px 12px rgba(111, 186, 44, 0.15);
-  transform: translateY(-2px);
-}
-
-.condition-card.active {
-  border: 2px solid #6fba2c;
-  background: rgba(111, 186, 44, 0.05);
-  box-shadow: 0 6px 20px rgba(111, 186, 44, 0.2);
-}
-
-.condition-radio {
-  position: absolute;
-  top: 0.6rem;
-  right: 0.6rem;
-}
-
-.condition-radio input[type="radio"] {
-  display: none;
-}
-
-.condition-radio label {
-  width: 18px;
-  height: 18px;
-  border: 2px solid #dee2e6;
-  border-radius: 50%;
-  display: block;
-  cursor: pointer;
-  position: relative;
-}
-
-.condition-card.active .condition-radio label {
-  border-color: #6fba2c;
-  background: #6fba2c;
-}
-
-.condition-card.active .condition-radio label::after {
-  content: "";
-  width: 5px;
-  height: 5px;
-  background: white;
-  border-radius: 50%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.condition-info h6 {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #212529;
-  margin-bottom: 0.2rem;
-}
-
-.condition-price {
-  font-size: 0.75rem;
-  color: #6c757d;
-  margin: 0;
-}
-
-.condition-current {
-  font-size: 0.75rem;
-  color: #6fba2c;
-  font-weight: 700;
-  margin: 0;
-}
-
-.condition-premium-icon {
-  color: #fbbf24;
-  margin-left: 0.2rem;
-  font-size: 0.8rem;
-}
-
-/* Storage Options - BackMarket card style */
-.storage-options {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 0.6rem;
-}
-
-.storage-card {
-  border: 1.5px solid #e9ecef;
-  border-radius: 6px;
-  padding: 0.8rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-  background: white;
-  min-height: 70px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.storage-card:hover {
-  border-color: #007bff;
-  box-shadow: 0 1px 4px rgba(0, 123, 255, 0.15);
-}
-
-.storage-card.active {
-  border-color: #007bff;
-  background: #f8f9ff;
-  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.2);
-}
-
-.storage-radio {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  /* Changed from left to right */
-}
-
-.storage-radio input[type="radio"] {
-  display: none;
-}
-
-.storage-radio label {
-  width: 16px;
-  height: 16px;
-  border: 1.5px solid #dee2e6;
-  border-radius: 50%;
-  display: block;
-  cursor: pointer;
-  position: relative;
-}
-
-.storage-card.active .storage-radio label {
-  border-color: #007bff;
-  background: #007bff;
-}
-
-.storage-card.active .storage-radio label::after {
-  content: "";
-  width: 6px;
-  height: 6px;
-  background: white;
-  border-radius: 50%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.storage-info h6 {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #212529;
-  margin-bottom: 0.2rem;
-}
-
-.storage-price {
-  font-size: 0.75rem;
-  color: #6c757d;
-  margin: 0;
-}
-
-.storage-current {
-  font-size: 0.75rem;
-  color: #007bff;
-  font-weight: 600;
-  margin: 0;
-}
-
-/* Color Options - BackMarket card style */
+/* 1. Flex Container Layout */
+.condition-grid, 
+.storage-options, 
 .color-options {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 0.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 15px;
+  justify-content: flex-start; /* Ensure grid starts from left */
 }
 
+/* 2. Section Headers */
+.section-header {
+    text-align: left !important;
+    width: 100%;
+    /* REMOVED 'justify-content: flex-start' so the 'Compare' link stays on the right */
+}
+
+/* Ensure the heading text itself inside the header is left-aligned */
+.section-header h6 {
+    text-align: left;
+    margin-right: auto; /* Pushes everything else (like Compare link) to the right */
+}
+
+/* 3. Unified Button Style (Larger Size) */
+.condition-card, 
+.storage-card, 
 .color-card {
-  border: 1.5px solid #e9ecef;
+  width: auto !important;
+  min-height: unset !important;
+  flex: 0 0 auto;
+  
+  background: #fff;
+  border: 1px solid #dcdcdc;
   border-radius: 6px;
-  padding: 0.8rem;
+  
+  /* INCREASED PADDING: 
+     Top/Bottom: 14px (was 10px)
+     Right: 34px (was 28px) - space for dot
+     Left: 18px (was 14px) 
+  */
+  padding: 14px 34px 14px 18px; 
+  
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
-  background: white;
-  min-height: 80px;
+  
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
+  align-items: center; 
+  justify-content: flex-start;
+  text-align: left;
 }
 
-.color-card:hover:not(.disabled) {
-  border-color: #007bff;
-  box-shadow: 0 1px 4px rgba(0, 123, 255, 0.15);
-}
-
-.color-card.active {
-  border-color: #007bff;
-  background: #f8f9ff;
-  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.2);
-}
-
-.color-card.disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  background: #f8f9fa;
-}
-
+/* 4. The "Small Top-Right Dot" */
+.condition-radio, 
+.storage-radio, 
 .color-radio {
+  display: block !important;
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+  top: 6px;
+  right: 6px;
+  line-height: 0;
 }
 
-.color-radio input[type="radio"] {
-  display: none;
-}
-
+/* The actual circle style */
+.condition-radio label, 
+.storage-radio label, 
 .color-radio label {
-  width: 16px;
-  height: 16px;
-  border: 1.5px solid #dee2e6;
+  width: 8px;
+  height: 8px;
+  border: 1px solid #adb5bd;
   border-radius: 50%;
   display: block;
   cursor: pointer;
-  position: relative;
+  background: #fff;
 }
 
+/* Hide inputs and pseudo-elements */
+.condition-radio input, .storage-radio input, .color-radio input,
+.condition-radio label::after, .storage-radio label::after, .color-radio label::after {
+    display: none !important;
+}
+
+/* 5. Active State */
+.condition-card.active, 
+.storage-card.active, 
+.color-card.active {
+  background-color: #f0fdf4; 
+  border: 2px solid #6fba2c; 
+  /* Adjust padding for 2px border */
+  padding: 9px 27px 9px 13px; 
+}
+
+.condition-card.active .condition-radio label, 
+.storage-card.active .storage-radio label, 
 .color-card.active .color-radio label {
-  border-color: #007bff;
-  background: #007bff;
+  background: #6fba2c;
+  border-color: #6fba2c;
 }
 
-.color-card.active .color-radio label::after {
-  content: "";
-  width: 6px;
-  height: 6px;
-  background: white;
-  border-radius: 50%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.color-dot {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.color-info {
-  text-align: center;
-}
-
-.color-info h6 {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #212529;
-  margin-bottom: 0.2rem;
-}
-
-.color-price {
-  font-size: 0.7rem;
-  color: #6c757d;
-  margin: 0;
-}
-
-.color-current {
-  font-size: 0.7rem;
-  color: #007bff;
-  font-weight: 600;
-  margin: 0;
-}
-
-.color-sold-out {
-  font-size: 0.7rem;
-  color: #dc3545;
+/* 6. Text Styles (Larger Font) */
+.condition-card h6, 
+.storage-card h6, 
+.color-card h6 {
+  margin: 0 !important;
+  font-size: 1rem !important; /* Increased from 0.9rem */
   font-weight: 500;
-  margin: 0;
+  color: #333;
+}
+/* 7. Hide Extras */
+.condition-price, .storage-price, .color-price, .condition-premium-icon {
+  display: none !important; 
 }
 
 /* Sellers Section */
@@ -1490,4 +1304,115 @@
   .current-price {
     font-size: 1.5rem !important;
   }
+}
+
+
+/* ===== New Gallery Layout System ===== */
+
+/* Base Styles */
+.gallery-layout-wrapper {
+    display: flex;
+    gap: 15px;
+}
+
+.main-image {
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.main-image img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* --- Desktop Layout (Large Screens) --- */
+@media (min-width: 992px) {
+    .gallery-layout-wrapper {
+        flex-direction: row; /* Side by side */
+        height: 500px; /* Fixed height required for vertical thumbnails */
+    }
+
+    .thumbnail-images {
+        width: 100px; /* Fixed width for thumbnail strip */
+        flex-shrink: 0;
+        height: 100%;
+    }
+
+    .thumbnailSwiper {
+        height: 100%; /* Full height for vertical scrolling */
+    }
+    
+    /* Override the previous width:auto !important for vertical slides */
+    .thumbnailSwiper .swiper-slide {
+        width: 100% !important; 
+        height: auto !important;
+        margin-bottom: 10px !important; /* Spacing between vertical thumbs */
+    }
+
+    .thumbnailSwiper .swiper-slide img {
+        width: 100%;
+        height: 80px; /* Consistent thumb height */
+        object-fit: contain;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 5px;
+        cursor: pointer;
+    }
+
+    .main-image {
+        flex-grow: 1; /* Take remaining space */
+        height: 100%;
+    }
+    
+    .main-image img {
+        max-height: 100%; /* Ensure image fits in height */
+    }
+}
+
+/* --- Mobile/Tablet Layout (Smaller Screens) --- */
+@media (max-width: 991px) {
+    .gallery-layout-wrapper {
+        flex-direction: column-reverse; /* Puts Main Image on Top, Thumbs Bottom */
+    }
+
+    .thumbnail-images {
+        width: 100%;
+        height: auto;
+        overflow: hidden;
+    }
+
+    .thumbnailSwiper {
+        padding-bottom: 5px;
+    }
+    
+    /* Horizontal styling for mobile */
+    .thumbnailSwiper .swiper-slide {
+        width: 70px !important;
+        height: 70px !important;
+        margin-right: 10px;
+    }
+    
+    .thumbnailSwiper .swiper-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 4px;
+    }
+
+    .main-image {
+        width: 100%;
+        height: 350px; /* Fixed height for mobile main image */
+    }
+    
+    .main-image img {
+        max-height: 100%;
+    }
 }

@@ -374,17 +374,21 @@
         <div class="row g-4">
             <div class="col-lg-6">
                 <div class="product-gallery sticky-top" style="top: 100px; z-index: 1;">
-                    <div class="main-image">
-                        <img src="/static/images/iPhone 16 Pro.png" alt="Product" id="mainImage">
-                    </div>
-                    <div class="thumbnail-images">
-                        <div class="swiper thumbnailSwiper">
-                            <div class="swiper-wrapper" id="thumbnailWrapper">
+                    <div class="gallery-layout-wrapper">
+                
+                        <div class="thumbnail-images">
+                            <div class="swiper thumbnailSwiper">
+                                <div class="swiper-wrapper" id="thumbnailWrapper">
+                                </div>
                             </div>
                         </div>
+                
+                        <div class="main-image">
+                            <img src="/static/images/iPhone 16 Pro.png" alt="Product" id="mainImage">
+                        </div>
                     </div>
-                    <!-- Trust Badges -->
-                    <div class="trust-badges">
+                
+                    <div class="trust-badges mt-3">
                         <div class="badge-item">
                             <i class="fas fa-shield-alt"></i>
                             <div class="badge-label">Certified</div>
@@ -418,9 +422,13 @@
                 <div class="product-details">
 
                     <div class="selection-section mt-0 pt-0 border-top-0">
-                        <div class="section-header d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0">Condition</h6>
-                            <button class="btn btn-link p-0 text-decoration-none" style="font-size: 0.75rem;"
+                        <div class="section-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">
+                                Condition: <span id="selectedConditionLabel" class="text-primary fw-bold">Select...</span>
+                                <small id="selectedConditionDesc" class="text-muted ms-2 fw-normal" style="font-size: 0.8rem;"></small>
+                            </h6>
+                    
+                            <button class="btn btn-link p-0 text-decoration-none" style="font-size: 0.95rem;"
                                 onclick="toggleConditionsPanel()">
                                 Compare <i class="fas fa-chevron-right ms-1"></i>
                             </button>

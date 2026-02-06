@@ -73,46 +73,62 @@ function renderProductInfo() {
 }
 
 function initializeThumbnailGallery() {
-  const thumbnailWrapper = document.getElementById("thumbnailWrapper")
+    const thumbnailWrapper = document.getElementById("thumbnailWrapper");
 
-  // Add main image as first thumbnail
-  let thumbnailsHTML = `
+    // Add main image as first thumbnail
+    let thumbnailsHTML = `
         <div class="swiper-slide">
             <img src="${productData.image || "/static/images/iPhone 16 Pro.png"}" 
                  alt="Main view" 
                  onclick="changeMainImage(this.src)">
         </div>
-    `
+    `;
 
     if (Array.isArray(productData.images)) {
-    productData.images.forEach(img => {
-        if (img.image) {
-            thumbnailsHTML += `
+        productData.images.forEach(img => {
+            if (img.image) {
+                thumbnailsHTML += `
                 <div class="swiper-slide">
                     <img src="${img.image}" 
                          alt="Product view" 
                          onclick="changeMainImage(this.src)">
                 </div>
             `;
+            }
+        });
+    }
+
+    thumbnailWrapper.innerHTML = thumbnailsHTML;
+
+    // Initialize Swiper with RESPONSIVE Direction
+    if (window.Swiper) {
+        // Destroy existing instance if it exists (prevents bugs on resize)
+        if (thumbnailSwiper) {
+            thumbnailSwiper.destroy(true, true);
         }
-    });
-}
 
-  thumbnailWrapper.innerHTML = thumbnailsHTML
-
-  // Initialize Swiper
-  if (window.Swiper) {
-    thumbnailSwiper = new window.Swiper(".thumbnailSwiper", {
-      spaceBetween: 10,
-      slidesPerView: "auto",
-      freeMode: true,
-      watchSlidesProgress: true,
-      breakpoints: {
-        320: { slidesPerView: 3 },
-        768: { slidesPerView: 4 },
-      },
-    })
-  }
+        thumbnailSwiper = new window.Swiper(".thumbnailSwiper", {
+            spaceBetween: 10,
+            freeMode: true,
+            watchSlidesProgress: true,
+            // Mousewheel control for vertical scrolling on desktop
+            mousewheel: {
+                releaseOnEdges: true,
+            },
+            breakpoints: {
+                // Mobile settings (Horizontal)
+                320: {
+                    slidesPerView: "auto",
+                    direction: 'horizontal',
+                },
+                // Desktop settings (Vertical) - Matches Bootstrap 'lg'
+                992: {
+                    slidesPerView: 5, // Show ~5 thumbs vertically
+                    direction: 'vertical',
+                },
+            },
+        });
+    }
 }
 
 function changeMainImage(src) {
@@ -127,25 +143,24 @@ function renderFilters() {
 }
 
 function renderConditionFilter() {
-  const conditionGrid = document.getElementById("conditionGrid")
+    const conditionGrid = document.getElementById("conditionGrid");
 
-  const conditionHTML = CONDITION_OPTIONS.map(
-    (condition) => `
+    const conditionHTML = CONDITION_OPTIONS.map(
+        (condition) => `
         <div class="condition-card" data-condition="${condition.value}" onclick="selectCondition('${condition.value}')">
             <div class="condition-radio">
                 <input type="radio" name="condition" id="condition-${condition.value}" value="${condition.value}">
                 <label for="condition-${condition.value}"></label>
             </div>
-            <div class="condition-info">
+
+            <div class="condition-info d-flex align-items-center">
                 <h6>${condition.label}</h6>
-                <p class="condition-price">${condition.description}</p>
-                ${condition.icon ? `<i class="${condition.icon} condition-premium-icon"></i>` : ""}
             </div>
         </div>
-    `,
-  ).join("")
+    `
+    ).join("");
 
-  conditionGrid.innerHTML = conditionHTML
+    conditionGrid.innerHTML = conditionHTML;
 }
 
 function renderAttributeFilters() {
@@ -308,26 +323,33 @@ function autoSelectFilters() {
 }
 
 function selectCondition(value) {
-  // Remove active class from all condition cards
-  document.querySelectorAll(".condition-card").forEach((card) => {
-    card.classList.remove("active")
-    const radio = card.querySelector('input[type="radio"]')
-    if (radio) radio.checked = false
-  })
+    // 1. Visual Update (Classes)
+    document.querySelectorAll(".condition-card").forEach((card) => {
+        card.classList.remove("active");
+    });
 
-  // Add active class to selected card
-  const selectedCard = document.querySelector(`.condition-card[data-condition="${value}"]`)
-  if (selectedCard) {
-    selectedCard.classList.add("active")
-    const radio = selectedCard.querySelector('input[type="radio"]')
-    if (radio) radio.checked = true
+    const selectedCard = document.querySelector(`.condition-card[data-condition="${value}"]`);
+    if (selectedCard) {
+        selectedCard.classList.add("active");
+    }
 
-    // Update selected filters
-    selectedFilters["condition"] = value
+    // 2. Logic Update
+    selectedFilters["condition"] = value;
 
-    // Load available units
-    loadAvailableUnits()
-  }
+    // 3. NEW: Update the Header Label Text
+    const conditionObj = CONDITION_OPTIONS.find(c => c.value === value);
+    if (conditionObj) {
+        // e.g. "Condition: Excellent"
+        const labelEl = document.getElementById("selectedConditionLabel");
+        if(labelEl) labelEl.textContent = conditionObj.label;
+
+        // e.g. "Like new, no scratches"
+        const descEl = document.getElementById("selectedConditionDesc");
+        if(descEl) descEl.textContent = `(${conditionObj.description})`;
+    }
+
+    // 4. Load Data
+    loadAvailableUnits();
 }
 
 function selectAttribute(attrId, value) {
