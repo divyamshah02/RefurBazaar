@@ -35,6 +35,7 @@ router.register(r'admin-refurbisher-detail', AdminRefurbisherDetailPageViewSet, 
 router.register(r'admin-listings', AdminListingsPageViewSet, basename='admin-listings')
 router.register(r'admin-listing-detail', AdminListingDetailPageViewSet, basename='admin-listing-detail')
 router.register(r'admin-customers', AdminCustomersPageViewSet, basename='admin-customers')
+router.register(r'admin-add-products', AdminAddProductPageViewSet, basename='admin-add-products')
 
 urlpatterns = [
     path('', include(router.urls)),

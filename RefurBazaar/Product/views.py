@@ -6,6 +6,8 @@ from django.db.models import Min, Max, Count, Q
 from .models import *
 from .serializers import *
 from utils.decorators import *
+import pandas as pd
+from django.db import transaction
 
 
 class BrandViewSet(viewsets.ViewSet):
@@ -246,6 +248,7 @@ class ProductModelViewSet(viewsets.ViewSet):
                 'data_type': attr.data_type,
                 'possible_values': attr.possible_values,
                 'is_required': pm_attr.is_required,
+                'is_filter': pm_attr.is_filter,
                 'available_values': list(available_values)
             })
         
@@ -913,16 +916,6 @@ class Seed_oldDataViewSet(viewsets.ViewSet):
         }, status=status.HTTP_201_CREATED)
 
 
-
-
-import pandas as pd
-from django.db import transaction
-from rest_framework import status, viewsets
-from rest_framework.response import Response
-from .models import Brand, ProductModel, AttributeMaster, ProductModelAttribute
-from utils.decorators import handle_exceptions
-
-
 class SeedDataViewSet(viewsets.ViewSet):
     """
     Seed data directly from 'device_catalog_parent_child' Excel file.
@@ -1054,3 +1047,290 @@ class SeedDataViewSet(viewsets.ViewSet):
             },
             "error": None
         }, status=status.HTTP_201_CREATED)
+
+"""
+Admin ViewSet for creating default ProductModels (devices) with their attributes.
+Add this to your Product app's views.py
+"""
+
+
+class ProductModelAdminViewSet(viewsets.ViewSet):
+    """
+    Admin endpoints for creating and managing default product models.
+    Only admins can create products.
+    """
+
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def create(self, request):
+        """
+        Create a new ProductModel with attributes.
+        Expected payload:
+        {
+            "brand_id": 1,
+            "name": "iPhone 16 Pro",
+            "category": "mobile",
+            "description": "Latest iPhone with Pro features",
+            "release_year": 2024,
+            "image": <file>,  # Optional, multipart form data
+            "attributes": [
+                {
+                    "attribute_id": 1,
+                    "is_required": true
+                },
+                {
+                    "attribute_id": 2,
+                    "is_required": true
+                }
+            ]
+        }
+        """
+        try:
+            brand_id = request.data.get('brand_id')
+            name = request.data.get('name')
+            category = request.data.get('category')
+            description = request.data.get('description', '')
+            release_year = request.data.get('release_year')
+            image = request.FILES.get('image') if hasattr(request, 'FILES') else None
+            attributes = request.data.getlist('attributes') if isinstance(request.data.get('attributes'), list) else []
+
+            # Validation
+            if not brand_id or not name or not category:
+                return Response({
+                    "success": False,
+                    "user_not_logged_in": False,
+                    "user_unauthorized": False,
+                    "data": None,
+                    "error": "Missing required fields: brand_id, name, category"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Check if brand exists
+            brand = get_object_or_404(Brand, id=brand_id)
+
+            # Check if product model already exists
+            existing = ProductModel.objects.filter(
+                brand=brand,
+                name=name,
+                category=category
+            ).first()
+
+            if existing:
+                return Response({
+                    "success": False,
+                    "user_not_logged_in": False,
+                    "user_unauthorized": False,
+                    "data": None,
+                    "error": f"Product model '{name}' already exists for this brand and category"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Create ProductModel
+            product_model = ProductModel.objects.create(
+                brand=brand,
+                name=name,
+                category=category,
+                description=description,
+                release_year=release_year if release_year else None,
+                image=image,
+                is_active=True
+            )
+
+            # Parse and add attributes
+            # Handle both JSON array strings and dict objects
+            import json
+            if attributes:
+                # If attributes is a list of strings (from form data), parse them
+                if isinstance(attributes, list) and len(attributes) > 0 and isinstance(attributes[0], str):
+                    try:
+                        # Try to parse as JSON
+                        parsed_attrs = json.loads(attributes[0])
+                        attributes = parsed_attrs if isinstance(parsed_attrs, list) else [parsed_attrs]
+                    except:
+                        # If it fails, treat as single attribute dict string
+                        attributes = []
+
+            for attr_data in attributes:
+                attr_id = attr_data.get('attribute_id')
+                is_required = attr_data.get('is_required', False)
+
+                if not attr_id:
+                    continue
+
+                # Verify attribute exists
+                attribute = get_object_or_404(AttributeMaster, id=attr_id)
+
+                # Create ProductModelAttribute link
+                ProductModelAttribute.objects.get_or_create(
+                    product_model=product_model,
+                    attribute=attribute,
+                    defaults={'is_required': is_required}
+                )
+
+            serializer = ProductModelSerializer(product_model)
+            return Response({
+                "success": True,
+                "user_not_logged_in": False,
+                "user_unauthorized": False,
+                "data": serializer.data,
+                "error": None
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({
+                "success": False,
+                "user_not_logged_in": False,
+                "user_unauthorized": False,
+                "data": None,
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def update(self, request, pk=None):
+        """
+        Update an existing ProductModel and its attributes.
+        Partial updates are supported.
+        """
+        product_model = get_object_or_404(ProductModel, id=pk)
+
+        # Update basic fields
+        if 'name' in request.data:
+            product_model.name = request.data['name']
+        if 'description' in request.data:
+            product_model.description = request.data['description']
+        if 'release_year' in request.data:
+            product_model.release_year = request.data['release_year']
+        if 'is_active' in request.data:
+            product_model.is_active = request.data['is_active']
+
+        # Handle image upload
+        if 'image' in request.FILES:
+            product_model.image = request.FILES['image']
+
+        product_model.save()
+
+        # Handle attributes update if provided
+        if 'attributes' in request.data:
+            attributes = request.data.get('attributes')
+
+            # Parse if needed
+            import json
+            if isinstance(attributes, str):
+                try:
+                    attributes = json.loads(attributes)
+                except:
+                    attributes = []
+
+            # Remove existing attributes
+            ProductModelAttribute.objects.filter(product_model=product_model).delete()
+
+            # Add new attributes
+            for attr_data in attributes:
+                attr_id = attr_data.get('attribute_id')
+                is_required = attr_data.get('is_required', False)
+
+                if not attr_id:
+                    continue
+
+                attribute = get_object_or_404(AttributeMaster, id=attr_id)
+                ProductModelAttribute.objects.get_or_create(
+                    product_model=product_model,
+                    attribute=attribute,
+                    defaults={'is_required': is_required}
+                )
+
+        serializer = ProductModelSerializer(product_model)
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "user_unauthorized": False,
+            "data": serializer.data,
+            "error": None
+        }, status=status.HTTP_200_OK)
+
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def destroy(self, request, pk=None):
+        """
+        Delete a ProductModel and all its associations.
+        """
+        product_model = get_object_or_404(ProductModel, id=pk)
+        product_model.delete()
+
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "user_unauthorized": False,
+            "data": None,
+            "error": None
+        }, status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['get'])
+    @handle_exceptions
+    def list_by_category(self, request):
+        """
+        Get all ProductModels for a specific category.
+        Query params: category (mobile, laptop, tablet, accessory)
+        """
+        category = request.query_params.get('category')
+
+        if not category:
+            return Response({
+                "success": False,
+                "user_not_logged_in": False,
+                "user_unauthorized": False,
+                "data": None,
+                "error": "category parameter is required"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        products = ProductModel.objects.filter(category=category).order_by('brand__name', 'name')
+        serializer = ProductModelSerializer(products, many=True)
+
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "user_unauthorized": False,
+            "data": serializer.data,
+            "error": None
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'])
+    @handle_exceptions
+    def get_attributes_for_category(self, request):
+        """
+        Get all available attributes for a category.
+        Query params: category (mobile, laptop, tablet, accessory)
+        """
+        category = request.query_params.get('category')
+
+        if not category:
+            return Response({
+                "success": False,
+                "user_not_logged_in": False,
+                "user_unauthorized": False,
+                "data": None,
+                "error": "category parameter is required"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        attributes = AttributeMaster.objects.filter(
+            category=category,
+            is_active=True
+        ).order_by('display_order', 'name')
+
+        attrs_data = [
+            {
+                'id': attr.id,
+                'name': attr.name,
+                'data_type': attr.data_type,
+                'possible_values': attr.possible_values,
+                'display_order': attr.display_order
+            }
+            for attr in attributes
+        ]
+
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "user_unauthorized": False,
+            "data": attrs_data,
+            "error": None
+        }, status=status.HTTP_200_OK)

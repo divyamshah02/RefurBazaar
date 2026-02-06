@@ -1,8 +1,5 @@
 from django.contrib import admin
-from .models import (
-    Brand, ProductModel, AttributeMaster, ProductModelAttribute,
-    Listing, ListingUnit, ListingUnitAttribute
-)
+from .models import *
 
 
 @admin.register(Brand)
@@ -16,13 +13,20 @@ class ProductModelAttributeInline(admin.TabularInline):
     model = ProductModelAttribute
     extra = 1
 
+class ProductModelImageInline(admin.TabularInline):
+    model = ProductModelImage
+    extra = 1
 
 @admin.register(ProductModel)
 class ProductModelAdmin(admin.ModelAdmin):
     list_display = ['name', 'brand', 'category', 'is_active', 'created_at']
     list_filter = ['category', 'brand', 'is_active']
     search_fields = ['name', 'brand__name']
-    inlines = [ProductModelAttributeInline]
+
+    inlines = [
+        ProductModelImageInline,     # ✅ images inline
+        ProductModelAttributeInline  # existing attributes
+    ]
 
 
 @admin.register(AttributeMaster)

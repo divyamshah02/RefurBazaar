@@ -4754,7 +4754,7 @@ body {
 }
 
 .thumbnailSwiper .swiper-slide {
-  width: auto;
+  width: auto !important;
   margin-right: 1rem;
 }
 

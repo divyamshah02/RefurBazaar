@@ -32,7 +32,7 @@ class ProductModel(models.Model):
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name='models')
     name = models.CharField(max_length=200)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True)    
     image = models.ImageField(upload_to='product_models/', blank=True, null=True)
     release_year = models.IntegerField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
@@ -44,6 +44,22 @@ class ProductModel(models.Model):
     
     def __str__(self):
         return f"{self.brand.name} {self.name}"
+
+class ProductModelImage(models.Model):
+    product_model = models.ForeignKey(
+        ProductModel,
+        on_delete=models.CASCADE,
+        related_name='images'
+    )
+    image = models.ImageField(upload_to='product_models/')
+    is_primary = models.BooleanField(default=False)
+    display_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['display_order']
+
+    def __str__(self):
+        return f"{self.product_model} image"
 
 
 class AttributeMaster(models.Model):
@@ -86,6 +102,7 @@ class ProductModelAttribute(models.Model):
     product_model = models.ForeignKey(ProductModel, on_delete=models.CASCADE, related_name='model_attributes')
     attribute = models.ForeignKey(AttributeMaster, on_delete=models.CASCADE, related_name='product_models')
     is_required = models.BooleanField(default=True)
+    is_filter = models.BooleanField(default=True, verbose_name="Customer side should it be filterable")
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:

@@ -76,7 +76,7 @@ function initializeThumbnailGallery() {
   const thumbnailWrapper = document.getElementById("thumbnailWrapper")
 
   // Add main image as first thumbnail
-  const thumbnailsHTML = `
+  let thumbnailsHTML = `
         <div class="swiper-slide">
             <img src="${productData.image || "/static/images/iPhone 16 Pro.png"}" 
                  alt="Main view" 
@@ -84,13 +84,27 @@ function initializeThumbnailGallery() {
         </div>
     `
 
+    if (Array.isArray(productData.images)) {
+    productData.images.forEach(img => {
+        if (img.image) {
+            thumbnailsHTML += `
+                <div class="swiper-slide">
+                    <img src="${img.image}" 
+                         alt="Product view" 
+                         onclick="changeMainImage(this.src)">
+                </div>
+            `;
+        }
+    });
+}
+
   thumbnailWrapper.innerHTML = thumbnailsHTML
 
   // Initialize Swiper
   if (window.Swiper) {
     thumbnailSwiper = new window.Swiper(".thumbnailSwiper", {
       spaceBetween: 10,
-      slidesPerView: 4,
+      slidesPerView: "auto",
       freeMode: true,
       watchSlidesProgress: true,
       breakpoints: {
@@ -145,19 +159,22 @@ function renderAttributeFilters() {
   let filtersHTML = ""
 
   attributesData.forEach((attr) => {
-    if (attr.available_values.length > 0) {
-      // Determine filter type based on attribute name
-      const attrNameLower = attr.name.toLowerCase()
-
-      if (attrNameLower.includes("storage") || attrNameLower.includes("memory")) {
-        // Storage-style filter
-        filtersHTML += renderStorageFilter(attr)
-      } else if (attrNameLower.includes("color") || attrNameLower.includes("colour")) {
-        // Color-style filter
-        filtersHTML += renderColorFilter(attr)
-      } else {
-        // Generic filter
-        filtersHTML += renderGenericFilter(attr)
+    if (attr.is_filter) {
+      
+      if (attr.available_values.length > 0) {
+        // Determine filter type based on attribute name
+        const attrNameLower = attr.name.toLowerCase()
+  
+        if (attrNameLower.includes("storage") || attrNameLower.includes("memory")) {
+          // Storage-style filter
+          filtersHTML += renderStorageFilter(attr)
+        } else if (attrNameLower.includes("color") || attrNameLower.includes("colour")) {
+          // Color-style filter
+          filtersHTML += renderColorFilter(attr)
+        } else {
+          // Generic filter
+          filtersHTML += renderGenericFilter(attr)
+        }
       }
     }
   })

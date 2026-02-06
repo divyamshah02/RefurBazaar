@@ -1,9 +1,5 @@
 from rest_framework import serializers
-from .models import (
-    Brand, ProductModel, AttributeMaster, ProductModelAttribute,
-    Listing, ListingUnit, ListingUnitAttribute
-)
-
+from .models import *
 
 class BrandSerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,14 +7,21 @@ class BrandSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'logo', 'is_active']
 
 
+class ProductModelImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductModelImage
+        fields = ['id', 'image', 'is_primary', 'display_order']
+
+
 class ProductModelSerializer(serializers.ModelSerializer):
     brand_name = serializers.CharField(source='brand.name', read_only=True)
+    images = ProductModelImageSerializer(many=True, read_only=True)
     
     class Meta:
         model = ProductModel
         fields = [
             'id', 'brand', 'brand_name', 'name', 'category',
-            'description', 'image', 'release_year', 'is_active'
+            'description', 'image', 'release_year', 'is_active', 'images'
         ]
 
 
@@ -37,7 +40,7 @@ class ProductModelAttributeSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ProductModelAttribute
-        fields = ['id', 'attribute', 'attribute_id', 'is_required']
+        fields = ['id', 'attribute', 'attribute_id', 'is_required', 'is_filter']
 
 
 class ListingUnitAttributeSerializer(serializers.ModelSerializer):

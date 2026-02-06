@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product - Admin - RefurBazaar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+    <style>
+        .attribute-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            background-color: #f8f9fa;
+            transition: all 0.2s ease;
+        }
+        
+        .attribute-card:hover {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .attribute-card input[type="checkbox"] {
+            cursor: pointer;
+        }
+        
+        .attribute-card label {
+            margin-bottom: 0;
+            cursor: pointer;
+            flex: 1;
+        }
+        
+        .form-section {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        
+        .form-section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading-spinner.active {
+            display: block;
+        }
+        
+        .success-message {
+            display: none;
+        }
+        
+        .success-message.show {
+            display: block;
+        }
+        
+        .attribute-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px;
+            background-color: #f8f9fa;
+        }
+        
+        .image-preview {
+            width: 100%;
+            max-width: 200px;
+            height: 200px;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+            margin-bottom: 12px;
+        }
+        
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 6px;
+        }
+        
+        .image-preview.has-image {
+            border: 1px solid #dee2e6;
+            border-style: solid;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .required::after {
+            content: " *";
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Sidebar -->
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar -->
+        <div class="bg-dark" id="sidebar-wrapper" style="min-height: 100vh; width: 250px;">
+            <div class="sidebar-heading text-white p-4 border-bottom border-secondary">
+                <h4 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Admin Panel</h4>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="/admin-dashboard/" class="list-group-item list-group-item-action bg-dark text-white border-secondary">
+                    <i class="fas fa-chart-line me-2"></i>Dashboard
+                </a>
+                <a href="/admin-orders/" class="list-group-item list-group-item-action bg-dark text-white border-secondary">
+                    <i class="fas fa-shopping-cart me-2"></i>Orders
+                </a>
+                <a href="/admin-products/" class="list-group-item list-group-item-action bg-dark text-white border-secondary active">
+                    <i class="fas fa-boxes me-2"></i>Products
+                </a>
+                <a href="/admin-refurbishers/" class="list-group-item list-group-item-action bg-dark text-white border-secondary">
+                    <i class="fas fa-store me-2"></i>Refurbishers
+                </a>
+                <a href="/admin-pending-refurbishers/" class="list-group-item list-group-item-action bg-dark text-white border-secondary">
+                    <i class="fas fa-clock me-2"></i>Pending Approvals
+                </a>
+                <a href="/admin-customers/" class="list-group-item list-group-item-action bg-dark text-white border-secondary">
+                    <i class="fas fa-users me-2"></i>Customers
+                </a>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper" style="flex: 1;">
+            <!-- Top Navigation -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+                <div class="container-fluid">
+                    <h5 class="mb-0">Add New Product</h5>
+                    <div class="d-flex align-items-center">
+                        <span class="me-3">Admin</span>
+                        <button class="btn btn-outline-danger btn-sm" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <div class="container-fluid p-4">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <!-- Success Message -->
+                        <div id="successAlert" class="alert alert-success alert-dismissible fade show success-message" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Success!</strong> Product "<span id="productNameSuccess"></span>" has been created successfully.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="resetForm()"></button>
+                        </div>
+
+                        <!-- Error Message -->
+                        <div id="errorAlert" class="alert alert-danger alert-dismissible fade show" style="display: none;" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <strong>Error!</strong> <span id="errorMessage"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+
+                        <!-- Form -->
+                        <form id="addProductForm" onsubmit="handleSubmit(event)">
+                            <!-- Basic Information -->
+                            <div class="form-section">
+                                <h6 class="form-section-title">Basic Information</h6>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="category" class="form-label required">Category</label>
+                                        <select id="category" class="form-select" required onchange="loadAttributesForCategory()">
+                                            <option value="">Select Category</option>
+                                            <option value="mobile">Mobile</option>
+                                            <option value="tablet">Tablet</option>
+                                            <option value="laptop">Laptop</option>
+                                            <option value="accessory">Accessory</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="brand" class="form-label required">Brand</label>
+                                        <select id="brand" class="form-select" required>
+                                            <option value="">Select Brand</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="productName" class="form-label required">Product Name/Model</label>
+                                    <input type="text" id="productName" class="form-control" placeholder="e.g., iPhone 16 Pro, Galaxy S24 Ultra" required>
+                                    <small class="text-muted">Enter the specific model name of the device</small>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="releaseYear" class="form-label">Release Year</label>
+                                        <input type="number" id="releaseYear" class="form-control" placeholder="e.g., 2024" min="2000" max="2100">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="image" class="form-label">Product Image</label>
+                                        <input type="file" id="image" class="form-control" accept="image/*" onchange="previewImage()">
+                                        <small class="text-muted">JPG, PNG or GIF (Max 5MB)</small>
+                                    </div>
+                                </div>
+
+                                <div id="imagePreviewContainer" class="image-preview" style="display: none;">
+                                    <img id="imagePreview" src="" alt="Preview">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea id="description" class="form-control" rows="3" placeholder="Add product details and specifications..."></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Device Attributes -->
+                            <div class="form-section">
+                                <h6 class="form-section-title">Device Attributes</h6>
+                                
+                                <div id="loadingAttributes" class="loading-spinner">
+                                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    Loading available attributes...
+                                </div>
+
+                                <div id="attributesContainer" class="attribute-list" style="display: none;">
+                                    <!-- Attributes will be loaded here -->
+                                </div>
+
+                                <div id="noAttributesMessage" style="display: none;" class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Please select a category first to see available attributes.
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="form-section d-flex gap-2 justify-content-between">
+                                <a href="/admin-products/" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Products
+                                </a>
+                                <div>
+                                    <button type="reset" class="btn btn-light me-2" onclick="resetForm()">
+                                        <i class="fas fa-redo me-2"></i>Clear
+                                    </button>
+                                    <button type="submit" id="submitBtn" class="btn btn-primary" disabled>
+                                        <i class="fas fa-plus me-2"></i>Create Product
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Right Sidebar - Info Panel -->
+                    <div class="col-lg-4">
+                        <div class="form-section">
+                            <h6 class="form-section-title">Quick Info</h6>
+                            <div class="mb-3">
+                                <small class="text-muted d-block mb-2">
+                                    <i class="fas fa-lightbulb me-2"></i>
+                                    <strong>Creating a Default Product:</strong>
+                                </small>
+                                <p class="small">
+                                    When you create a product here, it becomes available as a default device. Resellers can then create listings for this product and add individual units with specific attributes and prices.
+                                </p>
+                            </div>
+
+                            <div class="mb-3">
+                                <small class="text-muted d-block mb-2">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    <strong>Attributes:</strong>
+                                </small>
+                                <p class="small">
+                                    Select the attributes that apply to this product. These will be available when resellers create listings.
+                                </p>
+                            </div>
+
+                            <div class="alert alert-info" style="font-size: 13px;">
+                                <strong>Note:</strong> You can edit or add more products later from the products management page.
+                            </div>
+                        </div>
+
+                        <!-- Selected Summary -->
+                        <div class="form-section">
+                            <h6 class="form-section-title">Summary</h6>
+                            <div class="small">
+                                <div class="mb-2">
+                                    <strong>Category:</strong>
+                                    <span id="summaryCategory" class="badge bg-secondary">Not selected</span>
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Brand:</strong>
+                                    <span id="summaryBrand" class="badge bg-secondary">Not selected</span>
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Product:</strong>
+                                    <span id="summaryProduct" class="text-muted">Not entered</span>
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Attributes:</strong>
+                                    <span id="summaryAttributeCount" class="badge bg-info">0 selected</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/api_caller.js"></script>
+    <script src="/static/js/admin/add_products.js"></script>
+    <script>
+        const csrfToken_p = '{{ csrf_token }}';
+        const brandsUrl_p = '/product-api/brands/';
+        const productsApiUrl_p = '/product-api/product-models-admin/';
+        const attributesUrl_p = '/product-api/product-models-admin/get_attributes_for_category/';
+        
+        InitializeAddProductForm(csrfToken_p, brandsUrl_p, productsApiUrl_p, attributesUrl_p);
+    </script>
+</body>
+</html>

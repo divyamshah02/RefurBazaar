@@ -9,6 +9,7 @@ router.register(r'product-model-attributes', ProductModelAttributeViewSet, basen
 router.register(r'listings', ListingViewSet, basename='listings')
 router.register(r'listing-units', ListingUnitViewSet, basename='listing-units')
 router.register(r'seed-data', SeedDataViewSet, basename='seed-data')
+router.register(r'product-models-admin', ProductModelAdminViewSet, basename='product-models-admin')
 
 urlpatterns = [
     path('', include(router.urls)),
