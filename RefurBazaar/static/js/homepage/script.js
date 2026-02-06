@@ -13,24 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  const recommendedCarousel = document.getElementById("recommendedCarousel")
-  if (recommendedCarousel) {
-    new bootstrap.Carousel(recommendedCarousel, {
-      interval: false,
-      wrap: true,
-      pause: false,
-    })
-  }
-
-  const endOfYearCarousel = document.getElementById("endOfYearCarousel")
-  if (endOfYearCarousel) {
-    new bootstrap.Carousel(endOfYearCarousel, {
-      interval: false,
-      wrap: true,
-      pause: false,
-    })
-  }
-
   // Wishlist functionality
   const wishlistBtns = document.querySelectorAll(".wishlist-btn")
   wishlistBtns.forEach((btn) => {
@@ -59,18 +41,18 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   // Color selection
-  const colorDots = document.querySelectorAll(".color-dot")
-  colorDots.forEach((dot) => {
-    dot.addEventListener("click", function () {
-      // Remove active class from siblings
-      const siblings = this.parentElement.querySelectorAll(".color-dot")
-      siblings.forEach((s) => (s.style.outline = "none"))
+  // const colorDots = document.querySelectorAll(".color-dot")
+  // colorDots.forEach((dot) => {
+  //   dot.addEventListener("click", function () {
+  //     // Remove active class from siblings
+  //     const siblings = this.parentElement.querySelectorAll(".color-dot")
+  //     siblings.forEach((s) => (s.style.outline = "none"))
 
-      // Add active state
-      this.style.outline = "3px solid #6fba2c"
-      this.style.outlineOffset = "2px"
-    })
-  })
+  //     // Add active state
+  //     this.style.outline = "3px solid #6fba2c"
+  //     this.style.outlineOffset = "2px"
+  //   })
+  // })
 
   // Smooth scroll for anchor links
   document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
@@ -472,20 +454,19 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =========================================
-     INQUIRY FORM HANDLER
+     INQUIRY FORM HANDLER (Updated)
      ========================================= */
   const inquiryForm = document.getElementById('inquiryForm');
   if (inquiryForm) {
     inquiryForm.addEventListener('submit', function (e) {
       e.preventDefault();
 
+      // REMOVED experience & specialization from this object
       const formData = {
         name: document.getElementById('inquiryName').value,
         email: document.getElementById('inquiryEmail').value,
         phone: document.getElementById('inquiryPhone').value,
         location: document.getElementById('inquiryLocation').value,
-        experience: document.getElementById('inquiryExperience').value,
-        specialization: document.getElementById('inquirySpecialization').value,
         message: document.getElementById('inquiryMessage').value
       };
 
@@ -528,5 +509,63 @@ document.addEventListener("DOMContentLoaded", () => {
       this.parentElement.style.transform = 'scale(1)';
     });
   });
+
+  /* =========================================
+     TESTIMONIAL SCROLL LOGIC (3-2-1 Layout)
+     ========================================= */
+  const track = document.getElementById('testimonialTrack');
+  const btnPrev = document.getElementById('testPrevBtn');
+  const btnNext = document.getElementById('testNextBtn');
+
+  if (track && btnPrev && btnNext) {
+    
+    // Scroll Function
+    const scrollTrack = (direction) => {
+      // Get the width of one card (including gap)
+      const cardWidth = track.querySelector('.testimonial-slide').offsetWidth + 24; // 24 is the gap
+      
+      const scrollAmount = direction === 'left' ? -cardWidth : cardWidth;
+      
+      track.scrollBy({
+        left: scrollAmount,
+        behavior: 'smooth'
+      });
+    };
+
+    btnPrev.addEventListener('click', () => scrollTrack('left'));
+    btnNext.addEventListener('click', () => scrollTrack('right'));
+  }
+
+  /* =========================================
+     UNIVERSAL PRODUCT SLIDER LOGIC
+     ========================================= */
+  function setupProductSlider(trackId, prevBtnId, nextBtnId) {
+    const track = document.getElementById(trackId);
+    const btnPrev = document.getElementById(prevBtnId);
+    const btnNext = document.getElementById(nextBtnId);
+
+    if (track && btnPrev && btnNext) {
+      
+      const scrollAmount = () => {
+        // Scroll by the width of one slide (including padding)
+        const slide = track.querySelector('.product-slide');
+        return slide ? slide.offsetWidth : 300;
+      };
+
+      btnPrev.addEventListener('click', () => {
+        track.scrollBy({ left: -scrollAmount(), behavior: 'smooth' });
+      });
+
+      btnNext.addEventListener('click', () => {
+        track.scrollBy({ left: scrollAmount(), behavior: 'smooth' });
+      });
+    }
+  }
+
+  // Initialize ALL Product Sliders
+  setupProductSlider('hotDealsTrack', 'hotPrev', 'hotNext');     // Section 9
+  setupProductSlider('endOfYearTrack', 'eoyPrev', 'eoyNext');    // Section 10
+  setupProductSlider('recommendedTrack', 'recPrev', 'recNext');  // Section 13
+  setupProductSlider('expressTrack', 'expressPrev', 'expressNext'); // Section 14
 
 })

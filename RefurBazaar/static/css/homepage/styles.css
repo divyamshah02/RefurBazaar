@@ -151,6 +151,8 @@ a {
   margin-bottom: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  align-self: flex-start;  /* Prevents stretching in flex columns */
+  width: fit-content;      /* Ensures it wraps tight around text */
 }
 
 .section-title {
@@ -175,6 +177,14 @@ a {
 .carousel-wrapper {
   position: relative;
   padding: 0 10px;
+}
+
+/* Fix for Product Cards getting cut off on hover */
+.carousel-wrapper .carousel-inner {
+  padding-top: 20px;    /* Space for the card to move UP */
+  padding-bottom: 40px; /* Space for the bottom shadow */
+  margin-top: -20px;    /* Optional: Pulls it back up so layout spacing looks the same */
+  margin-bottom: -40px; /* Optional: Pulls content below closer */
 }
 
 /* Desktop padding adjustment for carousel arrows */
@@ -402,33 +412,168 @@ a {
 
 /* 1. Soft Brand Green (Good for Categories & Eco sections) */
 .bg-soft-green {
-  background-color: #f0fdf4 !important;
-  /* Very light mint */
+  background-color: #f0fdf4 !important;  /* Very light mint */
+}
+
+.bg-soft-green .product-card {
+    border-color: #86efac !important; /* Soft Green Border */
+}
+.bg-soft-green .product-card:hover {
+    border-color: var(--primary-green) !important; /* Darker Green on Hover */
+    box-shadow: 0 10px 25px rgba(111, 186, 44, 0.15) !important;
 }
 
 /* 2. Soft Brand Blue (Good for Tech specs or Trust sections) */
 .bg-soft-blue {
-  background-color: #eff6ff !important;
-  /* Very light sky */
+  background-color: #eff6ff !important;  /* Very light sky */
+}
+
+.bg-soft-blue .product-card {
+    border-color: #93c5fd !important; /* Soft Blue Border */
+}
+.bg-soft-blue .product-card:hover {
+    border-color: var(--primary-blue) !important; /* Darker Blue on Hover */
+    box-shadow: 0 10px 25px rgba(30, 74, 143, 0.15) !important;
 }
 
 /* 3. Soft Premium Purple (Good for Recommended or High-end items) */
 .bg-soft-purple {
-  background-color: #f5f3ff !important;
-  /* Very light lavender */
+  background-color: #f5f3ff !important;  /* Very light lavender */
+}
+
+.bg-soft-purple .product-card {
+    border-color: #d8b4fe !important; /* Soft Purple Border */
+}
+.bg-soft-purple .product-card:hover {
+    border-color: #9333ea !important; /* Darker Purple on Hover */
+    box-shadow: 0 10px 25px rgba(147, 51, 234, 0.15) !important;
 }
 
 /* 4. Soft Warmth (Good for Express or Human/Testimonial sections) */
 .bg-soft-warm {
-  background-color: #fffbeb !important;
-  /* Very light amber/cream */
+  background-color: #fffbeb !important;  /* Very light amber/cream */
+}
+
+/* Since Express uses the Yellow Lightning Bolt, we use a Gold border */
+.express-section .product-card {
+    border-color: #fcd34d !important; /* Soft Gold/Amber Border */
+}
+.express-section .product-card:hover {
+    border-color: #d97706 !important; /* Darker Gold on Hover */
+    box-shadow: 0 10px 25px rgba(217, 119, 6, 0.15) !important;
 }
 
 /* =========================================
-   CONTACT & INQUIRY FORMS SECTION
+   15 & 16. CERTIFIED RENEWED SECTIONS (FINAL WORKING VERSION)
    ========================================= */
 
-/* Contact Section */
+/* --- Section Containers --- */
+.certified-iphones-section,
+.certified-samsung-section {
+    padding: var(--section-padding) 0;
+    position: relative;
+}
+
+.certified-iphones-section { background-color: #f0f9ff; }
+.certified-samsung-section { background-color: #f5f3ff; }
+
+/* --- Promo Card Base Styling --- */
+.promo-card {
+    position: relative;
+    overflow: hidden;
+    z-index: 1;             /* Establishes stacking context */
+    border: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centers text vertically */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease;
+    height: 100%;           /* Ensures it fills the grid column */
+}
+
+.promo-card:hover {
+    transform: translateY(-5px);
+}
+
+/* --- Theme Styles (Gradient & Layout) --- */
+.iphones-promo {
+    background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+    border-radius: 16px;
+    padding: 40px 30px;
+    color: white;
+}
+
+.samsung-promo {
+    background: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
+    border-radius: 16px;
+    padding: 40px 30px;
+    color: white;
+}
+
+/* --- Background Image (Watermark Style) --- */
+.promo-bg-img {
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    width: 220px;
+    height: auto;
+    
+    /* Key fix: Sends image BEHIND text */
+    z-index: -1;
+    opacity: 0.3; /* Subtle watermark effect */
+    transform: rotate(-15deg);
+    pointer-events: none;
+}
+
+/* --- Text Styling Override --- */
+/* Ensures text inside these specific cards is white */
+.iphones-promo h3, 
+.samsung-promo h3,
+.iphones-promo .badge,
+.samsung-promo .badge {
+    color: black !important;
+}
+
+.iphones-promo .btn,
+.samsung-promo .btn {
+    background: white;
+    color: #1a1a1a;
+    font-weight: 700;
+    border: none;
+}
+
+/* --- Fix Product Card Heights in Grid --- */
+.certified-iphones-section .product-card,
+.certified-samsung-section .product-card {
+    height: 100%;
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 767px) {
+    .promo-card {
+        margin-bottom: 20px; /* Space between promo and products */
+        min-height: 250px;   /* Minimum height for mobile */
+    }
+
+    .iphones-promo,
+    .samsung-promo {
+        padding: 30px;
+        text-align: center;
+        align-items: center;
+    }
+    
+    .promo-bg-img {
+        width: 180px; /* Smaller image on mobile */
+        right: -10px;
+        bottom: -10px;
+    }
+}
+
+/* =========================================
+   CONTACT & INQUIRY FORMS SECTION (RESPONSIVE FIX)
+   ========================================= */
+
+/* --- 1. Contact Section --- */
 .contact-section {
   padding: 80px 0;
   background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
@@ -487,13 +632,16 @@ a {
   font-size: 0.95rem;
 }
 
-/* Contact Form */
+/* Contact Form Wrapper */
 .contact-form-wrapper {
   background: white;
   padding: 2.5rem;
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
   border: 1px solid var(--gray-200);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .contact-form-wrapper h3 {
@@ -503,33 +651,7 @@ a {
   font-size: 1.75rem;
 }
 
-.contact-form .form-label {
-  font-weight: 600;
-  color: var(--dark);
-  margin-bottom: 0.75rem;
-  font-size: 0.95rem;
-}
-
-.contact-input {
-  border: 1px solid var(--gray-300);
-  border-radius: 10px;
-  padding: 0.75rem 1.25rem;
-  font-size: 0.95rem;
-  transition: all 0.3s ease;
-  background: #f9fafb;
-}
-
-.contact-input:focus {
-  background: white;
-  border-color: var(--primary-green);
-  box-shadow: 0 0 0 3px rgba(111, 186, 44, 0.1);
-}
-
-.contact-input::placeholder {
-  color: var(--gray-400);
-}
-
-/* Inquiry Section */
+/* --- 2. Inquiry Section (Partnership) --- */
 .inquiry-section {
   padding: 80px 0;
 }
@@ -538,26 +660,35 @@ a {
   margin-bottom: 3rem;
 }
 
+/* BENEFITS GRID: Responsive Layout */
 .benefits-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
+    display: grid;
+    /* Desktop: 2 Cards per row (2x2 Layout) */
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 1.5rem;
+    align-content: center; /* Centers the grid vertically */
+    height: 100%;
 }
 
 .benefit-card {
-  background: white;
-  padding: 2rem;
-  border-radius: 14px;
-  text-align: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
-  border: 1px solid var(--gray-200);
+    background: white;
+    padding: 2rem;
+    border-radius: 14px;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--gray-200);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .benefit-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
-  border-color: var(--primary-green);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    border-color: var(--primary-green);
 }
 
 .benefit-icon {
@@ -587,13 +718,16 @@ a {
   line-height: 1.5;
 }
 
-/* Inquiry Form */
+/* INQUIRY FORM */
 .inquiry-form-wrapper {
-  background: white;
-  padding: 2.5rem;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--gray-200);
+    background: white;
+    padding: 2.5rem;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--gray-200);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .inquiry-form-wrapper h3 {
@@ -603,13 +737,15 @@ a {
   font-size: 1.75rem;
 }
 
-.inquiry-form .form-label {
+/* SHARED FORM STYLES */
+.form-label {
   font-weight: 600;
   color: var(--dark);
   margin-bottom: 0.75rem;
   font-size: 0.95rem;
 }
 
+.contact-input,
 .inquiry-input {
   border: 1px solid var(--gray-300);
   border-radius: 10px;
@@ -619,17 +755,20 @@ a {
   background: #f9fafb;
 }
 
+.contact-input:focus,
 .inquiry-input:focus {
   background: white;
   border-color: var(--primary-green);
   box-shadow: 0 0 0 3px rgba(111, 186, 44, 0.1);
+  outline: none;
 }
 
+.contact-input::placeholder,
 .inquiry-input::placeholder {
   color: var(--gray-400);
 }
 
-/* Custom Button Styles */
+/* Custom Buttons */
 .btn-primary {
   background-color: var(--primary-green);
   border-color: var(--primary-green);
@@ -662,26 +801,55 @@ a {
   box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
 }
 
+/* --- RESPONSIVE MEDIA QUERIES --- */
+@media (max-width: 991px) {
+  .contact-info-items {
+    margin-top: 1.5rem;
+    margin-bottom: 3rem; /* Add spacing between info and form on tablet */
+  }
+
+  .inquiry-form-wrapper {
+    margin-top: 2rem; /* Add spacing between grid and form on tablet */
+  }
+
+  /* Reset height on tablet/mobile so they stack naturally */
+  .contact-content,
+  .contact-form-wrapper {
+    height: auto !important; 
+  }
+  
+  /* Add space between the stacked sections */
+  .contact-content {
+    margin-bottom: 40px;
+  }
+  
+}
+
+@media (max-width: 767px) {
+  /* Stack the Benefits Grid to 1 Column on Mobile */
+  .benefits-grid {
+    grid-template-columns: 1fr; 
+  }
+
+  /* Adjust padding for forms on mobile */
+  .contact-form-wrapper,
+  .inquiry-form-wrapper {
+    padding: 1.5rem;
+  }
+  
+  .contact-content .section-title,
+  .inquiry-form-wrapper h3,
+  .contact-form-wrapper h3 {
+    font-size: 1.5rem;
+  }
+}
+
 /* =========================================
    ENHANCED SECTION STYLING
    ========================================= */
 
 section {
   position: relative;
-}
-
-.section-badge {
-  display: inline-block;
-  background: rgba(111, 186, 44, 0.15);
-  color: var(--primary-green);
-  font-weight: 700;
-  font-size: 0.85rem;
-  padding: 8px 16px;
-  border-radius: 50px;
-  margin-bottom: 1.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
 }
 
 .section-badge:hover {
@@ -1322,14 +1490,34 @@ textarea.form-control {
    6. TRUST BADGES
    ========================================= */
 .trust-badges {
-  background: #f5f5f7;
+  background-color: var(--primary-blue); /* Brand Blue Background */
+  color: var(--white); /* White Text */
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(30, 74, 143, 0.15);
 }
 
 .trust-badge-item {
-  font-size: 1.3rem;
-  padding: 5px;
+  padding: 10px;
   transition: transform 0.3s ease;
   cursor: default;
+}
+
+.trust-badge-item:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.05); /* Subtle highlight on hover */
+  border-radius: 8px;
+}
+
+.trust-icon {
+  color: var(--primary-green); /* Brand Green Icons */
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); /* Pops the icon */
+}
+
+.trust-badge-item h6 {
+  color: var(--white);
+  font-size: 1.05rem;
+  letter-spacing: 0.5px;
 }
 
 /* =========================================
@@ -1424,6 +1612,32 @@ textarea.form-control {
   .category-card small {
     font-size: 0.75rem;
   }
+}
+
+
+/* =========================================
+   8. Refurb Banner Section
+   ========================================= */
+/* Promo Banner Strip */
+.promo-strip-section {
+    background-color: #ffffff; /* Clean white background */
+}
+
+.banner-hover-effect {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.banner-hover-effect:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+}
+
+/* Ensure image looks good on mobile */
+@media (max-width: 768px) {
+    .promo-strip-section img {
+        height: auto; 
+        min-height: 120px; /* Prevents it from being too thin on mobile */
+    }
 }
 
 /* =========================================
@@ -1628,77 +1842,98 @@ textarea.form-control {
 }
 
 /* =========================================
-   11. VERIFIED SECTION & CERTIFIED RENEWED
+   11. VERIFIED SECTION (RESPONSIVE SPLIT GRID)
    ========================================= */
-.verified-section {
-  background: linear-gradient(135deg, #f0e6ff 0%, #e6f2ff 100%);
+
+/* --- 1. Desktop & Base Styles --- */
+
+/* Hero Image Base (Desktop) */
+.verified-hero-img {
+    max-height: 450px;       /* Optimal height for 50/50 split */
+    width: auto;             /* Maintain aspect ratio */
+    transition: all 0.3s ease;
 }
 
-.feature-box {
-  padding: 20px;
-  transition: transform 0.3s ease;
+/* Card Container */
+.verified-card {
+    background: white;
+    padding: 15px 20px;      /* Compact padding */
+    border-radius: 16px;
+    border: 1px solid #d8b4fe; /* Purple Theme Border */
+    height: 100%;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
 }
 
-.feature-box:hover {
-  transform: translateY(-10px);
+/* Hover Effect */
+.verified-card:hover {
+    transform: translateY(-5px);
+    border-color: #9333ea;   /* Darker Purple on Hover */
+    box-shadow: 0 10px 25px rgba(147, 51, 234, 0.15);
 }
 
-.feature-icon i {
-  color: var(--primary-green);
+/* Icon Box */
+.verified-card .icon-box {
+    width: 40px;
+    height: 40px;
+    background: #f3e8ff;     /* Light Purple Bg */
+    color: #9333ea;          /* Dark Purple Icon */
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 10px !important;
 }
 
-/* Certified iPhone/Samsung Promo Cards */
-.promo-card {
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
-  border: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+/* Typography */
+.verified-card h5 {
+    font-weight: 700;
+    margin-bottom: 4px;
+    font-size: 1.1rem;
+    color: var(--dark);
 }
 
-.promo-bg-img {
-  position: absolute;
-  bottom: -20px;
-  right: -20px;
-  width: 220px;
-  height: auto;
-  opacity: 0.3;
-  transform: rotate(-15deg);
-  z-index: -1;
-  pointer-events: none;
+.verified-card p {
+    color: var(--gray-600);
+    font-size: 0.9rem;
+    margin-bottom: 0;
+    line-height: 1.4;
 }
 
-.iphones-promo {
-  background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
-  border-radius: 16px;
-  padding: 40px 30px;
-  min-height: 100%;
-  color: white;
+/* --- 2. Tablet Responsiveness (iPad / Small Laptops) --- */
+@media (max-width: 991px) {
+    .verified-hero-img {
+        max-height: 300px;   /* Shrink image for tablet */
+        margin-bottom: 20px;
+    }
 }
 
-.samsung-promo {
-  background: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
-  border-radius: 16px;
-  padding: 40px 30px;
-  min-height: 100%;
-  color: white;
-}
-
-/* Fix product card height in these grid sections */
-.certified-iphones-section .product-card,
-.certified-samsung-section .product-card {
-  height: 100%;
-}
-
+/* --- 3. Mobile Responsiveness (Phones) --- */
 @media (max-width: 767px) {
+    .verified-hero-img {
+        max-height: 220px;   /* Smallest height for phone screens */
+    }
 
-  .iphones-promo,
-  .samsung-promo {
-    padding: 30px;
-    text-align: center;
-  }
+    .verified-card {
+        padding: 12px;       /* Tighter padding on mobile */
+        text-align: center;  /* Force center alignment for card content */
+    }
+
+    /* Center the icon on mobile since text is centered */
+    .verified-card .icon-box {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .verified-card h5 {
+        font-size: 0.95rem;  /* Slightly smaller heading */
+    }
+
+    .verified-card p {
+        font-size: 0.8rem;   /* Smaller text */
+        line-height: 1.2;
+    }
 }
 
 /* =========================================
@@ -2222,171 +2457,222 @@ textarea.form-control {
 }
 
 /* =========================================
-   15. PREMIUM TESTIMONIALS (RESPONSIVE)
+   15. PREMIUM TESTIMONIALS (RESPONSIVE SCROLL)
    ========================================= */
 .testimonials-section {
-  padding: 100px 0;
-  position: relative;
-  overflow: hidden;
+    padding: 100px 0;
+    position: relative;
+    overflow: hidden;
 }
 
-/* Subtle Dot Pattern Background */
+/* Background Pattern */
 .testimonials-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: radial-gradient(#d1d5db 1px, transparent 1px);
-  background-size: 30px 30px;
-  opacity: 0.4;
-  pointer-events: none;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+    background-size: 30px 30px;
+    opacity: 0.4;
+    pointer-events: none;
 }
 
-/* The Trust Header Badge (Rated 4.8/5) */
+/* Header Badge */
 .trust-header-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  background: white;
-  padding: 10px 24px;
-  border-radius: 50px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e5e7eb;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  /* Wraps on tiny screens */
-  justify-content: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: white;
+    padding: 10px 24px;
+    border-radius: 50px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e7eb;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .star-row {
-  color: #fbbf24;
-  /* Gold Star Color */
-  font-size: 1.1rem;
-  display: flex;
-  gap: 2px;
+    color: #fbbf24;
+    font-size: 1.1rem;
+    display: flex;
+    gap: 2px;
 }
 
-/* The Review Card */
+/* --- SCROLL TRACK LAYOUT (The Core Logic) --- */
+.testimonial-slider-container {
+    position: relative;
+    width: 100%;
+    padding: 0 20px; /* Safety padding for arrows */
+}
+
+.testimonial-track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    gap: 24px;         /* Gap between cards */
+    padding: 20px 10px; /* Padding for shadows so they don't get cut off */
+    
+    /* Hide scrollbar */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.testimonial-track::-webkit-scrollbar {
+    display: none;
+}
+
+/* Individual Slide Wrapper */
+.testimonial-slide {
+    flex: 0 0 auto;
+    scroll-snap-align: center; /* Snaps card to center */
+}
+
+/* RESPONSIVE WIDTHS */
+/* Desktop: 3 Cards */
+@media (min-width: 1200px) {
+    .testimonial-slide {
+        width: 32%; /* Fits 3 cards nicely with gap */
+    }
+}
+
+/* Laptop/Small Desktop: 3 Cards (tighter) */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .testimonial-slide {
+        width: 32%; 
+    }
+}
+
+/* Tablet: 2 Cards */
+@media (min-width: 768px) and (max-width: 991px) {
+    .testimonial-slide {
+        width: 48%; /* Fits 2 cards with gap */
+    }
+}
+
+/* Mobile: 1 Card */
+@media (max-width: 767px) {
+    .testimonial-slide {
+        width: 100%; /* Fits 1 card */
+    }
+    
+    .testimonials-section {
+        padding: 60px 0;
+    }
+    
+    .testimonial-card {
+        padding: 24px !important;
+    }
+    
+    .trust-header-badge {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* --- THE CARD STYLE (Your Design) --- */
 .testimonial-card {
-  background: white;
-  padding: 40px 32px;
-  border-radius: 24px;
-  height: 100%;
-  border: 1px solid #f3f4f6;
-  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-  position: relative;
-  z-index: 2;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    background: white;
+    padding: 40px 32px;
+    border-radius: 24px;
+    height: 100%;
+    border: 1px solid #f3f4f6;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
 }
 
-/* Hover Lift Effect */
 .testimonial-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.08);
-  border-color: rgba(111, 186, 44, 0.4);
-  /* Green border on hover */
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.08);
+    border-color: rgba(111, 186, 44, 0.4);
 }
 
-/* Profile Section */
+/* Profile */
 .reviewer-profile {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
 }
 
 .reviewer-img {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid #f9fafb;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #f9fafb;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .reviewer-meta h6 {
-  font-weight: 800;
-  margin-bottom: 2px;
-  color: #111827;
-  font-size: 1.05rem;
+    font-weight: 800;
+    margin-bottom: 2px;
+    color: #111827;
+    font-size: 1.05rem;
 }
 
 .verified-badge {
-  font-size: 0.8rem;
-  color: var(--primary-green);
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: rgba(111, 186, 44, 0.1);
-  padding: 2px 8px;
-  border-radius: 4px;
-  width: fit-content;
+    font-size: 0.8rem;
+    color: var(--primary-green);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(111, 186, 44, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    width: fit-content;
 }
 
-/* Product Purchased Pill */
 .product-pill {
-  display: inline-block;
-  background: #f3f4f6;
-  color: #374151;
-  font-size: 0.85rem;
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-weight: 600;
-  margin-bottom: 20px;
-  border: 1px solid #e5e7eb;
+    display: inline-block;
+    background: #f3f4f6;
+    color: #374151;
+    font-size: 0.85rem;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    border: 1px solid #e5e7eb;
 }
 
 .review-text {
-  color: #4b5563;
-  line-height: 1.7;
-  font-size: 1rem;
-  margin-bottom: 0;
-}
-
-/* Large Quote Icon */
-.quote-icon {
-  position: absolute;
-  top: 24px;
-  right: 30px;
-  font-size: 4rem;
-  color: #f3f4f6;
-  font-family: serif;
-  line-height: 1;
-  z-index: -1;
-}
-
-/* --- RESPONSIVE ADJUSTMENTS --- */
-@media (max-width: 991px) {
-  .testimonial-card {
-    padding: 30px 24px;
-    /* Slightly less padding on tablet */
-  }
-}
-
-@media (max-width: 767px) {
-  .testimonials-section {
-    padding: 60px 0;
-    /* Less vertical space on mobile */
-  }
-
-  .trust-header-badge {
-    width: 100%;
-    justify-content: center;
-    padding: 12px;
-  }
-
-  .reviewer-meta h6 {
+    color: #4b5563;
+    line-height: 1.7;
     font-size: 1rem;
-  }
+    margin-bottom: 0;
+}
 
-  .testimonial-card {
-    padding: 24px;
-    /* Compact padding for mobile */
-    border-radius: 20px;
-  }
+.quote-icon {
+    position: absolute;
+    top: 24px;
+    right: 30px;
+    font-size: 4rem;
+    color: #f3f4f6;
+    font-family: serif;
+    line-height: 1;
+    z-index: -1;
+}
+
+/* Arrows Position */
+.testimonial-slider-container .arrow-prev {
+    left: -20px; /* Adjusted to sit outside content */
+}
+
+.testimonial-slider-container .arrow-next {
+    right: -20px;
+}
+
+@media (max-width: 991px) {
+    /* Bring arrows closer on tablet/mobile or hide them if preferred */
+    .testimonial-slider-container .arrow-prev,
+    .testimonial-slider-container .arrow-next {
+        display: none; /* Hide on mobile/tablet, rely on swipe */
+    }
 }
 
 /* =========================================
@@ -2399,10 +2685,10 @@ textarea.form-control {
 /* The Sticky Left Sidebar */
 .faq-sticky-sidebar {
   position: sticky;
-  top: 120px;
-  /* Stays visible when scrolling */
+  top: 120px;  /* Stays visible when scrolling */
 }
 
+/* Ensure this exists in your styles.css */
 .support-card {
   background: white;
   border: 1px solid #e5e7eb;
@@ -2417,12 +2703,9 @@ textarea.form-control {
 
 /* The Right Side Accordion Items */
 .custom-accordion .accordion-item {
-  border: 1px solid #f3f4f6;
-  /* Subtle border */
-  border-radius: 16px !important;
-  /* Rounded corners */
-  margin-bottom: 16px;
-  /* Space between items */
+  border: 1px solid #f3f4f6;  /* Subtle border */
+  border-radius: 16px !important;  /* Rounded corners */
+  margin-bottom: 16px;  /* Space between items */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
   overflow: hidden;
   background: white;
@@ -2440,15 +2723,13 @@ textarea.form-control {
   font-weight: 700;
   font-size: 1.1rem;
   padding: 24px;
-  box-shadow: none !important;
-  /* Remove blue glow */
+  box-shadow: none !important;  /* Remove blue glow */
 }
 
 /* Active State (When Open) */
 .custom-accordion .accordion-button:not(.collapsed) {
   color: var(--primary-green);
-  background: #f9fafb;
-  /* Very light gray when open */
+  background: #f9fafb;  /* Very light gray when open */
 }
 
 /* Remove the default thin blue border line */
@@ -2714,4 +2995,78 @@ footer a:hover {
   :root {
     --section-padding: 60px;
   }
+}
+
+
+/* =========================================
+   UNIVERSAL PRODUCT SLIDER (SCROLL SNAP)
+   ========================================= */
+
+/* The Container */
+.product-slider-wrapper {
+    position: relative;
+    padding: 0 10px;
+    width: 100%;
+}
+
+/* The Track (Holds the slides) */
+.product-track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch; /* smooth scroll on iOS */
+    
+    /* Hide Scrollbar */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 20px 5px; /* Padding for shadow space */
+}
+
+.product-track::-webkit-scrollbar {
+    display: none;
+}
+
+/* Individual Slide Wrapper */
+.product-slide {
+    flex: 0 0 auto;
+    scroll-snap-align: start; /* Aligns card to left edge */
+    padding: 0 10px; /* Horizontal gap between cards */
+    height: auto;
+}
+
+/* Ensure the card takes full height of the slide */
+.product-slide .product-card {
+    height: 100%;
+    min-height: 380px; /* Consistent height */
+    width: 100%;
+}
+
+/* --- RESPONSIVE WIDTHS --- */
+
+/* Desktop & Laptop: 5 Cards (20% each) */
+@media (min-width: 992px) {
+    .product-slide {
+        width: 20%; 
+    }
+}
+
+/* Tablet: 3 Cards (33.33% each) */
+@media (min-width: 768px) and (max-width: 991px) {
+    .product-slide {
+        width: 33.333%; 
+    }
+}
+
+/* Mobile: 1 Card (100%) */
+@media (max-width: 767px) {
+    .product-slide {
+        width: 100%;
+    }
+    
+    /* Optional: Fix arrows overlap on mobile */
+    .product-slider-wrapper .arrow-prev,
+    .product-slider-wrapper .arrow-next {
+        display: none !important; /* Hide arrows on mobile, rely on swipe */
+    }
 }
