@@ -4772,9 +4772,6 @@ body {
   border-color: var(--primary-color);
 }
 
-.product-details {
-  padding-left: 2rem;
-}
 
 .sustainability-badge {
   display: flex;

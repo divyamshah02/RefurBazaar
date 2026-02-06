@@ -63,18 +63,6 @@
             background: rgba(111, 186, 44, 0.08);
         }
 
-        /* Active underline - gradient */
-        .tab-btn.active::after {
-            content: "";
-            position: absolute;
-            bottom: -2px;
-            left: 20%;
-            right: 20%;
-            height: 3px;
-            background: #6fba2c;
-            border-radius: 3px 3px 0 0;
-        }
-
         /* ===== Panels ===== */
         .tab-panels {
             padding: 24px;
@@ -427,43 +415,6 @@
                     <h1 id="productTitle" class="h3 fw-bold mb-0">Loading...</h1>
                 </div>
 
-                <div class="purchase-options mb-4 sticky-top-mobile" style="padding: 1.5rem;">
-                    <div class="purchase-option border-0 p-0 mb-0">
-
-                        <input type="radio" name="purchase" id="buyNow" checked class="d-none">
-
-                        <div class="d-flex align-items-center justify-content-between gap-3 mb-3 py-2">
-
-                            <div class="price-area flex-grow-1">
-                                <small class="text-muted d-block fw-medium"
-                                    style="font-size: 0.85rem; margin-bottom: 2px;">Total
-                                    Price</small>
-                                <span class="price h2 fw-bold m-0 text-primary" id="displayPrice">₹0</span>
-                            </div>
-
-                            <button class="btn btn-primary px-5 py-2 shadow-sm" id="addToCartBtn"
-                                style="height: 50px; font-weight: 600;" disabled>
-                                <i class="fas fa-shopping-cart me-2"></i>Add to Basket
-                            </button>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center bg-light rounded px-3 py-2 mt-2">
-                            <small class="text-muted" style="font-size: 0.75rem;">
-                                <i class="fas fa-lock me-1"></i>Secure Pay
-                            </small>
-                            <div class="d-flex gap-3">
-                                <small class="text-success fw-bold" style="font-size: 0.75rem;">
-                                    <i class="fas fa-undo me-1"></i>7-Day Return
-                                </small>
-                                <small class="text-success fw-bold" style="font-size: 0.75rem;">
-                                    <i class="fas fa-shield-alt me-1"></i>Warranty
-                                </small>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
                 <div class="product-details">
 
                     <div class="selection-section mt-0 pt-0 border-top-0">
@@ -489,7 +440,44 @@
                         </div>
                     </div>
 
-                    <div class="product-features mt-3 py-2 bg-white border-0">
+                    <div class="purchase-options mb-4 sticky-top-mobile" style="padding: 1.5rem;">
+                        <div class="purchase-option border-0 p-0 mb-0">
+
+                            <input type="radio" name="purchase" id="buyNow" checked class="d-none">
+
+                            <div class="d-flex align-items-center justify-content-between gap-3 mb-3 py-2">
+
+                                <div class="price-area flex-grow-1">
+                                    <small class="text-muted d-block fw-medium"
+                                        style="font-size: 0.85rem; margin-bottom: 2px;">Total
+                                        Price</small>
+                                    <span class="price h2 fw-bold m-0 text-primary" id="displayPrice">₹0</span>
+                                </div>
+
+                                <button class="btn btn-primary px-5 py-2 shadow-sm" id="addToCartBtn"
+                                    style="height: 50px; font-weight: 600;" disabled>
+                                    <i class="fas fa-shopping-cart me-2"></i>Add to Basket
+                                </button>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center bg-light rounded px-3 py-2 mt-2">
+                                <small class="text-muted" style="font-size: 0.75rem;">
+                                    <i class="fas fa-lock me-1"></i>Secure Pay
+                                </small>
+                                <div class="d-flex gap-3">
+                                    <small class="text-success fw-bold" style="font-size: 0.75rem;">
+                                        <i class="fas fa-undo me-1"></i>7-Day Return
+                                    </small>
+                                    <small class="text-success fw-bold" style="font-size: 0.75rem;">
+                                        <i class="fas fa-shield-alt me-1"></i>Warranty
+                                    </small>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    
+                    <!-- <div class="product-features mt-3 py-2 bg-white border-0">
                         <div class="row g-2">
                             <div class="col-6">
                                 <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.8rem;">
@@ -502,7 +490,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>
