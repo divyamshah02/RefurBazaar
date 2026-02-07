@@ -1,0 +1,9 @@
+###---> Backing up user data from server to local machine <---###
+-> get bakcup from server with this command (cd to main dir):
+python manage.py dumpdata --natural-foreign --natural-primary -e contenttypes -e auth.Permission --indent 2 > backup.json
+
+-> copy the content of backup.json and paste it to local dir and run this command (make sure the encoding of the file is UTF-8):
+python manage.py loaddata backup.json
+python manage.py makemigrations
+python manage.py migrate
+
