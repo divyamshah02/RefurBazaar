@@ -211,38 +211,51 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   /* =========================================
-     CALCULATOR LOGIC UPDATE
-     ========================================= */
-  const deviceSelect = document.getElementById("deviceSelect")
+   COMBINED CALCULATOR & IMPACT LOGIC
+   ========================================= */
+  const deviceSelect = document.getElementById("deviceSelect");
+
   if (deviceSelect) {
-    // Function to update UI
+    // Function to calculate and update UI
     const updateCalculator = () => {
-      const values = deviceSelect.value.split(",")
-      const refurbPrice = Number.parseInt(values[0])
-      const newPrice = Number.parseInt(values[1])
+      // 1. Get Values from Select Option (Format: "RefurbPrice,NewPrice")
+      const values = deviceSelect.value.split(",");
+      const refurbPrice = Number.parseInt(values[0]);
+      const newPrice = Number.parseInt(values[1]);
 
-      const savings = newPrice - refurbPrice
-      const discountPercent = Math.round((savings / newPrice) * 100)
-
-      // Environmental math (approximate)
-      const co2 = Math.round(newPrice * 0.00026)
-      const waste = (newPrice * 0.000014).toFixed(1)
-
-      // Update Text
-      document.querySelector(".new-price-display").textContent = `₹${newPrice.toLocaleString()}`
-      document.querySelector(".refurb-price").textContent = `₹${refurbPrice.toLocaleString()}`
-      document.querySelector(".savings").textContent = `₹${savings.toLocaleString()}`
-      document.querySelector(".discount-percent").textContent = `${discountPercent}%`
-      document.querySelector(".co2").textContent = `${co2} kg`
-      document.querySelector(".waste").textContent = `${waste} kg`
-
-      // --- NEW: Animate the Progress Bar ---
-      // The bar represents the % of the price you pay vs new
+      // 2. Calculate Financial Savings
+      const savings = newPrice - refurbPrice;
+      const discountPercent = Math.round((savings / newPrice) * 100);
       const payPercent = Math.round((refurbPrice / newPrice) * 100);
+
+      // 3. Calculate Environmental Impact (Estimates based on price/weight proxy)
+      // CO2: approx 0.26g per Rupee of value (proxy for manufacturing complexity)
+      const co2Val = Math.round(newPrice * 0.00026);
+
+      // E-Waste: approx weight proxy
+      const wasteVal = (newPrice * 0.000014).toFixed(1);
+
+      // Water: New Calculation! (approx 60L per dollar/value equivalent)
+      // Simplified logic: higher value = more complex chip fab = more water
+      const waterVal = Math.round(newPrice * 0.15).toLocaleString();
+
+      // 4. Update the DOM Elements
+      // Prices
+      document.querySelector(".new-price-display").textContent = `₹${newPrice.toLocaleString()}`;
+      document.querySelector(".refurb-price").textContent = `₹${refurbPrice.toLocaleString()}`;
+      document.querySelector(".savings").textContent = `₹${savings.toLocaleString()}`;
+      document.querySelector(".discount-percent").textContent = `${discountPercent}%`;
+
+      // Progress Bar
       const savingsBar = document.getElementById("savingsBar");
       if (savingsBar) {
         savingsBar.style.width = `${payPercent}%`;
       }
+
+      // Impact Stats (Right Panel)
+      document.querySelector(".co2").textContent = `${co2Val} kg`;
+      document.querySelector(".waste").textContent = `${wasteVal} kg`;
+      document.querySelector(".water").textContent = `${waterVal} L`;
     };
 
     // Listen for changes
@@ -250,59 +263,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Run once on load to set initial state
     updateCalculator();
-  }
-
-  function animateCounter(element) {
-    const target = Number.parseInt(element.getAttribute("data-target"))
-    const duration = 2000
-    const step = target / (duration / 16)
-    let current = 0
-
-    const timer = setInterval(() => {
-      current += step
-      if (current >= target) {
-        element.textContent = target.toLocaleString()
-        clearInterval(timer)
-      } else {
-        element.textContent = Math.floor(current).toLocaleString()
-      }
-    }, 16)
-  }
-
-  // Trigger counter animation when section is visible
-  const impactNumbers = document.querySelectorAll(".impact-number")
-  if (impactNumbers.length > 0) {
-    const impactObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.target.textContent === "0") {
-            animateCounter(entry.target)
-          }
-        })
-      },
-      { threshold: 0.5 },
-    )
-
-    impactNumbers.forEach((number) => {
-      impactObserver.observe(number)
-    })
-  }
-
-  // Initialize New Category Carousels
-  const iphonesCarousel = document.getElementById("iphonesCarousel")
-  if (iphonesCarousel) {
-    new window.bootstrap.Carousel(iphonesCarousel, {
-      interval: false, // Don't auto-slide
-      wrap: true
-    })
-  }
-
-  const samsungCarousel = document.getElementById("samsungCarousel")
-  if (samsungCarousel) {
-    new window.bootstrap.Carousel(samsungCarousel, {
-      interval: false,
-      wrap: true
-    })
   }
 
   /* =========================================

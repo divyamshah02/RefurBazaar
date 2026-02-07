@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Become a Partner - RefurBazaar</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/homepage/styles.css">
+</head>
+
+<body>
+
+    <nav class="navbar-main">
+        <div class="container-fluid px-3 px-lg-5">
+            <div class="d-flex align-items-center justify-content-between navbar-container">
+                <div class="brand-col d-flex align-items-center">
+                    <a class="brand-logo" href="index.html">
+                        <img src="/static/images/homepage/refurbazaar-20final-20logo.png" alt="RefurBazaar">
+                    </a>
+                </div>
+                <div class="search-col flex-grow-1 d-flex justify-content-center px-lg-4">
+                    <div class="search-wrapper">
+                        <form class="search-input-group">
+                            <input type="search" class="form-control" placeholder="Search..." aria-label="Search">
+                            <button class="btn" type="button"><i class="fas fa-search"></i></button>
+                        </form>
+                    </div>
+                </div>
+                <div class="icons-col d-flex align-items-center gap-2 gap-lg-3">
+                    <a href="#" class="nav-icon-btn"><i class="far fa-user"></i></a>
+                    <a href="#" class="nav-icon-btn"><i class="far fa-heart"></i></a>
+                    <a href="#" class="nav-icon-btn">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="badge rounded-pill bg-danger cart-count">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="bg-soft-blue py-5">
+        <div class="container text-center">
+            <span class="badge bg-white text-primary px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm">B2B Partnership</span>
+            <h1 class="display-4 fw-bold mb-3">Become a Refurbisher Partner</h1>
+            <p class="lead text-muted mx-auto" style="max-width: 700px;">
+                Join India's fastest-growing refurbished electronics network. We provide the devices, tools, and customers—you provide the expertise.
+            </p>
+        </div>
+    </section>
+
+    <section class="py-5">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <div class="col-md-3 col-6">
+                    <div class="benefit-card text-center p-4 border rounded-4 h-100 shadow-sm bg-white">
+                        <i class="fas fa-handshake fa-3x text-success mb-3"></i>
+                        <h5 class="fw-bold">High Earnings</h5>
+                        <p class="text-muted small mb-0">Competitive payouts for every device restored.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="benefit-card text-center p-4 border rounded-4 h-100 shadow-sm bg-white">
+                        <i class="fas fa-bolt fa-3x text-warning mb-3"></i>
+                        <h5 class="fw-bold">Fast Payment</h5>
+                        <p class="text-muted small mb-0">Get paid within 24 hours of passing QC.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="benefit-card text-center p-4 border rounded-4 h-100 shadow-sm bg-white">
+                        <i class="fas fa-tools fa-3x text-secondary mb-3"></i>
+                        <h5 class="fw-bold">Tools Provided</h5>
+                        <p class="text-muted small mb-0">We supply advanced diagnostic tools.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="benefit-card text-center p-4 border rounded-4 h-100 shadow-sm bg-white">
+                        <i class="fas fa-graduation-cap fa-3x text-info mb-3"></i>
+                        <h5 class="fw-bold">Training</h5>
+                        <p class="text-muted small mb-0">Access to our repair certification program.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="contact-form-wrapper p-4 p-md-5 bg-white border rounded-4 shadow-lg">
+                        <div class="text-center mb-4">
+                            <h2 class="fw-bold">Application Form</h2>
+                            <p class="text-muted">Fill in your details and our team will contact you within 48 hours.</p>
+                        </div>
+                        
+                        <form id="partnerForm">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Full Name</label>
+                                    <input type="text" class="form-control p-3" placeholder="John Doe" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Email Address</label>
+                                    <input type="email" class="form-control p-3" placeholder="john@example.com" required>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Phone Number</label>
+                                    <input type="tel" class="form-control p-3" placeholder="+91 98765 43210" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">City / Location</label>
+                                    <input type="text" class="form-control p-3" placeholder="e.g. Bangalore" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Experience Level</label>
+                                <select class="form-select p-3" required>
+                                    <option value="">Select your experience...</option>
+                                    <option value="beginner">0-1 Years</option>
+                                    <option value="intermediate">2-5 Years</option>
+                                    <option value="expert">5+ Years (Master Technician)</option>
+                                    <option value="business">I own a repair shop</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Tell us about your expertise</label>
+                                <textarea class="form-control p-3" rows="4" placeholder="e.g. I specialize in chip-level motherboard repair for iPhones..."></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill py-3 fw-bold">
+                                Submit Application
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container-fluid px-3 px-lg-5">
+            <div class="row g-5">
+                <div class="col-lg-4">
+                    <a href="index.html" class="d-inline-block mb-3">
+                        <img src="/static/images/homepage/refurbazaar-20final-20logo.png" alt="RefurBazaar" height="80">
+                    </a>
+                    <p class="text-white-50">We're fixing the broken tech market. Premium certified devices, transparent pricing.</p>
+                </div>
+                <div class="col-lg-2 col-6">
+                    <h5 class="text-white">Company</h5>
+                    <a href="#" class="text-white-50 d-block mb-2 text-decoration-none">About Us</a>
+                    <a href="#" class="text-white-50 d-block mb-2 text-decoration-none">Careers</a>
+                </div>
+                <div class="col-lg-2 col-6">
+                    <h5 class="text-white">Support</h5>
+                    <a href="#" class="text-white-50 d-block mb-2 text-decoration-none">Help Center</a>
+                    <a href="#" class="text-white-50 d-block mb-2 text-decoration-none">Contact Us</a>
+                </div>
+            </div>
+            <div class="border-top border-secondary mt-5 pt-4 text-center">
+                <p class="text-white-50 small mb-0">&copy; 2026 RefurBazaar. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/homepage/script.js"></script>
+</body>
+</html>
