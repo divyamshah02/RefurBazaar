@@ -265,6 +265,10 @@ function renderProducts() {
           <span class="price-original">₹${formatPrice(originalPrice)}</span>
           <span class="product-price">₹${formatPrice(product.min_price)}</span>
         </div>
+
+        <div style="position:absolute; bottom:0; right:0; width:0; height:0; border-bottom:60px solid #e53935; border-left:60px solid transparent;"></div>
+        <div style="position:absolute; bottom:8px; right:6px; color:white; font-size:12px; font-weight:bold; transform:rotate(-45deg);">23%</div>
+        
       </div>
     </div>
   `

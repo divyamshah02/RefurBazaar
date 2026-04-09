@@ -257,7 +257,7 @@ function addNewUnit() {
         </div>
         <div class="col-md-6">
           <div class="form-group">
-            <label class="form-label">Condition *</label>
+            <label class="form-label">Condition * <i class="fas fa-circle-info" onclick="toggleConditionsDetails()"></i></label>
             <select class="form-select" data-field="condition" required>
               <option value="">Select Condition</option>
               <option value="excellent">Excellent</option>
@@ -584,4 +584,14 @@ function showNotification(message, type) {
   setTimeout(() => {
     notification.remove()
   }, 5000)
+}
+
+function toggleConditionsDetails() {
+  const detail = document.getElementById("conditionGuideLines")
+  if (detail.style.display == "") {
+    detail.style.display = "none"
+  }
+  else {
+    detail.style.display = ""
+  }
 }

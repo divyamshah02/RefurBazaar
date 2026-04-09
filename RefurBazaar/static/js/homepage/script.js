@@ -332,6 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // If the sale is over
       if (t < 0) {
+      const timerInterval = setInterval(updateTimer, 1000);
         clearInterval(timerInterval);
 
         // Optional: Change text to "EXPIRED" or "00"

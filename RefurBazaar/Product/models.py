@@ -125,7 +125,7 @@ class Listing(models.Model):
     model = models.ForeignKey(ProductModel, on_delete=models.CASCADE, related_name='listings')
     refurbisher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='listings')
     total_quantity = models.IntegerField(validators=[MinValueValidator(1)])
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

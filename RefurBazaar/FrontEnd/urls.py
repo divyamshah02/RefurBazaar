@@ -7,6 +7,7 @@ router = DefaultRouter()
 
 router.register(r'', IndexViewSet, basename='index')
 router.register(r'shop', ShopViewSet, basename='shop')
+router.register(r'partner-application', PartnerApplicationViewSet, basename='partner-application')
 router.register(r'product', ProductDetailViewSet, basename='product')
 router.register(r'cart', CartViewSet, basename='cart')
 router.register(r'checkout', CheckoutViewSet, basename='checkout')
