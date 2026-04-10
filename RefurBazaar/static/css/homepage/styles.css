@@ -10,6 +10,7 @@
   /* Note: You had this as green in original, kept as is. Change if needed. */
   --accent-pink: #ec4899;
   --accent-green: #7bc74d;
+  --new-green: #009647;
 
   /* Neutrals */
   --dark: #1a1a1a;
@@ -857,7 +858,7 @@ a {
 
 /* Custom Buttons */
 .btn-primary {
-  background-color: var(--primary-green);
+  background-color: var(--new-green);
   border-color: var(--primary-green);
   font-weight: 600;
   padding: 0.75rem 2rem;
@@ -873,8 +874,8 @@ a {
 }
 
 .btn-success {
-  background-color: var(--success);
-  border-color: var(--success);
+  background-color: var(--new-green);
+  border-color: var(--new-green);
   font-weight: 600;
   padding: 0.75rem 2rem;
   transition: all 0.3s ease;
@@ -2886,7 +2887,7 @@ textarea.form-control {
    17. EYE-CATCHING "FLOATING" FOOTER (Brand Dark Blue Theme)
    ========================================= */
 footer {
-  background-color: #0f2557; /* Brand Dark Navy */
+  background-color: #ffffff; /* Brand Dark Navy */
   color: #e2e8f0;            /* Default Text: Very Light Silver */
   position: relative;
   padding-top: 50px;
@@ -2944,7 +2945,7 @@ footer .text-muted {
 
 /* 5. Links */
 footer a {
-  color: #cbd5e1 !important;
+  color: #000000 !important;
   text-decoration: none;
   transition: all 0.2s ease;
   display: block;
@@ -2978,8 +2979,8 @@ footer img {
   font-size: 1.2rem;
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.1); 
-  color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #000000 !important;
+  border: 1px solid #000000;
 }
 
 .social-icon-btn:hover {
@@ -3003,13 +3004,13 @@ footer .fas.fa-shield-alt {
 }
 
 .footer-bottom p {
-    color: #94a3b8 !important;
+    color: #000000 !important;
     margin-bottom: 0;
 }
 
 /* Payment Icons (Visa, Mastercard, etc) */
 .footer-bottom i {
-    color: white !important; /* Made visible */
+    color: black !important; /* Made visible */
     font-size: 2rem;
 }
 
@@ -3065,7 +3066,7 @@ footer .fas.fa-shield-alt {
   right: 30px;
   width: 50px;
   height: 50px;
-  background: var(--primary-green);
+  background: var(--new-green);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -3085,48 +3086,13 @@ footer .fas.fa-shield-alt {
 .back-to-top.show {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0);
-}
-
-.back-to-top:hover {
-  background: #5da024;
-  color: white;
-  transform: translateY(-5px);
-}
-
-/* =========================================
-   18. UTILITIES & MODALS
-   ========================================= */
-/* Back to Top */
-.back-to-top {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  background: var(--primary-green);
-  color: white;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
-  z-index: 1000;
-  opacity: 0;
-  visibility: hidden;
-}
-
-.back-to-top.show {
-  opacity: 1;
-  visibility: visible;
   transform: translateY(-5px);
 }
 
 .back-to-top:hover {
-  background: #5da024;
-  transform: translateY(-10px);
+  background: var(--new-green);
+  color: white;
+  transform: translateY(-5px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
 }
 
@@ -3265,5 +3231,481 @@ footer .fas.fa-shield-alt {
     
     .benefit-card h5 {
         font-size: 1.1rem;
+    }
+}
+
+/* =========================================
+   NEW VS REFURBISHED SECTION
+   ========================================= */
+
+/* Section & Container */
+.rb-compare-section {
+    padding: var(--section-padding) var(--container-padding);
+    background-color: var(--light);
+}
+
+.rb-compare-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Header Text */
+.rb-compare-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.rb-compare-header h2 {
+    font-family: var(--font-display);
+    color: var(--primary-blue);
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.rb-compare-header p {
+    font-family: var(--font-primary);
+    color: var(--gray);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Grid Layout */
+.rb-compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    align-items: stretch;
+}
+
+/* Cards */
+.rb-compare-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 40px;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-base);
+    border: 1px solid var(--border);
+}
+
+.rb-compare-card:hover {
+    box-shadow: var(--shadow-xl);
+    transform: translateY(-5px);
+}
+
+.rb-compare-new {
+    opacity: 0.9;
+}
+
+.rb-compare-refurb {
+    border: 2px solid var(--primary-green);
+    position: relative;
+}
+
+/* Card Headers & Badges */
+.rb-compare-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.rb-compare-card-header h3 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--dark);
+    margin: 0;
+}
+
+.rb-compare-badge {
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 600;
+    background-color: var(--gray-200);
+    color: var(--gray-700);
+}
+
+.rb-compare-badge.highlight {
+    background-color: var(--light-green);
+    color: var(--primary-green);
+}
+
+/* Comparison Lists */
+.rb-compare-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.rb-compare-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--gray-100);
+    font-family: var(--font-primary);
+}
+
+.rb-compare-list li:last-child {
+    border-bottom: none;
+}
+
+.rb-compare-label {
+    font-weight: 500;
+    color: var(--gray-600);
+}
+
+.rb-compare-value {
+    font-weight: 600;
+    color: var(--dark);
+    text-align: right;
+}
+
+/* Value Modifiers */
+.rb-compare-value.highlight-text {
+    color: var(--primary-blue);
+    font-size: 1.1rem;
+}
+
+.rb-compare-value.positive {
+    color: var(--success);
+}
+
+.rb-compare-value.negative {
+    color: var(--gray-400);
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 768px) {
+    .rb-compare-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .rb-compare-header h2 {
+        font-size: 2rem;
+    }
+}
+
+/* =========================================
+   DEAL OF THE DAY SECTION
+   ========================================= */
+
+/* Section & Container */
+.rb-deal-section {
+    padding: var(--section-padding) var(--container-padding);
+    background-color: var(--white);
+}
+
+.rb-deal-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    background: var(--gray-50);
+    border-radius: var(--radius-xl);
+    padding: 50px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+}
+
+/* Image Column */
+.rb-deal-image-col {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 30px;
+}
+
+.rb-deal-badge {
+    position: absolute;
+    top: -15px;
+    left: -15px;
+    background-color: var(--accent-pink);
+    color: var(--white);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 10px 20px;
+    border-radius: var(--radius-full);
+    box-shadow: var(--shadow-lg);
+    z-index: 2;
+}
+
+.rb-deal-img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    transition: var(--transition-slow);
+}
+
+.rb-deal-image-col:hover .rb-deal-img {
+    transform: scale(1.05);
+}
+
+/* Content Column */
+.rb-deal-content-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.rb-deal-tag {
+    background-color: var(--warning);
+    color: var(--dark);
+    font-family: var(--font-primary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 5px 12px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.rb-deal-title {
+    font-family: var(--font-display);
+    color: var(--dark-blue);
+    font-size: 2.5rem;
+    line-height: 1.2;
+    margin-bottom: 15px;
+}
+
+.rb-deal-desc {
+    font-family: var(--font-primary);
+    color: var(--gray-600);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+/* Pricing */
+.rb-deal-pricing {
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.rb-deal-price-now {
+    font-family: var(--font-display);
+    color: var(--new-green);
+    font-size: 2.8rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.rb-deal-price-old {
+    font-family: var(--font-primary);
+    color: var(--gray-400);
+    font-size: 1.4rem;
+    text-decoration: line-through;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+/* Countdown Timer */
+.rb-deal-timer {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 40px;
+}
+
+.rb-deal-time-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 10px 15px;
+    min-width: 70px;
+}
+
+.rb-deal-time-num {
+    font-family: var(--font-display);
+    color: var(--dark);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.rb-deal-time-label {
+    font-family: var(--font-primary);
+    color: var(--gray-500);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.rb-deal-time-sep {
+    font-family: var(--font-display);
+    color: var(--gray-400);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* CTA Button */
+.rb-deal-btn {
+    background-color: var(--primary-blue);
+    color: var(--white);
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 15px 40px;
+    border: none;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: var(--transition-base);
+    box-shadow: var(--shadow-md);
+}
+
+.rb-deal-btn:hover {
+    background-color: var(--dark-blue);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .rb-deal-container {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        padding: 30px;
+    }
+    
+    .rb-deal-title {
+        font-size: 2rem;
+    }
+}
+
+/* =========================================
+   WHAT'S IN THE BOX SECTION
+   ========================================= */
+
+/* Section & Container */
+.rb-box-section {
+    padding: var(--section-padding) var(--container-padding);
+    background-color: var(--light-blue); 
+}
+
+.rb-box-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+}
+
+/* Content Area */
+.rb-box-title {
+    font-family: var(--font-display);
+    color: var(--dark-blue);
+    font-size: 2.5rem;
+    line-height: 1.2;
+    margin-bottom: 15px;
+}
+
+.rb-box-desc {
+    font-family: var(--font-primary);
+    color: var(--gray-600);
+    font-size: 1.1rem;
+    margin-bottom: 40px;
+    max-width: 500px;
+}
+
+/* List Items */
+.rb-box-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.rb-box-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.rb-box-icon {
+    background-color: var(--white);
+    color: var(--primary-green);
+    width: 45px;
+    height: 45px;
+    border-radius: var(--radius-full);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-base);
+}
+
+.rb-box-item:hover .rb-box-icon {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-md);
+}
+
+.rb-box-text h4 {
+    font-family: var(--font-display);
+    color: var(--dark);
+    font-size: 1.2rem;
+    margin: 0 0 5px 0;
+}
+
+.rb-box-text p {
+    font-family: var(--font-primary);
+    color: var(--gray-500);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* Image Column */
+.rb-box-image-col {
+    position: relative;
+}
+
+.rb-box-image-wrapper {
+    position: relative;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    border: 8px solid var(--white);
+}
+
+.rb-box-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: var(--transition-slow);
+}
+
+.rb-box-image-wrapper:hover .rb-box-img {
+    transform: scale(1.03);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .rb-box-container {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .rb-box-image-col {
+        order: -1; /* Forces the image to the top on mobile */
+    }
+
+    .rb-box-title {
+        font-size: 2rem;
     }
 }

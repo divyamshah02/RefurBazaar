@@ -5,7 +5,9 @@ from .admin_views import *
 
 router = DefaultRouter()
 
-router.register(r'', IndexViewSet, basename='index')
+# router.register(r'', IndexViewSet, basename='index')
+router.register(r'', LandingPageViewSet, basename='index')
+router.register(r'landing-page', LandingPageViewSet, basename='landing-page')
 router.register(r'shop', ShopViewSet, basename='shop')
 router.register(r'partner-application', PartnerApplicationViewSet, basename='partner-application')
 router.register(r'product', ProductDetailViewSet, basename='product')
