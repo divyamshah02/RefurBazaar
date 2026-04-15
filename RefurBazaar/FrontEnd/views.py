@@ -67,6 +67,18 @@ class LandingPageViewSet(viewsets.ViewSet):
     def list(self, request):
         return render(request, 'landing-page.html')
 
+class ContactViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'contact.html')
+
+class AboutViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'about.html')
+
 class PartnerApplicationViewSet(viewsets.ViewSet):
 
     @handle_exceptions

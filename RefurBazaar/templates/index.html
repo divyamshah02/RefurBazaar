@@ -1242,124 +1242,131 @@
     </section> -->
 
     <section class="combined-impact-section py-5" id="impact-calculator">
-    <div class="container-fluid px-3 px-lg-5">
-        
-        <div class="section-header mb-4">
-            <h2 class="fw-bold mb-0">Calculate Your Impact</h2>
-            <p class="text-muted">See how much money (and planet) you save by choosing refurbished.</p>
-        </div>
-
-        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-            <div class="row g-0">
-                
-                <div class="col-lg-9 bg-white p-4 p-lg-5">
-                    
-                    <div class="mb-5" style="max-width: 600px;">
-                        <label class="fw-bold text-uppercase text-muted small mb-2">Select a Device to Compare</label>
-                        <select class="form-select form-select-lg fw-bold border-2" id="deviceSelect">
-                            <option value="119900,199900">MacBook Pro M3 14" (Latest)</option>
-                            <option value="99000,165000">MacBook Pro M2 14"</option>
-                            <option value="74900,114900">MacBook Air M2 13"</option>
-                            <option value="89900,134900">Dell XPS 15</option>
-                            <option value="74300,123800">Dell XPS 13 Plus</option>
-                            <option value="89900,134900">iPhone 15 Pro Max</option>
-                            <option value="69900,134900">iPhone 14 Pro Max</option>
-                            <option value="64900,124900">Samsung Galaxy S24 Ultra</option>
-                            <option value="54900,99900">iPad Pro 11" M2</option>
-                        </select>
-                    </div>
-
-                    <div class="row align-items-center g-4">
-                        
-                        <div class="col-md-7">
-                            <div class="d-flex justify-content-between align-items-end mb-2">
-                                <div>
-                                    <span class="d-block text-muted small fw-bold">REFURBAZAAR PRICE</span>
-                                    <span class="h3 fw-bold text-success mb-0 refurb-price">₹1,19,900</span>
-                                </div>
-                                <div class="text-end">
-                                    <span class="d-block text-muted small fw-bold">BRAND NEW PRICE</span>
-                                    <span class="h4 fw-bold text-muted text-decoration-line-through mb-0 new-price-display">₹1,99,900</span>
-                                </div>
-                            </div>
-                            
-                            <div class="progress" style="height: 12px; border-radius: 50px; background-color: #f1f5f9;">
-                                <div class="progress-bar bg-success" id="savingsBar" role="progressbar" style="width: 60%; border-radius: 50px;"></div>
-                            </div>
-                            <div class="d-flex justify-content-between mt-2">
-                                <small class="text-success fw-bold">You Pay</small>
-                                <small class="text-muted">Market Price</small>
-                            </div>
+        <div class="container-fluid px-3 px-lg-5">
+    
+            <div class="section-header mb-4">
+                <h2 class="fw-bold mb-0">Calculate Your Impact</h2>
+                <p class="text-muted">See how much money (and planet) you save by choosing refurbished.</p>
+            </div>
+    
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="row g-0">
+    
+                    <div class="col-lg-9 bg-white p-4 p-lg-5">
+    
+                        <div class="mb-5" style="max-width: 600px;">
+                            <label class="fw-bold text-uppercase text-muted small mb-2">Select a Device to Compare</label>
+                            <select class="form-select form-select-lg fw-bold border-2" id="deviceSelect">
+                                <option value="119900,199900">MacBook Pro M3 14" (Latest)</option>
+                                <option value="99000,165000">MacBook Pro M2 14"</option>
+                                <option value="74900,114900">MacBook Air M2 13"</option>
+                                <option value="89900,134900">Dell XPS 15</option>
+                                <option value="74300,123800">Dell XPS 13 Plus</option>
+                                <option value="89900,134900">iPhone 15 Pro Max</option>
+                                <option value="69900,134900">iPhone 14 Pro Max</option>
+                                <option value="64900,124900">Samsung Galaxy S24 Ultra</option>
+                                <option value="54900,99900">iPad Pro 11" M2</option>
+                            </select>
                         </div>
-
-                        <div class="col-md-5 border-start border-light ps-md-5">
-                            <div class="text-start">
-                                <span class="badge bg-warning text-dark mb-2 px-3 py-2 rounded-pill fw-bold">
-                                    <i class="fas fa-wallet me-1"></i> INSTANT SAVINGS
-                                </span>
-                                <h2 class="display-5 fw-bold text-dark mb-0 savings">₹80,000</h2>
-                                <p class="text-success fw-bold mb-0">
-                                    <i class="fas fa-arrow-down me-1"></i> <span class="discount-percent">40%</span> Cheaper than new
+    
+                        <div class="row align-items-center g-4">
+    
+                            <div class="col-md-7">
+                                <div class="d-flex justify-content-between align-items-end mb-2">
+                                    <div>
+                                        <span class="d-block text-muted small fw-bold">REFURBAZAAR PRICE</span>
+                                        <span class="h3 fw-bold text-success mb-0 refurb-price">₹1,19,900</span>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="d-block text-muted small fw-bold">BRAND NEW PRICE</span>
+                                        <span
+                                            class="h4 fw-bold text-muted text-decoration-line-through mb-0 new-price-display">₹1,99,900</span>
+                                    </div>
+                                </div>
+    
+                                <div class="progress" style="height: 12px; border-radius: 50px; background-color: #f1f5f9;">
+                                    <div class="progress-bar bg-success" id="savingsBar" role="progressbar"
+                                        style="width: 60%; border-radius: 50px;"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-2">
+                                    <small class="text-success fw-bold">You Pay</small>
+                                    <small class="text-muted">Market Price</small>
+                                </div>
+                            </div>
+    
+                            <div class="col-md-5 border-start border-light ps-md-5">
+                                <div class="text-start">
+                                    <span class="badge bg-warning text-dark mb-2 px-3 py-2 rounded-pill fw-bold">
+                                        <i class="fas fa-wallet me-1"></i> INSTANT SAVINGS
+                                    </span>
+                                    <h2 class="display-5 fw-bold text-dark mb-0 savings">₹80,000</h2>
+                                    <p class="text-success fw-bold mb-0">
+                                        <i class="fas fa-arrow-down me-1"></i> <span class="discount-percent">40%</span>
+                                        Cheaper than new
+                                    </p>
+                                </div>
+                            </div>
+    
+                        </div>
+                    </div>
+    
+                    <div
+                        class="col-lg-3 bg-success text-white p-4 p-lg-5 d-flex flex-column justify-content-center position-relative overflow-hidden">
+    
+                        <div class="position-absolute top-0 start-0 w-100 h-100"
+                            style="background: radial-gradient(circle at top right, rgba(255,255,255,0.2), transparent 70%); pointer-events: none;">
+                        </div>
+    
+                        <div class="position-relative z-2">
+                            <h4 class="fw-bold mb-4 border-bottom border-white border-opacity-25 pb-3">
+                                <i class="fas fa-globe-americas me-2"></i> Your Impact
+                            </h4>
+    
+                            <div class="d-flex align-items-center gap-3 mb-4">
+                                <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width: 45px; height: 45px;">
+                                    <i class="fas fa-trash-restore"></i>
+                                </div>
+                                <div>
+                                    <h3 class="fw-bold mb-0 waste">2.8 kg</h3>
+                                    <small class="text-white-50 text-uppercase fw-bold">E-Waste Saved</small>
+                                </div>
+                            </div>
+    
+                            <div class="d-flex align-items-center gap-3 mb-4">
+                                <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width: 45px; height: 45px;">
+                                    <i class="fas fa-cloud"></i>
+                                </div>
+                                <div>
+                                    <h3 class="fw-bold mb-0 co2">52 kg</h3>
+                                    <small class="text-white-50 text-uppercase fw-bold">CO₂ Prevented</small>
+                                </div>
+                            </div>
+    
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width: 45px; height: 45px;">
+                                    <i class="fas fa-tint"></i>
+                                </div>
+                                <div>
+                                    <h3 class="fw-bold mb-0 water">12,000 L</h3>
+                                    <small class="text-white-50 text-uppercase fw-bold">Water Saved</small>
+                                </div>
+                            </div>
+    
+                            <div class="mt-4 pt-4 border-top border-white border-opacity-25">
+                                <p class="small mb-0 opacity-75 lh-sm">
+                                    *Stats specific to the selected device model vs. buying new.
                                 </p>
                             </div>
                         </div>
-
+    
                     </div>
-                </div>
-
-                <div class="col-lg-3 bg-success text-white p-4 p-lg-5 d-flex flex-column justify-content-center position-relative overflow-hidden">
-                    
-                    <div class="position-absolute top-0 start-0 w-100 h-100" 
-                         style="background: radial-gradient(circle at top right, rgba(255,255,255,0.2), transparent 70%); pointer-events: none;">
-                    </div>
-
-                    <div class="position-relative z-2">
-                        <h4 class="fw-bold mb-4 border-bottom border-white border-opacity-25 pb-3">
-                            <i class="fas fa-globe-americas me-2"></i> Your Impact
-                        </h4>
-
-                        <div class="d-flex align-items-center gap-3 mb-4">
-                            <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                                <i class="fas fa-trash-restore"></i>
-                            </div>
-                            <div>
-                                <h3 class="fw-bold mb-0 waste">2.8 kg</h3>
-                                <small class="text-white-50 text-uppercase fw-bold">E-Waste Saved</small>
-                            </div>
-                        </div>
-
-                        <div class="d-flex align-items-center gap-3 mb-4">
-                            <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                                <i class="fas fa-cloud"></i>
-                            </div>
-                            <div>
-                                <h3 class="fw-bold mb-0 co2">52 kg</h3>
-                                <small class="text-white-50 text-uppercase fw-bold">CO₂ Prevented</small>
-                            </div>
-                        </div>
-
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                                <i class="fas fa-tint"></i>
-                            </div>
-                            <div>
-                                <h3 class="fw-bold mb-0 water">12,000 L</h3>
-                                <small class="text-white-50 text-uppercase fw-bold">Water Saved</small>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-4 pt-4 border-top border-white border-opacity-25">
-                            <p class="small mb-0 opacity-75 lh-sm">
-                                *Stats specific to the selected device model vs. buying new.
-                            </p>
-                        </div>
-                    </div>
-
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
     <!-- 19. RefurBazaar Care Protection Section -->
     <section class="care-section">
@@ -2040,7 +2047,7 @@
                     <p class="text-white mb-0">Join RefurBazaar's network of certified partners today.</p>
                 </div>
     
-                <a href="partner-application.html"
+                <a href="/partner-application"
                     class="btn btn-light rounded-pill px-5 py-3 fw-bold shadow-sm text-nowrap">
                     Apply Now <i class="fas fa-arrow-right ms-2"></i>
                 </a>
@@ -2227,8 +2234,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/static/js/homepage/script.js"></script>
 
-    <!-- Modal -->
-    <div class="modal fade" id="renewedModal" tabindex="-1" aria-hidden="true">
+    <!-- Old Modal -->
+    <!-- <div class="modal fade" id="renewedModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 rounded-4">
                 <div class="modal-header border-0 pb-0">
@@ -2282,7 +2289,361 @@
                 </div>
             </div>
         </div>
+    </div> -->
+
+    <!-- Modal -->
+    <div class="modal fade" id="renewedModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header border-0 pb-0 px-4 pt-4">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 p-md-5">
+    
+                    <div style="display:flex;justify-content:center;padding:0 24px;margin-bottom:32px;">
+                        <div class="grade-tabs">
+                            <button class="grade-tab active-superb" onclick="switchGrade('superb',this)">
+                                <span class="tab-dot superb-dot"></span>Superb
+                            </button>
+                            <button class="grade-tab" onclick="switchGrade('good',this)">
+                                <span class="tab-dot good-dot"></span>Good
+                            </button>
+                            <button class="grade-tab" onclick="switchGrade('fair',this)">
+                                <span class="tab-dot fair-dot"></span>Fair
+                            </button>
+                        </div>
+                    </div>
+    
+                    <div class="content-area" style="margin:0; padding:0;">
+    
+                        <div class="grade-panel active" id="panel-superb">
+                            <div class="panel-top">
+                                <div class="device-visual superb-vis">
+                                    <div class="device-badge badge-superb">SUPERB</div>
+                                    <div class="phone-wrap">
+                                        <div class="phone-frame">
+                                            <div class="phone-notch"></div>
+                                            <div class="phone-btn"></div>
+                                            <div class="phone-screen">
+                                                <div class="screen-superb">
+                                                    <span class="screen-icon">✦</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="condition-meter">
+                                        <div class="meter-label">Cosmetic Condition</div>
+                                        <div class="meter-track">
+                                            <div class="meter-fill fill-superb"></div>
+                                        </div>
+                                        <div class="meter-ticks"><span>Fair</span><span>Good</span><span>Superb</span></div>
+                                    </div>
+                                </div>
+                                <div class="summary-card">
+                                    <div class="grade-name superb">Superb</div>
+                                    <div class="grade-tagline">"Like it just left the box."</div>
+                                    <div class="desc">A Superb-grade device shows minimal to no signs of previous use. The
+                                        screen is pristine, the body is near-perfect, and you'd struggle to tell it apart
+                                        from a brand new unit. Best choice if condition matters to you as much as
+                                        performance.</div>
+                                    <div class="spec-row"><span class="spec-key">Cosmetic Condition</span><span
+                                            class="spec-val green">Near-perfect body & screen</span></div>
+                                    <div class="spec-row"><span class="spec-key">Scratches</span><span
+                                            class="spec-val green">None visible to the naked eye</span></div>
+                                    <div class="spec-row"><span class="spec-key">Battery Health</span><span
+                                            class="spec-val green">90% or higher</span></div>
+                                    <div class="spec-row"><span class="spec-key">Functionality</span><span
+                                            class="spec-val green">100% — fully tested</span></div>
+                                    <div class="spec-row"><span class="spec-key">Warranty</span><span
+                                            class="spec-val green">6 months hardware warranty</span></div>
+                                    <div class="spec-row"><span class="spec-key">Returns</span><span
+                                            class="spec-val green">7-day no-questions return</span></div>
+                                </div>
+                            </div>
+    
+                            <div class="checkpoints-section">
+                                <h3>What passes the Superb check</h3>
+                                <p>50 inspection points — here are the key ones for Superb grade</p>
+                                <div class="checks-grid">
+                                    <div class="check-item">
+                                        <div class="check-icon icon-superb">🔋</div>
+                                        <div class="check-text">
+                                            <h4>Battery Health ≥ 90%</h4>
+                                            <p>Tested under load, charging speed verified</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-superb">📺</div>
+                                        <div class="check-text">
+                                            <h4>Screen — Zero Defects</h4>
+                                            <p>No dead pixels, burn-in, cracks, or colour shift</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-superb">📷</div>
+                                        <div class="check-text">
+                                            <h4>All Cameras Clear</h4>
+                                            <p>Front, rear, video tested for focus & clarity</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-superb">📡</div>
+                                        <div class="check-text">
+                                            <h4>Connectivity</h4>
+                                            <p>Wi-Fi, Bluetooth, GPS, 4G/5G all verified</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-superb">🔐</div>
+                                        <div class="check-text">
+                                            <h4>Biometrics Working</h4>
+                                            <p>Face ID / Touch ID / fingerprint tested</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-superb">🧹</div>
+                                        <div class="check-text">
+                                            <h4>Deep Cleaned & Reset</h4>
+                                            <p>Sanitised, factory reset, previous data wiped</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div class="grade-panel" id="panel-good">
+                            <div class="panel-top">
+                                <div class="device-visual good-vis">
+                                    <div class="device-badge badge-good">GOOD</div>
+                                    <div class="phone-wrap">
+                                        <div class="phone-frame">
+                                            <div class="phone-notch"></div>
+                                            <div class="phone-btn"></div>
+                                            <div class="phone-screen" style="position:relative;overflow:hidden;">
+                                                <div class="screen-good" style="height:100%;">
+                                                    <span class="screen-icon">✦</span>
+                                                </div>
+                                                <div
+                                                    style="position:absolute;top:20px;left:15px;width:60px;height:2px;background:rgba(255,255,255,0.2);border-radius:1px;transform:rotate(-30deg);">
+                                                </div>
+                                                <div
+                                                    style="position:absolute;top:80px;right:20px;width:40px;height:1.5px;background:rgba(255,255,255,0.15);border-radius:1px;transform:rotate(15deg);">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div
+                                            style="position:absolute;top:30px;left:-8px;width:70px;height:1.5px;background:rgba(0,0,0,0.12);border-radius:1px;transform:rotate(20deg);">
+                                        </div>
+                                    </div>
+                                    <div class="condition-meter">
+                                        <div class="meter-label">Cosmetic Condition</div>
+                                        <div class="meter-track">
+                                            <div class="meter-fill fill-good"></div>
+                                        </div>
+                                        <div class="meter-ticks"><span>Fair</span><span>Good</span><span>Superb</span></div>
+                                    </div>
+                                </div>
+                                <div class="summary-card">
+                                    <div class="grade-name good">Good</div>
+                                    <div class="grade-tagline">"Well-loved, perfectly functional."</div>
+                                    <div class="desc">A Good-grade device has been genuinely used — light scratches may be
+                                        visible under bright lighting, but nothing that affects your daily experience.
+                                        Performance is 100%. This grade offers the best value for buyers who prioritise
+                                        function over form.</div>
+                                    <div class="spec-row"><span class="spec-key">Cosmetic Condition</span><span
+                                            class="spec-val amber">Light scratches, minor wear</span></div>
+                                    <div class="spec-row"><span class="spec-key">Scratches</span><span
+                                            class="spec-val amber">Visible under bright light</span></div>
+                                    <div class="spec-row"><span class="spec-key">Battery Health</span><span
+                                            class="spec-val amber">85% or higher</span></div>
+                                    <div class="spec-row"><span class="spec-key">Functionality</span><span
+                                            class="spec-val green">100% — fully tested</span></div>
+                                    <div class="spec-row"><span class="spec-key">Warranty</span><span
+                                            class="spec-val green">6 months hardware warranty</span></div>
+                                    <div class="spec-row"><span class="spec-key">Returns</span><span
+                                            class="spec-val green">7-day no-questions return</span></div>
+                                </div>
+                            </div>
+    
+                            <div class="checkpoints-section">
+                                <h3>What passes the Good check</h3>
+                                <p>Same 50-point inspection — cosmetic wear accepted, function never compromised</p>
+                                <div class="checks-grid">
+                                    <div class="check-item">
+                                        <div class="check-icon icon-good">🔋</div>
+                                        <div class="check-text">
+                                            <h4>Battery Health ≥ 85%</h4>
+                                            <p>Holds charge reliably through a full day</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-good">📺</div>
+                                        <div class="check-text">
+                                            <h4>Screen Fully Functional</h4>
+                                            <p>Touch response perfect — minor scratches may exist</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-good">📷</div>
+                                        <div class="check-text">
+                                            <h4>All Cameras Working</h4>
+                                            <p>No blur, no smear — image quality intact</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-good">📡</div>
+                                        <div class="check-text">
+                                            <h4>All Connectivity OK</h4>
+                                            <p>Wi-Fi, Bluetooth, GPS, 4G/5G verified</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-good">🔐</div>
+                                        <div class="check-text">
+                                            <h4>Biometrics Functional</h4>
+                                            <p>Face ID / Touch ID responding correctly</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-good">🧹</div>
+                                        <div class="check-text">
+                                            <h4>Cleaned & Reset</h4>
+                                            <p>Data wiped, sanitised, ready to activate</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div class="grade-panel" id="panel-fair">
+                            <div class="panel-top">
+                                <div class="device-visual fair-vis">
+                                    <div class="device-badge badge-fair">FAIR</div>
+                                    <div class="phone-wrap">
+                                        <div class="phone-frame">
+                                            <div class="phone-notch"></div>
+                                            <div class="phone-btn"></div>
+                                            <div class="phone-screen" style="position:relative;overflow:hidden;">
+                                                <div class="screen-fair" style="height:100%;">
+                                                    <span class="screen-icon">✦</span>
+                                                </div>
+                                                <div
+                                                    style="position:absolute;top:15px;left:10px;width:75px;height:2px;background:rgba(255,255,255,0.25);border-radius:1px;transform:rotate(-25deg);">
+                                                </div>
+                                                <div
+                                                    style="position:absolute;top:60px;right:15px;width:50px;height:2px;background:rgba(255,255,255,0.2);border-radius:1px;transform:rotate(10deg);">
+                                                </div>
+                                                <div
+                                                    style="position:absolute;bottom:40px;left:20px;width:45px;height:1.5px;background:rgba(255,255,255,0.15);border-radius:1px;transform:rotate(-15deg);">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div
+                                            style="position:absolute;top:20px;left:-10px;width:80px;height:2px;background:rgba(0,0,0,0.15);border-radius:1px;transform:rotate(25deg);">
+                                        </div>
+                                        <div
+                                            style="position:absolute;top:60px;right:-8px;width:55px;height:1.5px;background:rgba(0,0,0,0.1);border-radius:1px;transform:rotate(-10deg);">
+                                        </div>
+                                    </div>
+                                    <div class="condition-meter">
+                                        <div class="meter-label">Cosmetic Condition</div>
+                                        <div class="meter-track">
+                                            <div class="meter-fill fill-fair"></div>
+                                        </div>
+                                        <div class="meter-ticks"><span>Fair</span><span>Good</span><span>Superb</span></div>
+                                    </div>
+                                </div>
+                                <div class="summary-card">
+                                    <div class="grade-name fair">Fair</div>
+                                    <div class="grade-tagline">"Built for performance, not display."</div>
+                                    <div class="desc">A Fair-grade device shows clear signs of prior use — visible
+                                        scratches, possible scuffs on the body. But under the hood, it's fully tested and
+                                        certified. Best for buyers who need raw performance at the lowest price and don't
+                                        mind the cosmetics.</div>
+                                    <div class="spec-row"><span class="spec-key">Cosmetic Condition</span><span
+                                            class="spec-val blue">Clearly visible wear</span></div>
+                                    <div class="spec-row"><span class="spec-key">Scratches</span><span
+                                            class="spec-val blue">Clearly visible on inspection</span></div>
+                                    <div class="spec-row"><span class="spec-key">Battery Health</span><span
+                                            class="spec-val blue">80% or higher</span></div>
+                                    <div class="spec-row"><span class="spec-key">Functionality</span><span
+                                            class="spec-val green">100% — fully tested</span></div>
+                                    <div class="spec-row"><span class="spec-key">Warranty</span><span
+                                            class="spec-val green">6 months hardware warranty</span></div>
+                                    <div class="spec-row"><span class="spec-key">Returns</span><span
+                                            class="spec-val green">7-day no-questions return</span></div>
+                                </div>
+                            </div>
+    
+                            <div class="checkpoints-section">
+                                <h3>What passes the Fair check</h3>
+                                <p>Every Fair device passes the same 50-point functionality test — cosmetics are graded
+                                    honestly</p>
+                                <div class="checks-grid">
+                                    <div class="check-item">
+                                        <div class="check-icon icon-fair">🔋</div>
+                                        <div class="check-text">
+                                            <h4>Battery Health ≥ 80%</h4>
+                                            <p>Powers through typical daily use reliably</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-fair">📺</div>
+                                        <div class="check-text">
+                                            <h4>Screen Functional</h4>
+                                            <p>No dead pixels or touch issues — cosmetic wear only</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-fair">📷</div>
+                                        <div class="check-text">
+                                            <h4>Cameras Working</h4>
+                                            <p>Photo and video functionality fully verified</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-fair">📡</div>
+                                        <div class="check-text">
+                                            <h4>All Connectivity OK</h4>
+                                            <p>Network, Wi-Fi, Bluetooth all passed</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-fair">🔐</div>
+                                        <div class="check-text">
+                                            <h4>Biometrics Checked</h4>
+                                            <p>Authentication sensors working correctly</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-fair">🧹</div>
+                                        <div class="check-text">
+                                            <h4>Cleaned & Reset</h4>
+                                            <p>Complete data wipe, sanitised for new owner</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+    
+                    </div>
+    
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- JS for Modal -->
+    <script>
+        function switchGrade(grade, el) {
+            document.querySelectorAll('.grade-tab').forEach(t => {
+                t.classList.remove('active-superb', 'active-good', 'active-fair');
+            });
+            el.classList.add('active-' + grade);
+            document.querySelectorAll('.grade-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('panel-' + grade).classList.add('active');
+        }
+    </script>
 
 </body>
 

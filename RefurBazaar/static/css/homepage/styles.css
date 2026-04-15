@@ -12,6 +12,8 @@
   --accent-green: #7bc74d;
   --new-green: #009647;
 
+  --green-light :#EAF5ED;
+
   /* Neutrals */
   --dark: #1a1a1a;
   --light: #f8f9fa;
@@ -3708,4 +3710,935 @@ footer .fas.fa-shield-alt {
     .rb-box-title {
         font-size: 2rem;
     }
+}
+
+
+/* =========================================
+   GRADE EXPLAINER MODAL CSS
+   ========================================= */
+:root {
+  --superb-bg: #EAF5ED;
+  --superb-accent: #2A8C3C;
+  --superb-text: #1E6B2E;
+  --good-bg: #FFF8EC;
+  --good-accent: #D4870A;
+  --good-text: #8C5600;
+  --fair-bg: #F0F4FF;
+  --fair-accent: #4A6FD4;
+  --fair-text: #2C4A9E;
+  --r: 12px;
+  --r-sm: 8px;
+
+  --black: #1a1a1a;
+}
+
+.grade-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 520px;
+  background: white;
+  border-radius: var(--r);
+  padding: 6px;
+  border: 1.5px solid var(--gray-200);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+}
+
+.grade-tab {
+  flex: 1;
+  padding: 14px 20px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gray-400);
+  transition: all 0.25s ease;
+  text-align: center;
+  position: relative;
+}
+
+.grade-tab:hover {
+  color: var(--black);
+}
+
+.grade-tab.active-superb {
+  background: var(--superb-bg);
+  color: var(--superb-text);
+}
+
+.grade-tab.active-good {
+  background: var(--good-bg);
+  color: var(--good-text);
+}
+
+.grade-tab.active-fair {
+  background: var(--fair-bg);
+  color: var(--fair-text);
+}
+
+.grade-tab .tab-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 7px;
+  vertical-align: middle;
+}
+
+.superb-dot {
+  background: var(--superb-accent);
+}
+
+.good-dot {
+  background: var(--good-accent);
+}
+
+.fair-dot {
+  background: var(--fair-accent);
+}
+
+.grade-panel {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.grade-panel.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.panel-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.device-visual {
+  border-radius: var(--r);
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  position: relative;
+  overflow: hidden;
+}
+
+.device-visual.superb-vis {
+  background: linear-gradient(145deg, #EAF5ED, #D5EDD9);
+}
+
+.device-visual.good-vis {
+  background: linear-gradient(145deg, #FFF8EC, #FDEFD4);
+}
+
+.device-visual.fair-vis {
+  background: linear-gradient(145deg, #F0F4FF, #DDE6FF);
+}
+
+.phone-wrap {
+  position: relative;
+  width: 140px;
+}
+
+.phone-frame {
+  width: 140px;
+  height: 240px;
+  border-radius: 28px;
+  border: 5px solid var(--black);
+  background: var(--black);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.phone-screen {
+  width: 110px;
+  height: 200px;
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+}
+
+.screen-superb {
+  background: linear-gradient(160deg, #1A1A2E, #2A8C3C, #4CAF5C);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.screen-good {
+  background: linear-gradient(160deg, #1A1A2E, #8C6500, #D4870A);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.screen-fair {
+  background: linear-gradient(160deg, #1A1A2E, #2C4A9E, #4A6FD4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.screen-icon {
+  font-size: 32px;
+}
+
+.phone-notch {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 8px;
+  background: var(--black);
+  border-radius: 4px;
+  z-index: 10;
+}
+
+.phone-btn {
+  position: absolute;
+  right: -7px;
+  top: 60px;
+  width: 5px;
+  height: 30px;
+  background: #333;
+  border-radius: 3px;
+}
+
+.device-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.badge-superb {
+  background: var(--superb-accent);
+  color: white;
+}
+
+.badge-good {
+  background: var(--good-accent);
+  color: white;
+}
+
+.badge-fair {
+  background: var(--fair-accent);
+  color: white;
+}
+
+.condition-meter {
+  margin-top: 24px;
+  width: 100%;
+  max-width: 200px;
+}
+
+.meter-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-600);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.meter-track {
+  height: 8px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.fill-superb {
+  width: 95%;
+  background: var(--superb-accent);
+}
+
+.fill-good {
+  width: 70%;
+  background: var(--good-accent);
+}
+
+.fill-fair {
+  width: 45%;
+  background: var(--fair-accent);
+}
+
+.meter-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.meter-ticks span {
+  font-size: 10px;
+  color: var(--gray-400);
+}
+
+.summary-card {
+  background: white;
+  border-radius: var(--r);
+  padding: 36px;
+  border: 1.5px solid var(--gray-200);
+}
+
+.summary-card .grade-name {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+.grade-name.superb {
+  color: var(--superb-accent);
+}
+
+.grade-name.good {
+  color: var(--good-accent);
+}
+
+.grade-name.fair {
+  color: var(--fair-accent);
+}
+
+.summary-card .grade-tagline {
+  font-size: 16px;
+  color: var(--gray-600);
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+.summary-card .desc {
+  font-size: 14px;
+  color: var(--gray-600);
+  line-height: 1.8;
+  margin-bottom: 24px;
+}
+
+.spec-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.spec-row:last-child {
+  border-bottom: none;
+}
+
+.spec-key {
+  font-size: 13px;
+  color: var(--gray-400);
+  font-weight: 500;
+}
+
+.spec-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--black);
+}
+
+.spec-val.green {
+  color: var(--superb-accent);
+}
+
+.spec-val.amber {
+  color: var(--good-accent);
+}
+
+.spec-val.blue {
+  color: var(--fair-accent);
+}
+
+.checkpoints-section {
+  background: white;
+  border-radius: var(--r);
+  padding: 32px;
+  border: 1.5px solid var(--gray-200);
+  margin-bottom: 24px;
+}
+
+.checkpoints-section h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--black);
+  margin-bottom: 4px;
+}
+
+.checkpoints-section p {
+  font-size: 13px;
+  color: var(--gray-400);
+  margin-bottom: 24px;
+}
+
+.checks-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.check-item {
+  background: var(--gray-50);
+  border-radius: var(--r-sm);
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.check-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.icon-superb {
+  background: var(--superb-bg);
+}
+
+.icon-good {
+  background: var(--good-bg);
+}
+
+.icon-fair {
+  background: var(--fair-bg);
+}
+
+.check-text h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--black);
+  margin-bottom: 2px;
+}
+
+.check-text p {
+  font-size: 12px;
+  color: var(--gray-600);
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media(max-width:768px) {
+  .panel-top {
+    grid-template-columns: 1fr;
+  }
+
+  .checks-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .grade-tabs {
+    flex-direction: column;
+    max-width: 280px;
+  }
+}
+
+@media(max-width:576px) {
+  .checks-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================
+   SELLER APPLICATION PAGE (SELL ON RECARVIT)
+   ========================================= */
+
+/* Hero Section (Dark background as per brief) */
+.seller-hero-section {
+    background-color: var(--dark, #1a1a1a); /* Using your root dark variable */
+    padding: 80px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.letter-spacing-1 {
+    letter-spacing: 1px;
+}
+
+/* Perk Cards */
+.seller-perk-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.seller-perk-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+/* Custom Checkbox Chips for Form */
+.seller-application-form .btn-outline-secondary {
+    border-color: var(--gray-200, #e5e7eb);
+    color: var(--gray-600, #6b7280);
+    background-color: var(--white, #ffffff);
+    font-size: 13px !important;
+}
+
+.seller-application-form .btn-check:checked + .btn-outline-secondary {
+    background-color: rgba(0, 150, 71, 0.1); /* Recarvit Green Light */
+    border-color: #009647; /* Recarvit Green */
+    color: #009647;
+    font-weight: 600;
+}
+
+/* Dashed Border for Form Container */
+.border-dashed {
+    border-style: dashed !important;
+    border-width: 1.5px !important;
+    border-color: var(--gray-300, #d1d5db) !important;
+}
+
+/* Steps List */
+.seller-step-list .seller-step-item:last-child {
+    border-bottom: none !important;
+}
+
+@media (max-width: 768px) {
+    .seller-hero-section {
+        padding: 50px 0;
+    }
+}
+
+
+/* =========================================
+   RECARVIT CONTACT US PAGE CSS
+   ========================================= */
+
+.rc-contact-page {
+    background-color: var(--gray-50, #f9fafb);
+    min-height: 80vh;
+}
+
+/* Grid layout for the 5 selectors */
+.rc-contact-selectors {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+}
+
+/* Individual Selector Buttons */
+.rc-contact-selector-btn {
+    background: var(--gray-50, #f9fafb);
+    border: 1.5px solid var(--gray-200, #e5e7eb);
+    border-radius: var(--radius-sm, 8px);
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.rc-contact-selector-btn:hover {
+    border-color: var(--gray-300, #d1d5db);
+}
+
+.rc-contact-selector-btn .rc-icon {
+    font-size: 20px;
+    margin-bottom: 6px;
+}
+
+.rc-contact-selector-btn p {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--dark, #1a1a1a);
+    margin: 0 0 2px 0;
+    line-height: 1.3;
+}
+
+.rc-contact-selector-btn small {
+    font-size: 10px;
+    color: var(--gray-400, #9ca3af);
+}
+
+/* Active State for Tabs */
+.rc-contact-selector-btn.active {
+    border-color: var(--primary-green, #009647);
+    background-color: rgba(0, 150, 71, 0.08); /* Recarvit Green Light */
+}
+
+.rc-contact-selector-btn.active p {
+    color: var(--primary-green, #009647);
+}
+
+/* Panels Container */
+.rc-contact-content {
+    background: var(--gray-50, #f9fafb);
+    border-radius: var(--radius-sm, 8px);
+    border: 1.5px solid var(--gray-200, #e5e7eb);
+    padding: 24px;
+}
+
+/* Individual Panels */
+.rc-contact-panel {
+    display: none;
+    animation: rcFadeIn 0.3s ease forwards;
+}
+
+.rc-contact-panel.active {
+    display: block;
+}
+
+@keyframes rcFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Contact Details Info */
+.rc-contact-detail {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rc-cd-icon {
+    width: 36px;
+    height: 36px;
+    background-color: rgba(0, 150, 71, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+/* Specific Warranty Note Box */
+.rc-warranty-note {
+    background-color: #FFF8EC;
+    border: 1.5px solid #F5D58B;
+    border-radius: 8px;
+    padding: 16px 20px;
+}
+
+.rc-warranty-note h5 {
+    color: #D4870A;
+    font-size: 13px;
+}
+
+.rc-warranty-note p {
+    color: #5C3A00;
+    font-size: 13px;
+}
+
+/* Form Inputs Styling */
+.rc-mini-form .rc-input {
+    background-color: var(--white, #ffffff);
+    border: 1px solid var(--gray-200, #e5e7eb);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--dark, #1a1a1a);
+    box-shadow: none;
+}
+
+.rc-mini-form .rc-input:focus {
+    border-color: var(--primary-green, #009647);
+    outline: none;
+}
+
+.rc-btn-submit {
+    background-color: var(--primary-green, #009647);
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .rc-contact-selectors {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .rc-contact-selectors {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        scroll-snap-type: x mandatory;
+    }
+    
+    .rc-contact-selector-btn {
+        flex: 0 0 140px;
+        scroll-snap-align: start;
+    }
+}
+
+
+/* =========================================
+   RECARVIT ABOUT US PAGE CSS
+   ========================================= */
+
+.rc-about-page {
+    background-color: var(--white, #ffffff);
+    font-family: var(--font-primary, 'Inter', sans-serif);
+}
+
+/* Hero Section (Dark) */
+.rc-about-hero {
+    background-color: var(--dark-blue, #0f2557);
+    background-image: linear-gradient(135deg, #0f2557 0%, #1e4a8f 100%);
+    padding: 100px 0 80px;
+    color: var(--white, #ffffff);
+}
+
+.rc-about-tag {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #009647; /* Recarvit Green */
+    border: 1.5px solid #009647;
+    padding: 6px 14px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    background-color: rgba(0, 150, 71, 0.1);
+}
+
+.rc-about-hl {
+    font-family: var(--font-display, 'Poppins', sans-serif);
+    font-size: 3rem;
+    color: white;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 20px;
+}
+
+.rc-about-sub {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+}
+
+/* Brand Story Section */
+.rc-about-story-box {
+    background-color: var(--gray-50, #f9fafb);
+    border: 1px solid var(--gray-200, #e5e7eb);
+    border-radius: var(--radius-lg, 12px);
+    padding: 40px 50px;
+}
+
+.rc-about-story-box p {
+    font-size: 1.05rem;
+    color: var(--gray-700, #374151);
+    line-height: 1.8;
+    margin-bottom: 20px;
+}
+
+.rc-about-story-box p:last-child {
+    margin-bottom: 0;
+}
+
+.rc-about-story-box strong {
+    color: var(--dark, #1a1a1a);
+}
+
+/* Mission Band Section (Green) */
+.rc-about-mission-sec {
+    background-color: #009647; /* Exact Recarvit Green */
+    padding: 60px 0;
+    margin: 20px 0;
+}
+
+.rc-about-mission-text {
+    font-family: var(--font-display, 'Poppins', sans-serif);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--white, #ffffff);
+    line-height: 1.4;
+    margin-bottom: 15px;
+}
+
+.rc-about-mission-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Values Section */
+.rc-about-section-title {
+    font-family: var(--font-display, 'Poppins', sans-serif);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--dark, #1a1a1a);
+}
+
+.rc-about-val-card {
+    background-color: var(--gray-50, #f9fafb);
+    border-radius: var(--radius-md, 8px);
+    padding: 30px;
+    height: 100%;
+    transition: transform 0.3s ease;
+    border: 1px solid var(--gray-100, #f3f4f6);
+}
+
+.rc-about-val-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-sm);
+}
+
+.rc-val-icon {
+    font-size: 32px;
+    margin-bottom: 15px;
+}
+
+.rc-about-val-card h4 {
+    font-family: var(--font-display, 'Poppins', sans-serif);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--dark, #1a1a1a);
+    margin-bottom: 10px;
+}
+
+.rc-about-val-card p {
+    font-size: 0.95rem;
+    color: var(--gray-600, #6b7280);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Ecoreco Connection Section (Dark) */
+.rc-about-ecoreco-band {
+    background-color: var(--dark, #1a1a1a);
+    border-radius: var(--radius-lg, 12px);
+    padding: 50px;
+}
+
+.rc-eco-hl {
+    font-family: var(--font-display, 'Poppins', sans-serif);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--white, #ffffff);
+    margin-bottom: 15px;
+}
+
+.rc-eco-hl span {
+    color: #009647; /* Recarvit Green */
+}
+
+.rc-eco-desc {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.8;
+    margin: 0;
+}
+
+.rc-eco-stats-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.rc-eco-stat {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.rc-eco-num {
+    font-family: var(--font-display, 'Poppins', sans-serif);
+    font-size: 2rem;
+    font-weight: 700;
+    color: #009647; /* Recarvit Green */
+    min-width: 100px;
+}
+
+.rc-eco-label {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.4;
+}
+
+/* Team Note & CTA Section */
+.rc-about-team-note {
+    background-color: var(--light-blue, #e6f2ff);
+    border-radius: var(--radius-md, 8px);
+    padding: 30px 40px;
+}
+
+.rc-about-team-note p {
+    font-size: 1.1rem;
+    color: var(--dark-blue, #0f2557);
+    margin: 0;
+    line-height: 1.6;
+}
+
+.rc-about-btn-primary {
+    background-color: #009647;
+    border-color: #009647;
+    padding: 12px 30px;
+    font-weight: 600;
+    border-radius: 8px;
+}
+
+.rc-about-btn-primary:hover {
+    background-color: #007a39;
+    border-color: #007a39;
+}
+
+.rc-about-btn-outline {
+    padding: 12px 30px;
+    font-weight: 600;
+    border-radius: 8px;
+    border-width: 2px;
+}
+
+/* Responsive Overrides */
+@media (max-width: 991px) {
+    .rc-about-hl { font-size: 2.5rem; }
+    .rc-about-mission-text { font-size: 1.5rem; }
+    .rc-about-story-box { padding: 30px 20px; }
+    .rc-about-ecoreco-band { padding: 30px 20px; }
+    .rc-eco-stat { flex-direction: column; align-items: flex-start; gap: 5px; }
+    .rc-eco-num { font-size: 1.75rem; }
 }

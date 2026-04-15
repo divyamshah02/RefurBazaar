@@ -2428,8 +2428,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/static/js/homepage/script.js"></script>
 
-    <!-- Modal -->
-    <div class="modal fade" id="renewedModal" tabindex="-1" aria-hidden="true">
+    <!-- Old Modal -->
+    <!-- <div class="modal fade" id="renewedModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 rounded-4">
                 <div class="modal-header border-0 pb-0">
@@ -2483,7 +2483,361 @@
                 </div>
             </div>
         </div>
+    </div> -->
+
+    <!-- Modal -->
+    <div class="modal fade" id="renewedModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header border-0 pb-0 px-4 pt-4">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 p-md-5">
+    
+                    <div style="display:flex;justify-content:center;padding:0 24px;margin-bottom:32px;">
+                        <div class="grade-tabs">
+                            <button class="grade-tab active-superb" onclick="switchGrade('superb',this)">
+                                <span class="tab-dot superb-dot"></span>Superb
+                            </button>
+                            <button class="grade-tab" onclick="switchGrade('good',this)">
+                                <span class="tab-dot good-dot"></span>Good
+                            </button>
+                            <button class="grade-tab" onclick="switchGrade('fair',this)">
+                                <span class="tab-dot fair-dot"></span>Fair
+                            </button>
+                        </div>
+                    </div>
+    
+                    <div class="content-area" style="margin:0; padding:0;">
+    
+                        <div class="grade-panel active" id="panel-superb">
+                            <div class="panel-top">
+                                <div class="device-visual superb-vis">
+                                    <div class="device-badge badge-superb">SUPERB</div>
+                                    <div class="phone-wrap">
+                                        <div class="phone-frame">
+                                            <div class="phone-notch"></div>
+                                            <div class="phone-btn"></div>
+                                            <div class="phone-screen">
+                                                <div class="screen-superb">
+                                                    <span class="screen-icon">✦</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="condition-meter">
+                                        <div class="meter-label">Cosmetic Condition</div>
+                                        <div class="meter-track">
+                                            <div class="meter-fill fill-superb"></div>
+                                        </div>
+                                        <div class="meter-ticks"><span>Fair</span><span>Good</span><span>Superb</span></div>
+                                    </div>
+                                </div>
+                                <div class="summary-card">
+                                    <div class="grade-name superb">Superb</div>
+                                    <div class="grade-tagline">"Like it just left the box."</div>
+                                    <div class="desc">A Superb-grade device shows minimal to no signs of previous use. The
+                                        screen is pristine, the body is near-perfect, and you'd struggle to tell it apart
+                                        from a brand new unit. Best choice if condition matters to you as much as
+                                        performance.</div>
+                                    <div class="spec-row"><span class="spec-key">Cosmetic Condition</span><span
+                                            class="spec-val green">Near-perfect body & screen</span></div>
+                                    <div class="spec-row"><span class="spec-key">Scratches</span><span
+                                            class="spec-val green">None visible to the naked eye</span></div>
+                                    <div class="spec-row"><span class="spec-key">Battery Health</span><span
+                                            class="spec-val green">90% or higher</span></div>
+                                    <div class="spec-row"><span class="spec-key">Functionality</span><span
+                                            class="spec-val green">100% — fully tested</span></div>
+                                    <div class="spec-row"><span class="spec-key">Warranty</span><span
+                                            class="spec-val green">6 months hardware warranty</span></div>
+                                    <div class="spec-row"><span class="spec-key">Returns</span><span
+                                            class="spec-val green">7-day no-questions return</span></div>
+                                </div>
+                            </div>
+    
+                            <div class="checkpoints-section">
+                                <h3>What passes the Superb check</h3>
+                                <p>50 inspection points — here are the key ones for Superb grade</p>
+                                <div class="checks-grid">
+                                    <div class="check-item">
+                                        <div class="check-icon icon-superb">🔋</div>
+                                        <div class="check-text">
+                                            <h4>Battery Health ≥ 90%</h4>
+                                            <p>Tested under load, charging speed verified</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-superb">📺</div>
+                                        <div class="check-text">
+                                            <h4>Screen — Zero Defects</h4>
+                                            <p>No dead pixels, burn-in, cracks, or colour shift</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-superb">📷</div>
+                                        <div class="check-text">
+                                            <h4>All Cameras Clear</h4>
+                                            <p>Front, rear, video tested for focus & clarity</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-superb">📡</div>
+                                        <div class="check-text">
+                                            <h4>Connectivity</h4>
+                                            <p>Wi-Fi, Bluetooth, GPS, 4G/5G all verified</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-superb">🔐</div>
+                                        <div class="check-text">
+                                            <h4>Biometrics Working</h4>
+                                            <p>Face ID / Touch ID / fingerprint tested</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-superb">🧹</div>
+                                        <div class="check-text">
+                                            <h4>Deep Cleaned & Reset</h4>
+                                            <p>Sanitised, factory reset, previous data wiped</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div class="grade-panel" id="panel-good">
+                            <div class="panel-top">
+                                <div class="device-visual good-vis">
+                                    <div class="device-badge badge-good">GOOD</div>
+                                    <div class="phone-wrap">
+                                        <div class="phone-frame">
+                                            <div class="phone-notch"></div>
+                                            <div class="phone-btn"></div>
+                                            <div class="phone-screen" style="position:relative;overflow:hidden;">
+                                                <div class="screen-good" style="height:100%;">
+                                                    <span class="screen-icon">✦</span>
+                                                </div>
+                                                <div
+                                                    style="position:absolute;top:20px;left:15px;width:60px;height:2px;background:rgba(255,255,255,0.2);border-radius:1px;transform:rotate(-30deg);">
+                                                </div>
+                                                <div
+                                                    style="position:absolute;top:80px;right:20px;width:40px;height:1.5px;background:rgba(255,255,255,0.15);border-radius:1px;transform:rotate(15deg);">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div
+                                            style="position:absolute;top:30px;left:-8px;width:70px;height:1.5px;background:rgba(0,0,0,0.12);border-radius:1px;transform:rotate(20deg);">
+                                        </div>
+                                    </div>
+                                    <div class="condition-meter">
+                                        <div class="meter-label">Cosmetic Condition</div>
+                                        <div class="meter-track">
+                                            <div class="meter-fill fill-good"></div>
+                                        </div>
+                                        <div class="meter-ticks"><span>Fair</span><span>Good</span><span>Superb</span></div>
+                                    </div>
+                                </div>
+                                <div class="summary-card">
+                                    <div class="grade-name good">Good</div>
+                                    <div class="grade-tagline">"Well-loved, perfectly functional."</div>
+                                    <div class="desc">A Good-grade device has been genuinely used — light scratches may be
+                                        visible under bright lighting, but nothing that affects your daily experience.
+                                        Performance is 100%. This grade offers the best value for buyers who prioritise
+                                        function over form.</div>
+                                    <div class="spec-row"><span class="spec-key">Cosmetic Condition</span><span
+                                            class="spec-val amber">Light scratches, minor wear</span></div>
+                                    <div class="spec-row"><span class="spec-key">Scratches</span><span
+                                            class="spec-val amber">Visible under bright light</span></div>
+                                    <div class="spec-row"><span class="spec-key">Battery Health</span><span
+                                            class="spec-val amber">85% or higher</span></div>
+                                    <div class="spec-row"><span class="spec-key">Functionality</span><span
+                                            class="spec-val green">100% — fully tested</span></div>
+                                    <div class="spec-row"><span class="spec-key">Warranty</span><span
+                                            class="spec-val green">6 months hardware warranty</span></div>
+                                    <div class="spec-row"><span class="spec-key">Returns</span><span
+                                            class="spec-val green">7-day no-questions return</span></div>
+                                </div>
+                            </div>
+    
+                            <div class="checkpoints-section">
+                                <h3>What passes the Good check</h3>
+                                <p>Same 50-point inspection — cosmetic wear accepted, function never compromised</p>
+                                <div class="checks-grid">
+                                    <div class="check-item">
+                                        <div class="check-icon icon-good">🔋</div>
+                                        <div class="check-text">
+                                            <h4>Battery Health ≥ 85%</h4>
+                                            <p>Holds charge reliably through a full day</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-good">📺</div>
+                                        <div class="check-text">
+                                            <h4>Screen Fully Functional</h4>
+                                            <p>Touch response perfect — minor scratches may exist</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-good">📷</div>
+                                        <div class="check-text">
+                                            <h4>All Cameras Working</h4>
+                                            <p>No blur, no smear — image quality intact</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-good">📡</div>
+                                        <div class="check-text">
+                                            <h4>All Connectivity OK</h4>
+                                            <p>Wi-Fi, Bluetooth, GPS, 4G/5G verified</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-good">🔐</div>
+                                        <div class="check-text">
+                                            <h4>Biometrics Functional</h4>
+                                            <p>Face ID / Touch ID responding correctly</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-good">🧹</div>
+                                        <div class="check-text">
+                                            <h4>Cleaned & Reset</h4>
+                                            <p>Data wiped, sanitised, ready to activate</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div class="grade-panel" id="panel-fair">
+                            <div class="panel-top">
+                                <div class="device-visual fair-vis">
+                                    <div class="device-badge badge-fair">FAIR</div>
+                                    <div class="phone-wrap">
+                                        <div class="phone-frame">
+                                            <div class="phone-notch"></div>
+                                            <div class="phone-btn"></div>
+                                            <div class="phone-screen" style="position:relative;overflow:hidden;">
+                                                <div class="screen-fair" style="height:100%;">
+                                                    <span class="screen-icon">✦</span>
+                                                </div>
+                                                <div
+                                                    style="position:absolute;top:15px;left:10px;width:75px;height:2px;background:rgba(255,255,255,0.25);border-radius:1px;transform:rotate(-25deg);">
+                                                </div>
+                                                <div
+                                                    style="position:absolute;top:60px;right:15px;width:50px;height:2px;background:rgba(255,255,255,0.2);border-radius:1px;transform:rotate(10deg);">
+                                                </div>
+                                                <div
+                                                    style="position:absolute;bottom:40px;left:20px;width:45px;height:1.5px;background:rgba(255,255,255,0.15);border-radius:1px;transform:rotate(-15deg);">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div
+                                            style="position:absolute;top:20px;left:-10px;width:80px;height:2px;background:rgba(0,0,0,0.15);border-radius:1px;transform:rotate(25deg);">
+                                        </div>
+                                        <div
+                                            style="position:absolute;top:60px;right:-8px;width:55px;height:1.5px;background:rgba(0,0,0,0.1);border-radius:1px;transform:rotate(-10deg);">
+                                        </div>
+                                    </div>
+                                    <div class="condition-meter">
+                                        <div class="meter-label">Cosmetic Condition</div>
+                                        <div class="meter-track">
+                                            <div class="meter-fill fill-fair"></div>
+                                        </div>
+                                        <div class="meter-ticks"><span>Fair</span><span>Good</span><span>Superb</span></div>
+                                    </div>
+                                </div>
+                                <div class="summary-card">
+                                    <div class="grade-name fair">Fair</div>
+                                    <div class="grade-tagline">"Built for performance, not display."</div>
+                                    <div class="desc">A Fair-grade device shows clear signs of prior use — visible
+                                        scratches, possible scuffs on the body. But under the hood, it's fully tested and
+                                        certified. Best for buyers who need raw performance at the lowest price and don't
+                                        mind the cosmetics.</div>
+                                    <div class="spec-row"><span class="spec-key">Cosmetic Condition</span><span
+                                            class="spec-val blue">Clearly visible wear</span></div>
+                                    <div class="spec-row"><span class="spec-key">Scratches</span><span
+                                            class="spec-val blue">Clearly visible on inspection</span></div>
+                                    <div class="spec-row"><span class="spec-key">Battery Health</span><span
+                                            class="spec-val blue">80% or higher</span></div>
+                                    <div class="spec-row"><span class="spec-key">Functionality</span><span
+                                            class="spec-val green">100% — fully tested</span></div>
+                                    <div class="spec-row"><span class="spec-key">Warranty</span><span
+                                            class="spec-val green">6 months hardware warranty</span></div>
+                                    <div class="spec-row"><span class="spec-key">Returns</span><span
+                                            class="spec-val green">7-day no-questions return</span></div>
+                                </div>
+                            </div>
+    
+                            <div class="checkpoints-section">
+                                <h3>What passes the Fair check</h3>
+                                <p>Every Fair device passes the same 50-point functionality test — cosmetics are graded
+                                    honestly</p>
+                                <div class="checks-grid">
+                                    <div class="check-item">
+                                        <div class="check-icon icon-fair">🔋</div>
+                                        <div class="check-text">
+                                            <h4>Battery Health ≥ 80%</h4>
+                                            <p>Powers through typical daily use reliably</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-fair">📺</div>
+                                        <div class="check-text">
+                                            <h4>Screen Functional</h4>
+                                            <p>No dead pixels or touch issues — cosmetic wear only</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-fair">📷</div>
+                                        <div class="check-text">
+                                            <h4>Cameras Working</h4>
+                                            <p>Photo and video functionality fully verified</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-fair">📡</div>
+                                        <div class="check-text">
+                                            <h4>All Connectivity OK</h4>
+                                            <p>Network, Wi-Fi, Bluetooth all passed</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-fair">🔐</div>
+                                        <div class="check-text">
+                                            <h4>Biometrics Checked</h4>
+                                            <p>Authentication sensors working correctly</p>
+                                        </div>
+                                    </div>
+                                    <div class="check-item">
+                                        <div class="check-icon icon-fair">🧹</div>
+                                        <div class="check-text">
+                                            <h4>Cleaned & Reset</h4>
+                                            <p>Complete data wipe, sanitised for new owner</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+    
+                    </div>
+    
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- JS for Modal -->
+    <script>
+        function switchGrade(grade, el) {
+            document.querySelectorAll('.grade-tab').forEach(t => {
+                t.classList.remove('active-superb', 'active-good', 'active-fair');
+            });
+            el.classList.add('active-' + grade);
+            document.querySelectorAll('.grade-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('panel-' + grade).classList.add('active');
+        }
+    </script>
 
 </body>
 
