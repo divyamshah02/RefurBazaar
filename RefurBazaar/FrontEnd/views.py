@@ -79,6 +79,12 @@ class AboutViewSet(viewsets.ViewSet):
     def list(self, request):
         return render(request, 'about.html')
 
+class LegalViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'legal.html')
+
 class PartnerApplicationViewSet(viewsets.ViewSet):
 
     @handle_exceptions

@@ -26,44 +26,7 @@
 <body>
 
     <!-- Navbar -->
-    <nav class="navbar-main">
-        <div class="container-fluid px-3 px-lg-5">
-            <div class="d-flex align-items-center justify-content-between navbar-container">
-
-                <div class="brand-col d-flex align-items-center">
-                    <a class="brand-logo" href="index.html">
-                        <img src="/static/images/Recarvit Logo edited-nobg.png" alt="Recarvit">
-                    </a>
-                </div>
-
-                <div class="search-col flex-grow-1 d-flex justify-content-center px-lg-4">
-                    <div class="search-wrapper">
-                        <form class="search-input-group">
-                            <input type="search" class="form-control" placeholder="Search for iPhones, Laptops..."
-                                aria-label="Search">
-                            <button class="btn" type="button">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="icons-col d-flex align-items-center gap-2 gap-lg-3">
-                    <a href="#" class="nav-icon-btn" aria-label="Profile">
-                        <i class="far fa-user"></i>
-                    </a>
-                    <a href="#" class="nav-icon-btn" aria-label="Wishlist">
-                        <i class="far fa-heart"></i>
-                    </a>
-                    <a href="#" class="nav-icon-btn" aria-label="Cart">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="badge rounded-pill bg-danger cart-count">2</span>
-                    </a>
-                </div>
-
-            </div>
-        </div>
-    </nav>
+    {% include 'navbar.html' %}
 
     <main class="rc-contact-page py-5">
         <div class="container-fluid px-3 px-lg-5">
@@ -319,86 +282,7 @@
     </main>
 
     <!-- Footer -->
-    <footer>
-        <div class="container-fluid px-3 px-lg-5">
-            <div class="row g-5">
-    
-                <div class="col-lg-4 col-md-6">
-                    <a href="#" class="d-inline-block mb-3">
-                        <img src="/static/images/Recarvit Logo edited-nobg.png" alt="Recarvit" height="70"
-                            class="mb-3">
-                    </a>
-                    <p class="text-black mb-4" style="max-width: 350px;">
-                        We're fixing the broken tech market. Premium certified devices, transparent pricing, and a warranty
-                        that actually works.
-                    </p>
-                    <div class="d-flex gap-2">
-                        <a href="#" class="social-icon-btn fb"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="social-icon-btn tw"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="social-icon-btn in"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-icon-btn li"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
-                </div>
-    
-                <div class="col-lg-2 col-md-3 col-6">
-                    <h5 class="mb-4 text-black">Shop</h5>
-                    <a href="#">Flash Sales 🔥</a>
-                    <a href="#">iPhones</a>
-                    <a href="#">MacBooks</a>
-                    <a href="#">Samsung</a>
-                    <a href="#">Accessories</a>
-                </div>
-    
-                <div class="col-lg-2 col-md-3 col-6">
-                    <h5 class="mb-4 text-black">Support</h5>
-                    <a href="#">Track Order</a>
-                    <a href="#">Warranty Info</a>
-                    <a href="#">Returns Policy</a>
-                    <a href="#">Help Center</a>
-                    <a href="#">Contact Us</a>
-                </div>
-    
-                <div class="col-lg-4 col-md-12">
-                    <h5 class="mb-4 text-black">Stay in the Loop 🚀</h5>
-                    <p class="text-black mb-3">Join 50,000+ smart shoppers. Get <strong>₹500 OFF</strong> your first
-                        order!</p>
-    
-                    <form class="mb-4">
-                        <div class="input-group">
-                            <input type="email" class="form-control border-0 p-3" placeholder="Enter your email"
-                                style="border-radius: 10px 0 0 10px; background-color: #f0f0f0;" required>
-                            <button class="btn btn-success px-4 fw-bold" type="button"
-                                style="border-radius: 0 10px 10px 0;">
-                                Subscribe
-                            </button>
-                        </div>
-                    </form>
-    
-                    <div class="d-flex gap-4">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="fas fa-check-circle text-success"></i>
-                            <small class="text-black">45-Point Check</small>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="fas fa-shield-alt text-success"></i>
-                            <small class="text-black">1-Year Warranty</small>
-                        </div>
-                    </div>
-                </div>
-    
-            </div>
-    
-            <div class="footer-bottom d-flex flex-column flex-md-row align-items-center justify-content-between">
-                <p class="large mb-2 mb-md-0">&copy; 2026 Recarvit. All rights reserved.</p>
-                <div class="d-flex gap-3">
-                    <i class="fab fa-cc-visa fa-lg"></i>
-                    <i class="fab fa-cc-mastercard fa-lg"></i>
-                    <i class="fab fa-cc-paypal fa-lg"></i>
-                    <i class="fab fa-cc-apple-pay fa-lg"></i>
-                </div>
-            </div>
-        </div>
-    </footer>
+    {% include 'footer.html' %}
 
     <!-- Go-To-Top Functionality -->
     <a href="#" id="backToTop" class="back-to-top">

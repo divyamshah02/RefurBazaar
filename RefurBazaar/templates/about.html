@@ -26,47 +26,11 @@
 <body>
 
     <!-- Navbar -->
-    <nav class="navbar-main">
-        <div class="container-fluid px-3 px-lg-5">
-            <div class="d-flex align-items-center justify-content-between navbar-container">
-
-                <div class="brand-col d-flex align-items-center">
-                    <a class="brand-logo" href="index.html">
-                        <img src="/static/images/Recarvit Logo edited-nobg.png" alt="Recarvit">
-                    </a>
-                </div>
-
-                <div class="search-col flex-grow-1 d-flex justify-content-center px-lg-4">
-                    <div class="search-wrapper">
-                        <form class="search-input-group">
-                            <input type="search" class="form-control" placeholder="Search for iPhones, Laptops..."
-                                aria-label="Search">
-                            <button class="btn" type="button">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="icons-col d-flex align-items-center gap-2 gap-lg-3">
-                    <a href="#" class="nav-icon-btn" aria-label="Profile">
-                        <i class="far fa-user"></i>
-                    </a>
-                    <a href="#" class="nav-icon-btn" aria-label="Wishlist">
-                        <i class="far fa-heart"></i>
-                    </a>
-                    <a href="#" class="nav-icon-btn" aria-label="Cart">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="badge rounded-pill bg-danger cart-count">2</span>
-                    </a>
-                </div>
-
-            </div>
-        </div>
-    </nav>
+    {% include 'navbar.html' %}
 
     <main class="rc-about-page">
     
+        <!-- Hero Section -->
         <section class="rc-about-hero">
             <div class="container-fluid px-3 px-lg-5">
                 <div class="row justify-content-center text-center">
@@ -80,6 +44,7 @@
             </div>
         </section>
     
+        <!-- About Section -->
         <section class="rc-about-story-sec py-5">
             <div class="container-fluid px-3 px-lg-5">
                 <div class="row justify-content-center">
@@ -103,6 +68,7 @@
             </div>
         </section>
     
+        <!-- Mission Section -->
         <section class="rc-about-mission-sec">
             <div class="container-fluid px-3 px-lg-5 text-center">
                 <div class="row justify-content-center">
@@ -115,6 +81,7 @@
             </div>
         </section>
     
+        <!-- Values Section -->
         <section class="rc-about-values-sec py-5">
             <div class="container-fluid px-3 px-lg-5">
                 <div class="text-center mb-5">
@@ -148,7 +115,160 @@
                 </div>
             </div>
         </section>
+
+        <!-- Why Recarvit Section -->
+        <section class="rc-about-verified-sec py-5 bg-white">
+            <div class="container-fluid px-3 px-lg-5">
+        
+                <div class="row justify-content-center mb-5">
+                    <div class="col-lg-12 col-xl-10 text-center text-lg-start">
+                        <h2 class="display-6 fw-bold text-dark mb-3">100% Original. Certified. Yours.</h2>
+                        <p class="text-muted fs-5 mb-0 mx-auto mx-lg-0">
+                            We don't just sell electronics — we certify them. Every device passes our rigorous checks before it
+                            reaches your hands.
+                        </p>
+                    </div>
+                </div>
+        
+                <div class="row g-4 g-lg-5 align-items-center justify-content-center">
+        
+                    <div class="col-lg-6 col-xl-5">
+                        <div class="p-4 p-md-5 rounded-4" style="background-color: var(--green-tint, #EAF5ED);">
+                            <h6 class="fw-bold mb-4 text-uppercase"
+                                style="color: var(--green-dark, #1E6B2E); letter-spacing: 0.5px;">The Recarvit Promise</h6>
+        
+                            <div class="d-flex flex-column gap-3">
+                                <div
+                                    class="d-flex align-items-center gap-3 bg-white p-3 rounded-3 border border-light shadow-sm">
+                                    <div class="fs-4">🔬</div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1 text-dark" style="font-size: 14px;">50-Point Quality Check</h6>
+                                        <p class="mb-0 small text-muted">Every device. No exceptions.</p>
+                                    </div>
+                                </div>
+                                <div
+                                    class="d-flex align-items-center gap-3 bg-white p-3 rounded-3 border border-light shadow-sm">
+                                    <div class="fs-4">🛡️</div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1 text-dark" style="font-size: 14px;">6-Month Warranty</h6>
+                                        <p class="mb-0 small text-muted">Hardware covered from day one.</p>
+                                    </div>
+                                </div>
+                                <div
+                                    class="d-flex align-items-center gap-3 bg-white p-3 rounded-3 border border-light shadow-sm">
+                                    <div class="fs-4">⭐</div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1 text-dark" style="font-size: 14px;">Superb / Good / Fair Grading
+                                        </h6>
+                                        <p class="mb-0 small text-muted">Honest grades. No surprises.</p>
+                                    </div>
+                                </div>
+                                <div
+                                    class="d-flex align-items-center gap-3 bg-white p-3 rounded-3 border border-light shadow-sm">
+                                    <div class="fs-4">🌱</div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1 text-dark" style="font-size: 14px;">Powered by Ecoreco</h6>
+                                        <p class="mb-0 small text-muted">Every purchase reduces e-waste.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <div class="col-lg-6 col-xl-5">
+                        <div class="d-flex flex-column gap-4 ps-lg-4">
+        
+                            <div class="d-flex gap-3 align-items-start">
+                                <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold shadow-sm"
+                                    style="width: 32px; height: 32px; font-size: 14px;">1</div>
+                                <div>
+                                    <h5 class="fw-bold text-dark mb-1" style="font-size: 16px;">Risk Free</h5>
+                                    <p class="text-muted mb-0" style="font-size: 14px;">7-day return policy. If you don't love
+                                        it, return it.</p>
+                                </div>
+                            </div>
+        
+                            <div class="d-flex gap-3 align-items-start">
+                                <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold shadow-sm"
+                                    style="width: 32px; height: 32px; font-size: 14px;">2</div>
+                                <div>
+                                    <h5 class="fw-bold text-dark mb-1" style="font-size: 16px;">Verified</h5>
+                                    <p class="text-muted mb-0" style="font-size: 14px;">One by one quality check. We test 50
+                                        functional points.</p>
+                                </div>
+                            </div>
+        
+                            <div class="d-flex gap-3 align-items-start">
+                                <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold shadow-sm"
+                                    style="width: 32px; height: 32px; font-size: 14px;">3</div>
+                                <div>
+                                    <h5 class="fw-bold text-dark mb-1" style="font-size: 16px;">Best Only</h5>
+                                    <p class="text-muted mb-0" style="font-size: 14px;">We are picky. Only 1 out of 4 suppliers
+                                        meet our standards.</p>
+                                </div>
+                            </div>
+        
+                            <div class="d-flex gap-3 align-items-start">
+                                <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold shadow-sm"
+                                    style="width: 32px; height: 32px; font-size: 14px;">4</div>
+                                <div>
+                                    <h5 class="fw-bold text-dark mb-1" style="font-size: 16px;">Support</h5>
+                                    <p class="text-muted mb-0" style="font-size: 14px;">Proactive customer support available 7
+                                        days a week.</p>
+                                </div>
+                            </div>
+        
+                            <div class="d-flex gap-3 align-items-start">
+                                <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold shadow-sm"
+                                    style="width: 32px; height: 32px; font-size: 14px;">5</div>
+                                <div>
+                                    <h5 class="fw-bold text-dark mb-1" style="font-size: 16px;">India's Largest Selection</h5>
+                                    <p class="text-muted mb-0" style="font-size: 14px;">1,500+ certified devices. More models,
+                                        more grades, better prices.</p>
+                                </div>
+                            </div>
+        
+                        </div>
+                    </div>
+        
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section class="rc-how-section">
+            <div class="container-fluid px-3 px-lg-5">
+                <div class="text-center">
+                    <span class="fw-bold text-uppercase small" style="letter-spacing: 1px;">How Recarvit Works</span>
+                </div>
+        
+                <div class="rc-how-strip">
+                    <div class="rc-how-step">
+                        <div class="rc-how-num">1</div>
+                        <div class="rc-how-icon">🔍</div>
+                        <div class="rc-how-title">Browse & Pick</div>
+                        <p class="rc-how-body">Filter by brand, grade & price. Compare sellers side-by-side.</p>
+                    </div>
+        
+                    <div class="rc-how-step">
+                        <div class="rc-how-num">2</div>
+                        <div class="rc-how-icon">✅</div>
+                        <div class="rc-how-title">We Certify</div>
+                        <p class="rc-how-body">50-point check. Battery verified. Data wiped. Packed securely.</p>
+                    </div>
+        
+                    <div class="rc-how-step">
+                        <div class="rc-how-num">3</div>
+                        <div class="rc-how-icon">📦</div>
+                        <div class="rc-how-title">Delivered & Covered</div>
+                        <p class="rc-how-body">Metro: within 4 days. Rest of India: 4–7 days. 6-month warranty + 7-day returns.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
     
+        <!-- Ecoreco Section -->
         <section class="rc-about-ecoreco-sec py-5">
             <div class="container-fluid px-3 px-lg-5">
                 <div class="row justify-content-center">
@@ -189,6 +309,7 @@
             </div>
         </section>
     
+        <!-- Team Section -->
         <section class="rc-about-team-sec py-5 mb-4">
             <div class="container-fluid px-3 px-lg-5">
                 <div class="row justify-content-center">
@@ -212,86 +333,7 @@
     </main>
 
     <!-- Footer -->
-    <footer>
-        <div class="container-fluid px-3 px-lg-5">
-            <div class="row g-5">
-    
-                <div class="col-lg-4 col-md-6">
-                    <a href="#" class="d-inline-block mb-3">
-                        <img src="/static/images/Recarvit Logo edited-nobg.png" alt="Recarvit" height="70"
-                            class="mb-3">
-                    </a>
-                    <p class="text-black mb-4" style="max-width: 350px;">
-                        We're fixing the broken tech market. Premium certified devices, transparent pricing, and a warranty
-                        that actually works.
-                    </p>
-                    <div class="d-flex gap-2">
-                        <a href="#" class="social-icon-btn fb"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="social-icon-btn tw"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="social-icon-btn in"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-icon-btn li"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
-                </div>
-    
-                <div class="col-lg-2 col-md-3 col-6">
-                    <h5 class="mb-4 text-black">Shop</h5>
-                    <a href="#">Flash Sales 🔥</a>
-                    <a href="#">iPhones</a>
-                    <a href="#">MacBooks</a>
-                    <a href="#">Samsung</a>
-                    <a href="#">Accessories</a>
-                </div>
-    
-                <div class="col-lg-2 col-md-3 col-6">
-                    <h5 class="mb-4 text-black">Support</h5>
-                    <a href="#">Track Order</a>
-                    <a href="#">Warranty Info</a>
-                    <a href="#">Returns Policy</a>
-                    <a href="#">Help Center</a>
-                    <a href="#">Contact Us</a>
-                </div>
-    
-                <div class="col-lg-4 col-md-12">
-                    <h5 class="mb-4 text-black">Stay in the Loop 🚀</h5>
-                    <p class="text-black mb-3">Join 50,000+ smart shoppers. Get <strong>₹500 OFF</strong> your first
-                        order!</p>
-    
-                    <form class="mb-4">
-                        <div class="input-group">
-                            <input type="email" class="form-control border-0 p-3" placeholder="Enter your email"
-                                style="border-radius: 10px 0 0 10px; background-color: #f0f0f0;" required>
-                            <button class="btn btn-success px-4 fw-bold" type="button"
-                                style="border-radius: 0 10px 10px 0;">
-                                Subscribe
-                            </button>
-                        </div>
-                    </form>
-    
-                    <div class="d-flex gap-4">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="fas fa-check-circle text-success"></i>
-                            <small class="text-black">45-Point Check</small>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="fas fa-shield-alt text-success"></i>
-                            <small class="text-black">1-Year Warranty</small>
-                        </div>
-                    </div>
-                </div>
-    
-            </div>
-    
-            <div class="footer-bottom d-flex flex-column flex-md-row align-items-center justify-content-between">
-                <p class="large mb-2 mb-md-0">&copy; 2026 Recarvit. All rights reserved.</p>
-                <div class="d-flex gap-3">
-                    <i class="fab fa-cc-visa fa-lg"></i>
-                    <i class="fab fa-cc-mastercard fa-lg"></i>
-                    <i class="fab fa-cc-paypal fa-lg"></i>
-                    <i class="fab fa-cc-apple-pay fa-lg"></i>
-                </div>
-            </div>
-        </div>
-    </footer>
+    {% include 'footer.html' %}
 
     <!-- Go-To-Top Functionality -->
     <a href="#" id="backToTop" class="back-to-top">
@@ -301,8 +343,6 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/static/js/homepage/script.js"></script>
-
-    
 
 </body>
 </html>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RefurBazaar - Premium Refurbished Electronics</title>
+    <title>Recarvit | Buy Certified Refurbished iPhones, MacBooks & Laptops in India</title>
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -36,79 +36,21 @@
         </div>
     </div> -->
 
-    <!-- 2. Primary Navigation (Navbar) -->
-    <nav class="navbar-main">
-        <div class="container-fluid px-3 px-lg-5">
-            <div class="d-flex align-items-center justify-content-between navbar-container">
-
-                <div class="brand-col d-flex align-items-center">
-                    <a class="brand-logo" href="index.html">
-                        <img src="/static/images/homepage/refurbazaar-20final-20logo.png" alt="RefurBazaar">
-                    </a>
-                </div>
-
-                <div class="search-col flex-grow-1 d-flex justify-content-center px-lg-4">
-                    <div class="search-wrapper">
-                        <form class="search-input-group">
-                            <input type="search" class="form-control" placeholder="Search for iPhones, Laptops..."
-                                aria-label="Search">
-                            <button class="btn" type="button">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="icons-col d-flex align-items-center gap-2 gap-lg-3">
-                    <a href="#" class="nav-icon-btn" aria-label="Profile">
-                        <i class="far fa-user"></i>
-                    </a>
-                    <a href="#" class="nav-icon-btn" aria-label="Wishlist">
-                        <i class="far fa-heart"></i>
-                    </a>
-                    <a href="#" class="nav-icon-btn" aria-label="Cart">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="badge rounded-pill bg-danger cart-count">2</span>
-                    </a>
-                </div>
-
-            </div>
-        </div>
-    </nav>
-
-    <!-- 3. Secondary Navigation (Category Nav) -->
-    <div class="secondary-nav">
-        <div class="container-fluid">
-            <div class="d-flex">
-                <a href="/shop/?category=sale" class="cat-link highlight-red">
-                    End of Year Sale <i class="fas fa-fire ms-1"></i>
-                </a>
-                <a href="/shop/?category=mobile" class="cat-link">iPhones</a>
-                <a href="/shop/?category=mobile" class="cat-link">Samsung</a>
-                <a href="/shop/?category=laptop" class="cat-link">MacBooks</a>
-                <a href="/shop/?category=laptop" class="cat-link">Laptops</a>
-                <a href="/shop/?category=tablet" class="cat-link">iPads</a>
-                <a href="/shop/?category=accessory" class="cat-link">Accessories</a>
-                <a href="#inquiry-section" class="cat-link">For Business</a>
-                <a href="/shop/?category=express" class="cat-link highlight-blue">
-                    RefurBazaar Express <i class="fas fa-bolt ms-1"></i>
-                </a>
-            </div>
-        </div>
-    </div>
+    <!-- Navbar -->
+    {% include 'navbar.html' %}
 
     <!-- 4. Hero Carousel Section -->
-    <section class="hero-carousel-section">
+    <!-- <section class="hero-carousel-section">
         <div class="container-fluid px-0 position-relative">
 
             <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
 
-                <!-- <div class="carousel-indicators">
+                <div class="carousel-indicators">
                     <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
                     <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
                     <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
                     <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="3"></button>
-                </div> -->
+                </div>
 
                 <div class="carousel-inner">
                 
@@ -119,7 +61,7 @@
                 
                                     <div class="col-lg-6 order-1 order-lg-1 text-center text-lg-start">
                                         <span class="badge bg-white text-primary mb-3 px-3 py-2 rounded-pill shadow-sm fw-bold">
-                                            <i class="fas fa-check-circle me-2"></i>RefurBazaar Certified
+                                            <i class="fas fa-check-circle me-2"></i>Recarvit Certified
                                         </span>
                 
                                         <h1 class="slide-title mb-3">
@@ -229,10 +171,131 @@
                 </button>
             </div>
         </div>
+    </section> -->
+
+    <section class="hero-carousel-section">
+        <div class="container-fluid px-0 position-relative">
+    
+            <div id="heroCarousel" class="carousel slide carousel-fade rc-hero-section" data-bs-ride="carousel"
+                data-bs-interval="5000">
+    
+                <div class="carousel-indicators rc-hero-indicators">
+                    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"
+                        aria-current="true" aria-label="Slide 1"></button>
+                    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                </div>
+    
+                <div class="carousel-inner h-100">
+    
+                    <div class="carousel-item active h-100 rc-slide-dark">
+                        <div class="container-fluid px-4 px-lg-5 h-100">
+                            <div class="row align-items-center h-100 py-5 py-lg-0">
+                                <div class="col-lg-6 order-2 order-lg-1 mt-4 mt-lg-0 text-center text-lg-start">
+                                    <span class="rc-hero-tag tag-green">New Arrival</span>
+                                    <h1 class="rc-hero-hl text-white">The MacBook Air M2.<br>Now Actually Affordable.</h1>
+                                    <p class="rc-hero-body text-light-gray">
+                                        256GB · 16GB RAM · Recarvit Certified · Starting <strong
+                                            class="text-white">₹59,900</strong> — 40% below new price.
+                                    </p>
+                                    <div class="rc-cta-row justify-content-center justify-content-lg-start mt-4">
+                                        <a href="/shop/?category=laptop" class="btn rc-btn-primary">Shop MacBooks &rarr;</a>
+                                        <a href="/shop/?category=laptop" class="btn rc-btn-text">See All Laptops</a>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 order-1 order-lg-2 position-relative text-center">
+                                    <div class="rc-hero-img-wrapper">
+                                        <img src="/static/images/homepage/banner1-macbook.png"
+                                            alt="Certified Refurbished MacBook Air M2 — Recarvit"
+                                            class="img-fluid hero-product-img">
+    
+                                        <div class="rc-badge-float badge-top-right bg-green text-white">6M Warranty ✓</div>
+                                        <div class="rc-badge-float badge-bottom-center bg-green text-white">40% OFF</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <div class="carousel-item h-100 rc-slide-light">
+                        <div class="container-fluid px-4 px-lg-5 h-100">
+                            <div class="row align-items-center h-100 py-5 py-lg-0">
+                                <div class="col-lg-6 order-2 order-lg-1 mt-4 mt-lg-0 text-center text-lg-start">
+                                    <span class="rc-hero-tag tag-dark">Best Sellers</span>
+                                    <h1 class="rc-hero-hl text-dark">iPhone & Samsung.<br>Minus the Premium Price Tag.</h1>
+                                    <p class="rc-hero-body text-dark-gray">
+                                        Top flagship phones. Up to <strong class="text-dark">40% off</strong> new prices.
+                                        50-point tested, 6-month warranty included.
+                                    </p>
+                                    <div class="rc-cta-row justify-content-center justify-content-lg-start mt-4">
+                                        <a href="/shop/?category=mobile" class="btn rc-btn-primary">Shop Phones &rarr;</a>
+                                        <a href="#" class="btn rc-btn-outline-dark" data-bs-toggle="modal"
+                                            data-bs-target="#renewedModal">Compare Grades</a>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 order-1 order-lg-2 position-relative text-center">
+                                    <div class="rc-hero-img-wrapper">
+                                        <img src="/static/images/homepage/banner2-iphone-samsung.png"
+                                            alt="Certified Refurbished iPhone and Samsung — Recarvit"
+                                            class="img-fluid hero-product-img">
+    
+                                        <div
+                                            class="rc-badge-float badge-bottom-center bg-white text-green fw-bold shadow-sm">
+                                            Up to 40% Off</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <div class="carousel-item h-100 rc-slide-green">
+                        <div class="container-fluid px-4 px-lg-5 h-100">
+                            <div class="row align-items-center h-100 py-5 py-lg-0">
+                                <div class="col-lg-6 order-2 order-lg-1 mt-4 mt-lg-0 text-center text-lg-start">
+                                    <span class="rc-hero-tag tag-light">Recarvit Marketplace</span>
+                                    <h1 class="rc-hero-hl text-white">More Sellers.<br>More Choices.</h1>
+                                    <p class="rc-hero-body text-white opacity-75 mb-1">
+                                        1,500+ certified devices from India's most trusted refurbishers.
+                                    </p>
+                                    <p class="rc-hero-body text-white opacity-75">
+                                        Every device graded, tested, warranted. Up to <strong
+                                            class="text-white opacity-100">70% off</strong> new prices.
+                                    </p>
+                                    <div class="rc-cta-row justify-content-center justify-content-lg-start mt-4">
+                                        <a href="/shop/" class="btn rc-btn-white">Explore All Devices &rarr;</a>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 order-1 order-lg-2 position-relative text-center">
+                                    <div class="rc-hero-img-wrapper">
+                                        <img src="/static/images/homepage/banner3-device-collage.png"
+                                            alt="Refurbished Electronics Marketplace — Recarvit"
+                                            class="img-fluid hero-product-img">
+    
+                                        <div class="rc-badge-circle bg-warning text-white shadow">Up to<br>70%<br>OFF</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                </div>
+    
+                <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-custom ms-4">
+                        <i class="fas fa-chevron-left"></i>
+                    </span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-custom me-4">
+                        <i class="fas fa-chevron-right"></i>
+                    </span>
+                </button>
+            </div>
+        </div>
     </section>
 
     <!-- 5. Trust Badges Section -->
-    <section class="trust-badges py-2">
+    <!-- <section class="trust-badges py-2">
         <div class="container-fluid px-2">
             <div class="row text-center">
                 <div class="col-md-4">
@@ -264,6 +327,54 @@
                 </div>
             </div>
         </div>
+    </section> -->
+
+    <section class="rc-trust-strip">
+        <div class="container-fluid px-3 px-lg-5">
+            <div class="row g-0 rc-trust-row">
+                
+                <div class="col-6 col-lg-3 rc-trust-col">
+                    <div class="rc-trust-item">
+                        <div class="rc-trust-icon"><i class="fas fa-check-circle"></i></div>
+                        <div class="rc-trust-text">
+                            <h6>50-Point Quality Check</h6>
+                            <small>Every device tested</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-6 col-lg-3 rc-trust-col">
+                    <div class="rc-trust-item">
+                        <div class="rc-trust-icon"><i class="fas fa-shield-alt"></i></div>
+                        <div class="rc-trust-text">
+                            <h6>6-Month Warranty</h6>
+                            <small>Hardware covered</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-6 col-lg-3 rc-trust-col">
+                    <div class="rc-trust-item">
+                        <div class="rc-trust-icon"><i class="fas fa-box-open"></i></div>
+                        <div class="rc-trust-text">
+                            <h6>Free Delivery</h6>
+                            <small>Pan-India shipping</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-6 col-lg-3 rc-trust-col">
+                    <div class="rc-trust-item">
+                        <div class="rc-trust-icon"><i class="fas fa-undo"></i></div>
+                        <div class="rc-trust-text">
+                            <h6>7-Day Returns</h6>
+                            <small>No questions asked</small>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
     </section>
 
     <!-- 6. What is Renewed Section -->
@@ -279,8 +390,8 @@
                             <i class="fas fa-shield-alt"></i>
                         </div>
                         <div class="renewed-text text-center text-md-start">
-                            <h5>RefurBazaar Certified: As Good As New.</h5>
-                            <p>We test 45+ checkpoints (Battery, Screen, Camera) so you don't have to.</p>
+                            <h5>Recarvit Certified: As Good As New.</h5>
+                            <p>We test 50+ checkpoints (Battery, Screen, Camera) so you don't have to.</p>
                         </div>
                     </div>
 
@@ -300,68 +411,80 @@
 
             <div class="row g-2 g-md-3">
                 <div class="col-lg-2 col-md-4 col-6">
-                    <div class="category-card">
+                    <div class="category-card position-relative">
+                        <span class="badge bg-success position-absolute top-0 end-0 mt-2 me-2" style="font-size: 0.65rem; z-index: 2;">Most Popular</span>
                         <div class="category-icon">
                             <img src="/static/images/homepage/category/iPhone_14_Pro_Max.png" alt="iPhones"
                                 class="category-small-icon">
                         </div>
                         <h6>iPhones</h6>
                         <small>450+ Products</small>
+                        <p class="text-success fw-bold small mt-1 mb-0">Starting From ₹12,999</p>
                     </div>
                 </div>
 
                 <div class="col-lg-2 col-md-4 col-6">
-                    <div class="category-card">
+                    <div class="category-card position-relative">
+                        <span class="badge bg-primary position-absolute top-0 end-0 mt-2 me-2" style="font-size: 0.65rem; z-index: 2;">Best Sellers</span>
                         <div class="category-icon">
                             <img src="/static/images/homepage/category/MacBook_Air_-_2015.png" alt="MacBooks"
                                 class="category-small-icon">
                         </div>
                         <h6>MacBooks</h6>
                         <small>320+ Products</small>
+                        <p class="text-success fw-bold small mt-1 mb-0">Starting From ₹44,999</p>
                     </div>
                 </div>
 
                 <div class="col-lg-2 col-md-4 col-6">
-                    <div class="category-card">
+                    <div class="category-card position-relative">
+                        <span class="badge bg-dark position-absolute top-0 end-0 mt-2 me-2" style="font-size: 0.65rem; z-index: 2;">Top Flagships</span>
                         <div class="category-icon">
                             <img src="/static/images/homepage/category/Samsung_Galaxy_S22_Ultra.png" alt="Samsung"
                                 class="category-small-icon">
                         </div>
                         <h6>Samsung</h6>
                         <small>280+ Products</small>
+                        <p class="text-success fw-bold small mt-1 mb-0">Starting From ₹9,999</p>
                     </div>
                 </div>
 
                 <div class="col-lg-2 col-md-4 col-6">
-                    <div class="category-card">
+                    <div class="category-card position-relative">
+                        <span class="badge bg-secondary position-absolute top-0 end-0 mt-2 me-2" style="font-size: 0.65rem; z-index: 2;">Business Ready</span>
                         <div class="category-icon">
                             <img src="/static/images/homepage/category/Lenovo_Thinkpad_T470s_Core_i7_-_7th_Gen.png"
                                 alt="Laptops" class="category-small-icon">
                         </div>
                         <h6>Laptops</h6>
                         <small>215+ Products</small>
+                        <p class="text-success fw-bold small mt-1 mb-0">Starting From ₹14,999</p>
                     </div>
                 </div>
 
                 <div class="col-lg-2 col-md-4 col-6">
-                    <div class="category-card">
+                    <div class="category-card position-relative">
+                        <span class="badge bg-info text-dark position-absolute top-0 end-0 mt-2 me-2" style="font-size: 0.65rem; z-index: 2;">For Students</span>
                         <div class="category-icon">
                             <img src="/static/images/homepage/category/iPad_9th_Gen_2021_Wi-Fi.png" alt="iPads"
                                 class="category-small-icon">
                         </div>
                         <h6>iPads</h6>
                         <small>180+ Products</small>
+                        <p class="text-success fw-bold small mt-1 mb-0">Starting From ₹19,999</p>
                     </div>
                 </div>
 
                 <div class="col-lg-2 col-md-4 col-6">
-                    <div class="category-card">
+                    <div class="category-card position-relative">
+                        <span class="badge bg-warning text-dark position-absolute top-0 end-0 mt-2 me-2" style="font-size: 0.65rem; z-index: 2;">AirPods & More</span>
                         <div class="category-icon">
                             <img src="/static/images/homepage/category/Apple_AirPods_Pro.png" alt="Accessories"
                                 class="category-small-icon">
                         </div>
                         <h6>Accessories</h6>
                         <small>520+ Products</small>
+                        <p class="text-success fw-bold small mt-1 mb-0">Starting From ₹299</p>
                     </div>
                 </div>
             </div>
@@ -694,7 +817,7 @@
     </section> -->
 
     <!-- 12. Verified Devices Section -->
-    <section class="verified-section py-4 bg-soft-purple">
+    <!-- <section class="verified-section py-4 bg-soft-purple">
         <div class="container-fluid px-3 px-lg-5">
     
             <div class="row align-items-center g-4">
@@ -762,7 +885,7 @@
             </div>
     
         </div>
-    </section>
+    </section> -->
 
     <!-- 13. Recommended for You Section -->
     <section class="products-section bg-soft-green">
@@ -841,11 +964,11 @@
         </div>
     </section>
 
-    <!-- 14. RefurBazaar Express Section -->
+    <!-- 14. Recarvit Express Section -->
     <section class="express-section">
         <div class="container-fluid px-3 px-lg-5">
             <div class="d-flex align-items-center mb-4">
-                <h2 class="fw-bold mb-0">REFURBAZAAR VERIFIED</h2>
+                <h2 class="fw-bold mb-0">RECARVIT VERIFIED</h2>
                 <i class="fas fa-bolt ms-2 text-warning" style="font-size: 1.5rem;"></i>
             </div>
     
@@ -1179,7 +1302,7 @@
     <section class="promo-strip-section py-2">
         <div class="container-fluid px-3 px-lg-5">
             <a class="d-block rounded-4 overflow-hidden shadow-sm position-relative banner-hover-effect">
-                <img src="/static/images/homepage/Refurb_banner.png" alt="End of Year Sale" class="img-fluid w-100" style="object-fit: cover; min-height: 90px;">
+                <img src="/static/images/Refurb_banner.png" alt="End of Year Sale" class="img-fluid w-100" style="object-fit: cover; min-height: 90px;">
             </a>
         </div>
     </section>
@@ -1196,7 +1319,7 @@
                         </div>
                         <h3 class="fw-bold text-white mb-2">Our Collective Impact</h3>
                         <p class="text-white-50 mb-0 larger">
-                            Real-time stats from the RefurBazaar community.
+                            Real-time stats from the Recarvit community.
                         </p>
                     </div>
                 </div>
@@ -1241,7 +1364,7 @@
         </div>
     </section> -->
 
-    <section class="combined-impact-section py-5" id="impact-calculator">
+    <!-- <section class="combined-impact-section py-5" id="impact-calculator">
         <div class="container-fluid px-3 px-lg-5">
     
             <div class="section-header mb-4">
@@ -1274,7 +1397,7 @@
                             <div class="col-md-7">
                                 <div class="d-flex justify-content-between align-items-end mb-2">
                                     <div>
-                                        <span class="d-block text-muted small fw-bold">REFURBAZAAR PRICE</span>
+                                        <span class="d-block text-muted small fw-bold">RECARVIT PRICE</span>
                                         <span class="h3 fw-bold text-success mb-0 refurb-price">₹1,19,900</span>
                                     </div>
                                     <div class="text-end">
@@ -1366,15 +1489,131 @@
                 </div>
             </div>
         </div>
+    </section> -->
+
+    <section class="rc-impact-section py-5">
+        <div class="container-fluid px-3 px-lg-5">
+            <div class="row mb-4" style="justify-content: center;">
+                <div class="col-lg-10">
+                    <h2 class="display-6 fw-bold text-dark mb-2">Calculate Your Impact</h2>
+                    <p class="text-muted fs-5">See how much money — and how much planet — you save by choosing certified refurbished.</p>
+                </div>
+            </div>
+
+            <div class="rc-impact-preview shadow-sm">
+                <div class="rc-impact-header">
+                    <div class="rc-impact-header-subtitle">Select a Device to Compare</div>
+                    <p class="mb-0 text-muted small mt-1">Pick any device to see your instant savings vs buying new</p>
+                </div>
+                <div class="rc-impact-body">
+                    <div class="rc-impact-left">
+                        <div class="rc-impact-select-row">
+                            <select id="impactDeviceSelect" class="form-select rc-impact-select fw-bold w-auto shadow-sm" aria-label="Select Device">
+                                <option value="59900,89900,1.9,35,20235" selected>MacBook Air M2</option>
+                                <option value="55000,85000,0.2,18,12500">iPhone 14 Pro</option>
+                                <option value="65000,105000,0.2,20,14000">Samsung Galaxy S23 Ultra</option>
+                                <option value="35000,55000,0.2,16,11000">iPhone 13</option>
+                                <option value="38000,55000,0.5,22,15000">iPad Air 5th Gen</option>
+                                <option value="70000,110000,2.1,40,25000">MacBook Pro M1</option>
+                                <option value="80000,140000,2.5,45,28000">Dell XPS 15</option>
+                                <option value="60000,80000,0.2,17,12000">iPhone 15</option>
+                                <option value="22000,35000,0.1,5,3000">Apple Watch Series 8</option>
+                                <option value="14000,25000,0.05,2,1000">AirPods Pro 2</option>
+                            </select>
+                        </div>
+                        <div class="rc-impact-prices d-flex align-items-center gap-4 gap-md-5 mb-3">
+                            <div class="rc-impact-price-block">
+                                <div class="rc-impact-price-label">Recarvit Price</div>
+                                <div class="rc-impact-price-val text-success" id="impactRefurbPrice">₹59,900</div>
+                                <div class="small fw-bold text-success mt-1">You Pay</div>
+                            </div>
+                            <div style="width:1px; height:60px; background-color: var(--gray-200, #EFEFED);"></div>
+                            <div class="rc-impact-price-block">
+                                <div class="rc-impact-price-label">Brand New Price</div>
+                                <div class="rc-impact-price-val text-muted text-decoration-line-through" id="impactNewPrice">₹89,900</div>
+                                <div class="small text-muted mt-1">Market Price</div>
+                            </div>
+                        </div>
+                        <div class="rc-impact-savings-pill d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill mb-3">
+                            💰 INSTANT SAVINGS &nbsp;<strong class="fs-5 text-dark" id="impactSavingsAmount">₹30,000</strong> &nbsp;· <span id="impactSavingsPercent">33</span>% Cheaper than new
+                        </div>
+                        <p class="small text-muted mb-0">*Stats specific to the selected device model vs. buying new</p>
+                    </div>
+                    
+                    <div class="rc-impact-right">
+                        <div class="rc-impact-right-title mb-4">🌍 Your Impact</div>
+                        <div class="d-flex flex-column gap-4">
+                            <div class="rc-impact-stat d-flex align-items-center gap-3">
+                                <div class="rc-impact-stat-icon fs-3">🗑️</div>
+                                <div>
+                                    <div class="rc-impact-stat-val fs-4 fw-bold text-white" id="impactEwaste">1.9 kg</div>
+                                    <div class="rc-impact-stat-label text-white-50 small text-uppercase fw-semibold" style="letter-spacing: 0.5px;">E-Waste Saved</div>
+                                </div>
+                            </div>
+                            <div class="rc-impact-stat d-flex align-items-center gap-3">
+                                <div class="rc-impact-stat-icon fs-3">☁️</div>
+                                <div>
+                                    <div class="rc-impact-stat-val fs-4 fw-bold text-white" id="impactCo2">35 kg</div>
+                                    <div class="rc-impact-stat-label text-white-50 small text-uppercase fw-semibold" style="letter-spacing: 0.5px;">CO₂ Prevented</div>
+                                </div>
+                            </div>
+                            <div class="rc-impact-stat d-flex align-items-center gap-3">
+                                <div class="rc-impact-stat-icon fs-3">💧</div>
+                                <div>
+                                    <div class="rc-impact-stat-val fs-4 fw-bold text-white" id="impactWater">20,235 L</div>
+                                    <div class="rc-impact-stat-label text-white-50 small text-uppercase fw-semibold" style="letter-spacing: 0.5px;">Water Saved</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-3 text-end" style="max-width: 1300px;">
+                <small class="text-muted">Impact data verified by <strong class="text-dark">Ecoreco</strong> 🌱</small>
+            </div>
+        </div>
     </section>
 
-    <!-- 19. RefurBazaar Care Protection Section -->
+    <!-- How It Works Section -->
+    <section class="rc-how-section">
+        <div class="container-fluid px-3 px-lg-5">
+            <div class="text-center">
+                <span class="fw-bold text-uppercase small" style="letter-spacing: 1px;">How Recarvit Works</span>
+            </div>
+            
+            <div class="rc-how-strip">
+                <div class="rc-how-step">
+                    <div class="rc-how-num">1</div>
+                    <div class="rc-how-icon">🔍</div>
+                    <div class="rc-how-title">Browse & Pick</div>
+                    <p class="rc-how-body">Filter by brand, grade & price. Compare sellers side-by-side.</p>
+                </div>
+                
+                <div class="rc-how-step">
+                    <div class="rc-how-num">2</div>
+                    <div class="rc-how-icon">✅</div>
+                    <div class="rc-how-title">We Certify</div>
+                    <p class="rc-how-body">50-point check. Battery verified. Data wiped. Packed securely.</p>
+                </div>
+                
+                <div class="rc-how-step">
+                    <div class="rc-how-num">3</div>
+                    <div class="rc-how-icon">📦</div>
+                    <div class="rc-how-title">Delivered & Covered</div>
+                    <p class="rc-how-body">Metro: within 4 days. Rest of India: 4–7 days. 6-month warranty + 7-day returns.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 19. Recarvit Care Protection Section -->
     <section class="care-section">
         <div class="container-fluid px-3 px-lg-5 position-relative z-1">
             <div class="row align-items-center g-5">
 
                 <div class="col-lg-5 mb-4 mb-lg-0">
-                    <span class="care-tag">REFURBAZAAR CARE+</span>
+                    <span class="care-tag">RECARVIT CARE+</span>
                     <h2 class="display-5 text-white fw-bold mb-4">Total protection.<br>Zero worries.</h2>
                     <p class="text-secondary mb-4 fs-5" style="color: #94a3b8 !important;">
                         Don't let a slip-up ruin your day. Our comprehensive protection plan covers everything from
@@ -1518,24 +1757,50 @@
         </div>
     </section> -->
 
+    <!-- Stats Section -->
+    <section class="rc-stats-section py-4 py-md-5">
+        <div class="container-fluid px-3 px-lg-5">
+            <div class="row g-4 text-center justify-content-center align-items-center">
+                
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="rc-stat-num"><span class="counter" data-target="12000">0</span>+</div>
+                    <div class="rc-stat-label">Happy Buyers</div>
+                </div>
+                
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="rc-stat-num"><span class="counter" data-target="1500">0</span>+</div>
+                    <div class="rc-stat-label">Certified Devices</div>
+                </div>
+                
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="rc-stat-num"><span class="counter" data-target="30">0</span>+</div>
+                    <div class="rc-stat-label">Verified Sellers</div>
+                </div>
+                
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="rc-stat-num"><span class="counter" data-target="4.9" data-decimals="1">0.0</span><span style="font-size: 0.7em;">★</span></div>
+                    <div class="rc-stat-label">Average Rating</div>
+                </div>
+                
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="rc-stat-num"><span class="counter" data-target="98">0</span>%</div>
+                    <div class="rc-stat-label">On-Time Delivery</div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
     <!-- 21. Testimonials Section -->
-    <section class="testimonials-section bg-soft-green" id="testimonialsSection">
+    <!-- <section class="testimonials-section bg-soft-green" id="testimonialsSection">
         <div class="container-fluid px-3 px-lg-5 position-relative z-1">
     
             <div class="row justify-content-center mb-3">
                 <div class="col-lg-8 text-center">
-                    <!-- <div class="trust-header-badge">
-                        <div class="star-row">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star-half-alt"></i>
-                        </div>
-                        <span class="fw-bold text-dark">Rated 4.8/5 based on 12,000+ Reviews</span>
-                    </div> -->
-                    <h2 class="fw-bold display-6 mb-3">Loved by Tech Lovers</h2>
-                    <p class="text-muted fs-5">Real stories from customers saving the planet (and their wallets).</p>
+                    <h2 class="fw-bold display-6 mb-3">
+                        Real Buyers. Real Savings.
+                    </h2>
+                    <p class="text-muted fs-5">Over 12,000 happy buyers across India — from students to professionals.</p>
                 </div>
             </div>
     
@@ -1559,7 +1824,7 @@
                             </div>
                             <div class="product-pill"><i class="fas fa-shopping-bag me-1 text-muted"></i> Bought: iPhone 13
                                 Pro</div>
-                            <p class="review-text">"I was terrified to buy refurbished, but RefurBazaar changed my mind. The
+                            <p class="review-text">"I was terrified to buy refurbished, but Recarvit changed my mind. The
                                 phone arrived in a sealed box with 98% battery health. It literally looks brand new."</p>
                         </div>
                     </div>
@@ -1657,6 +1922,97 @@
             </div>
     
         </div>
+    </section> -->
+
+    <section class="testimonials-section bg-soft-green" id="testimonialsSection">
+        <div class="container-fluid px-3 px-lg-5 position-relative z-1">
+    
+            <div class="row justify-content-center mb-5">
+                <div class="col-lg-8 text-center">
+                    <h2 class="fw-bold display-6 mb-3">
+                        Real Buyers. Real Savings.
+                    </h2>
+                    <p class="text-muted fs-5">Over 12,000 happy buyers across India — from students to professionals.</p>
+                </div>
+            </div>
+    
+            <div class="row g-4" style="max-width: 1200px; margin: 0 auto;">
+    
+                <div class="col-md-6">
+                    <div class="testimonial-card h-100">
+                        <div class="reviewer-profile d-flex align-items-center gap-3">
+                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 50px; height: 50px; font-size: 1.2rem;">AK</div>
+                            <div class="reviewer-meta">
+                                <h6 class="mb-1">Aryan Kapoor</h6>
+                                <small class="text-muted d-block mb-1">Student, New Delhi</small>
+                                <div class="verified-badge"><i class="fas fa-check-circle"></i> Verified Buyer</div>
+                            </div>
+                        </div>
+                        <div class="product-pill mt-3 mb-2"><i class="fas fa-laptop me-1 text-muted"></i> Bought: MacBook Air M2</div>
+                        <p class="review-text">"I was going to buy a new MacBook for college. Recarvit had an M2 at ₹59,900 with a 6-month warranty. It arrived in pristine condition. I genuinely cannot tell it was ever used."</p>
+                        <div class="text-warning mt-2" style="font-size: 0.9rem;">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="col-md-6">
+                    <div class="testimonial-card h-100">
+                        <div class="reviewer-profile d-flex align-items-center gap-3">
+                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 50px; height: 50px; font-size: 1.2rem;">PS</div>
+                            <div class="reviewer-meta">
+                                <h6 class="mb-1">Priya Sharma</h6>
+                                <small class="text-muted d-block mb-1">Marketing Manager, Mumbai</small>
+                                <div class="verified-badge"><i class="fas fa-check-circle"></i> Verified Buyer</div>
+                            </div>
+                        </div>
+                        <div class="product-pill mt-3 mb-2"><i class="fas fa-mobile-alt me-1 text-muted"></i> Bought: iPhone 14 Pro</div>
+                        <p class="review-text">"The iPhone I received has excellent battery health and zero scratches. I saved over ₹40,000 compared to buying new. The 7-day return policy gave me the confidence to try it."</p>
+                        <div class="text-warning mt-2" style="font-size: 0.9rem;">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="col-md-6">
+                    <div class="testimonial-card h-100">
+                        <div class="reviewer-profile d-flex align-items-center gap-3">
+                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 50px; height: 50px; font-size: 1.2rem;">RM</div>
+                            <div class="reviewer-meta">
+                                <h6 class="mb-1">Rahul Mehta</h6>
+                                <small class="text-muted d-block mb-1">Software Engineer, Bengaluru</small>
+                                <div class="verified-badge"><i class="fas fa-check-circle"></i> Verified Buyer</div>
+                            </div>
+                        </div>
+                        <div class="product-pill mt-3 mb-2"><i class="fas fa-mobile-alt me-1 text-muted"></i> Bought: Samsung Galaxy S23 Ultra</div>
+                        <p class="review-text">"I compared five sellers on Recarvit and chose exactly the grade and storage I wanted. The grading system is honest — Superb really means Superb. Unlike other platforms."</p>
+                        <div class="text-warning mt-2" style="font-size: 0.9rem;">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="col-md-6">
+                    <div class="testimonial-card h-100">
+                        <div class="reviewer-profile d-flex align-items-center gap-3">
+                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 50px; height: 50px; font-size: 1.2rem;">SR</div>
+                            <div class="reviewer-meta">
+                                <h6 class="mb-1">Sneha Reddy</h6>
+                                <small class="text-muted d-block mb-1">Graphic Designer, Hyderabad</small>
+                                <div class="verified-badge"><i class="fas fa-check-circle"></i> Verified Buyer</div>
+                            </div>
+                        </div>
+                        <div class="product-pill mt-3 mb-2"><i class="fas fa-laptop me-1 text-muted"></i> Bought: Dell XPS 15 Laptop</div>
+                        <p class="review-text">"Bought this for design work — runs flawlessly. Packaging was genuinely premium. Had a minor issue and the warranty process took just 2 days. Fastest support I've experienced."</p>
+                        <div class="text-warning mt-2" style="font-size: 0.9rem;">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+    
+            </div>
+    
+        </div>
     </section>
 
     <!-- 22. FAQ Section -->
@@ -1680,15 +2036,12 @@
                             <h2 class="accordion-header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#faq1" aria-expanded="false">
-                                    What does "RefurBazaar Certified" mean?
+                                    What does "Recarvit Certified" mean?
                                 </button>
                             </h2>
                             <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                                 <div class="accordion-body">
-                                    It means "As Good As New." Every device undergoes a rigorous <strong>45-point technical
-                                        inspection</strong>. We test the battery health (85%+ guaranteed), screen
-                                    responsiveness, camera focus, and all ports. If a part doesn't meet our standards, we
-                                    replace it with an original equivalent.
+                                    Every device passes our <strong>50-point quality inspection</strong> — covering battery health, screen, camera, all ports, sensors, and a certified data wipe. Fails the check? Doesn't get listed. Simple.
                                 </div>
                             </div>
                         </div>
@@ -1697,15 +2050,13 @@
                             <h2 class="accordion-header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#faq2">
-                                    Do I get a warranty with my purchase?
+                                    Are refurbished devices original or do they have duplicate parts?
                                 </button>
                             </h2>
                             <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                                 <div class="accordion-body">
-                                    Absolutely. Every device comes with a comprehensive <strong>1-Year Warranty</strong>
-                                    that covers all hardware defects (battery issues, screen malfunctions, motherboard
-                                    faults). We also offer a "No-Questions-Asked" 10-day return policy if you simply change
-                                    your mind.
+                                    <strong>100% original parts only.</strong> Every device on Recarvit uses genuine
+                                    manufacturer components. We verify this during our 50-point check. No duplicate screens, no third-party batteries passed off as original.
                                 </div>
                             </div>
                         </div>
@@ -1714,15 +2065,13 @@
                             <h2 class="accordion-header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#faq3">
-                                    Are these devices waterproof?
+                                    How do the device grades work?
                                 </button>
                             </h2>
                             <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                                 <div class="accordion-body">
-                                    While many modern phones are originally water-resistant, the refurbishment process
-                                    involves opening the device for testing. Therefore, <strong>we cannot guarantee IP68
-                                        water resistance</strong> on refurbished units. We recommend keeping them away from
-                                    direct contact with water.
+                                    We use three honest grades: <strong>Superb</strong> (minimal to no visible signs of use),
+                                    <strong>Good</strong> (light micro-scratches, invisible in normal use), and <strong>Fair</strong> (light cosmetic wear, fully functional). What the grade description says is exactly what arrives.
                                 </div>
                             </div>
                         </div>
@@ -1731,18 +2080,13 @@
                             <h2 class="accordion-header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#faq4">
-                                    How fast is the shipping?
+                                    Will I get a box and accessories with my device?
                                 </button>
                             </h2>
                             <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                                 <div class="accordion-body">
-                                    We ship fast! Orders placed before 3 PM are dispatched the same day.
-                                    <br><br>
-                                    <ul>
-                                        <li><strong>Metro Cities:</strong> 1-2 Days</li>
-                                        <li><strong>Rest of India:</strong> 3-4 Days</li>
-                                    </ul>
-                                    All shipments are fully insured until they reach your hands.
+                                    It depends on the grade and listing. Every listing clearly states what's included —
+                                    original box, compatible charger, cable. If it's original packaging, we say so. We never mislead on what's in the box.
                                 </div>
                             </div>
                         </div>
@@ -1751,13 +2095,89 @@
                             <h2 class="accordion-header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#faq5">
-                                    Is there an EMI option available?
+                                    Has the device data been wiped before I receive it?
                                 </button>
                             </h2>
                             <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                                 <div class="accordion-body">
-                                    Yes! We offer <strong>No Cost EMI</strong> options on all major credit cards and Bajaj
-                                    Finserv cards. You can check your eligibility directly on the checkout page.
+                                    Yes — always. Every device undergoes a <strong>certified factory reset and full data
+                                    wipe</strong> as part of our 50-point check. You receive a clean device, set up as if brand new.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item shadow-sm">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faq6">
+                                    What is the warranty and return policy?
+                                </button>
+                            </h2>
+                            <div id="faq6" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Every device comes with a <strong>6-month hardware warranty</strong> covering battery,
+                                    screen, and internal components. You also get a <strong>7-day no-questions return window</strong> — free pickup included.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item shadow-sm">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faq7">
+                                    Can I get a GST invoice for my purchase?
+                                </button>
+                            </h2>
+                            <div id="faq7" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes. <strong>GST invoices are available</strong> for all purchases on Recarvit — useful
+                                    for professionals and business buyers claiming input tax credit. Select the GST invoice option at checkout and enter your GSTIN.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item shadow-sm">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faq8">
+                                    What if my device stops working after the 6-month warranty?
+                                </button>
+                            </h2>
+                            <div id="faq8" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Post-warranty, our support team will help you find the best authorised service option.
+                                    Many of our sellers also offer extended warranty plans at checkout — we recommend adding one for complete peace of mind.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item shadow-sm">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faq9">
+                                    Is buying refurbished a smart choice?
+                                </button>
+                            </h2>
+                            <div id="faq9" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    For most buyers, absolutely yes. You get the same hardware, the same performance, the
+                                    same operating system — at <strong>30–70% less</strong> than new. Recarvit certified devices are also environmentally responsible: each purchase prevents significant e-waste and CO₂ emissions. The only trade-off is you're not the first owner — and on Recarvit, you'll barely notice.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item shadow-sm">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faq10">
+                                    How is Recarvit different from buying second-hand on OLX or Cashify?
+                                </button>
+                            </h2>
+                            <div id="faq10" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Significant difference. On OLX or Cashify, you're typically buying from an individual or
+                                    a lightly-checked marketplace — no standardised grading, limited warranty, and little recourse if something's wrong. On Recarvit: every device is <strong>50-point inspected</strong> by a verified professional seller, graded honestly (Superb/Good/Fair), covered by a <strong>6-month warranty</strong>,
+                                    and backed by a <strong>7-day return policy</strong>. You're not gambling — you know exactly what you're getting.
                                 </div>
                             </div>
                         </div>
@@ -1782,7 +2202,7 @@
                                 </div>
                             </div>
             
-                            <a href="mailto:support@refurbazaar.com" class="btn btn-dark rounded-pill px-4 py-2 fw-bold btn-sm">
+                            <a href="mailto:support@Recarvit.com" class="btn btn-dark rounded-pill px-4 py-2 fw-bold btn-sm">
                                 Contact Support
                             </a>
             
@@ -1793,32 +2213,6 @@
     
         </div>
     </section>
-
-    <!-- 23. Newsletter Section -->
-    <!-- <section class="newsletter-section">
-        <div class="container">
-            <div class="newsletter-content">
-                <div class="row align-items-center">
-                    <div class="col-lg-6">
-                        <h2>Get Exclusive Deals</h2>
-                        <p>Subscribe to our newsletter and get 10% off your first order plus early access to flash
-                            sales!</p>
-                    </div>
-                    <div class="col-lg-6">
-                        <form class="newsletter-form">
-                            <div class="input-group">
-                                <input type="email" class="form-control" placeholder="Enter your email" required>
-                                <button type="submit" class="btn btn-primary">
-                                    Subscribe <i class="bi bi-arrow-right"></i>
-                                </button>
-                            </div>
-                            <small class="form-text">We respect your privacy. Unsubscribe anytime.</small>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section> -->
 
     <!-- 24. Contact Form Section -->
     <section class="contact-section" id="contact">
@@ -1839,7 +2233,7 @@
                             <i class="fas fa-envelope"></i>
                         </div>
                         <h6 class="fw-bold mb-1">Email</h6>
-                        <p class="text-muted small mb-0">support@refurbazaar.com</p>
+                        <p class="text-muted small mb-0">support@Recarvit.com</p>
                     </div>
                 </div>
             
@@ -1944,7 +2338,7 @@
                 <span class="section-badge">PARTNERSHIP</span>
                 <h2 class="section-title mb-3">Become a Refurbisher Partner</h2>
                 <p class="section-description mx-auto" style="max-width: 600px;">
-                    Join RefurBazaar as a certified refurbisher partner. We're looking for skilled professionals to help
+                    Join Recarvit as a certified refurbisher partner. We're looking for skilled professionals to help
                     us refurbish premium electronics.
                 </p>
             </div>
@@ -2044,7 +2438,7 @@
                         <i class="fas fa-handshake me-2 text-warning"></i>
                         Are you a professional refurbisher looking to grow your business?
                     </h3>
-                    <p class="text-white mb-0">Join RefurBazaar's network of certified partners today.</p>
+                    <p class="text-white mb-0">Join Recarvit's network of certified partners today.</p>
                 </div>
     
                 <a href="/partner-application"
@@ -2056,174 +2450,34 @@
         </div>
     </section>
 
+    <!-- Newsletter Section -->
+    <!-- <section class="newsletter-section">
+        <div class="container">
+            <div class="newsletter-content">
+                <div class="row align-items-center">
+                    <div class="col-lg-6">
+                        <h2>Get Exclusive Deals</h2>
+                        <p>Subscribe to our newsletter and get 10% off your first order plus early access to flash
+                            sales!</p>
+                    </div>
+                    <div class="col-lg-6">
+                        <form class="newsletter-form">
+                            <div class="input-group">
+                                <input type="email" class="form-control" placeholder="Enter your email" required>
+                                <button type="submit" class="btn btn-primary">
+                                    Subscribe <i class="bi bi-arrow-right"></i>
+                                </button>
+                            </div>
+                            <small class="form-text">We respect your privacy. Unsubscribe anytime.</small>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section> -->
+
     <!-- Footer -->
-    <!-- <footer>
-        <div class="footer-newsletter-card">
-            <div class="row align-items-center">
-                <div class="col-lg-7 mb-4 mb-lg-0">
-                    <h2 class="fw-bold mb-2">Ready to save big? 💸</h2>
-                    <p class="mb-0 opacity-75 fs-5">Join 50,000+ smart shoppers. Get <strong class="text-white">₹500 OFF</strong> your first order!</p>
-                </div>
-                <div class="col-lg-5 newsletter-form-wrapper">
-                    <form class="input-group newsletter-input-group">
-                        <input type="email" class="form-control" placeholder="Enter your email address"
-                            aria-label="Email">
-                        <button class="btn" type="button">Subscribe</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="container-fluid px-3 px-lg-5">
-            <div class="row g-5">
-
-                <div class="col-lg-4 col-md-12">
-                    <a href="index.html" class="d-inline-block mb-3">
-                        <img src="/static/images/homepage/refurbazaar-20final-20logo.png" alt="RefurBazaar"
-                            height="100">
-                    </a>
-                    <p class="pe-lg-5">
-                        We're fixing the broken tech market. Premium certified devices, transparent pricing, and a
-                        warranty
-                        that actually works.
-                    </p>
-                    <div class="d-flex gap-2 mt-4">
-                        <a href="#" class="social-icon-btn fb"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="social-icon-btn tw"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="social-icon-btn in"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-icon-btn li"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
-                </div>
-
-                <div class="col-lg-2 col-md-4 col-6">
-                    <h5>Shop</h5>
-                    <a href="#">Flash Sales 🔥</a>
-                    <a href="#">iPhones</a>
-                    <a href="#">MacBooks</a>
-                    <a href="#">Samsung</a>
-                    <a href="#">Accessories</a>
-                </div>
-
-                <div class="col-lg-2 col-md-4 col-6">
-                    <h5>Support</h5>
-                    <a href="#">Track Order</a>
-                    <a href="#">Warranty Info</a>
-                    <a href="#">Returns Policy</a>
-                    <a href="#">Help Center</a>
-                    <a href="#">Contact Us</a>
-                </div>
-
-                <div class="col-lg-4 col-md-4 col-12">
-                    <h5>RefurBazaar Promise</h5>
-                    <div class="d-flex align-items-start gap-3 mb-3">
-                        <i class="fas fa-check-circle text-success mt-1 fs-5"></i>
-                        <div>
-                            <h6 class="fw-bold mb-0">45-Point Check</h6>
-                            <small class="text-muted">Every device is manually tested.</small>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-start gap-3">
-                        <i class="fas fa-shield-alt text-success mt-1 fs-5"></i>
-                        <div>
-                            <h6 class="fw-bold mb-0">1-Year Warranty</h6>
-                            <small class="text-muted">Comprehensive hardware protection.</small>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="footer-bottom d-flex justify-content-between align-items-center">
-                <p class="mb-0 text-muted small">&copy; 2026 RefurBazaar. All rights reserved.</p>
-                <div class="d-flex gap-3">
-                    <i class="fab fa-cc-visa fa-2x text-muted"></i>
-                    <i class="fab fa-cc-mastercard fa-2x text-muted"></i>
-                    <i class="fab fa-cc-paypal fa-2x text-muted"></i>
-                </div>
-            </div>
-        </div>
-    </footer> -->
-
-    <footer>
-        <div class="container-fluid px-3 px-lg-5">
-            <div class="row g-5">
-    
-                <div class="col-lg-4 col-md-6">
-                    <a href="#" class="d-inline-block mb-3">
-                        <img src="/static/images/homepage/refurbazaar-20final-20logo.png" alt="RefurBazaar" height="70"
-                            class="mb-3">
-                    </a>
-                    <p class="text-white mb-4" style="max-width: 350px;">
-                        We're fixing the broken tech market. Premium certified devices, transparent pricing, and a warranty
-                        that actually works.
-                    </p>
-                    <div class="d-flex gap-2">
-                        <a href="#" class="social-icon-btn fb"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="social-icon-btn tw"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="social-icon-btn in"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-icon-btn li"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
-                </div>
-    
-                <div class="col-lg-2 col-md-3 col-6">
-                    <h5 class="mb-4 text-white">Shop</h5>
-                    <a href="#">Flash Sales 🔥</a>
-                    <a href="#">iPhones</a>
-                    <a href="#">MacBooks</a>
-                    <a href="#">Samsung</a>
-                    <a href="#">Accessories</a>
-                </div>
-    
-                <div class="col-lg-2 col-md-3 col-6">
-                    <h5 class="mb-4 text-white">Support</h5>
-                    <a href="#">Track Order</a>
-                    <a href="#">Warranty Info</a>
-                    <a href="#">Returns Policy</a>
-                    <a href="#">Help Center</a>
-                    <a href="#">Contact Us</a>
-                </div>
-    
-                <div class="col-lg-4 col-md-12">
-                    <h5 class="mb-4 text-white">Stay in the Loop 🚀</h5>
-                    <p class="text-white mb-3">Join 50,000+ smart shoppers. Get <strong>₹500 OFF</strong> your first
-                        order!</p>
-    
-                    <form class="mb-4">
-                        <div class="input-group">
-                            <input type="email" class="form-control border-0 p-3" placeholder="Enter your email"
-                                style="border-radius: 10px 0 0 10px;">
-                            <button class="btn btn-success px-4 fw-bold" type="button"
-                                style="border-radius: 0 10px 10px 0;">
-                                Subscribe
-                            </button>
-                        </div>
-                    </form>
-    
-                    <div class="d-flex gap-4">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="fas fa-check-circle text-success"></i>
-                            <small class="text-white">45-Point Check</small>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="fas fa-shield-alt text-success"></i>
-                            <small class="text-white">1-Year Warranty</small>
-                        </div>
-                    </div>
-                </div>
-    
-            </div>
-    
-            <div class="footer-bottom d-flex flex-column flex-md-row align-items-center justify-content-between">
-                <p class="large text-white mb-2 mb-md-0">&copy; 2026 RefurBazaar. All rights reserved.</p>
-                <div class="d-flex gap-3 text-white">
-                    <i class="fab fa-cc-visa fa-lg"></i>
-                    <i class="fab fa-cc-mastercard fa-lg"></i>
-                    <i class="fab fa-cc-paypal fa-lg"></i>
-                    <i class="fab fa-cc-apple-pay fa-lg"></i>
-                </div>
-            </div>
-        </div>
-    </footer>
+    {% include 'footer.html' %}
 
     <!-- Go-To-Top Functionality -->
     <a href="#" id="backToTop" class="back-to-top">
