@@ -603,3 +603,113 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 })
+
+/* =========================================
+   Interactive Ecoreco Impact Calculator & Animations
+   ========================================= */
+document.addEventListener("DOMContentLoaded", function() {
+    const deviceSelect = document.getElementById('ecoDeviceSelect');
+    const qtyRange = document.getElementById('ecoQtyRange');
+    const qtyLabel = document.getElementById('ecoQtyLabel');
+    
+    const co2Display = document.getElementById('ecoCo2Val');
+    const wasteDisplay = document.getElementById('ecoWasteVal');
+    const waterDisplay = document.getElementById('ecoWaterVal');
+
+    if (!deviceSelect || !qtyRange) return;
+
+    const impactData = {
+        smartphone: { co2: 50, waste: 1.9, water: 20000 },
+        laptop: { co2: 250, waste: 3.5, water: 45000 },
+        tablet: { co2: 120, waste: 2.2, water: 25000 }
+    };
+
+    function animateValue(obj, start, end, duration, isDecimal) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const currentVal = progress * (end - start) + start;
+            
+            if (isDecimal) {
+                obj.innerHTML = currentVal.toFixed(1);
+            } else {
+                obj.innerHTML = Math.floor(currentVal).toLocaleString('en-IN');
+            }
+            
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                obj.innerHTML = isDecimal ? end.toFixed(1) : end.toLocaleString('en-IN');
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+
+    // Function to spawn the visual animations (Trees, Water, Leaves)
+    function spawnEcoParticles() {
+        const container = document.getElementById('eco-particles');
+        if (!container) return;
+
+        const particleTypes = [
+            { class: 'fas fa-tree', color: '#4CAF5C', anim: 'growTree' },
+            { class: 'fas fa-tint', color: '#4fc3f7', anim: 'dropWater' },
+            { class: 'fas fa-leaf', color: '#81c784', anim: 'floatLeaf' }
+        ];
+
+        // Create 15 particles per interaction
+        for (let i = 0; i < 15; i++) {
+            const particle = document.createElement('i');
+            const type = particleTypes[Math.floor(Math.random() * particleTypes.length)];
+            
+            particle.className = `eco-particle ${type.class}`;
+            particle.style.color = type.color;
+            
+            // Randomize starting position across the container
+            particle.style.left = `${Math.random() * 100}%`;
+            particle.style.top = `${Math.random() * 100}%`;
+            
+            // Randomize size between 15px and 35px
+            const size = Math.random() * 20 + 15;
+            particle.style.fontSize = `${size}px`;
+            
+            // Randomize animation duration between 1.5s and 3s
+            const duration = Math.random() * 1.5 + 1.5; 
+            particle.style.animation = `${type.anim} ${duration}s ease-out forwards`;
+            
+            container.appendChild(particle);
+            
+            // Clean up the particle from the DOM after animation finishes
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, duration * 1000);
+        }
+    }
+
+    function updateCalculator() {
+        const device = deviceSelect.value;
+        const qty = parseInt(qtyRange.value);
+        
+        qtyLabel.innerText = qty === 1 ? "1 Device" : `${qty} Devices`;
+
+        const targetCo2 = impactData[device].co2 * qty;
+        const targetWaste = impactData[device].waste * qty;
+        const targetWater = impactData[device].water * qty;
+
+        const currentCo2 = parseFloat(co2Display.innerText.replace(/,/g, '')) || 0;
+        const currentWaste = parseFloat(wasteDisplay.innerText.replace(/,/g, '')) || 0;
+        const currentWater = parseFloat(waterDisplay.innerText.replace(/,/g, '')) || 0;
+
+        animateValue(co2Display, currentCo2, targetCo2, 500, false);
+        animateValue(wasteDisplay, currentWaste, targetWaste, 500, true);
+        animateValue(waterDisplay, currentWater, targetWater, 500, false);
+        
+        // Trigger the visual burst!
+        spawnEcoParticles();
+    }
+
+    deviceSelect.addEventListener('change', updateCalculator);
+    qtyRange.addEventListener('input', updateCalculator);
+});

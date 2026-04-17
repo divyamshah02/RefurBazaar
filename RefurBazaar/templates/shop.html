@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <!-- Custom CSS -->
-    <!-- <link href="/static/css/style.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="/static/css/homepage/styles.css">
     <link href="/static/css/shop.css" rel="stylesheet">
     
 
@@ -42,66 +42,8 @@
         </div>
     </div> -->
 
-    <!-- Primary Navigation (Navbar) -->
-    <nav class="navbar-main">
-        <div class="container-fluid px-3 px-lg-5">
-            <div class="d-flex align-items-center justify-content-between navbar-container">
-
-                <div class="brand-col d-flex align-items-center">
-                    <a class="brand-logo" href="index.html">
-                        <img src="/static/images/homepage/refurbazaar-20final-20logo.png" alt="RefurBazaar">
-                    </a>
-                </div>
-
-                <div class="search-col flex-grow-1 d-flex justify-content-center px-lg-4">
-                    <div class="search-wrapper">
-                        <form class="search-input-group">
-                            <input type="search" class="form-control" placeholder="Search for iPhones, Laptops..."
-                                aria-label="Search">
-                            <button class="btn" type="button">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="icons-col d-flex align-items-center gap-2 gap-lg-3">
-                    <a href="#" class="nav-icon-btn" aria-label="Profile">
-                        <i class="far fa-user"></i>
-                    </a>
-                    <a href="#" class="nav-icon-btn" aria-label="Wishlist">
-                        <i class="far fa-heart"></i>
-                    </a>
-                    <a href="#" class="nav-icon-btn" aria-label="Cart">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="badge rounded-pill bg-danger cart-count">2</span>
-                    </a>
-                </div>
-
-            </div>
-        </div>
-    </nav>
-
-    <!-- Secondary Navigation (Category Nav) -->
-    <div class="secondary-nav">
-        <div class="container-fluid">
-            <div class="d-flex">
-                <a href="/shop/?category=sale" class="cat-link highlight-red">
-                    End of Year Sale <i class="fas fa-fire ms-1"></i>
-                </a>
-                <a href="/shop/?category=mobile" class="cat-link">iPhones</a>
-                <a href="/shop/?category=mobile" class="cat-link">Samsung</a>
-                <a href="/shop/?category=laptop" class="cat-link">MacBooks</a>
-                <a href="/shop/?category=laptop" class="cat-link">Laptops</a>
-                <a href="/shop/?category=tablet" class="cat-link">iPads</a>
-                <a href="/shop/?category=accessory" class="cat-link">Accessories</a>
-                <a href="/shop/?category=laptop" class="cat-link">For Business</a>
-                <a href="/shop/?category=express" class="cat-link highlight-blue">
-                    RefurBazaar Express <i class="fas fa-bolt ms-1"></i>
-                </a>
-            </div>
-        </div>
-    </div>
+    <!-- Navbar -->
+    {% include 'navbar.html' %}
 
     <!-- Shop Section -->
     <section class="shop-section py-5">
@@ -267,7 +209,7 @@
     </section>
 
     <!-- Footer -->
-    <footer class="footer py-5 bg-dark text-white">
+    <!-- <footer class="footer py-5 bg-dark text-white">
         <div class="container-fluid px-5">
             <div class="row g-4">
                 <div class="col-lg-3 col-md-6">
@@ -333,7 +275,9 @@
                 </div>
             </div>
         </div>
-    </footer>
+    </footer> -->
+
+    {% include 'footer.html' %}
 
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

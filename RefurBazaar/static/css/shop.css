@@ -1213,7 +1213,7 @@ a {
 }
 
 /* Footer */
-footer {
+/* footer {
   background: var(--dark-blue);
   color: white;
   padding: 60px 0;
@@ -1267,7 +1267,7 @@ footer .social-icons a:hover {
   max-height: 30px;
   margin-left: 10px;
   opacity: 0.8;
-}
+} */
 
 /* Back to Top button */
 .back-to-top {

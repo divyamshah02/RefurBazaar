@@ -28,7 +28,7 @@
     <!-- Navbar -->
     {% include 'navbar.html' %}
 
-    <main class="rc-contact-page py-5">
+    <!-- <main class="rc-contact-page py-5">
         <div class="container-fluid px-3 px-lg-5">
     
             <div class="row justify-content-center mb-5">
@@ -279,6 +279,235 @@
                 </div>
             </div>
         </div>
+    </main> -->
+
+    <main class="rc-contact-page py-5">
+        <div class="container-fluid px-3 px-lg-5">
+            
+            <div class="row justify-content-center mb-4">
+                <div class="col-lg-8 text-center">
+                    <h1 class="display-5 fw-bold text-dark mb-3">How can we help you?</h1>
+                    <p class="fs-5 text-muted mx-auto" style="max-width: 600px;">
+                        Select a topic below and fill out the details. We'll get back to you as soon as possible.
+                    </p>
+                    <!-- <div class="d-flex flex-wrap justify-content-center gap-3 mt-4 mb-3">
+                                    
+                                    <div class="d-flex align-items-center gap-3 bg-white px-4 py-2 rounded-pill border shadow-sm">
+                                        <div class="fs-5">📞</div>
+                                        <div class="text-start">
+                                            <p class="fw-bold text-dark mb-0 lh-1">+91 9004297203</p>
+                                            <small class="text-muted" style="font-size: 0.75rem;">Monday–Saturday · 10:00 AM – 7:00 PM</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex align-items-center gap-3 bg-white px-4 py-2 rounded-pill border shadow-sm">
+                                        <div class="fs-5">✉️</div>
+                                        <div class="text-start">
+                                            <p class="fw-bold text-dark mb-0 lh-1">info@recarvit.com</p>
+                                            <small class="text-muted" style="font-size: 0.75rem;">We respond within 24 hours</small>
+                                        </div>
+                                    </div>
+            
+                                </div> -->
+            
+                    <div class="row justify-content-center mb-4">
+                        <div class="col-6 col-md-2">
+                            <div class="contact-info-box text-center">
+                                <div class="info-icon-circle">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <h6 class="fw-bold mb-1">Email</h6>
+                                <p class="text-muted small mb-0">support@Recarvit.com</p>
+                            </div>
+                        </div>
+            
+                        <div class="col-6 col-md-2">
+                            <div class="contact-info-box text-center">
+                                <div class="info-icon-circle">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <h6 class="fw-bold mb-1">Phone</h6>
+                                <p class="text-muted small mb-0">+91 1800-1234-733</p>
+                            </div>
+                        </div>
+            
+                        <div class="col-6 col-md-2">
+                            <div class="contact-info-box text-center">
+                                <div class="info-icon-circle">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <h6 class="fw-bold mb-1">Address</h6>
+                                <p class="text-muted small mb-0">Tech Park, Bangalore</p>
+                            </div>
+                        </div>
+            
+                        <div class="col-6 col-md-2">
+                            <div class="contact-info-box text-center">
+                                <div class="info-icon-circle">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <h6 class="fw-bold mb-1">Hours</h6>
+                                <p class="text-muted small mb-0">9 AM - 9 PM IST</p>
+                            </div>
+                        </div>
+            
+                    </div>
+            
+                </div>
+            </div>
+    
+            <div class="row justify-content-center pb-5">
+                <div class="col-lg-8 col-xl-7">
+                    <div class="rc-contact-content shadow-sm p-4 p-md-5 bg-white">
+                        <form id="unifiedContactForm" class="rc-mini-form">
+                            
+                            <h5 class="fw-bold mb-3 border-bottom pb-2">1. Your Details</h5>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-muted">Full Name *</label>
+                                    <input type="text" class="form-control rc-input" placeholder="e.g. Rahul Sharma" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-muted">Email Address *</label>
+                                    <input type="email" class="form-control rc-input" placeholder="name@example.com" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-muted">Phone Number *</label>
+                                    <input type="tel" class="form-control rc-input" placeholder="+91 XXXXX XXXXX" required>
+                                </div>
+                            </div>
+    
+                            <h5 class="fw-bold mb-3 border-bottom pb-2">2. What is your enquiry about?</h5>
+                            <div class="mb-4">
+                                <select id="topicSelect" class="form-select rc-input fw-bold shadow-sm" style="border-color: var(--primary-green, #2A8C3C); font-size: 1rem; padding: 12px 16px;" required>
+                                    <option value="" selected disabled>Select a Topic...</option>
+                                    <option value="order">📦 Order / Delivery Support</option>
+                                    <option value="warranty">🛡️ Warranty Claim</option>
+                                    <option value="returns">🔄 Return a Device</option>
+                                    <option value="bulk">🏢 Bulk Purchase / Business Enquiry</option>
+                                    <option value="general">💬 General Enquiry</option>
+                                </select>
+                            </div>
+    
+                            <div id="dynamicGroupsWrapper" class="bg-light rounded p-4 border d-none">
+                                
+                                <div id="fields-order" class="dynamic-group d-none">
+                                    <p class="text-muted small mb-3"><i class="fas fa-info-circle text-primary"></i> Have your <strong>Order ID</strong> handy. It helps us resolve your issue faster.</p>
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold text-muted">Order ID *</label>
+                                        <input type="text" class="form-control rc-input is-required" placeholder="e.g. REC-12345">
+                                    </div>
+                                    <div class="mb-0">
+                                        <label class="form-label small fw-bold text-muted">Issue Description *</label>
+                                        <textarea class="form-control rc-input is-required" rows="3" placeholder="Tracking delay, missing item, etc..."></textarea>
+                                    </div>
+                                </div>
+    
+                                <div id="fields-warranty" class="dynamic-group d-none">
+                                    <div class="rc-warranty-note mb-4 bg-white">
+                                        <h6 class="fw-bold mb-1" style="color: #D4870A;">How warranty claims work</h6>
+                                        <p class="mb-0 small" style="color: #5C3A00;">Warranty service is fulfilled directly by your verified seller. We'll connect you with them within 24 hours.</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold text-muted">Order ID *</label>
+                                        <input type="text" class="form-control rc-input is-required" placeholder="e.g. REC-12345">
+                                    </div>
+                                    <div class="mb-0">
+                                        <label class="form-label small fw-bold text-muted">Hardware Issue Description *</label>
+                                        <textarea class="form-control rc-input is-required" rows="3" placeholder="Battery draining fast, speaker crackling, etc..."></textarea>
+                                    </div>
+                                </div>
+    
+                                <div id="fields-returns" class="dynamic-group d-none">
+                                    <p class="text-muted small mb-3"><i class="fas fa-info-circle text-primary"></i> Returns must be initiated within 7 days of delivery. Free pickup included.</p>
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-muted">Order ID *</label>
+                                            <input type="text" class="form-control rc-input is-required" placeholder="e.g. REC-12345">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-muted">Reason for Return *</label>
+                                            <select class="form-select rc-input is-required">
+                                                <option value="">Select a reason...</option>
+                                                <option>Changed my mind</option>
+                                                <option>Device not as described</option>
+                                                <option>Received wrong item</option>
+                                                <option>Performance issue</option>
+                                                <option>Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+    
+                                <div id="fields-bulk" class="dynamic-group d-none">
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-muted">Company Name *</label>
+                                            <input type="text" class="form-control rc-input is-required" placeholder="Your Business Ltd.">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-muted">City *</label>
+                                            <input type="text" class="form-control rc-input is-required" placeholder="e.g. Mumbai">
+                                        </div>
+                                    </div>
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-muted">Looking to buy *</label>
+                                            <select class="form-select rc-input is-required">
+                                                <option value="">Select category...</option>
+                                                <option>iPhones</option>
+                                                <option>MacBooks</option>
+                                                <option>Windows Laptops</option>
+                                                <option>Samsung Phones</option>
+                                                <option>iPads</option>
+                                                <option>Mixed / Multiple categories</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-muted">Approximate Quantity *</label>
+                                            <select class="form-select rc-input is-required">
+                                                <option value="">Select volume...</option>
+                                                <option>5–20 units</option>
+                                                <option>20–50 units</option>
+                                                <option>50–100 units</option>
+                                                <option>100+ units</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="mb-0">
+                                        <label class="form-label small fw-bold text-muted">Specific Requirements (Optional)</label>
+                                        <textarea class="form-control rc-input" rows="2" placeholder="Models, grades, budget range..."></textarea>
+                                    </div>
+                                </div>
+    
+                                <div id="fields-general" class="dynamic-group d-none">
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold text-muted">What is this about? *</label>
+                                        <select class="form-select rc-input is-required">
+                                            <option value="">Select subject...</option>
+                                            <option>General question</option>
+                                            <option>Partnership or collaboration</option>
+                                            <option>Press / Media enquiry</option>
+                                            <option>Investor relations</option>
+                                            <option>Something else</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-0">
+                                        <label class="form-label small fw-bold text-muted">Your Message *</label>
+                                        <textarea class="form-control rc-input is-required" rows="4" placeholder="How can we help?"></textarea>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4 pt-4 border-top text-end">
+                                    <button type="submit" class="btn btn-success rc-btn-submit px-4 shadow-sm" style="background-color: var(--primary-green, #2A8C3C);">Submit Form &rarr;</button>
+                                </div>
+                            </div>
+    
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- Footer -->
@@ -296,22 +525,60 @@
     <!-- JS For Tab Switching -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const selectorBtns = document.querySelectorAll(".rc-contact-selector-btn");
-            const panels = document.querySelectorAll(".rc-contact-panel");
+            const topicSelect = document.getElementById("topicSelect");
+            const dynamicWrapper = document.getElementById("dynamicGroupsWrapper");
+            const dynamicGroups = document.querySelectorAll(".dynamic-group");
 
-            selectorBtns.forEach(btn => {
-                btn.addEventListener("click", function () {
-                    // Remove active classes
-                    selectorBtns.forEach(b => b.classList.remove("active"));
-                    panels.forEach(p => p.classList.remove("active"));
+            // Listen for changes in the dropdown
+            topicSelect.addEventListener("change", function () {
+                const selectedValue = this.value;
 
-                    // Add active class to clicked tab
-                    this.classList.add("active");
-
-                    // Show target panel form
-                    const targetId = this.getAttribute("data-target");
-                    document.getElementById(targetId).classList.add("active");
+                // Hide all groups and remove 'required' from their inputs
+                dynamicGroups.forEach(group => {
+                    group.classList.add("d-none");
+                    const inputs = group.querySelectorAll(".is-required");
+                    inputs.forEach(input => input.required = false); // Stops HTML validation errors on hidden fields
                 });
+
+                if (selectedValue) {
+                    // Show the gray wrapper container
+                    dynamicWrapper.classList.remove("d-none");
+                    
+                    // Find the specific group for the selected topic
+                    const targetGroup = document.getElementById("fields-" + selectedValue);
+                    if (targetGroup) {
+                        targetGroup.classList.remove("d-none");
+                        
+                        // Turn 'required' back on for the visible fields
+                        const targetInputs = targetGroup.querySelectorAll(".is-required");
+                        targetInputs.forEach(input => input.required = true);
+                    }
+                } else {
+                    dynamicWrapper.classList.add("d-none");
+                }
+            });
+
+            // Form Submission Handling
+            const unifiedForm = document.getElementById("unifiedContactForm");
+            unifiedForm.addEventListener("submit", function (e) {
+                e.preventDefault(); // Stop page reload
+                
+                const submitBtn = this.querySelector(".rc-btn-submit");
+                const originalText = submitBtn.innerHTML;
+                
+                // Show Success State
+                submitBtn.innerHTML = "✓ Request Submitted!";
+                submitBtn.style.background = "#2A8C3C";
+                submitBtn.disabled = true;
+                
+                // Reset after 3 seconds
+                setTimeout(() => {
+                    this.reset();
+                    dynamicWrapper.classList.add("d-none");
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    topicSelect.value = "";
+                }, 3000);
             });
         });
     </script>
