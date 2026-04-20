@@ -96,6 +96,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 16px;
+            padding: 16px 0;
         }
 
         .spec-grid div {
@@ -424,7 +425,7 @@
 
                 <div class="product-details">
 
-                    <div class="selection-section mt-0 pt-0 border-top-0">
+                    <div class="selection-section border-top-0">
                         <div class="section-header d-flex justify-content-between align-items-center">
                             <h6 class="mb-0">
                                 Condition: <span id="selectedConditionLabel" class="text-primary fw-bold">Select...</span>
@@ -590,8 +591,8 @@
                     <!-- Tab Buttons -->
                     <div class="tab-buttons">
                         <button class="tab-btn active" data-tab="specs">Specifications</button>
-                        <button class="tab-btn" data-tab="condition">Condition</button>
-                        <button class="tab-btn" data-tab="warranty">Warranty & Returns</button>
+                        <!-- <button class="tab-btn" data-tab="condition">Condition</button> -->
+                        <!-- <button class="tab-btn" data-tab="warranty">Warranty & Returns</button> -->
                     </div>
 
                     <!-- Tab Content -->
@@ -781,6 +782,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    {% include 'footer.html' %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>

@@ -12,13 +12,18 @@
   --primary-green: #009647;
   --green-tint :#EAF5ED; */
 
+  /* Brand Colors */
+  --dark: #1a1a1a;
   --primary-green: #2A8C3C;
   --secondary-green: #4CAF5C;
   --green-tint: #EAF5ED;
+  --off-white: #f7f7f6;
+  --body-gray: #666666;
+  --white: #ffffff;
 
-  --primary-blue: #1e4a8f;
+  /* --primary-blue: #1e4a8f;
   --secondary-blue: #6366f1;
-  --accent-pink: #ec4899;
+  --accent-pink: #ec4899; */
 
   /* Neutrals */
   --dark: #1a1a1a;
@@ -169,6 +174,7 @@ a {
   color: var(--dark);
   margin-bottom: 1rem;
   font-size: 2.5rem;
+  letter-spacing: -0.02em;
 }
 
 .section-description {
@@ -261,16 +267,14 @@ a {
   position: absolute;
   top: 12px;
   left: 12px;
-  background: #ef4444;
-  /* Default Red Sale */
-  color: white;
+  background: var(--dark);
+  color: var(--white);
   padding: 4px 10px;
   border-radius: 50px;
   font-size: 0.75rem;
   font-weight: 700;
   z-index: 2;
-  box-shadow: 0 2px 5px rgba(239, 68, 68, 0.3);
-  /* Removed fixed width/height circle style from Verified Section to favor Pill style globally */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -297,8 +301,8 @@ a {
 }
 
 .wishlist-btn:hover {
-  background: #fee2e2;
-  color: #ef4444;
+  background: var(--green-tint);
+  color: var(--primary-green);
   transform: scale(1.1);
 }
 
@@ -421,56 +425,78 @@ a {
 
 /* 1. Soft Brand Green (Good for Categories & Eco sections) */
 .bg-soft-green {
-  background-color: #f0fdf4 !important;  /* Very light mint */
+  background-color: var(--green-tint) !important;
 }
 
 .bg-soft-green .product-card {
-    border-color: #86efac !important; /* Soft Green Border */
+    border-color: var(--gray-200) !important;
 }
 .bg-soft-green .product-card:hover {
-    border-color: var(--primary-green) !important; /* Darker Green on Hover */
-    box-shadow: 0 10px 25px rgba(111, 186, 44, 0.15) !important;
+    border-color: var(--primary-green) !important;
+    box-shadow: 0 10px 25px rgba(42, 140, 60, 0.15) !important;
+}
+
+/* 2. Soft Brand Off-White */
+.bg-off-white {
+  background-color: var(--off-white) !important;
+}
+
+.bg-off-white .product-card {
+    border-color: var(--gray-200) !important;
+}
+.bg-off-white .product-card:hover {
+    border-color: var(--dark) !important;
+    box-shadow: 0 10px 25px rgba(26, 26, 26, 0.1) !important;
+}
+
+/* 3. Express Section Updates */
+.express-section .product-card {
+    border-color: var(--gray-200) !important; 
+}
+.express-section .product-card:hover {
+    border-color: var(--primary-green) !important;
+    box-shadow: 0 10px 25px rgba(42, 140, 60, 0.15) !important;
 }
 
 /* 2. Soft Brand Blue (Good for Tech specs or Trust sections) */
-.bg-soft-blue {
-  background-color: #eff6ff !important;  /* Very light sky */
+/* .bg-soft-blue {
+  background-color: #eff6ff !important;
 }
 
 .bg-soft-blue .product-card {
-    border-color: #93c5fd !important; /* Soft Blue Border */
+    border-color: #93c5fd !important;
 }
 .bg-soft-blue .product-card:hover {
-    border-color: var(--primary-blue) !important; /* Darker Blue on Hover */
+    border-color: var(--primary-blue) !important;
     box-shadow: 0 10px 25px rgba(30, 74, 143, 0.15) !important;
-}
+} */
 
 /* 3. Soft Premium Purple (Good for Recommended or High-end items) */
-.bg-soft-purple {
-  background-color: #f5f3ff !important;  /* Very light lavender */
+/* .bg-soft-purple {
+  background-color: #f5f3ff !important;
 }
 
 .bg-soft-purple .product-card {
-    border-color: #d8b4fe !important; /* Soft Purple Border */
+    border-color: #d8b4fe !important;
 }
 .bg-soft-purple .product-card:hover {
-    border-color: #9333ea !important; /* Darker Purple on Hover */
+    border-color: #9333ea !important;
     box-shadow: 0 10px 25px rgba(147, 51, 234, 0.15) !important;
-}
+} */
 
 /* 4. Soft Warmth (Good for Express or Human/Testimonial sections) */
-.bg-soft-warm {
-  background-color: #fffbeb !important;  /* Very light amber/cream */
-}
+/* .bg-soft-warm {
+  background-color: #fffbeb !important;
+} */
 
 /* Since Express uses the Yellow Lightning Bolt, we use a Gold border */
-.express-section .product-card {
-    border-color: #fcd34d !important; /* Soft Gold/Amber Border */
+/* .express-section .product-card {
+    border-color: #fcd34d !important;
 }
 .express-section .product-card:hover {
-    border-color: #d97706 !important; /* Darker Gold on Hover */
+    border-color: #d97706 !important;
     box-shadow: 0 10px 25px rgba(217, 119, 6, 0.15) !important;
-}
+} */
 
 /* =========================================
    15 & 16. CERTIFIED RENEWED SECTIONS (FINAL WORKING VERSION)
@@ -483,21 +509,21 @@ a {
     position: relative;
 }
 
-.certified-iphones-section { background-color: #f0f9ff; }
-.certified-samsung-section { background-color: #f5f3ff; }
+.certified-iphones-section { background-color: var(--off-white); }
+.certified-samsung-section { background-color: var(--green-tint); }
 
 /* --- Promo Card Base Styling --- */
 .promo-card {
     position: relative;
     overflow: hidden;
-    z-index: 1;             /* Establishes stacking context */
+    z-index: 1;
     border: none;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Centers text vertically */
+    justify-content: center;
     box-shadow: 0 10px 30px rgba(0,0,0,0.08);
     transition: transform 0.3s ease;
-    height: 100%;           /* Ensures it fills the grid column */
+    height: 100%;
 }
 
 .promo-card:hover {
@@ -506,14 +532,14 @@ a {
 
 /* --- Theme Styles (Gradient & Layout) --- */
 .iphones-promo {
-    background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+    background: linear-gradient(135deg, var(--dark) 0%, #333333 100%);
     border-radius: 16px;
     padding: 40px 30px;
     color: white;
 }
 
 .samsung-promo {
-    background: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%);
     border-radius: 16px;
     padding: 40px 30px;
     color: white;
@@ -940,13 +966,13 @@ section {
   background: rgba(111, 186, 44, 0.25);
 }
 
-.section-title {
+/* .section-title {
   font-size: 2.5rem;
   font-weight: 800;
   color: var(--dark);
   margin-bottom: 1.5rem;
   letter-spacing: -0.02em;
-}
+} */
 
 .section-description {
   color: var(--gray-600);
@@ -1837,8 +1863,7 @@ textarea.form-control {
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
-  color: #f59e0b;
-  /* Amber/Gold */
+  color: var(--primary-green);
   font-size: 1.2rem;
   flex-shrink: 0;
 }
@@ -1888,10 +1913,9 @@ textarea.form-control {
    ========================================= */
 .hot-deals-section {
   padding: 2.5rem 0;
-  background-color: #fff1f2;
-  /* Light Red */
-  border-top: 1px solid #ffe4e6;
-  border-bottom: 1px solid #ffe4e6;
+  background-color: var(--white);
+  border-top: 1px solid var(--gray-200);
+  border-bottom: 1px solid var(--gray-200);
 }
 
 .hot-header-wrap {
@@ -1907,13 +1931,13 @@ textarea.form-control {
   display: flex;
   gap: 8px;
   align-items: center;
-  background: #ef4444;
+  background: var(--dark);
   padding: 6px 16px;
   border-radius: 50px;
   color: white;
   font-weight: 700;
   font-size: 0.9rem;
-  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .timer-part {
@@ -1927,12 +1951,12 @@ textarea.form-control {
 
 /* Special Hot Deal Card Overrides */
 .hot-deal-card {
-  border: 1px solid #fecaca !important;
+  border: 1px solid var(--gray-200) !important;
 }
 
 .hot-deal-card:hover {
-  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.1) !important;
-  border-color: #ef4444 !important;
+  box-shadow: 0 10px 25px rgba(42, 140, 60, 0.15) !important;
+  border-color: var(--primary-green) !important;
 }
 
 @media (max-width: 767px) {
@@ -2834,18 +2858,12 @@ textarea.form-control {
   top: 120px;  /* Stays visible when scrolling */
 }
 
-/* Ensure this exists in your styles.css */
-/* .support-card {
-  background: white;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease;
+/* Forcefully overwrite Bootstrap's default accordion variables */
+.custom-accordion {
+    --bs-accordion-active-bg: transparent;
+    --bs-accordion-active-color: inherit;
+    --bs-accordion-btn-focus-box-shadow: none;
 }
-
-.support-card:hover {
-  transform: translateY(-5px);
-  border-color: var(--primary-green);
-} */
 
 /* The Right Side Accordion Items */
 .custom-accordion .accordion-item {
@@ -2855,6 +2873,7 @@ textarea.form-control {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
   overflow: hidden;
   background: white;
+  transition: all 0.3s ease;
 }
 
 /* Remove the default line between items */
@@ -2862,7 +2881,7 @@ textarea.form-control {
   border-top: 1px solid #f3f4f6;
 }
 
-/* The Button Styling */
+/* The Button Styling (Default Closed State) */
 .custom-accordion .accordion-button {
   background: white;
   color: var(--dark);
@@ -2870,12 +2889,7 @@ textarea.form-control {
   font-size: 1.1rem;
   padding: 24px;
   box-shadow: none !important;  /* Remove blue glow */
-}
-
-/* Active State (When Open) */
-.custom-accordion .accordion-button:not(.collapsed) {
-  color: var(--primary-green);
-  background: #f9fafb;  /* Very light gray when open */
+  transition: all 0.3s ease;
 }
 
 /* Remove the default thin blue border line */
@@ -2884,12 +2898,48 @@ textarea.form-control {
   box-shadow: none;
 }
 
+/* -----------------------------------------
+   ACTIVE STATE (ENTIRE CARD TURNS GREEN)
+   ----------------------------------------- */
+/* 1. The Container gets a green border and background */
+.custom-accordion .accordion-item:has(.accordion-button:not(.collapsed)) {
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+}
+
+/* 2. The Button (Question) turns Green with White Text */
+.custom-accordion .accordion-button:not(.collapsed) {
+  color: var(--white) !important;
+  background-color: var(--primary-green) !important; 
+  box-shadow: none !important;
+}
+
+/* 3. The Body (Answer) turns Green with Faded White Text */
+.custom-accordion .accordion-collapse {
+    background-color: var(--primary-green) !important;
+}
+
+.custom-accordion .accordion-collapse .accordion-body {
+    background-color: var(--primary-green) !important;
+    color: var(--off-white) !important; 
+    border-top: 1px solid rgba(255, 255, 255, 0.2); /* Subtle white divider line */
+}
+
+/* 4. Fix Bootstrap's dropdown arrow to be WHITE when open */
+.custom-accordion .accordion-button:not(.collapsed)::after {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e") !important;
+}
+
+/* -----------------------------------------
+   DEFAULT STATE (CLOSED BODY)
+   ----------------------------------------- */
 /* The Content */
 .custom-accordion .accordion-body {
-  padding: 0 24px 24px 24px;
+  padding: 24px;
   color: #6b7280;
   line-height: 1.7;
-  background: #f9fafb;
+  background: white; /* Changed to white for a cleaner look */
+  transition: all 0.3s ease;
 }
 
 @media (max-width: 991px) {
@@ -3730,18 +3780,17 @@ footer .fas.fa-shield-alt {
    GRADE EXPLAINER MODAL CSS
    ========================================= */
 :root {
-  --superb-bg: #EAF5ED;
-  --superb-accent: #2A8C3C;
-  --superb-text: #1E6B2E;
-  --good-bg: #FFF8EC;
-  --good-accent: #D4870A;
-  --good-text: #8C5600;
-  --fair-bg: #F0F4FF;
-  --fair-accent: #4A6FD4;
-  --fair-text: #2C4A9E;
+  --superb-bg: var(--green-tint);
+  --superb-accent: var(--primary-green);
+  --superb-text: var(--primary-green);
+  --good-bg: var(--off-white);
+  --good-accent: var(--dark);
+  --good-text: var(--dark);
+  --fair-bg: var(--gray-200);
+  --fair-accent: var(--body-gray);
+  --fair-text: var(--body-gray);
   --r: 12px;
   --r-sm: 8px;
-
   --black: #1a1a1a;
 }
 
@@ -3894,7 +3943,7 @@ footer .fas.fa-shield-alt {
 }
 
 .screen-superb {
-  background: linear-gradient(160deg, #1A1A2E, #2A8C3C, #4CAF5C);
+  background: linear-gradient(160deg, var(--dark), var(--primary-green), var(--secondary-green));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3902,7 +3951,7 @@ footer .fas.fa-shield-alt {
 }
 
 .screen-good {
-  background: linear-gradient(160deg, #1A1A2E, #8C6500, #D4870A);
+  background: linear-gradient(160deg, var(--dark), #444444, var(--body-gray));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3910,7 +3959,7 @@ footer .fas.fa-shield-alt {
 }
 
 .screen-fair {
-  background: linear-gradient(160deg, #1A1A2E, #2C4A9E, #4A6FD4);
+  background: linear-gradient(160deg, var(--dark), #888888, #aaaaaa);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4831,7 +4880,7 @@ footer .fas.fa-shield-alt {
 /* Footer Bottom Strip */
 .rc-footer-bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 20px 0;
+  padding: 20px 40px;
   background-color: #121212;
 }
 
@@ -4880,4 +4929,138 @@ footer .fas.fa-shield-alt {
     .rc-footer-bottom .d-flex { flex-direction: column; gap: 20px; }
 
   /* Moves socials above text on mobile */
+}
+
+/* =========================================
+   HOME ABOUT SUMMARY SECTION (ENHANCED)
+   ========================================= */
+.home-about-summary {
+    background-color: var(--dark, #1a1a1a);
+    /* Subtle technical grid pattern */
+    background-image: 
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    padding: 70px 0;
+    position: relative;
+    overflow: hidden;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.home-about-glow {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translate(30%, -50%);
+    width: 800px;
+    height: 800px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(42, 140, 60, 0.12) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.home-about-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* Feature Checklist */
+.ha-check-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2.5rem 0;
+}
+
+.ha-check-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+    color: rgba(255,255,255,0.85);
+    font-size: 1.05rem;
+    line-height: 1.5;
+}
+
+.ha-check-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(42, 140, 60, 0.2);
+    color: var(--secondary-green, #4CAF5C);
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
+/* Visual Composition */
+.ha-visual-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+/* Glassmorphism Floating Cards */
+.ha-float-card {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    animation: floatY 6s ease-in-out infinite;
+    z-index: 2;
+}
+
+.ha-float-card.card-1 {
+    top: 8%;
+    left: -12%;
+    animation-delay: 0s;
+}
+
+.ha-float-card.card-2 {
+    bottom: 12%;
+    right: -8%;
+    animation-delay: -3s;
+}
+
+@keyframes floatY {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+.ha-card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--primary-green, #2A8C3C);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.ha-card-text h6 {
+    color: white;
+    margin: 0 0 3px 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+}
+
+.ha-card-text p {
+    color: rgba(255,255,255,0.5);
+    margin: 0;
+    font-size: 0.8rem;
 }

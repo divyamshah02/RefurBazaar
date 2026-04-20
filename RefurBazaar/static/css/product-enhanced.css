@@ -78,8 +78,8 @@
 
 /* Selection Sections */
 .selection-section {
-  margin: 1.25rem 0;
-  padding-bottom: 1.25rem;
+  margin: 1rem 0;
+  /* padding-bottom: 1.25rem; */
   border-bottom: 1px solid #e9ecef;
 }
 
@@ -178,7 +178,7 @@
      Right: 34px (was 28px) - space for dot
      Left: 18px (was 14px) 
   */
-  padding: 14px 34px 14px 18px; 
+  /* padding: 14px 34px 14px 18px;  */
   
   cursor: pointer;
   transition: all 0.2s ease;
@@ -188,6 +188,12 @@
   align-items: center; 
   justify-content: flex-start;
   text-align: left;
+}
+
+.condition-card, 
+.storage-card, 
+.color-card {
+  padding: 14px !important;
 }
 
 /* 4. The "Small Top-Right Dot" */
@@ -227,7 +233,13 @@
   background-color: #f0fdf4; 
   border: 2px solid #6fba2c; 
   /* Adjust padding for 2px border */
-  padding: 9px 27px 9px 13px; 
+  /* padding: 9px 27px 9px 13px;  */
+}
+
+.condition-card.active, 
+.storage-card.active, 
+.color-card.active {
+  padding: 9px !important;
 }
 
 .condition-card.active .condition-radio label, 
@@ -429,7 +441,7 @@
   background: #f8f9fa;
   padding: 1.5rem;
   border-radius: 8px;
-  margin-bottom: 2rem;
+  /* margin-bottom: 2rem; */
 }
 
 .spec-overview h5 {

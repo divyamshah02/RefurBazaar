@@ -14,10 +14,14 @@ let thumbnailSwiper = null
 
 // Condition options
 const CONDITION_OPTIONS = [
-  { value: "fair", label: "Fair", description: "Visible wear" },
-  { value: "good", label: "Good", description: "Minor wear" },
-  { value: "excellent", label: "Excellent", description: "Like new" },
+  // { value: "fair", label: "Fair", description: "Visible wear" },
+  // { value: "good", label: "Good", description: "Minor wear" },
+  // { value: "excellent", label: "Excellent", description: "Like new" },
   // { value: "premium", label: "Premium", description: "Perfect", icon: "fas fa-gem" },
+
+  { value: "superb", label: "Superb", description: "Minimal to no signs of use" },
+  { value: "good", label: "Good", description: "Light micro-scratches" },
+  { value: "fair", label: "Fair", description: "Light cosmetic wear" },
 ]
 
 // Initialize Product Detail Page
@@ -142,17 +146,33 @@ function renderFilters() {
   renderAttributeFilters()
 }
 
+// function renderConditionFilter() {
+//     const conditionGrid = document.getElementById("conditionGrid");
+
+//     const conditionHTML = CONDITION_OPTIONS.map(
+//         (condition) => `
+//         <div class="condition-card" data-condition="${condition.value}" onclick="selectCondition('${condition.value}')">
+//             <div class="condition-radio">
+//                 <input type="radio" name="condition" id="condition-${condition.value}" value="${condition.value}">
+//                 <label for="condition-${condition.value}"></label>
+//             </div>
+
+//             <div class="condition-info d-flex align-items-center">
+//                 <h6>${condition.label}</h6>
+//             </div>
+//         </div>
+//     `
+//     ).join("");
+
+//     conditionGrid.innerHTML = conditionHTML;
+// }
+
 function renderConditionFilter() {
     const conditionGrid = document.getElementById("conditionGrid");
 
     const conditionHTML = CONDITION_OPTIONS.map(
         (condition) => `
         <div class="condition-card" data-condition="${condition.value}" onclick="selectCondition('${condition.value}')">
-            <div class="condition-radio">
-                <input type="radio" name="condition" id="condition-${condition.value}" value="${condition.value}">
-                <label for="condition-${condition.value}"></label>
-            </div>
-
             <div class="condition-info d-flex align-items-center">
                 <h6>${condition.label}</h6>
             </div>
@@ -197,6 +217,35 @@ function renderAttributeFilters() {
   container.innerHTML = filtersHTML
 }
 
+// function renderStorageFilter(attr) {
+//   return `
+//         <div class="selection-section">
+//             <div class="section-header">
+//                 <h6>Select ${attr.name}</h6>
+//             </div>
+//             <div class="storage-options">
+//                 ${attr.available_values
+//                   .map(
+//                     (value) => `
+//                     <div class="storage-card" data-attribute="${attr.id}" data-value="${value}" 
+//                          onclick="selectAttribute(${attr.id}, '${value}')">
+//                         <div class="storage-info">
+//                             <h6>${value}</h6>
+//                             <p class="storage-price"></p>
+//                         </div>
+//                         <div class="storage-radio">
+//                             <input type="radio" name="attribute-${attr.id}" id="attr-${attr.id}-${value}" value="${value}">
+//                             <label for="attr-${attr.id}-${value}"></label>
+//                         </div>
+//                     </div>
+//                 `,
+//                   )
+//                   .join("")}
+//             </div>
+//         </div>
+//     `
+// }
+
 function renderStorageFilter(attr) {
   return `
         <div class="selection-section">
@@ -213,10 +262,7 @@ function renderStorageFilter(attr) {
                             <h6>${value}</h6>
                             <p class="storage-price"></p>
                         </div>
-                        <div class="storage-radio">
-                            <input type="radio" name="attribute-${attr.id}" id="attr-${attr.id}-${value}" value="${value}">
-                            <label for="attr-${attr.id}-${value}"></label>
-                        </div>
+                        
                     </div>
                 `,
                   )
@@ -225,6 +271,53 @@ function renderStorageFilter(attr) {
         </div>
     `
 }
+
+// function renderColorFilter(attr) {
+//   const colorMap = {
+//     black: "#000000",
+//     white: "#ffffff",
+//     blue: "#4169e1",
+//     red: "#ff0000",
+//     green: "#00ff00",
+//     pink: "#ff69b4",
+//     purple: "#8a2be2",
+//     gold: "#ffd700",
+//     silver: "#c0c0c0",
+//     gray: "#808080",
+//     grey: "#808080",
+//     "space gray": "#5a5a5a",
+//     starlight: "#f5f5dc",
+//   }
+
+//   return `
+//         <div class="selection-section">
+//             <div class="section-header">
+//                 <h6>Select ${attr.name}</h6>
+//             </div>
+//             <div class="color-options">
+//                 ${attr.available_values
+//                   .map((value) => {
+//                     const colorValue = colorMap[value.toLowerCase()] || "#cccccc"
+//                     return `
+//                         <div class="color-card" data-attribute="${attr.id}" data-value="${value}" 
+//                              onclick="selectAttribute(${attr.id}, '${value}')">
+//                             <div class="color-radio">
+//                                 <input type="radio" name="attribute-${attr.id}" id="attr-${attr.id}-${value}" value="${value}">
+//                                 <label for="attr-${attr.id}-${value}"></label>
+//                             </div>
+//                             <div class="color-dot" style="background: ${colorValue};"></div>
+//                             <div class="color-info">
+//                                 <h6>${value}</h6>
+//                                 <p class="color-price"></p>
+//                             </div>
+//                         </div>
+//                     `
+//                   })
+//                   .join("")}
+//             </div>
+//         </div>
+//     `
+// }
 
 function renderColorFilter(attr) {
   const colorMap = {
@@ -255,11 +348,9 @@ function renderColorFilter(attr) {
                     return `
                         <div class="color-card" data-attribute="${attr.id}" data-value="${value}" 
                              onclick="selectAttribute(${attr.id}, '${value}')">
-                            <div class="color-radio">
-                                <input type="radio" name="attribute-${attr.id}" id="attr-${attr.id}-${value}" value="${value}">
-                                <label for="attr-${attr.id}-${value}"></label>
-                            </div>
+                            
                             <div class="color-dot" style="background: ${colorValue};"></div>
+                            &nbsp; <!-- Space between dot and text -->
                             <div class="color-info">
                                 <h6>${value}</h6>
                                 <p class="color-price"></p>
@@ -272,6 +363,35 @@ function renderColorFilter(attr) {
         </div>
     `
 }
+
+// function renderGenericFilter(attr) {
+//   return `
+//         <div class="selection-section">
+//             <div class="section-header">
+//                 <h6>Select ${attr.name}</h6>
+//             </div>
+//             <div class="storage-options">
+//                 ${attr.available_values
+//                   .map(
+//                     (value) => `
+//                     <div class="storage-card" data-attribute="${attr.id}" data-value="${value}" 
+//                          onclick="selectAttribute(${attr.id}, '${value}')">
+//                         <div class="storage-info">
+//                             <h6>${value}</h6>
+//                             <p class="storage-price"></p>
+//                         </div>
+//                         <div class="storage-radio">
+//                             <input type="radio" name="attribute-${attr.id}" id="attr-${attr.id}-${value}" value="${value}">
+//                             <label for="attr-${attr.id}-${value}"></label>
+//                         </div>
+//                     </div>
+//                 `,
+//                   )
+//                   .join("")}
+//             </div>
+//         </div>
+//     `
+// }
 
 function renderGenericFilter(attr) {
   return `
@@ -289,10 +409,7 @@ function renderGenericFilter(attr) {
                             <h6>${value}</h6>
                             <p class="storage-price"></p>
                         </div>
-                        <div class="storage-radio">
-                            <input type="radio" name="attribute-${attr.id}" id="attr-${attr.id}-${value}" value="${value}">
-                            <label for="attr-${attr.id}-${value}"></label>
-                        </div>
+                        
                     </div>
                 `,
                   )
