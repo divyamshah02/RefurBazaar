@@ -3,6 +3,7 @@ from .models import ShoppingCart, ShoppingCartItem
 from Product.models import ListingUnit, Listing, ProductModel, Brand
 from Product.serializers import ListingUnitSerializer
 
+from .models import Wishlist, WishlistItem
 
 class CartItemListingUnitSerializer(serializers.ModelSerializer):
     """Nested serializer for ListingUnit with product details"""
@@ -77,3 +78,27 @@ class CartSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at'
         ]
         read_only_fields = ['cart_id', 'created_at', 'updated_at']
+
+
+# ----------
+# Wishlist
+# ----------
+
+class WishlistItemSerializer(serializers.ModelSerializer):
+    """Serializer for individual wishlist items"""
+    listing_unit = CartItemListingUnitSerializer(read_only=True)
+    listing_unit_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = WishlistItem
+        fields = ['id', 'wishlist', 'listing_unit', 'listing_unit_id', 'added_at']
+        read_only_fields = ['wishlist', 'added_at']
+
+
+class WishlistSerializer(serializers.ModelSerializer):
+    """Serializer for the user's complete wishlist"""
+    items = WishlistItemSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Wishlist
+        fields = ['id', 'user', 'items', 'created_at']

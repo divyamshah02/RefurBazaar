@@ -245,7 +245,7 @@ function renderProducts() {
         <div class="product-badge">
           <i class="fas fa-bolt"></i>
         </div>
-        <div class="wishlist-btn" onclick="event.stopPropagation(); addToWishlist(${product.id})">
+        <div class="wishlist-btn" onclick="event.stopPropagation(); addToWishlist(${product.id}, this)">
           <i class="far fa-heart"></i>
         </div>
         <img src="${product.image || "/static/images/iPhone 16 Pro.png"}" 
@@ -390,19 +390,83 @@ function formatPrice(price) {
 }
 
 // Add to Wishlist
-function addToWishlist(productId) {
-  console.log(`[v0] Adding product ${productId} to wishlist`)
+// function addToWishlist(productId) {
+//   console.log(`[v0] Adding product ${productId} to wishlist`)
   
-  // Update wishlist badge
-  const wishlistBadge = document.getElementById("wishlistCount")
-  if (wishlistBadge) {
-    const currentCount = Number.parseInt(wishlistBadge.textContent) || 0
-    wishlistBadge.textContent = currentCount + 1
-    wishlistBadge.style.display = "inline-block"
+//   // Update wishlist badge
+//   const wishlistBadge = document.getElementById("wishlistCount")
+//   if (wishlistBadge) {
+//     const currentCount = Number.parseInt(wishlistBadge.textContent) || 0
+//     wishlistBadge.textContent = currentCount + 1
+//     wishlistBadge.style.display = "inline-block"
+//   }
+  
+//   // Show toast notification (optional)
+//   showToast("Added to wishlist!", "success")
+// }
+
+// Add to Wishlist (Connected to API)
+async function addToWishlist(productId, btnElement) {
+  console.log(`[v0] Toggling product ${productId} in wishlist`);
+  
+  try {
+      // Make the API call to your backend
+      const response = await callApi(
+          'POST', 
+          '/cart/wishlist-api/toggle/', // Change to /api/cart/wishlist-api/toggle/ if your URLs require it
+          { listing_unit_id: productId }, // Sending the ID to the backend
+          csrf_token
+      );
+      
+      if(response && response.success) {
+          const icon = btnElement.querySelector("i");
+          
+          if (response.data.action === "added") {
+              // Animate: Add to wishlist
+              icon.classList.remove("far");
+              icon.classList.add("fas");
+              btnElement.style.background = "#ec4899"; // Pink background
+              btnElement.style.color = "white";
+              btnElement.style.transform = "scale(1.2)";
+              setTimeout(() => { btnElement.style.transform = "scale(1)"; }, 200);
+              
+              showToast("Added to wishlist!", "success");
+              
+              // Update badge count if it exists
+              const wishlistBadge = document.getElementById("wishlistCount");
+              if (wishlistBadge) {
+                  const currentCount = Number.parseInt(wishlistBadge.textContent) || 0;
+                  wishlistBadge.textContent = currentCount + 1;
+                  wishlistBadge.style.display = "inline-block";
+              }
+          } else {
+              // Animate: Remove from wishlist
+              icon.classList.remove("fas");
+              icon.classList.add("far");
+              btnElement.style.background = "white";
+              btnElement.style.color = "#1a1a1a";
+              
+              showToast("Removed from wishlist!", "info");
+              
+              // Update badge count if it exists
+              const wishlistBadge = document.getElementById("wishlistCount");
+              if (wishlistBadge) {
+                  const currentCount = Number.parseInt(wishlistBadge.textContent) || 1;
+                  wishlistBadge.textContent = Math.max(0, currentCount - 1);
+                  if (wishlistBadge.textContent === "0") wishlistBadge.style.display = "none";
+              }
+          }
+      } else {
+          // If the user is not logged in, the API will fail and we catch it here
+          showToast("Please log in to save items.", "error");
+          setTimeout(() => {
+              window.location.href = '/login/'; 
+          }, 1500);
+      }
+  } catch (error) {
+      console.error("Wishlist Error:", error);
+      showToast("Something went wrong.", "error");
   }
-  
-  // Show toast notification (optional)
-  showToast("Added to wishlist!", "success")
 }
 
 // Show Toast Notification

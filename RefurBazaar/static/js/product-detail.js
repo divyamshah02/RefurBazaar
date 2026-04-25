@@ -16,10 +16,10 @@ let thumbnailSwiper = null
 const CONDITION_OPTIONS = [
   // { value: "fair", label: "Fair", description: "Visible wear" },
   // { value: "good", label: "Good", description: "Minor wear" },
-  // { value: "excellent", label: "Excellent", description: "Like new" },
+  { value: "excellent", label: "Excellent", description: "Like new" },
   // { value: "premium", label: "Premium", description: "Perfect", icon: "fas fa-gem" },
 
-  { value: "superb", label: "Superb", description: "Minimal to no signs of use" },
+  // { value: "superb", label: "Superb", description: "Minimal to no signs of use" },
   { value: "good", label: "Good", description: "Light micro-scratches" },
   { value: "fair", label: "Fair", description: "Light cosmetic wear" },
 ]
@@ -537,10 +537,10 @@ function renderSellers() {
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <div class="seller-name">${unit.refurbisher.name}</div>
-                    <div class="seller-attributes small text-muted mt-1">
+                    <!-- <div class="seller-attributes small text-muted mt-1">
                         ${unit.condition_display}
                         ${unit.attributes.length > 0 ? " • " + unit.attributes.map((attr) => attr.value).join(" • ") : ""}
-                    </div>
+                    </div> -->
                 </div>
                 <div class="text-end">
                     <div class="seller-price">₹${formatPrice(unit.price)}</div>
@@ -576,14 +576,81 @@ function selectSeller(unitId) {
 }
 
 // Update Price Display
+// function updatePrice(price) {
+//   const priceElement = document.getElementById("displayPrice")
+//   if (price) {
+//     priceElement.textContent = `₹${formatPrice(price)}`
+//   } else {
+//     priceElement.textContent = "₹0"
+//   }
+// }
 function updatePrice(price) {
-  const priceElement = document.getElementById("displayPrice")
-  if (price) {
-    priceElement.textContent = `₹${formatPrice(price)}`
+  const priceElement = document.getElementById("displayPrice");
+  const stickyPriceElement = document.getElementById("stickyMobilePrice"); 
+  const warrantyToggle = document.getElementById("warrantyToggle");
+  const warrantyCost = 1999;
+  
+  let finalPrice = price || 0;
+  
+  if (warrantyToggle && warrantyToggle.checked) {
+      finalPrice += warrantyCost;
+  }
+
+  if (finalPrice > 0) {
+    const formatted = `₹${formatPrice(finalPrice)}`;
+    priceElement.textContent = formatted;
+    if (stickyPriceElement) stickyPriceElement.textContent = formatted;
   } else {
-    priceElement.textContent = "₹0"
+    priceElement.textContent = "₹0";
+    if (stickyPriceElement) stickyPriceElement.textContent = "₹0";
   }
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Listen for Warranty Toggle clicks
+  const warrantyToggle = document.getElementById("warrantyToggle");
+  if (warrantyToggle) {
+      warrantyToggle.addEventListener("change", () => {
+          if (selectedUnit) {
+              updatePrice(selectedUnit.price);
+          }
+      });
+  }
+
+  // Initialize Reviews Swiper (Full Width)
+  if (document.querySelector('.reviewsSwiper')) {
+      new Swiper('.reviewsSwiper', {
+          slidesPerView: 1.1,
+          spaceBetween: 16,
+          navigation: {
+              nextEl: '.review-next',
+              prevEl: '.review-prev',
+          },
+          breakpoints: {
+              768: { slidesPerView: 2.2, spaceBetween: 20 },
+              1024: { slidesPerView: 3.2, spaceBetween: 24 } // Shows 3 cards cleanly on desktop
+          }
+      });
+  }
+
+  // Mobile Sticky Bar Trigger
+  const mainBuyBtn = document.getElementById('addToCartBtn');
+  const stickyBar = document.querySelector('.mobile-sticky-buy');
+  
+  if (mainBuyBtn && stickyBar) {
+      const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+              // Show sticky bar only when main button is scrolled out of view on mobile
+              if (!entry.isIntersecting && window.innerWidth < 992) {
+                  stickyBar.classList.add('visible');
+              } else {
+                  stickyBar.classList.remove('visible');
+              }
+          });
+      }, { threshold: 0 });
+      observer.observe(mainBuyBtn);
+  }
+})
 
 // Add to Cart
 document.addEventListener("DOMContentLoaded", () => {
@@ -674,4 +741,61 @@ function showToast(message, type = "info") {
   toastElement.addEventListener("hidden.bs.toast", () => {
     toastElement.remove()
   })
+}
+
+
+// Render Dynamic Specifications in Side Panel (Minimal Version)
+function renderSpecsPanel() {
+  const specsGrid = document.getElementById("dynamicSpecsGrid");
+  if (!specsGrid) return;
+
+  // 1. Add Brand and Model (Always available from productData)
+  let specsHTML = `
+      <li class="minimal-spec-item"><span>Brand</span><strong>${productData.brand_name || 'N/A'}</strong></li>
+      <li class="minimal-spec-item"><span>Model</span><strong>${productData.name || 'N/A'}</strong></li>
+  `;
+
+  // 2. Loop through attributesData to add things like Storage, Color, etc.
+  if (attributesData && attributesData.length > 0) {
+      attributesData.forEach(attr => {
+          if (attr.available_values && attr.available_values.length > 0) {
+              specsHTML += `<li class="minimal-spec-item"><span>${attr.name}</span><strong>${attr.available_values.join(', ')}</strong></li>`;
+          }
+      });
+  }
+
+  specsGrid.innerHTML = specsHTML;
+}
+
+// Render Product Info
+function renderProductInfo() {
+  document.getElementById("productTitle").textContent = productData.name
+  document.getElementById("breadcrumbProduct").textContent = `${productData.brand_name} ${productData.name}`
+
+  // Set product image
+  const mainImage = document.getElementById("mainImage")
+  if (productData.image) {
+    mainImage.src = productData.image
+  } else {
+    mainImage.src = "/static/images/iPhone 16 Pro.png"
+  }
+  mainImage.alt = `${productData.brand_name} ${productData.name}`
+
+  initializeThumbnailGallery()
+
+  // Set product description
+  const oldDescTab = document.getElementById("productDescription");
+  const sidePanelDesc = document.getElementById("sidePanelDescription");
+  
+  if (productData.description) {
+    if (oldDescTab) oldDescTab.textContent = productData.description;
+    if (sidePanelDesc) sidePanelDesc.textContent = productData.description;
+  } else {
+    // If no description exists in the database, clear the "Loading..." text
+    if (oldDescTab) oldDescTab.textContent = "No overview available for this product.";
+    if (sidePanelDesc) sidePanelDesc.textContent = "No overview available for this product.";
+  }
+
+  // Add this line to populate the side flap!
+  renderSpecsPanel();
 }

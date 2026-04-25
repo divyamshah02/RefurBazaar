@@ -1,0 +1,75 @@
+/* =========================================
+   WISHLIST PAGE STYLING
+   ========================================= */
+
+.wishlist-header {
+    background: linear-gradient(135deg, #F0FDF4 0%, #ffffff 100%);
+    padding: 4rem 0 2rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.min-vh-50 {
+    min-height: 50vh;
+}
+
+/* Empty State Styling */
+.empty-wishlist {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3rem 0;
+}
+
+.empty-icon-circle {
+    width: 100px;
+    height: 100px;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+}
+
+/* Wishlist Remove Button */
+.btn-remove-wishlist {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    color: #ef4444;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.btn-remove-wishlist:hover {
+    background: #ef4444;
+    color: white;
+    transform: scale(1.1);
+    border-color: #ef4444;
+}
+
+/* Ensure the card position is relative for the absolute button */
+.product-card {
+    position: relative;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 16px;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.product-card:hover {
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    border-color: #2A8C3C;
+}

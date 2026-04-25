@@ -147,6 +147,11 @@ class ShopViewSet(viewsets.ViewSet):
         return render(request, 'shop.html')
 
 
+class WishlistPageViewSet(viewsets.ViewSet):
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'wishlist.html')
+
 class ProductDetailViewSet(viewsets.ViewSet):
 
     @handle_exceptions

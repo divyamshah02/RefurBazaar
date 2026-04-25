@@ -135,7 +135,8 @@
   transform: translateX(2px);
 }
 
-/* ===== Compact Variant Pickers (Amazon Style + Left Align) ===== */
+
+/* ===== Premium Variant Pickers (Apple-Style) ===== */
 
 /* 1. Flex Container Layout */
 .condition-grid, 
@@ -144,24 +145,21 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 15px;
-  justify-content: flex-start; /* Ensure grid starts from left */
+  margin-bottom: 20px;
+  justify-content: flex-start;
 }
 
 /* 2. Section Headers */
 .section-header {
     text-align: left !important;
     width: 100%;
-    /* REMOVED 'justify-content: flex-start' so the 'Compare' link stays on the right */
 }
-
-/* Ensure the heading text itself inside the header is left-aligned */
 .section-header h6 {
     text-align: left;
-    margin-right: auto; /* Pushes everything else (like Compare link) to the right */
+    margin-right: auto;
 }
 
-/* 3. Unified Button Style (Larger Size) */
+/* 3. Unified Button Style (Premium Soft Rectangles) */
 .condition-card, 
 .storage-card, 
 .color-card {
@@ -169,95 +167,66 @@
   min-height: unset !important;
   flex: 0 0 auto;
   
-  background: #fff;
-  border: 1px solid #dcdcdc;
-  border-radius: 6px;
-  
-  /* INCREASED PADDING: 
-     Top/Bottom: 14px (was 10px)
-     Right: 34px (was 28px) - space for dot
-     Left: 18px (was 14px) 
-  */
-  /* padding: 14px 34px 14px 18px;  */
+  background: #ffffff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px; /* Softer, premium corners */
+  padding: 12px 24px !important;
   
   cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-  
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center; 
-  justify-content: flex-start;
-  text-align: left;
+  justify-content: center;
+  text-align: center;
 }
 
-.condition-card, 
-.storage-card, 
-.color-card {
-  padding: 14px !important;
-}
-
-/* 4. The "Small Top-Right Dot" */
+/* Completely hide the old radio dots for a much cleaner UI */
 .condition-radio, 
 .storage-radio, 
 .color-radio {
-  display: block !important;
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  line-height: 0;
+  display: none !important;
 }
 
-/* The actual circle style */
-.condition-radio label, 
-.storage-radio label, 
-.color-radio label {
-  width: 8px;
-  height: 8px;
-  border: 1px solid #adb5bd;
-  border-radius: 50%;
-  display: block;
-  cursor: pointer;
-  background: #fff;
+/* 4. Smooth Hover State */
+.condition-card:hover, 
+.storage-card:hover, 
+.color-card:hover {
+    border-color: #cbd5e1;
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
 }
 
-/* Hide inputs and pseudo-elements */
-.condition-radio input, .storage-radio input, .color-radio input,
-.condition-radio label::after, .storage-radio label::after, .color-radio label::after {
-    display: none !important;
-}
-
-/* 5. Active State */
+/* 5. Active (Selected) State */
 .condition-card.active, 
 .storage-card.active, 
 .color-card.active {
-  background-color: #f0fdf4; 
-  border: 2px solid #6fba2c; 
-  /* Adjust padding for 2px border */
-  /* padding: 9px 27px 9px 13px;  */
+  background-color: rgba(111, 186, 44, 0.05) !important; 
+  border: 2px solid #6fba2c !important; 
+  /* Reduce padding by 0.5px to offset the thicker border and prevent jumping */
+  padding: 11.5px 23.5px !important; 
+  box-shadow: 0 4px 15px rgba(111, 186, 44, 0.12);
+  transform: translateY(-2px);
 }
 
-.condition-card.active, 
-.storage-card.active, 
-.color-card.active {
-  padding: 9px !important;
-}
-
-.condition-card.active .condition-radio label, 
-.storage-card.active .storage-radio label, 
-.color-card.active .color-radio label {
-  background: #6fba2c;
-  border-color: #6fba2c;
-}
-
-/* 6. Text Styles (Larger Font) */
+/* 6. Text Styles */
 .condition-card h6, 
 .storage-card h6, 
 .color-card h6 {
   margin: 0 !important;
-  font-size: 1rem !important; /* Increased from 0.9rem */
-  font-weight: 500;
-  color: #333;
+  font-size: 0.95rem !important; 
+  font-weight: 600 !important;
+  color: #4b5563; /* Soft dark grey for unselected */
+  transition: color 0.2s ease;
 }
+
+/* Darker green text when selected */
+.condition-card.active h6, 
+.storage-card.active h6, 
+.color-card.active h6 {
+    color: #2A8C3C !important;
+}
+
 /* 7. Hide Extras */
 .condition-price, .storage-price, .color-price, .condition-premium-icon {
   display: none !important; 
@@ -1195,7 +1164,7 @@
   box-shadow: 0 8px 24px rgba(111, 186, 44, 0.15);
 }
 
-.seller-card.selected::after {
+/* .seller-card.selected::after {
   content: "";
   position: absolute;
   top: 1rem;
@@ -1207,7 +1176,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
+} */
 
 .seller-header {
   display: flex;
@@ -1327,20 +1296,32 @@
     gap: 15px;
 }
 
+/* Enhanced Main Image Showcase */
+/* 1. Main Image Container (Clean & Borderless) */
 .main-image {
-    background: #f8f9fa;
-    border-radius: 12px;
-    border: 1px solid #e9ecef;
+    background: #ffffff; /* Removed the grey gradient */
+    border-radius: 20px; 
+    border: none; /* Removed the harsh border */
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    padding: 2rem; 
+    transition: all 0.4s ease;
 }
 
+/* 2. The Device Itself (Floating 3D Effect) */
 .main-image img {
-    max-width: 100%;
-    height: auto;
+    max-height: 100%;
     object-fit: contain;
+    /* This creates a shadow perfectly hugging the shape of the device, not a square box! */
+    filter: drop-shadow(0 25px 35px rgba(0, 0, 0, 0.08)); 
+    transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.main-image:hover img {
+    transform: scale(1.05) translateY(-5px); /* Smoothly floats up and towards the user on hover */
+    filter: drop-shadow(0 35px 45px rgba(111, 186, 44, 0.12)); /* Brand green glow on the device shadow */
 }
 
 /* --- Desktop Layout (Large Screens) --- */
@@ -1360,21 +1341,28 @@
         height: 100%; /* Full height for vertical scrolling */
     }
     
-    /* Override the previous width:auto !important for vertical slides */
-    .thumbnailSwiper .swiper-slide {
-        width: 100% !important; 
-        height: auto !important;
-        margin-bottom: 10px !important; /* Spacing between vertical thumbs */
-    }
-
+    /* 3. Clean White Thumbnails */
     .thumbnailSwiper .swiper-slide img {
         width: 100%;
-        height: 80px; /* Consistent thumb height */
+        height: 80px; 
         object-fit: contain;
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        padding: 5px;
+        border: 1.5px solid #f3f4f6; /* Very subtle clean outline */
+        background: #ffffff; /* Pure white instead of grey */
+        border-radius: 12px;
+        padding: 8px;
         cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .thumbnailSwiper .swiper-slide img:hover {
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+    }
+
+    .thumbnailSwiper .swiper-slide-thumb-active img {
+        border: 2px solid #6fba2c; /* Brand green selection */
+        background: #ffffff;
+        box-shadow: 0 4px 15px rgba(111, 186, 44, 0.15);
     }
 
     .main-image {
@@ -1427,4 +1415,358 @@
     .main-image img {
         max-height: 100%;
     }
+}
+
+/* =========================================
+   WARRANTY ADD-ON BOX (Product Detail)
+   ========================================= */
+.warranty-addon-box {
+    background: linear-gradient(135deg, #ffffff 0%, #F0FDF4 100%);
+    border: 1.5px solid #6fba2c;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+/* Big faint shield in the background */
+.warranty-addon-box .watermark {
+    position: absolute;
+    right: -15px;
+    bottom: -15px;
+    font-size: 5rem;
+    color: rgba(111, 186, 44, 0.08); /* Faint brand green */
+    transform: rotate(-15deg);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Ensure text stays above the watermark */
+.warranty-addon-box > * {
+    position: relative;
+    z-index: 1;
+}
+
+.warranty-addon-box .icon-circle {
+    width: 32px;
+    height: 32px;
+    background: rgba(111, 186, 44, 0.15);
+    color: #2A8C3C;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+
+/* iOS / Revibe Style Toggle Switch */
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 24px;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.theme-switch .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1; /* Gray when off */
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.theme-switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Green when turned on */
+.theme-switch input:checked + .slider {
+    background-color: #6fba2c;
+}
+
+/* Move the circle when turned on */
+.theme-switch input:checked + .slider:before {
+    transform: translateX(18px);
+}
+
+/* =========================================
+   COMPACT RIGHT PANEL STYLING (Fit in 1 Screen)
+   ========================================= */
+
+/* 1. Reduce spacing between variant sections */
+.selection-section {
+    margin: 0.6rem 0 !important;
+    padding-bottom: 0.6rem !important;
+}
+
+/* 2. Tighten the Warranty Add-on Box */
+.warranty-addon-box {
+    padding: 12px 16px !important;
+    margin-bottom: 12px !important;
+}
+
+/* 3. Tighten the Purchase / Add to Cart Box */
+.purchase-options {
+    padding: 16px !important;
+    margin-bottom: 12px !important;
+}
+.purchase-option {
+    padding: 0 !important; /* Removes double padding inside the box */
+}
+
+/* 4. Tighten the What's Included Box */
+.whats-included-box {
+    padding: 16px !important;
+    margin-bottom: 12px !important;
+}
+.whats-included-box .gap-3 {
+    gap: 0.75rem !important; /* Brings the items closer together */
+}
+
+/* 5. Slightly reduce the main title size to save space */
+.product-header h1 {
+    font-size: 1.5rem !important;
+}
+
+/* 4. Elevate the Sellers/Available From Box */
+.sellers-list {
+    gap: 12px !important; /* Give cards breathing room */
+}
+
+.seller-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 14px !important;
+    padding: 16px 20px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.seller-card:hover {
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.04) !important;
+    transform: translateY(-2px);
+}
+
+.seller-card.selected {
+    border: 2px solid #6fba2c !important;
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%) !important;
+    box-shadow: 0 8px 25px rgba(111, 186, 44, 0.12) !important;
+}
+
+/* Make the seller price darker and more premium */
+.seller-price .price {
+    font-size: 1.35rem !important;
+    font-weight: 800 !important;
+    color: #111827 !important; 
+}
+
+/* =========================================
+   STEP 3: THE ACTION ZONE (Elevated Buy Box)
+   ========================================= */
+
+/* 1. The Floating Container */
+.purchase-options {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(12px); /* Premium Apple-style glass effect */
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(111, 186, 44, 0.25) !important;
+    border-radius: 20px !important; /* Extra smooth corners */
+    padding: 24px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0,0,0,0.03) !important;
+    position: relative;
+    z-index: 10;
+    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.purchase-options:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 25px 50px rgba(111, 186, 44, 0.08) !important;
+}
+
+/* 2. Supercharge the Total Price Text */
+.price-area .text-muted {
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    font-size: 0.7rem !important;
+    font-weight: 800 !important;
+}
+
+.price-area .price {
+    font-size: 2.4rem !important; /* Massive, clear price */
+    font-weight: 800 !important;
+    color: #111827 !important; /* Near black, very premium */
+    line-height: 1.1;
+}
+
+/* 3. The Ultimate Add to Cart Button */
+#addToCartBtn {
+    background: linear-gradient(135deg, #6fba2c 0%, #5a9e22 100%) !important;
+    border: none !important;
+    border-radius: 50px !important; /* Pill shape is highly modern */
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px;
+    padding: 0 32px !important;
+    height: 56px !important; /* Taller, more clickable */
+    box-shadow: 0 8px 20px rgba(111, 186, 44, 0.25) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+#addToCartBtn:hover:not(:disabled) {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 25px rgba(111, 186, 44, 0.4) !important;
+}
+
+#addToCartBtn:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+}
+
+/* 4. Refine the Security/Return Bar below the button */
+.purchase-option .bg-light {
+    background: #f9fafb !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+}
+
+/* =========================================
+   STEP 4: WHAT'S IN THE BOX POLISH
+   ========================================= */
+
+/* The Container - Soft gray to contrast the white glass box above */
+.whats-included-box {
+    background: #f9fafb !important; 
+    border: none !important;
+    border-radius: 16px !important;
+    padding: 24px !important;
+    margin-top: 1rem;
+}
+
+/* Premium Section Label Match */
+.whats-included-box h6 {
+    font-size: 0.75rem !important;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    font-weight: 700 !important;
+    color: #6b7280 !important;
+    margin-bottom: 20px !important;
+}
+
+/* Elegant List Items */
+.included-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.included-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+/* Floating Icons */
+.included-icon {
+    width: 46px;
+    height: 46px;
+    background: #ffffff;
+    color: #2A8C3C;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.included-item:hover .included-icon {
+    transform: scale(1.05);
+}
+
+/* Crisp Typography */
+.included-text .title {
+    display: block;
+    font-weight: 700;
+    color: #111827;
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+}
+
+.included-text .desc {
+    display: block;
+    color: #6b7280;
+    font-size: 0.8rem;
+    line-height: 1.3;
+}
+
+/* Mobile Sticky Bar styling */
+.mobile-sticky-buy {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(0,0,0,0.08);
+    padding: 12px 24px 24px 24px;
+    z-index: 1040;
+    box-shadow: 0 -8px 30px rgba(0,0,0,0.05);
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.mobile-sticky-buy.visible {
+    transform: translateY(0);
+}
+
+/* Ensure mobile layout accounts for the sticky bar height */
+@media (max-width: 991px) {
+    body { padding-bottom: 85px !important; }
+}
+
+/* 1. THE FIX: Add padding to the swiper so the card border has room to move up */
+.swiper.reviewsSwiper {
+    padding-top: 10px !important; 
+    padding-bottom: 15px !important; 
+}
+
+/* 2. The Review Card */
+.review-card {
+    transition: all 0.3s ease;
+}
+
+/* 3. The Hover State (Added a soft shadow to match the transform) */
+.review-card:hover {
+    border-color: #6fba2c !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06) !important;
+    transform: translateY(-3px);
 }

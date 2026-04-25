@@ -93,3 +93,35 @@ class ShoppingCartItem(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+
+# ----------
+# Wishlist
+# ----------
+
+class Wishlist(models.Model):
+    """
+    Stores saved items for authenticated users.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='wishlist')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Wishlist for {self.user.first_name}"
+
+
+class WishlistItem(models.Model):
+    """
+    Individual items saved in the wishlist.
+    """
+    wishlist = models.ForeignKey(Wishlist, on_delete=models.CASCADE, related_name='items')
+    listing_unit = models.ForeignKey(ListingUnit, on_delete=models.CASCADE, related_name='wishlisted_by')
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['wishlist', 'listing_unit']
+        ordering = ['-added_at']
+
+    def __str__(self):
+        return f"{self.wishlist.user.first_name} - {self.listing_unit}"

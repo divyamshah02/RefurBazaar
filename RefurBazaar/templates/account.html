@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Account - RefurBazar</title>
+    <title>My Account - Recarvit</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="/static/css/style.css" rel="stylesheet">
+    <link href="/static/css/homepage/styles.css" rel="stylesheet">
 </head>
 <body>
     <!-- OTP Login Modal (Non-closable) -->
@@ -52,7 +52,7 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg main-navbar" id="navbar">
+    <!-- <nav class="navbar navbar-expand-lg main-navbar" id="navbar">
         <div class="container-fluid px-4">
             <a class="navbar-brand" href="/">
                 <i class="fas fa-recycle me-2"></i>RefurBazar
@@ -63,10 +63,12 @@
                 <a href="/account/" class="btn btn-primary">My Account</a>
             </div>
         </div>
-    </nav>
+    </nav> -->
+
+    {% include 'navbar.html' %}
 
     <!-- Breadcrumb -->
-    <div class="px-4 py-3" style="margin-top: 100px;">
+    <div class="px-4 py-3">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/">Home</a></li>
@@ -258,6 +260,8 @@
             </div>
         </div>
     </div>
+
+    {% include 'footer.html' %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/static/js/api_caller.js"></script>

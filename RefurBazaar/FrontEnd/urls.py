@@ -10,6 +10,17 @@ router.register(r'', IndexViewSet, basename='index')
 router.register(r'landing-page', LandingPageViewSet, basename='landing-page')
 router.register(r'contact', ContactViewSet, basename='contact')
 router.register(r'about', AboutViewSet, basename='about')
+router.register(r'wishlist', WishlistPageViewSet, basename='wishlist')
+router.register(r'shop', ShopViewSet, basename='shop')
+router.register(r'partner-application', PartnerApplicationViewSet, basename='partner-application')
+router.register(r'product', ProductDetailViewSet, basename='product')
+router.register(r'cart', CartViewSet, basename='cart')
+router.register(r'checkout', CheckoutViewSet, basename='checkout')
+router.register(r'order-success', OrderSuccessViewSet, basename='order-success')
+router.register(r'order-detail', OrderDetailViewSet, basename='order-detail')
+router.register(r'account', AccountViewSet, basename='account')
+router.register(r'logout', LogoutViewSet, basename='logout')
+
 # -------- Legal Pages --------
 router.register(r'legal', LegalViewSet, basename='legal')
 router.register(r'terms-conditions', TermsConditionsViewSet, basename='terms-conditions')
@@ -21,15 +32,6 @@ router.register(r'shipping-policy', ShippingPolicyViewSet, basename='shipping-po
 router.register(r'cookie-policy', CookiePolicyViewSet, basename='cookie-policy')
 router.register(r'disclaimer', DisclaimerViewSet, basename='disclaimer')
 # ------------------------------
-router.register(r'shop', ShopViewSet, basename='shop')
-router.register(r'partner-application', PartnerApplicationViewSet, basename='partner-application')
-router.register(r'product', ProductDetailViewSet, basename='product')
-router.register(r'cart', CartViewSet, basename='cart')
-router.register(r'checkout', CheckoutViewSet, basename='checkout')
-router.register(r'order-success', OrderSuccessViewSet, basename='order-success')
-router.register(r'order-detail', OrderDetailViewSet, basename='order-detail')
-router.register(r'account', AccountViewSet, basename='account')
-router.register(r'logout', LogoutViewSet, basename='logout')
 
 ### Refurbisher Views ###
 router.register(r'refurbisher-profile', RefurbisherProfileViewSet, basename='refurbisher-profile')

@@ -13,32 +13,78 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  // Wishlist functionality
-  const wishlistBtns = document.querySelectorAll(".wishlist-btn")
+  // // Wishlist functionality
+  // const wishlistBtns = document.querySelectorAll(".wishlist-btn")
+  // wishlistBtns.forEach((btn) => {
+  //   btn.addEventListener("click", function (e) {
+  //     e.preventDefault()
+  //     const icon = this.querySelector("i")
+
+  //     if (icon.classList.contains("far")) {
+  //       icon.classList.remove("far")
+  //       icon.classList.add("fas")
+  //       this.style.background = "#ec4899"
+  //       this.style.color = "white"
+
+  //       // Add to wishlist animation
+  //       this.style.transform = "scale(1.2)"
+  //       setTimeout(() => {
+  //         this.style.transform = "scale(1)"
+  //       }, 200)
+  //     } else {
+  //       icon.classList.remove("fas")
+  //       icon.classList.add("far")
+  //       this.style.background = "white"
+  //       this.style.color = "#1a1a1a"
+  //     }
+  //   })
+  // })
+
+  // Dynamic Wishlist functionality linked to API
+  const wishlistBtns = document.querySelectorAll(".wishlist-btn");
+  
   wishlistBtns.forEach((btn) => {
-    btn.addEventListener("click", function (e) {
-      e.preventDefault()
-      const icon = this.querySelector("i")
+    btn.addEventListener("click", async function (e) {
+      e.preventDefault();
+      
+      const icon = this.querySelector("i");
+      const unitId = this.getAttribute('data-unit-id'); // Make sure your HTML has data-unit-id="123"
 
-      if (icon.classList.contains("far")) {
-        icon.classList.remove("far")
-        icon.classList.add("fas")
-        this.style.background = "#ec4899"
-        this.style.color = "white"
-
-        // Add to wishlist animation
-        this.style.transform = "scale(1.2)"
-        setTimeout(() => {
-          this.style.transform = "scale(1)"
-        }, 200)
-      } else {
-        icon.classList.remove("fas")
-        icon.classList.add("far")
-        this.style.background = "white"
-        this.style.color = "#1a1a1a"
+      // We use your existing callApi function from api_caller.js
+      try {
+          const response = await callApi(
+              'POST', 
+              '/api/cart/wishlist-api/toggle/', // Adjust based on your root urls.py
+              { listing_unit_id: unitId },
+              csrf_token // Assuming csrf_token is declared globally on the page
+          );
+          
+          if(response.success) {
+              if (response.data.action === "added") {
+                  // Add to wishlist animation
+                  icon.classList.remove("far");
+                  icon.classList.add("fas");
+                  this.style.background = "#ec4899";
+                  this.style.color = "white";
+                  this.style.transform = "scale(1.2)";
+                  setTimeout(() => { this.style.transform = "scale(1)"; }, 200);
+              } else {
+                  // Remove from wishlist styling
+                  icon.classList.remove("fas");
+                  icon.classList.add("far");
+                  this.style.background = "white";
+                  this.style.color = "#1a1a1a";
+              }
+          } else {
+              // Usually triggers if the user is not logged in!
+              alert("Please log in to add items to your wishlist.");
+              window.location.href = '/login/'; 
+          }
+      } catch (error) {
+          console.error("Wishlist Error:", error);
       }
-    })
-  })
+    });
+  });
 
   // Color selection
   // const colorDots = document.querySelectorAll(".color-dot")

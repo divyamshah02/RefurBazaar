@@ -8,6 +8,9 @@ from .models import ShoppingCart, ShoppingCartItem
 from .serializers import CartSerializer, CartItemSerializer
 from Product.models import ListingUnit
 
+from .models import Wishlist, WishlistItem
+from .serializers import WishlistSerializer, WishlistItemSerializer
+
 
 def generate_unique_cart_id():
     """Generate a unique 10-digit cart ID"""
@@ -358,5 +361,66 @@ class CartTransferViewSet(viewsets.ViewSet):
                 "cart_id": guest_cart.cart_id,
                 "cart": serializer.data
             },
+            "error": None
+        }, status=status.HTTP_200_OK)
+
+
+# ----------
+# Wishlist
+# ----------
+
+from utils.decorators import handle_exceptions, check_authentication
+
+class WishlistAPIViewSet(viewsets.ViewSet):
+    """API for managing user wishlists"""
+
+    @handle_exceptions
+    @check_authentication(required_role=['customer', 'admin'])
+    def list(self, request):
+        """Get the current user's wishlist"""
+        wishlist, created = Wishlist.objects.get_or_create(user=request.user)
+        serializer = WishlistSerializer(wishlist)
+        return Response({
+            "success": True, 
+            "user_not_logged_in": False, 
+            "data": serializer.data, 
+            "error": None
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['post'], url_path='toggle')
+    @handle_exceptions
+    @check_authentication(required_role=['customer', 'admin'])
+    def toggle(self, request):
+        """Add to wishlist if not exists, remove if it does"""
+        listing_unit_id = request.data.get('listing_unit_id')
+        
+        if not listing_unit_id:
+            return Response({
+                "success": False, "error": "listing_unit_id is required"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        wishlist, created = Wishlist.objects.get_or_create(user=request.user)
+
+        try:
+            listing_unit = ListingUnit.objects.get(id=listing_unit_id)
+        except ListingUnit.DoesNotExist:
+            return Response({
+                "success": False, "error": "Listing Unit not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        # Check if item is already in wishlist
+        item = WishlistItem.objects.filter(wishlist=wishlist, listing_unit=listing_unit).first()
+        
+        if item:
+            item.delete()
+            action_status = "removed"
+        else:
+            WishlistItem.objects.create(wishlist=wishlist, listing_unit=listing_unit)
+            action_status = "added"
+
+        return Response({
+            "success": True, 
+            "user_not_logged_in": False, 
+            "data": {"action": action_status}, 
             "error": None
         }, status=status.HTTP_200_OK)
