@@ -21,6 +21,33 @@
 
     {% include 'navbar.html' %}
 
+    <div class="container" style="max-width: 95%;">
+        <div class="wishlist-banner mb-4 mt-2">
+            <div class="wishlist-banner-content">
+                <div class="wishlist-banner-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <div class="wishlist-banner-text">
+                    <h2 class="fw-bold mb-1">Your Wishlist</h2>
+                    <p class="mb-0 text-muted">Keep an eye on the devices you love. Save your favorites here and grab them
+                        before they're gone!</p>
+                </div>
+            </div>
+    
+            <div class="wishlist-banner-visuals">
+                <img src="/static/images/homepage/banner1-macbook.png" alt="Saved Laptop"
+                    class="device-img device-left">
+            
+                <img src="/static/images/homepage/category/iPad_9th_Gen_2021_Wi-Fi.png" alt="Saved Tablet"
+                    class="device-img device-right">
+            
+                <img src="/static/images/homepage/category/iPhone_14_Pro_Max.png" alt="Saved Phone" class="device-img device-center">
+            </div>
+    
+            <div class="wishlist-banner-bg-shape"></div>
+        </div>
+    </div>
+
     <div class="wishlist-header mb-5">
         <div class="container">
             <h1 class="fw-bold text-dark display-5 mb-2">My Wishlist</h1>
@@ -49,6 +76,38 @@
         </div>
 
     </div>
+
+    <div class="container">
+        <div class="wishlist-trust-badges">
+            <div class="trust-badge">
+                <div class="badge-icon">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <div class="badge-text">
+                    <strong>Free Delivery</strong>
+                </div>
+            </div>
+            
+            <div class="trust-badge">
+                <div class="badge-icon">
+                    <i class="fas fa-undo-alt"></i>
+                </div>
+                <div class="badge-text">
+                    <strong>7 Days To Return</strong>
+                </div>
+            </div>
+            
+            <div class="trust-badge">
+                <div class="badge-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="badge-text">
+                    <strong>6 Months Warranty</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     {% include 'footer.html' %}
 

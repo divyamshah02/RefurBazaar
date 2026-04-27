@@ -288,14 +288,37 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .list-group-item-action:hover {
-            background-color: var(--primary-light);
+        .list-group-item-action {
+            color: #4b5563;
+            font-weight: 500;
+            border: none;
+            border-bottom: 1px solid rgba(0,0,0,0.03); /* Subtle separator */
+            padding: 1rem 1.25rem;
+            transition: all 0.3s ease;
         }
 
+        .list-group-item-action:hover {
+            background-color: rgba(111, 186, 44, 0.05);
+            color: #2A8C3C;
+        }
+
+        /* The New Premium Active State */
         .list-group-item-action.active {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            color: white;
+            background-color: rgba(111, 186, 44, 0.1) !important; /* Soft green background */
+            border-color: transparent !important;
+            border-left: 4px solid #2A8C3C !important; /* Left accent line */
+            color: #2A8C3C !important; /* Bold dark green text */
+            font-weight: 700;
+        }
+
+        /* Ensure the icon color matches the active text */
+        .list-group-item-action.active i {
+            color: #2A8C3C !important;
+        }
+
+        /* Keep the bottom rounded corners for the logout button */
+        .list-group-item-action:last-child {
+            border-bottom: none;
         }
 
         .order-card {

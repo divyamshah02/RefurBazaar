@@ -116,13 +116,52 @@ function showEmptyCart() {
   }
 }
 
+// =========================================
+// WARRANTY TOGGLE & DYNAMIC CART TOTAL
+// =========================================
+
+function updateFinalCartTotal() {
+  // Ensure we have loaded cart data to work with
+  if (!cartData || !cartData.items || cartData.items.length === 0) return;
+
+  const summaryTotalEl = document.getElementById("summaryTotal");
+  const warrantyToggle = document.getElementById("warrantyToggle");
+  const warrantyCost = 1999;
+  
+  // Start with the base cart total from the API
+  let finalTotal = Number.parseFloat(cartData.total_price);
+  
+  // If the warranty switch is turned on, add the cost
+  if (warrantyToggle && warrantyToggle.checked) {
+      finalTotal += warrantyCost;
+  }
+
+  // Render the final price (Using 'en-IN' for Indian comma formatting)
+  if (summaryTotalEl) {
+      summaryTotalEl.textContent = `₹${finalTotal.toLocaleString("en-IN", {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+  }
+}
+
+// Listen for clicks on the warranty toggle switch
+document.addEventListener("DOMContentLoaded", () => {
+  const warrantyToggle = document.getElementById("warrantyToggle");
+  if (warrantyToggle) {
+      warrantyToggle.addEventListener("change", () => {
+          updateFinalCartTotal();
+      });
+  }
+});
+
 function updateCartSummary(data) {
   if (!data.items || data.items.length === 0) return
 
-  const subtotal = Number.parseFloat(data.total_price)
-  const total = subtotal
+  // const subtotal = Number.parseFloat(data.total_price)
+  // const total = subtotal
 
-  document.getElementById("summaryTotal").textContent = `₹${total.toLocaleString("en-US", {minimumFractionDigits: 0, maximumFractionDigits: 0})}`
+  // document.getElementById("summaryTotal").textContent = `₹${total.toLocaleString("en-US", {minimumFractionDigits: 0, maximumFractionDigits: 0})}`
+
+  // Called the warranty toggle function to ensure total is correct based on warranty selection
+  updateFinalCartTotal();
 
   // Calculate E-waste savings based on product categories
   let totalEWasteSaved = 0
