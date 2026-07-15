@@ -91,8 +91,19 @@ function renderOrderItems(data) {
 function updateOrderSummary(data) {
   if (!data.items || data.items.length === 0) return
 
-  const subtotal = Number.parseFloat(data.total_price)
+  let subtotal = Number.parseFloat(data.total_price)
   const shipping = 0
+  
+  // ADDED: Check for warranty and add to subtotal
+  const warrantyToggle = document.getElementById("warrantyToggle")
+  const warrantyCost = 1999
+  
+  if (warrantyToggle && warrantyToggle.checked) {
+      subtotal += warrantyCost
+  }
+
+  // const subtotal = Number.parseFloat(data.total_price)
+  // const shipping = 0
   const total_before_tax = Math.round((subtotal * 100) / 118)
   const tax = Math.round(subtotal - total_before_tax)
   const total = total_before_tax + shipping + tax
@@ -238,6 +249,16 @@ function setupEventListeners() {
       billingSection.style.display = this.checked ? "none" : "block"
     })
   }
+
+  // ADDED: Listen for warranty toggle
+  const warrantyToggle = document.getElementById("warrantyToggle")
+  if (warrantyToggle) {
+    warrantyToggle.addEventListener("change", function () {
+      if (cartData) {
+        updateOrderSummary(cartData) // Recalculate totals on click
+      }
+    })
+  }
 }
 
 async function placeOrder() {
@@ -373,6 +394,9 @@ async function proceedWithOrder() {
     billing_pincode: billingSame ? "" : document.getElementById("billingPincode").value.trim(),
     payment_method: paymentMethod,
     order_notes: document.getElementById("orderNotes").value.trim(),
+
+    // ADDED: Send warranty status to your backend API
+    extended_warranty: document.getElementById("warrantyToggle") ? document.getElementById("warrantyToggle").checked : false
   }
 
   try {

@@ -1,0 +1,168 @@
+/* =========================================
+   RECARVIT CONTACT US PAGE CSS
+   ========================================= */
+
+.rc-contact-page {
+    background-color: var(--gray-50, #f9fafb);
+    min-height: 80vh;
+}
+
+/* Grid layout for the 5 selectors */
+.rc-contact-selectors {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+}
+
+/* Individual Selector Buttons */
+.rc-contact-selector-btn {
+    background: var(--gray-50, #f9fafb);
+    border: 1.5px solid var(--gray-200, #e5e7eb);
+    border-radius: var(--radius-sm, 8px);
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.rc-contact-selector-btn:hover {
+    border-color: var(--gray-300, #d1d5db);
+}
+
+.rc-contact-selector-btn .rc-icon {
+    font-size: 20px;
+    margin-bottom: 6px;
+}
+
+.rc-contact-selector-btn p {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--dark, #1a1a1a);
+    margin: 0 0 2px 0;
+    line-height: 1.3;
+}
+
+.rc-contact-selector-btn small {
+    font-size: 10px;
+    color: var(--gray-400, #9ca3af);
+}
+
+/* Active State for Tabs */
+.rc-contact-selector-btn.active {
+    border-color: var(--primary-green, #009647);
+    background-color: rgba(0, 150, 71, 0.08); /* Recarvit Green Light */
+}
+
+.rc-contact-selector-btn.active p {
+    color: var(--primary-green, #009647);
+}
+
+/* Panels Container */
+.rc-contact-content {
+    background: var(--gray-50, #f9fafb);
+    border-radius: var(--radius-sm, 8px);
+    border: 1.5px solid var(--gray-200, #e5e7eb);
+    padding: 24px;
+}
+
+/* Individual Panels */
+.rc-contact-panel {
+    display: none;
+    animation: rcFadeIn 0.3s ease forwards;
+}
+
+.rc-contact-panel.active {
+    display: block;
+}
+
+@keyframes rcFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Contact Details Info */
+.rc-contact-detail {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rc-cd-icon {
+    width: 36px;
+    height: 36px;
+    background-color: rgba(0, 150, 71, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+/* Specific Warranty Note Box */
+.rc-warranty-note {
+    background-color: #FFF8EC;
+    border: 1.5px solid #F5D58B;
+    border-radius: 8px;
+    padding: 16px 20px;
+}
+
+.rc-warranty-note h5 {
+    color: #D4870A;
+    font-size: 13px;
+}
+
+.rc-warranty-note p {
+    color: #5C3A00;
+    font-size: 13px;
+}
+
+/* Form Inputs Styling */
+.rc-mini-form .rc-input {
+    background-color: var(--white, #ffffff);
+    border: 1px solid var(--gray-200, #e5e7eb);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--dark, #1a1a1a);
+    box-shadow: none;
+}
+
+.rc-mini-form .rc-input:focus {
+    border-color: var(--primary-green, #009647);
+    outline: none;
+}
+
+.rc-btn-submit {
+    background-color: var(--primary-green, #009647);
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .rc-contact-selectors {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .rc-contact-selectors {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        scroll-snap-type: x mandatory;
+    }
+    
+    .rc-contact-selector-btn {
+        flex: 0 0 140px;
+        scroll-snap-align: start;
+    }
+}

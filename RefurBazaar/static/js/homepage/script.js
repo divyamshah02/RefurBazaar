@@ -13,32 +13,78 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  // Wishlist functionality
-  const wishlistBtns = document.querySelectorAll(".wishlist-btn")
+  // // Wishlist functionality
+  // const wishlistBtns = document.querySelectorAll(".wishlist-btn")
+  // wishlistBtns.forEach((btn) => {
+  //   btn.addEventListener("click", function (e) {
+  //     e.preventDefault()
+  //     const icon = this.querySelector("i")
+
+  //     if (icon.classList.contains("far")) {
+  //       icon.classList.remove("far")
+  //       icon.classList.add("fas")
+  //       this.style.background = "#ec4899"
+  //       this.style.color = "white"
+
+  //       // Add to wishlist animation
+  //       this.style.transform = "scale(1.2)"
+  //       setTimeout(() => {
+  //         this.style.transform = "scale(1)"
+  //       }, 200)
+  //     } else {
+  //       icon.classList.remove("fas")
+  //       icon.classList.add("far")
+  //       this.style.background = "white"
+  //       this.style.color = "#1a1a1a"
+  //     }
+  //   })
+  // })
+
+  // Dynamic Wishlist functionality linked to API
+  const wishlistBtns = document.querySelectorAll(".wishlist-btn");
+  
   wishlistBtns.forEach((btn) => {
-    btn.addEventListener("click", function (e) {
-      e.preventDefault()
-      const icon = this.querySelector("i")
+    btn.addEventListener("click", async function (e) {
+      e.preventDefault();
+      
+      const icon = this.querySelector("i");
+      const unitId = this.getAttribute('data-unit-id'); // Make sure your HTML has data-unit-id="123"
 
-      if (icon.classList.contains("far")) {
-        icon.classList.remove("far")
-        icon.classList.add("fas")
-        this.style.background = "#ec4899"
-        this.style.color = "white"
-
-        // Add to wishlist animation
-        this.style.transform = "scale(1.2)"
-        setTimeout(() => {
-          this.style.transform = "scale(1)"
-        }, 200)
-      } else {
-        icon.classList.remove("fas")
-        icon.classList.add("far")
-        this.style.background = "white"
-        this.style.color = "#1a1a1a"
+      // We use your existing callApi function from api_caller.js
+      try {
+          const response = await callApi(
+              'POST', 
+              '/api/cart/wishlist-api/toggle/', // Adjust based on your root urls.py
+              { listing_unit_id: unitId },
+              csrf_token // Assuming csrf_token is declared globally on the page
+          );
+          
+          if(response.success) {
+              if (response.data.action === "added") {
+                  // Add to wishlist animation
+                  icon.classList.remove("far");
+                  icon.classList.add("fas");
+                  this.style.background = "#ec4899";
+                  this.style.color = "white";
+                  this.style.transform = "scale(1.2)";
+                  setTimeout(() => { this.style.transform = "scale(1)"; }, 200);
+              } else {
+                  // Remove from wishlist styling
+                  icon.classList.remove("fas");
+                  icon.classList.add("far");
+                  this.style.background = "white";
+                  this.style.color = "#1a1a1a";
+              }
+          } else {
+              // Usually triggers if the user is not logged in!
+              alert("Please log in to add items to your wishlist.");
+              window.location.href = '/login/'; 
+          }
+      } catch (error) {
+          console.error("Wishlist Error:", error);
       }
-    })
-  })
+    });
+  });
 
   // Color selection
   // const colorDots = document.querySelectorAll(".color-dot")
@@ -132,21 +178,19 @@ document.addEventListener("DOMContentLoaded", () => {
     observer.observe(section)
   })
 
-  // Newsletter subscription
-  const newsletterForm = document.querySelector(".footer .input-group")
-  if (newsletterForm) {
-    const subscribeBtn = newsletterForm.querySelector("button")
-    const emailInput = newsletterForm.querySelector("input")
-
-    subscribeBtn.addEventListener("click", () => {
-      const email = emailInput.value.trim()
+  // Newsletter subscription (Updated for V2.0 Footer)
+  const rcNewsletterForm = document.getElementById("rcNewsletterForm")
+  if (rcNewsletterForm) {
+    rcNewsletterForm.addEventListener("submit", (e) => {
+      e.preventDefault(); // Stop page from refreshing
+      const emailInput = document.getElementById("rcNewsletterEmail");
+      const email = emailInput.value.trim();
+      
       if (email && email.includes("@")) {
-        alert("Thank you for subscribing!")
-        emailInput.value = ""
-      } else {
-        alert("Please enter a valid email address")
+        alert("Thank you for subscribing! Check your inbox for deals.");
+        emailInput.value = "";
       }
-    })
+    });
   }
 
   // Tab content fade animation
@@ -211,58 +255,42 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   /* =========================================
-   COMBINED CALCULATOR & IMPACT LOGIC
-   ========================================= */
-  const deviceSelect = document.getElementById("deviceSelect");
+     RECARVIT V2.0: CALCULATE YOUR IMPACT LOGIC
+     ========================================= */
+  const impactSelect = document.getElementById("impactDeviceSelect");
 
-  if (deviceSelect) {
-    // Function to calculate and update UI
-    const updateCalculator = () => {
-      // 1. Get Values from Select Option (Format: "RefurbPrice,NewPrice")
-      const values = deviceSelect.value.split(",");
-      const refurbPrice = Number.parseInt(values[0]);
-      const newPrice = Number.parseInt(values[1]);
+  if (impactSelect) {
+    const updateImpactCalculator = () => {
+      // Get the comma separated values from the selected option
+      // Format: "refurbPrice,newPrice,ewaste,co2,water"
+      const values = impactSelect.value.split(",");
+      const refurbPrice = parseInt(values[0]);
+      const newPrice = parseInt(values[1]);
+      const ewaste = values[2];
+      const co2 = values[3];
+      const water = parseInt(values[4]);
 
-      // 2. Calculate Financial Savings
+      // Calculate Financials
       const savings = newPrice - refurbPrice;
       const discountPercent = Math.round((savings / newPrice) * 100);
-      const payPercent = Math.round((refurbPrice / newPrice) * 100);
 
-      // 3. Calculate Environmental Impact (Estimates based on price/weight proxy)
-      // CO2: approx 0.26g per Rupee of value (proxy for manufacturing complexity)
-      const co2Val = Math.round(newPrice * 0.00026);
+      // Update Financial DOM Elements (using Indian number formatting)
+      document.getElementById("impactRefurbPrice").textContent = `₹${refurbPrice.toLocaleString('en-IN')}`;
+      document.getElementById("impactNewPrice").textContent = `₹${newPrice.toLocaleString('en-IN')}`;
+      document.getElementById("impactSavingsAmount").textContent = `₹${savings.toLocaleString('en-IN')}`;
+      document.getElementById("impactSavingsPercent").textContent = discountPercent;
 
-      // E-Waste: approx weight proxy
-      const wasteVal = (newPrice * 0.000014).toFixed(1);
-
-      // Water: New Calculation! (approx 60L per dollar/value equivalent)
-      // Simplified logic: higher value = more complex chip fab = more water
-      const waterVal = Math.round(newPrice * 0.15).toLocaleString();
-
-      // 4. Update the DOM Elements
-      // Prices
-      document.querySelector(".new-price-display").textContent = `₹${newPrice.toLocaleString()}`;
-      document.querySelector(".refurb-price").textContent = `₹${refurbPrice.toLocaleString()}`;
-      document.querySelector(".savings").textContent = `₹${savings.toLocaleString()}`;
-      document.querySelector(".discount-percent").textContent = `${discountPercent}%`;
-
-      // Progress Bar
-      const savingsBar = document.getElementById("savingsBar");
-      if (savingsBar) {
-        savingsBar.style.width = `${payPercent}%`;
-      }
-
-      // Impact Stats (Right Panel)
-      document.querySelector(".co2").textContent = `${co2Val} kg`;
-      document.querySelector(".waste").textContent = `${wasteVal} kg`;
-      document.querySelector(".water").textContent = `${waterVal} L`;
+      // Update Environmental DOM Elements
+      document.getElementById("impactEwaste").textContent = `${ewaste} kg`;
+      document.getElementById("impactCo2").textContent = `${co2} kg`;
+      document.getElementById("impactWater").textContent = `${water.toLocaleString('en-IN')} L`;
     };
 
-    // Listen for changes
-    deviceSelect.addEventListener("change", updateCalculator);
-
-    // Run once on load to set initial state
-    updateCalculator();
+    // Listen for dropdown changes
+    impactSelect.addEventListener("change", updateImpactCalculator);
+    
+    // Run once on load to populate the initial values
+    updateImpactCalculator();
   }
 
   /* =========================================
@@ -482,9 +510,18 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Scroll Function
     const scrollTrack = (direction) => {
-      // Get the width of one card (including gap)
-      const cardWidth = track.querySelector('.testimonial-slide').offsetWidth + 24; // 24 is the gap
+      const slide = track.querySelector('.testimonial-slide');
+      if (!slide) return;
       
+      // Get the width of one card (including gap)
+      const cardWidth = slide.offsetWidth + 24; // 24 is the gap
+      
+      // If moving right and we've reached the end, smoothly scroll back to the start
+      if (direction === 'right' && (track.scrollLeft + track.clientWidth >= track.scrollWidth - 10)) {
+        track.scrollTo({ left: 0, behavior: 'smooth' });
+        return;
+      }
+
       const scrollAmount = direction === 'left' ? -cardWidth : cardWidth;
       
       track.scrollBy({
@@ -495,6 +532,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     btnPrev.addEventListener('click', () => scrollTrack('left'));
     btnNext.addEventListener('click', () => scrollTrack('right'));
+
+    // === Auto-Play Functionality ===
+    let autoScrollInterval = setInterval(() => {
+      scrollTrack('right');
+    }, 3000); // Automatically scrolls every 3.5 seconds
+
+    // Pause auto-scroll when user hovers or touches the track (so they can read)
+    const pauseScroll = () => clearInterval(autoScrollInterval);
+    const resumeScroll = () => {
+      clearInterval(autoScrollInterval);
+      autoScrollInterval = setInterval(() => {
+        scrollTrack('right');
+      }, 3500);
+    };
+
+    track.addEventListener('mouseenter', pauseScroll);
+    track.addEventListener('mouseleave', resumeScroll);
+    track.addEventListener('touchstart', pauseScroll, { passive: true });
+    track.addEventListener('touchend', resumeScroll, { passive: true });
   }
 
   /* =========================================
@@ -529,4 +585,177 @@ document.addEventListener("DOMContentLoaded", () => {
   setupProductSlider('recommendedTrack', 'recPrev', 'recNext');  // Section 13
   setupProductSlider('expressTrack', 'expressPrev', 'expressNext'); // Section 14
 
+
+  /* =========================================
+     RECARVIT V2.0: NUMBER COUNTER ANIMATION
+     ========================================= */
+  const animateCounters = () => {
+    const speed = 100; // Adjusted speed for smoother counting
+
+    const startCounting = (counter) => {
+      const target = +counter.getAttribute('data-target');
+      const hasDecimals = counter.hasAttribute('data-decimals');
+      const inc = target / speed;
+      
+      // Keep track of the exact number in memory, not from the HTML
+      let currentCount = 0; 
+
+      const updateCount = () => {
+        if (currentCount < target) {
+          currentCount += inc; // Add the exact decimal increment
+          
+          if (hasDecimals) {
+            counter.innerText = currentCount.toFixed(1);
+          } else {
+            counter.innerText = Math.ceil(currentCount).toLocaleString('en-IN');
+          }
+          setTimeout(updateCount, 15);
+        } else {
+          // Force exact final number to prevent overshooting
+          if (hasDecimals) {
+            counter.innerText = target.toFixed(1);
+          } else {
+            counter.innerText = target.toLocaleString('en-IN');
+          }
+        }
+      };
+      updateCount();
+    };
+
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.5 
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const countersInView = entry.target.querySelectorAll('.counter');
+          countersInView.forEach(counter => startCounting(counter));
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    const statsSection = document.querySelector('.rc-stats-section');
+    if (statsSection) {
+      observer.observe(statsSection);
+    }
+  };
+
+  // Run the function
+  animateCounters();
+
+
 })
+
+/* =========================================
+   Interactive Ecoreco Impact Calculator & Animations
+   ========================================= */
+document.addEventListener("DOMContentLoaded", function() {
+    const deviceSelect = document.getElementById('ecoDeviceSelect');
+    const qtyRange = document.getElementById('ecoQtyRange');
+    const qtyLabel = document.getElementById('ecoQtyLabel');
+    
+    const co2Display = document.getElementById('ecoCo2Val');
+    const wasteDisplay = document.getElementById('ecoWasteVal');
+    const waterDisplay = document.getElementById('ecoWaterVal');
+
+    if (!deviceSelect || !qtyRange) return;
+
+    const impactData = {
+        smartphone: { co2: 50, waste: 1.9, water: 20000 },
+        laptop: { co2: 250, waste: 3.5, water: 45000 },
+        tablet: { co2: 120, waste: 2.2, water: 25000 }
+    };
+
+    function animateValue(obj, start, end, duration, isDecimal) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const currentVal = progress * (end - start) + start;
+            
+            if (isDecimal) {
+                obj.innerHTML = currentVal.toFixed(1);
+            } else {
+                obj.innerHTML = Math.floor(currentVal).toLocaleString('en-IN');
+            }
+            
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                obj.innerHTML = isDecimal ? end.toFixed(1) : end.toLocaleString('en-IN');
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+
+    // Function to spawn the visual animations (Trees, Water, Leaves)
+    function spawnEcoParticles() {
+        const container = document.getElementById('eco-particles');
+        if (!container) return;
+
+        const particleTypes = [
+            { class: 'fas fa-tree', color: '#4CAF5C', anim: 'growTree' },
+            { class: 'fas fa-tint', color: '#4fc3f7', anim: 'dropWater' },
+            { class: 'fas fa-leaf', color: '#81c784', anim: 'floatLeaf' }
+        ];
+
+        // Create 15 particles per interaction
+        for (let i = 0; i < 15; i++) {
+            const particle = document.createElement('i');
+            const type = particleTypes[Math.floor(Math.random() * particleTypes.length)];
+            
+            particle.className = `eco-particle ${type.class}`;
+            particle.style.color = type.color;
+            
+            // Randomize starting position across the container
+            particle.style.left = `${Math.random() * 100}%`;
+            particle.style.top = `${Math.random() * 100}%`;
+            
+            // Randomize size between 15px and 35px
+            const size = Math.random() * 20 + 15;
+            particle.style.fontSize = `${size}px`;
+            
+            // Randomize animation duration between 1.5s and 3s
+            const duration = Math.random() * 1.5 + 1.5; 
+            particle.style.animation = `${type.anim} ${duration}s ease-out forwards`;
+            
+            container.appendChild(particle);
+            
+            // Clean up the particle from the DOM after animation finishes
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, duration * 1000);
+        }
+    }
+
+    function updateCalculator() {
+        const device = deviceSelect.value;
+        const qty = parseInt(qtyRange.value);
+        
+        qtyLabel.innerText = qty === 1 ? "1 Device" : `${qty} Devices`;
+
+        const targetCo2 = impactData[device].co2 * qty;
+        const targetWaste = impactData[device].waste * qty;
+        const targetWater = impactData[device].water * qty;
+
+        const currentCo2 = parseFloat(co2Display.innerText.replace(/,/g, '')) || 0;
+        const currentWaste = parseFloat(wasteDisplay.innerText.replace(/,/g, '')) || 0;
+        const currentWater = parseFloat(waterDisplay.innerText.replace(/,/g, '')) || 0;
+
+        animateValue(co2Display, currentCo2, targetCo2, 500, false);
+        animateValue(wasteDisplay, currentWaste, targetWaste, 500, true);
+        animateValue(waterDisplay, currentWater, targetWater, 500, false);
+        
+        // Trigger the visual burst!
+        spawnEcoParticles();
+    }
+
+    deviceSelect.addEventListener('change', updateCalculator);
+    qtyRange.addEventListener('input', updateCalculator);
+});

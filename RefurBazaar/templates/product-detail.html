@@ -4,11 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">Product Detail - RefurBazar</title>
+    <title id="pageTitle">Product Detail - Recarvit</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" rel="stylesheet">
-    <link href="/static/css/style.css" rel="stylesheet">
+    <!-- <link href="/static/css/style.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="/static/css/homepage/styles.css">
     <link href="/static/css/product-enhanced.css" rel="stylesheet">
     <!-- Added Navbar css -->
     <link rel="stylesheet" href="/static/css/navbar.css">
@@ -95,6 +96,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 16px;
+            padding: 16px 0;
         }
 
         .spec-grid div {
@@ -230,13 +232,12 @@
         /* ===== Trust Badges Section ===== */
         .trust-badges {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 12px;
-            margin: 1.5rem 0;
-            padding: 1.5rem;
-            background: linear-gradient(135deg, rgba(111, 186, 44, 0.05), rgba(111, 186, 44, 0.02));
-            border-radius: 12px;
-            border: 1px solid rgba(111, 186, 44, 0.1);
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin: 2rem 0;
+            padding: 0;
+            background: transparent;
+            border: none;
         }
 
         .badge-item {
@@ -244,40 +245,60 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
-            padding: 12px;
-            border-radius: 10px;
-            background: white;
+            padding: 16px 12px;
+            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid #f3f4f6;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
         }
 
         .badge-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(111, 186, 44, 0.08);
+            border-color: rgba(111, 186, 44, 0.2);
         }
 
         .badge-item i {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             color: #6fba2c;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
+            background: rgba(111, 186, 44, 0.1);
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
         }
 
         .badge-item .badge-label {
-            font-size: 0.75rem;
-            font-weight: 600;
+            font-size: 0.8rem;
+            font-weight: 700;
             color: #111827;
         }
 
         .badge-item .badge-desc {
             font-size: 0.7rem;
             color: #6b7280;
-            margin-top: 2px;
+            margin-top: 4px;
         }
+
+        .minimal-spec-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 0.9rem;
+        }
+        .minimal-spec-item span { color: #6b7280; }
+        .minimal-spec-item strong { color: #111827; font-weight: 500; }
     </style>
 </head>
 
 <body>
     <!-- 2. Primary Navigation (Navbar) -->
-    <nav class="navbar-main">
+    <!-- <nav class="navbar-main">
         <div class="container-fluid px-3 px-lg-5">
             <div class="d-flex align-items-center justify-content-between navbar-container">
 
@@ -314,10 +335,10 @@
 
             </div>
         </div>
-    </nav>
+    </nav> -->
 
     <!-- 3. Secondary Navigation (Category Nav) -->
-    <div class="secondary-nav">
+    <!-- <div class="secondary-nav">
         <div class="container-fluid">
             <div class="d-flex">
                 <a href="/shop/?category=sale" class="cat-link highlight-red">
@@ -335,7 +356,9 @@
                 </a>
             </div>
         </div>
-    </div>
+    </div> -->
+
+    {% include 'navbar.html' %}
 
     <!-- Breadcrumb -->
     <div class="px-4 py-3">
@@ -372,7 +395,7 @@
     <!-- Product Detail -->
     <div class="px-4 pb-5" id="productContent" style="display: none;">
         <div class="row g-4">
-            <div class="col-lg-6">
+            <div class="col-lg-7">
                 <div class="product-gallery sticky-top" style="top: 100px; z-index: 1;">
                     <div class="gallery-layout-wrapper">
                 
@@ -388,7 +411,7 @@
                         </div>
                     </div>
                 
-                    <div class="trust-badges mt-3">
+                    <!-- <div class="trust-badges mt-3">
                         <div class="badge-item">
                             <i class="fas fa-shield-alt"></i>
                             <div class="badge-label">Certified</div>
@@ -409,19 +432,26 @@
                             <div class="badge-label">Secure</div>
                             <div class="badge-desc">100% Safe Payment</div>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
 
-            <div class="col-lg-6">
+            <div class="col-lg-5">
 
                 <div class="product-header mb-3">
                     <h1 id="productTitle" class="h3 fw-bold mb-0">Loading...</h1>
+
+                    <a href="javascript:void(0)" onclick="toggleSpecsPanel()"
+                        class="d-inline-flex align-items-center mt-2 text-decoration-none"
+                        style="color: #2A8C3C; font-size: 0.9rem; font-weight: 600; transition: opacity 0.2s;"
+                        onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                        <i class="fas fa-sliders-h me-2"></i> View Specifications
+                    </a>
                 </div>
 
                 <div class="product-details">
 
-                    <div class="selection-section mt-0 pt-0 border-top-0">
+                    <div class="selection-section border-top-0">
                         <div class="section-header d-flex justify-content-between align-items-center">
                             <h6 class="mb-0">
                                 Condition: <span id="selectedConditionLabel" class="text-primary fw-bold">Select...</span>
@@ -448,6 +478,35 @@
                         </div>
                     </div>
 
+                    <div class="warranty-addon-box mb-3 p-3 shadow-sm">
+                        <i class="fas fa-shield-alt watermark"></i>
+                        
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="icon-circle">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.95rem;">Extended Warranty</h6>
+                                </div>
+                            </div>
+                            
+                            <label class="theme-switch mt-1">
+                                <input type="checkbox" id="warrantyToggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        
+                        <p class="text-muted mb-2 ps-1" style="font-size: 0.8rem; line-height: 1.4; max-width: 85%;">
+                            Upgrade your protection. Extend your coverage for 24 months to cover all hardware defects, battery issues, and internal malfunctions.
+                        </p>
+                        
+                        <div class="d-flex align-items-center gap-2 ps-1">
+                            <span class="fw-bold" style="color: #2A8C3C; font-size: 0.95rem;">+ ₹1,999</span>
+                            <span class="text-muted" style="font-size: 0.75rem;">(Billed once)</span>
+                        </div>
+                    </div>
+
                     <div class="purchase-options mb-4 sticky-top-mobile" style="padding: 1.5rem;">
                         <div class="purchase-option border-0 p-0 mb-0">
 
@@ -464,7 +523,7 @@
 
                                 <button class="btn btn-primary px-5 py-2 shadow-sm" id="addToCartBtn"
                                     style="height: 50px; font-weight: 600;" disabled>
-                                    <i class="fas fa-shopping-cart me-2"></i>Add to Basket
+                                    <i class="fas fa-shopping-cart me-2"></i>Add to Cart
                                 </button>
                             </div>
 
@@ -477,11 +536,47 @@
                                         <i class="fas fa-undo me-1"></i>7-Day Return
                                     </small>
                                     <small class="text-success fw-bold" style="font-size: 0.75rem;">
-                                        <i class="fas fa-shield-alt me-1"></i>Warranty
+                                        <i class="fas fa-shield-alt me-1"></i>6 Warranty
                                     </small>
                                 </div>
                             </div>
 
+                        </div>
+                    </div>
+
+                    <div class="whats-included-box">
+                        <h6>What's in the box</h6>
+                        
+                        <div class="included-list">
+                            <div class="included-item">
+                                <div class="included-icon">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <div class="included-text">
+                                    <span class="title">The Device</span>
+                                    <span class="desc">Tested, cleaned & fully refurbished</span>
+                                </div>
+                            </div>
+                            
+                            <div class="included-item">
+                                <div class="included-icon">
+                                    <i class="fas fa-plug"></i>
+                                </div>
+                                <div class="included-text">
+                                    <span class="title">Charging Cable</span>
+                                    <span class="desc">High-quality compatible charging cable</span>
+                                </div>
+                            </div>
+
+                            <!-- <div class="included-item">
+                                <div class="included-icon">
+                                    <i class="fas fa-file-contract"></i>
+                                </div>
+                                <div class="included-text">
+                                    <span class="title">Warranty Card</span>
+                                    <span class="desc">Details of your extended coverage</span>
+                                </div>
+                            </div> -->
                         </div>
                     </div>
                     
@@ -582,13 +677,13 @@
         <div class="row mt-5">
             <div class="col-12">
 
-                <section class="simple-tabs">
+                <section class="simple-tabs" style="display: none;">
 
                     <!-- Tab Buttons -->
                     <div class="tab-buttons">
                         <button class="tab-btn active" data-tab="specs">Specifications</button>
-                        <button class="tab-btn" data-tab="condition">Condition</button>
-                        <button class="tab-btn" data-tab="warranty">Warranty & Returns</button>
+                        <!-- <button class="tab-btn" data-tab="condition">Condition</button> -->
+                        <!-- <button class="tab-btn" data-tab="warranty">Warranty & Returns</button> -->
                     </div>
 
                     <!-- Tab Content -->
@@ -653,6 +748,304 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- You May Also Like It Section -->
+    <section class="products-section bg-soft-green">
+        <div class="container-fluid px-3 px-lg-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold mb-0">You May Also Like It</h2>
+                <a href="/shop/" class="btn btn-outline-dark rounded-pill px-4" style="font-weight: 600;">See all</a>
+            </div>
+    
+            <div class="product-slider-wrapper">
+                <button class="product-slider-arrow arrow-prev" id="recPrev"><i class="fas fa-chevron-left"></i></button>
+    
+                <div class="product-track" id="recommendedTrack">
+                    
+                    <div class="product-slide">
+                        <a href="/shop/?category=accessory" class="product-card-link">
+                            <div class="product-card">
+                                <div class="product-badge" style="background: #fbbf24; color: #000;">-35%</div>
+                                <div class="wishlist-btn"><i class="far fa-heart"></i></div>
+                                <img src="/static/images/homepage/case-20iphone-2012-20pro-20black.jpeg" alt="Case" class="product-img">
+                                <h5 class="product-title">Case iPhone 12 Pro Black</h5>
+                                <div class="color-options mb-2"><span class="color-dot" style="background: #000;"></span></div>
+                                <p class="product-specs">Accessory</p>
+                                <div class="product-pricing"><span class="price-original">₹999</span><span class="product-price">₹649</span></div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="product-slide">
+                        <a href="/shop/?category=mobile" class="product-card-link">
+                            <div class="product-card">
+                                <div class="product-badge" style="background: #ef4444; color: #fff;">-40%</div>
+                                <div class="wishlist-btn"><i class="far fa-heart"></i></div>
+                                <img src="/static/images/homepage/iPhone 12 Pro.png" class="product-img">
+                                <h5 class="product-title">iPhone 12 Pro</h5>
+                                <div class="color-options mb-2">
+                                    <span class="color-dot" style="background: #5a5a5a;"></span>
+                                    <span class="more-colors">+2</span>
+                                </div>
+                                <p class="product-specs">128GB | 6GB RAM</p>
+                                <div class="product-pricing"><span class="price-original">₹1,49,900</span><span class="product-price">₹90,399</span></div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="product-slide">
+                        <a href="/shop/?category=accessory" class="product-card-link">
+                            <div class="product-card">
+                                <div class="product-badge" style="background: #fbbf24; color: #000;">-35%</div>
+                                <div class="wishlist-btn"><i class="far fa-heart"></i></div>
+                                <img src="/static/images/homepage/screen-20protector-20for-20iphone-2012-20-2012-20pro.jpeg" class="product-img">
+                                <h5 class="product-title">Screen Protector iPhone 12</h5>
+                                <div class="color-options mb-2"><span class="color-dot" style="background: #fff; border: 1px solid #ccc;"></span></div>
+                                <p class="product-specs">Accessory</p>
+                                <div class="product-pricing"><span class="price-original">₹999</span><span class="product-price">₹649</span></div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="product-slide">
+                        <a href="/shop/?category=tablet" class="product-card-link">
+                            <div class="product-card">
+                                <div class="product-badge" style="background: #ef4444; color: #fff;">-38%</div>
+                                <div class="wishlist-btn"><i class="far fa-heart"></i></div>
+                                <img src="/static/images/homepage/ipad-207th-20gen-202019-20wi-fi.png" class="product-img">
+                                <h5 class="product-title">iPad 7th Gen 2019 Wi-Fi</h5>
+                                <div class="color-options mb-2"><span class="color-dot" style="background: #ccc;"></span></div>
+                                <p class="product-specs">32GB | 3GB RAM</p>
+                                <div class="product-pricing"><span class="price-original">₹32,900</span><span class="product-price">₹20,399</span></div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="product-slide">
+                        <a href="/shop/?category=laptop" class="product-card-link">
+                            <div class="product-card">
+                                <div class="product-badge" style="background: #ef4444; color: #fff;">-45%</div>
+                                <div class="wishlist-btn"><i class="far fa-heart"></i></div>
+                                <img src="/static/images/homepage/Lenovo ThinkPad-P50 Xeon 6th-Gen.jpg" class="product-img">
+                                <h5 class="product-title">Lenovo ThinkPad P50</h5>
+                                <div class="color-options mb-2"><span class="color-dot" style="background: #333;"></span></div>
+                                <p class="product-specs">512GB SSD | 16GB RAM</p>
+                                <div class="product-pricing"><span class="price-original">₹1,99,900</span><span class="product-price">₹1,09,900</span></div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+    
+                <button class="product-slider-arrow arrow-next" id="recNext"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section class="reviews-section bg-white" style="padding: 4rem 0; border-top: 1px solid #f3f4f6;">
+        <div class="container-fluid px-3 px-lg-5">
+            
+            <div class="d-flex justify-content-between align-items-end mb-4">
+                <div>
+                    <h2 class="fw-bold mb-2">Customer Reviews</h2>
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="color: #f59e0b; font-size: 1.1rem;">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <span class="fw-bold text-dark" style="font-size: 1.1rem;">4.8 out of 5</span>
+                        <span class="text-muted small">Based on 1,245 reviews</span>
+                    </div>
+                </div>
+                <div class="review-nav d-flex gap-2">
+                    <button class="btn btn-outline-secondary rounded-circle review-prev" style="width: 40px; height: 40px; padding: 0;">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary rounded-circle review-next" style="width: 40px; height: 40px; padding: 0;">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div class="swiper reviewsSwiper pb-3">
+                        <div class="swiper-wrapper">
+                            
+                            <div class="swiper-slide h-auto">
+                                <div class="review-card p-4 bg-white border rounded-4 h-100 shadow-sm">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="avatar" style="width: 42px; height: 42px; background: #2A8C3C; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">AK</div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">Amit K. <i class="fas fa-check-circle text-success ms-1" style="font-size: 0.8rem;"></i></h6>
+                                                <div style="color: #f59e0b; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">2 days ago</small>
+                                    </div>
+                                    <h6 class="fw-bold mb-2">Looks Brand New!</h6>
+                                    <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">"The device looked brand new and the battery health was at 92%. Very satisfied with the packaging and fast delivery."</p>
+                                </div>
+                            </div>
+
+                            <div class="swiper-slide h-auto">
+                                <div class="review-card p-4 bg-white border rounded-4 h-100 shadow-sm">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="avatar" style="width: 42px; height: 42px; background: #0ea5e9; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">SJ</div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">Sneha J. <i class="fas fa-check-circle text-success ms-1" style="font-size: 0.8rem;"></i></h6>
+                                                <div style="color: #f59e0b; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">1 week ago</small>
+                                    </div>
+                                    <h6 class="fw-bold mb-2">Great value for money</h6>
+                                    <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">"The screen is flawless. Phone itself is perfect and works just like a new one. Highly recommended!"</p>
+                                </div>
+                            </div>
+
+                            <div class="swiper-slide h-auto">
+                                <div class="review-card p-4 bg-white border rounded-4 h-100 shadow-sm">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="avatar" style="width: 42px; height: 42px; background: #8b5cf6; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">RM</div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">Rahul M. <i class="fas fa-check-circle text-success ms-1" style="font-size: 0.8rem;"></i></h6>
+                                                <div style="color: #f59e0b; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">2 weeks ago</small>
+                                    </div>
+                                    <h6 class="fw-bold mb-2">Exceeded Expectations</h6>
+                                    <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">"I was skeptical about buying refurbished, but this exceeded my expectations. Not a single scratch!"</p>
+                                </div>
+                            </div>
+
+                            <div class="swiper-slide h-auto">
+                                <div class="review-card p-4 bg-white border rounded-4 h-100 shadow-sm">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="avatar" style="width: 42px; height: 42px; background: #f43f5e; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">PS</div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">Priya S. <i class="fas fa-check-circle text-success ms-1" style="font-size: 0.8rem;"></i></h6>
+                                                <div style="color: #f59e0b; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">3 weeks ago</small>
+                                    </div>
+                                    <h6 class="fw-bold mb-2">Very Good Condition</h6>
+                                    <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">"Phone works perfectly. There was one tiny scratch on the back, but since I use a cover anyway, it doesn't bother me at all."</p>
+                                </div>
+                            </div>
+
+                            <div class="swiper-slide h-auto">
+                                <div class="review-card p-4 bg-white border rounded-4 h-100 shadow-sm">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="avatar" style="width: 42px; height: 42px; background: #f59e0b; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">VT</div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">Vikram T. <i class="fas fa-check-circle text-success ms-1" style="font-size: 0.8rem;"></i></h6>
+                                                <div style="color: #f59e0b; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">1 month ago</small>
+                                    </div>
+                                    <h6 class="fw-bold mb-2">Smooth like butter!</h6>
+                                    <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">"Fast delivery! Ordered on Tuesday and got it by Thursday. Performance is super fast with absolutely no lag."</p>
+                                </div>
+                            </div>
+
+                            <div class="swiper-slide h-auto">
+                                <div class="review-card p-4 bg-white border rounded-4 h-100 shadow-sm">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="avatar" style="width: 42px; height: 42px; background: #10b981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">AR</div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">Ananya R. <i class="fas fa-check-circle text-success ms-1" style="font-size: 0.8rem;"></i></h6>
+                                                <div style="color: #f59e0b; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">1 month ago</small>
+                                    </div>
+                                    <h6 class="fw-bold mb-2">Perfect support</h6>
+                                    <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">"Excellent customer service! I had a question about the warranty and they replied within minutes. The device is flawless."</p>
+                                </div>
+                            </div>
+
+                            <div class="swiper-slide h-auto">
+                                <div class="review-card p-4 bg-white border rounded-4 h-100 shadow-sm">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="avatar" style="width: 42px; height: 42px; background: #3b82f6; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">KD</div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">Karan D. <i class="fas fa-check-circle text-success ms-1" style="font-size: 0.8rem;"></i></h6>
+                                                <div style="color: #f59e0b; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">2 months ago</small>
+                                    </div>
+                                    <h6 class="fw-bold mb-2">100% Battery Health!</h6>
+                                    <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">"I bought the 'Excellent' condition and was amazed to see 100% battery health. Very happy with this purchase."</p>
+                                </div>
+                            </div>
+
+                            <div class="swiper-slide h-auto">
+                                <div class="review-card p-4 bg-white border rounded-4 h-100 shadow-sm">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="avatar" style="width: 42px; height: 42px; background: #ec4899; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">NW</div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">Neha W. <i class="fas fa-check-circle text-success ms-1" style="font-size: 0.8rem;"></i></h6>
+                                                <div style="color: #f59e0b; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">2 months ago</small>
+                                    </div>
+                                    <h6 class="fw-bold mb-2">Secure packaging</h6>
+                                    <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">"Will definitely buy again. The box was packed perfectly with bubble wrap to ensure no damage during transit."</p>
+                                </div>
+                            </div>
+
+                            <div class="swiper-slide h-auto">
+                                <div class="review-card p-4 bg-white border rounded-4 h-100 shadow-sm">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="avatar" style="width: 42px; height: 42px; background: #64748b; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">RP</div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">Rajat P. <i class="fas fa-check-circle text-success ms-1" style="font-size: 0.8rem;"></i></h6>
+                                                <div style="color: #f59e0b; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">3 months ago</small>
+                                    </div>
+                                    <h6 class="fw-bold mb-2">Works perfectly</h6>
+                                    <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">"Phone works great. The included charging cable is of very high quality too. Good job guys."</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <div class="mobile-sticky-buy d-block d-lg-none">
+        <div class="d-flex justify-content-between align-items-center w-100">
+            <div class="price-col">
+                <small class="text-muted d-block"
+                    style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Total
+                    Price</small>
+                <span class="fs-4 fw-bold text-dark" id="stickyMobilePrice" style="line-height: 1;">₹0</span>
+            </div>
+            <button class="btn btn-primary rounded-pill px-4 shadow-sm"
+                style="height: 48px; font-weight: 700; background: #6fba2c; border: none;"
+                onclick="document.getElementById('addToCartBtn').click();">
+                Add to Cart
+            </button>
+        </div>
     </div>
 
     <!-- Conditions Comparison Side Panel -->
@@ -779,6 +1172,32 @@
         </div>
     </div>
 
+    <!-- Product Specifications Side Panel -->
+    <div class="conditions-panel" id="specsPanel">
+        <div class="panel-overlay" onclick="toggleSpecsPanel()"></div>
+        <div class="panel-content">
+            <div class="panel-header">
+                <h4>Product Specifications</h4>
+                <button class="close-btn" onclick="toggleSpecsPanel()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="panel-body">
+                <ul class="list-unstyled mb-4" id="dynamicSpecsGrid">
+                    </ul>
+                
+                <div class="mt-4">
+                    <h6 class="mb-2 fw-bold text-dark" style="font-size: 0.95rem;">Overview</h6>
+                    <p id="sidePanelDescription" class="text-muted mb-0" style="font-size: 0.9rem; line-height: 1.6;">Loading product specifications...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    {% include 'footer.html' %}
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="/static/js/api_caller.js"></script>
@@ -852,6 +1271,14 @@
         // Toggle Conditions Panel
         function toggleConditionsPanel() {
             const panel = document.querySelector('.conditions-panel');
+            if (panel) {
+                panel.classList.toggle('active');
+            }
+        }
+
+        // Toggle Specifications Panel
+        function toggleSpecsPanel() {
+            const panel = document.getElementById('specsPanel');
             if (panel) {
                 panel.classList.toggle('active');
             }

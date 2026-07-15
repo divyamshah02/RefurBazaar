@@ -1,0 +1,60 @@
+<!-- 2. Primary Navigation (Navbar) -->
+<nav class="navbar-main">
+    <div class="container-fluid px-3 px-lg-5">
+        <div class="d-flex align-items-center justify-content-between navbar-container">
+
+            <div class="brand-col d-flex align-items-center">
+                <a class="brand-logo" href="/">
+                    <img src="/static/images/new logo/Recarvit Logo edited-nobg.png" alt="RefurBazaar">
+                </a>
+            </div>
+
+            <div class="search-col flex-grow-1 d-flex justify-content-center px-lg-4">
+                <div class="search-wrapper">
+                    <form class="search-input-group">
+                        <input type="search" class="form-control" placeholder="Search for iPhones, Laptops..."
+                            aria-label="Search">
+                        <button class="btn" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="icons-col d-flex align-items-center gap-2 gap-lg-3">
+                <a href="/account" class="nav-icon-btn" aria-label="Profile">
+                    <i class="far fa-user"></i>
+                </a>
+                <a href="/wishlist" class="nav-icon-btn" aria-label="Wishlist">
+                    <i class="far fa-heart"></i>
+                </a>
+                <a href="/cart" class="nav-icon-btn" aria-label="Cart">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="badge rounded-pill bg-danger cart-count">2</span>
+                </a>
+            </div>
+
+        </div>
+    </div>
+</nav>
+
+<!-- 3. Secondary Navigation (Category Nav) -->
+<div class="secondary-nav">
+    <div class="container-fluid">
+        <div class="d-flex">
+            <a href="/shop/?category=sale" class="cat-link highlight-red">
+                Deals <i class="fas fa-fire ms-1"></i>
+            </a>
+            <a href="/shop/?category=mobile" class="cat-link">iPhones</a>
+            <a href="/shop/?category=mobile" class="cat-link">Samsung</a>
+            <a href="/shop/?category=laptop" class="cat-link">MacBooks</a>
+            <a href="/shop/?category=laptop" class="cat-link">Laptops</a>
+            <a href="/shop/?category=tablet" class="cat-link">iPads</a>
+            <a href="/shop/?category=accessory" class="cat-link">Accessories</a>
+            <!-- <a href="#inquiry-section" class="cat-link">For Business</a>
+            <a href="/shop/?category=express" class="cat-link highlight-blue">
+                RefurBazaar Express <i class="fas fa-bolt ms-1"></i>
+            </a> -->
+        </div>
+    </div>
+</div>

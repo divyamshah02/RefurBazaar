@@ -1,0 +1,306 @@
+/* =========================================
+   WISHLIST PAGE STYLING
+   ========================================= */
+
+.wishlist-header {
+    background: linear-gradient(135deg, #F0FDF4 0%, #ffffff 100%);
+    padding: 4rem 0 2rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.min-vh-50 {
+    min-height: 50vh;
+}
+
+/* Empty State Styling */
+.empty-wishlist {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3rem 0;
+}
+
+.empty-icon-circle {
+    width: 100px;
+    height: 100px;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+}
+
+/* Wishlist Remove Button */
+.btn-remove-wishlist {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    color: #ef4444;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.btn-remove-wishlist:hover {
+    background: #ef4444;
+    color: white;
+    transform: scale(1.1);
+    border-color: #ef4444;
+}
+
+/* Ensure the card position is relative for the absolute button */
+.product-card {
+    position: relative;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 16px;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.product-card:hover {
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    border-color: #2A8C3C;
+}
+
+/* =========================================
+   WISHLIST PREMIUM BANNER
+   ========================================= */
+.wishlist-banner {
+    background: linear-gradient(135deg, #F0FDF4 0%, #ffffff 100%);
+    border: 1px solid rgba(111, 186, 44, 0.15);
+    border-radius: 16px;
+    padding: 2rem 2.5rem;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    justify-content: space-between; /* Pushes text left, image right */
+}
+
+.wishlist-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+    z-index: 2;
+}
+
+.wishlist-banner-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #6fba2c 0%, #5a9e22 100%);
+    color: white;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    box-shadow: 0 8px 24px rgba(111, 186, 44, 0.25);
+    flex-shrink: 0;
+}
+
+.wishlist-banner-text h2 {
+    font-size: 1.8rem;
+    color: #111827;
+    letter-spacing: -0.5px;
+}
+
+.wishlist-banner-text p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    max-width: 600px;
+}
+
+/* Subtle glowing orb in the background for a premium touch */
+.wishlist-banner-bg-shape {
+    position: absolute;
+    right: -5%;
+    top: -50%;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(111, 186, 44, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.wishlist-banner-visuals {
+    position: absolute;
+    right: 5%;
+    bottom: 0;
+    width: 320px; /* Container width for the cluster */
+    height: 140%; /* Taller than banner so items pop out */
+    z-index: 2;
+}
+
+/* Base style for all devices in the cluster */
+.device-img {
+    position: absolute;
+    object-fit: contain;
+    filter: drop-shadow(-10px 15px 15px rgba(0,0,0,0.15));
+    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+/* 1. Left Device (Laptop - placed in the back) */
+.device-left {
+    width: 200px;
+    left: -90px;
+    bottom: 5px;
+    z-index: 1;
+    transform: rotate(-15deg);
+    opacity: 0.9;
+}
+
+/* 2. Right Device (Tablet - placed in the back right) */
+.device-right {
+    width: 140px;
+    right: -10px;
+    bottom: -30px;
+    z-index: 2;
+    transform: rotate(10deg);
+}
+
+/* 3. Center Device (Phone - placed in the very front) */
+.device-center {
+    width: 80px;
+    left: 45%;
+    bottom: -25px; /* Pops out of the bottom of the banner */
+    z-index: 3;
+    transform: translateX(-50%) rotate(-5deg);
+    filter: drop-shadow(-15px 20px 25px rgba(0,0,0,0.25)); /* Deeper shadow for front item */
+}
+
+/* Optional: Cool hover effect where they slightly spread apart when the user hovers over the banner */
+.wishlist-banner:hover .device-left {
+    transform: rotate(-18deg) translateX(-10px);
+}
+.wishlist-banner:hover .device-right {
+    transform: rotate(14deg) translateX(10px);
+}
+.wishlist-banner:hover .device-center {
+    transform: translateX(-50%) rotate(-5deg) translateY(-5px);
+}
+
+/* =========================================
+   MOBILE RESPONSIVENESS
+   ========================================= */
+
+@media (max-width: 991px) {
+    /* On tablets, fade it to the background so text remains readable */
+    .wishlist-banner-visuals {
+        opacity: 0.15;
+        right: -5%;
+        z-index: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .wishlist-banner {
+        padding: 1.5rem;
+        border-radius: 12px;
+    }
+    
+    .wishlist-banner-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    .wishlist-banner-icon {
+        width: 54px;
+        height: 54px;
+        font-size: 1.5rem;
+        border-radius: 14px;
+    }
+
+    .wishlist-banner-text h2 {
+        font-size: 1.5rem;
+    }
+
+    .wishlist-banner-text p {
+        font-size: 0.85rem;
+    }
+    
+    .wishlist-banner-bg-shape,
+    .wishlist-banner-visuals {
+        display: none; 
+    }
+}
+
+/* =========================================
+   MINIMAL TRUST BADGES (Above Footer)
+   ========================================= */
+.wishlist-trust-badges {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 3rem; /* Tighter spacing */
+    padding: 1.5rem 0; /* Much less vertical padding */
+    border-top: 1px solid #e5e7eb;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.wishlist-trust-badges .trust-badge {
+    display: flex;
+    flex-direction: row; /* Icon and text side-by-side for a minimal profile */
+    align-items: center;
+    gap: 0.6rem;
+    transition: transform 0.2s ease;
+}
+
+.wishlist-trust-badges .trust-badge:hover {
+    transform: translateY(-2px);
+}
+
+/* Smaller, minimal icons */
+.wishlist-trust-badges .badge-icon {
+    width: 32px;
+    height: 32px;
+    background: rgba(111, 186, 44, 0.1);
+    color: #2A8C3C;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.wishlist-trust-badges .trust-badge:hover .badge-icon {
+    background: #6fba2c;
+    color: #ffffff;
+}
+
+.wishlist-trust-badges .badge-text strong {
+    color: #4b5563; /* Softer dark gray text, less harsh than pure black */
+    font-size: 0.85rem; /* Smaller text */
+    font-weight: 600;
+}
+
+/* =========================================
+   MOBILE RESPONSIVENESS
+   ========================================= */
+@media (max-width: 768px) {
+    .wishlist-trust-badges {
+        gap: 1rem;
+        flex-direction: column;
+        padding: 1.5rem 0;
+        align-items: flex-start;
+        width: fit-content;
+        margin: 1.5rem auto 0 auto; /* Centers the stack on mobile */
+    }
+}
