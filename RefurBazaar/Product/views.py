@@ -430,53 +430,53 @@ class ListingViewSet(viewsets.ViewSet):
         model = get_object_or_404(ProductModel, id=model_id)
         refurbisher = request.user
 
-        # Total quantity is just the number of units (each unit = 1 device)
-        total_quantity = len(units)
-
-        # Create listing without price_per_unit and condition
-        listing = Listing.objects.create(
-            model=model,
-            refurbisher=refurbisher,
-            total_quantity=total_quantity
-        )
-
-        # Create units with individual prices and conditions
+        # Validate all units before writing to DB
         for unit_data in units:
-            unit_price = unit_data.get('price')
-            unit_condition = unit_data.get('condition')
-            attributes = unit_data.get('attributes', [])
-            
-            if not unit_price:
-                listing.delete()  # Rollback
+            if not unit_data.get('price'):
                 return Response({
                     "success": False, "user_not_logged_in": False, "user_unauthorized": False,
                     "data": None, "error": "Price is required for each unit."
                 }, status=status.HTTP_400_BAD_REQUEST)
-            
-            if not unit_condition:
-                listing.delete()  # Rollback
+            if not unit_data.get('condition'):
                 return Response({
                     "success": False, "user_not_logged_in": False, "user_unauthorized": False,
                     "data": None, "error": "Condition is required for each unit."
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-            unit = ListingUnit.objects.create(
-                listing=listing,
-                price=unit_price,
-                condition=unit_condition
+        # Total quantity is just the number of units (each unit = 1 device)
+        total_quantity = len(units)
+
+        with transaction.atomic():
+            # Create listing
+            listing = Listing.objects.create(
+                model=model,
+                refurbisher=refurbisher,
+                total_quantity=total_quantity
             )
 
-            # Create attributes for this unit
-            for attr in attributes:
-                attr_id = attr.get('attribute_id') or attr.get('id')
-                if not attr_id:
-                    continue
-                attr_obj = get_object_or_404(AttributeMaster, id=attr_id)
-                ListingUnitAttribute.objects.create(
-                    listing_unit=unit,
-                    attribute=attr_obj,
-                    value=attr.get('value')
+            # Create units with individual prices and conditions
+            for unit_data in units:
+                unit_price = unit_data.get('price')
+                unit_condition = unit_data.get('condition')
+                attributes = unit_data.get('attributes', [])
+
+                unit = ListingUnit.objects.create(
+                    listing=listing,
+                    price=unit_price,
+                    condition=unit_condition
                 )
+
+                # Create attributes for this unit
+                for attr in attributes:
+                    attr_id = attr.get('attribute_id') or attr.get('id')
+                    if not attr_id:
+                        continue
+                    attr_obj = get_object_or_404(AttributeMaster, id=attr_id)
+                    ListingUnitAttribute.objects.create(
+                        listing_unit=unit,
+                        attribute=attr_obj,
+                        value=attr.get('value')
+                    )
 
         serializer = ListingSerializer(listing)
         return Response({
@@ -1059,6 +1059,38 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
     Admin endpoints for creating and managing default product models.
     Only admins can create products.
     """
+
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def list(self, request):
+        """
+        Get all ProductModels (active and inactive) for admin management.
+        Optional query params: category, brand_id, search, is_active
+        """
+        category = request.query_params.get('category')
+        brand_id = request.query_params.get('brand_id')
+        search = request.query_params.get('search')
+        is_active = request.query_params.get('is_active')
+
+        queryset = ProductModel.objects.select_related('brand').order_by('brand__name', 'name')
+
+        if category:
+            queryset = queryset.filter(category=category)
+        if brand_id:
+            queryset = queryset.filter(brand_id=brand_id)
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+        if is_active is not None:
+            queryset = queryset.filter(is_active=(is_active.lower() == 'true'))
+
+        serializer = ProductModelSerializer(queryset, many=True)
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "user_unauthorized": False,
+            "data": serializer.data,
+            "error": None
+        }, status=status.HTTP_200_OK)
 
     @handle_exceptions
     @check_authentication(required_role='admin')

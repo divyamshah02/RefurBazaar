@@ -3,10 +3,15 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.utils.crypto import get_random_string
 from django.db import transaction
+import uuid
 
 from .models import ShoppingCart, ShoppingCartItem
 from .serializers import CartSerializer, CartItemSerializer
 from Product.models import ListingUnit
+
+from .models import Wishlist, WishlistItem
+from .serializers import WishlistSerializer, WishlistItemSerializer
+from utils.decorators import handle_exceptions, check_authentication
 
 
 def generate_unique_cart_id():
@@ -17,12 +22,26 @@ def generate_unique_cart_id():
             return cart_id
 
 
+def get_or_create_session_token(request):
+    """
+    Get an existing dedicated cart session token, or create a new UUID-based one.
+    This is separate from the CSRF token so it survives CSRF rotation on login.
+    """
+    token = request.session.get('cart_session_token')
+    if not token:
+        token = str(uuid.uuid4()).replace('-', '')
+        request.session['cart_session_token'] = token
+        request.session.modified = True
+    return token
+
+
 class CartViewSet(viewsets.ViewSet):
     """
     ViewSet for managing shopping cart operations.
     Supports both guest (session-based) and authenticated users.
     """
 
+    @handle_exceptions
     def list(self, request):
         """
         Get cart items for current user/session.
@@ -30,7 +49,7 @@ class CartViewSet(viewsets.ViewSet):
         """
         cart_id = request.query_params.get('cart_id')
         user = request.user if request.user.is_authenticated else None
-        session_id = request.session.get('session_token')
+        session_id = request.session.get('cart_session_token')
 
         cart = None
         
@@ -63,17 +82,16 @@ class CartViewSet(viewsets.ViewSet):
             "error": "No active cart found"
         }, status=status.HTTP_200_OK)
 
+    @handle_exceptions
     def create(self, request):
         """
         Add item to cart.
         Body: { "listing_unit_id": <id> }
         """
         user = request.user if request.user.is_authenticated else None
-        
-        # Get or create session token from CSRF token
-        if request.session.get('session_token') is None:
-            request.session['session_token'] = request.COOKIES.get('csrftoken')
-        session_id = request.session.get('session_token')
+
+        # Get or create a dedicated cart session token (not the CSRF token)
+        session_id = get_or_create_session_token(request)
         
         listing_unit_id = request.data.get('listing_unit_id')
 
@@ -158,6 +176,7 @@ class CartViewSet(viewsets.ViewSet):
             "error": None
         }, status=status.HTTP_201_CREATED)
 
+    @handle_exceptions
     def destroy(self, request, pk=None):
         """
         Remove item from cart.
@@ -193,6 +212,7 @@ class CartViewSet(viewsets.ViewSet):
         }, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'])
+    @handle_exceptions
     def clear(self, request):
         """
         Clear all items from cart.
@@ -200,7 +220,7 @@ class CartViewSet(viewsets.ViewSet):
         """
         cart_id = request.data.get('cart_id')
         user = request.user if request.user.is_authenticated else None
-        session_id = request.session.get('session_token')
+        session_id = request.session.get('cart_session_token')
 
         cart = None
         
@@ -229,6 +249,7 @@ class CartViewSet(viewsets.ViewSet):
         }, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'])
+    @handle_exceptions
     def validate(self, request):
         """
         Validate all items in cart are still available.
@@ -237,7 +258,7 @@ class CartViewSet(viewsets.ViewSet):
         """
         cart_id = request.data.get('cart_id')
         user = request.user if request.user.is_authenticated else None
-        session_id = request.session.get('session_token')
+        session_id = request.session.get('cart_session_token')
 
         cart = None
         
@@ -284,10 +305,11 @@ class CartTransferViewSet(viewsets.ViewSet):
     ViewSet for transferring guest cart to authenticated user on login.
     """
 
+    @handle_exceptions
     def create(self, request):
         """
         Transfer guest cart to authenticated user.
-        Body: { "session_id": <id> } (optional, will use session token if not provided)
+        Body: { "session_id": <id> } (optional, will use cart_session_token if not provided)
         """
         if not request.user.is_authenticated:
             return Response({
@@ -299,9 +321,9 @@ class CartTransferViewSet(viewsets.ViewSet):
 
         user = request.user
         session_id = request.data.get('session_id')
-        
+
         if not session_id:
-            session_id = request.session.get('session_token')
+            session_id = request.session.get('cart_session_token')
 
         if not session_id:
             return Response({
@@ -358,5 +380,64 @@ class CartTransferViewSet(viewsets.ViewSet):
                 "cart_id": guest_cart.cart_id,
                 "cart": serializer.data
             },
+            "error": None
+        }, status=status.HTTP_200_OK)
+
+
+# ----------
+# Wishlist
+# ----------
+
+class WishlistAPIViewSet(viewsets.ViewSet):
+    """API for managing user wishlists"""
+
+    @handle_exceptions
+    @check_authentication(required_role=['customer', 'admin'])
+    def list(self, request):
+        """Get the current user's wishlist"""
+        wishlist, created = Wishlist.objects.get_or_create(user=request.user)
+        serializer = WishlistSerializer(wishlist)
+        return Response({
+            "success": True, 
+            "user_not_logged_in": False, 
+            "data": serializer.data, 
+            "error": None
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['post'], url_path='toggle')
+    @handle_exceptions
+    @check_authentication(required_role=['customer', 'admin'])
+    def toggle(self, request):
+        """Add to wishlist if not exists, remove if it does"""
+        listing_unit_id = request.data.get('listing_unit_id')
+        
+        if not listing_unit_id:
+            return Response({
+                "success": False, "error": "listing_unit_id is required"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        wishlist, created = Wishlist.objects.get_or_create(user=request.user)
+
+        try:
+            listing_unit = ListingUnit.objects.get(id=listing_unit_id)
+        except ListingUnit.DoesNotExist:
+            return Response({
+                "success": False, "error": "Listing Unit not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        # Check if item is already in wishlist
+        item = WishlistItem.objects.filter(wishlist=wishlist, listing_unit=listing_unit).first()
+        
+        if item:
+            item.delete()
+            action_status = "removed"
+        else:
+            WishlistItem.objects.create(wishlist=wishlist, listing_unit=listing_unit)
+            action_status = "added"
+
+        return Response({
+            "success": True, 
+            "user_not_logged_in": False, 
+            "data": {"action": action_status}, 
             "error": None
         }, status=status.HTTP_200_OK)

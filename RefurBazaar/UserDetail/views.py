@@ -1,5 +1,6 @@
 from rest_framework import status, viewsets
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from django.utils import timezone
 from django.contrib.auth import login
 from datetime import timedelta
@@ -170,5 +171,166 @@ class UserDetailViewSet(viewsets.ViewSet):
                 "user": user_data,
                 "company_profile": company_data
             },
+            "error": None
+        }, status=status.HTTP_200_OK)
+
+
+class AddressViewSet(viewsets.ViewSet):
+    """
+    CRUD endpoints for customer shipping addresses.
+    All actions require the user to be authenticated.
+    """
+
+    @handle_exceptions
+    @check_authentication()
+    def list(self, request):
+        """Get all addresses for the current user"""
+        addresses = Address.objects.filter(user_id=request.user.user_id)
+        serializer = AddressSerializer(addresses, many=True)
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "user_unauthorized": False,
+            "data": serializer.data,
+            "error": None
+        }, status=status.HTTP_200_OK)
+
+    @handle_exceptions
+    @check_authentication()
+    def create(self, request):
+        """Create a new address for the current user"""
+        serializer = AddressSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({
+                "success": False,
+                "user_not_logged_in": False,
+                "user_unauthorized": False,
+                "data": None,
+                "error": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # If this address is marked as default, unset all other defaults first
+        if request.data.get('is_default'):
+            Address.objects.filter(user_id=request.user.user_id).update(is_default=False)
+
+        address = serializer.save(user_id=request.user.user_id)
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "user_unauthorized": False,
+            "data": AddressSerializer(address).data,
+            "error": None
+        }, status=status.HTTP_201_CREATED)
+
+    @handle_exceptions
+    @check_authentication()
+    def retrieve(self, request, pk=None):
+        """Get a single address by ID"""
+        try:
+            address = Address.objects.get(id=pk, user_id=request.user.user_id)
+        except Address.DoesNotExist:
+            return Response({
+                "success": False,
+                "user_not_logged_in": False,
+                "user_unauthorized": False,
+                "data": None,
+                "error": "Address not found."
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AddressSerializer(address)
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "user_unauthorized": False,
+            "data": serializer.data,
+            "error": None
+        }, status=status.HTTP_200_OK)
+
+    @handle_exceptions
+    @check_authentication()
+    def update(self, request, pk=None):
+        """Update an address (full or partial)"""
+        try:
+            address = Address.objects.get(id=pk, user_id=request.user.user_id)
+        except Address.DoesNotExist:
+            return Response({
+                "success": False,
+                "user_not_logged_in": False,
+                "user_unauthorized": False,
+                "data": None,
+                "error": "Address not found."
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AddressSerializer(address, data=request.data, partial=True)
+        if not serializer.is_valid():
+            return Response({
+                "success": False,
+                "user_not_logged_in": False,
+                "user_unauthorized": False,
+                "data": None,
+                "error": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # If marking as default, clear other defaults first
+        if request.data.get('is_default'):
+            Address.objects.filter(user_id=request.user.user_id).update(is_default=False)
+
+        address = serializer.save()
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "user_unauthorized": False,
+            "data": AddressSerializer(address).data,
+            "error": None
+        }, status=status.HTTP_200_OK)
+
+    @handle_exceptions
+    @check_authentication()
+    def destroy(self, request, pk=None):
+        """Delete an address"""
+        try:
+            address = Address.objects.get(id=pk, user_id=request.user.user_id)
+        except Address.DoesNotExist:
+            return Response({
+                "success": False,
+                "user_not_logged_in": False,
+                "user_unauthorized": False,
+                "data": None,
+                "error": "Address not found."
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        address.delete()
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "user_unauthorized": False,
+            "data": {"message": "Address deleted successfully."},
+            "error": None
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='set-default')
+    @handle_exceptions
+    @check_authentication()
+    def set_default(self, request, pk=None):
+        """Mark an address as the default shipping address"""
+        try:
+            address = Address.objects.get(id=pk, user_id=request.user.user_id)
+        except Address.DoesNotExist:
+            return Response({
+                "success": False,
+                "user_not_logged_in": False,
+                "user_unauthorized": False,
+                "data": None,
+                "error": "Address not found."
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        Address.objects.filter(user_id=request.user.user_id).update(is_default=False)
+        address.is_default = True
+        address.save(update_fields=['is_default'])
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "user_unauthorized": False,
+            "data": AddressSerializer(address).data,
             "error": None
         }, status=status.HTTP_200_OK)

@@ -66,15 +66,16 @@ class ListingSerializer(serializers.ModelSerializer):
     brand_id = serializers.IntegerField(source='model.brand.id', read_only=True)
     category = serializers.CharField(source='model.category', read_only=True)
     category_display = serializers.CharField(source='model.get_category_display', read_only=True)
-    refurbisher_name = serializers.CharField(source='refurbisher.name', read_only=True)
+    refurbisher_first_name = serializers.CharField(source='refurbisher.first_name', read_only=True)
+    refurbisher_last_name = serializers.CharField(source='refurbisher.last_name', read_only=True)
     units = ListingUnitSerializer(many=True, read_only=True)
     
     class Meta:
         model = Listing
         fields = [
             'id', 'listing_id', 'model', 'model_name', 'brand_name', 'brand_id',
-            'category', 'category_display', 'refurbisher', 'refurbisher_name',
-            'total_quantity', 'status', 'units',
+            'category', 'category_display', 'refurbisher', 'refurbisher_first_name',
+            'refurbisher_last_name', 'total_quantity', 'status', 'units',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['listing_id', 'refurbisher', 'created_at', 'updated_at']

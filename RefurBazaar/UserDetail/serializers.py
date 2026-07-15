@@ -24,3 +24,10 @@ class OTPVerificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = OTPVerification
         fields = '__all__'
+
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = ['id', 'user_id', 'address_line', 'city', 'state', 'pincode', 'address_name', 'is_default', 'created_at']
+        read_only_fields = ['user_id', 'created_at']

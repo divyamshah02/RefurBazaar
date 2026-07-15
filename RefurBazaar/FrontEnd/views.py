@@ -61,6 +61,78 @@ class IndexViewSet(viewsets.ViewSet):
     def list(self, request):
         return render(request, 'index.html')
 
+class LandingPageViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'landing-page.html')
+
+class ContactViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'contact.html')
+
+class AboutViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'about.html')
+
+class LegalViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'legal-pages/legal.html')
+
+class TermsConditionsViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'legal-pages/terms-conditions.html')
+    
+class PrivacyPolicyViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'legal-pages/privacy-policy.html')
+    
+class ProductGradingPolicyViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'legal-pages/product-grading-policy.html')
+    
+class ReturnsRefundsViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'legal-pages/returns-refunds.html')
+    
+class WarrantyPolicyViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'legal-pages/warranty-policy.html')
+    
+class ShippingPolicyViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'legal-pages/shipping-policy.html')
+    
+class CookiePolicyViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'legal-pages/cookie-policy.html')
+    
+class DisclaimerViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'legal-pages/disclaimer.html')
+
 class PartnerApplicationViewSet(viewsets.ViewSet):
 
     @handle_exceptions
@@ -74,6 +146,11 @@ class ShopViewSet(viewsets.ViewSet):
     def list(self, request):
         return render(request, 'shop.html')
 
+
+class WishlistPageViewSet(viewsets.ViewSet):
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'wishlist.html')
 
 class ProductDetailViewSet(viewsets.ViewSet):
 
@@ -120,7 +197,7 @@ class LogoutViewSet(viewsets.ViewSet):
     @handle_exceptions
     def list(self, request):
         logout(request)
-        return redirect('account-list')
+        return redirect('login-list')
 
 
 ### Refurbisher Views ###

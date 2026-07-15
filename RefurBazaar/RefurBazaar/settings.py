@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'ShoppingCart',
     'Order',
     'Admin',
+    'FrontEnd'
 ]
 
 MIDDLEWARE = [

@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Max
 from django.core.validators import MinValueValidator
 from UserDetail.models import User
 import uuid
@@ -168,7 +169,7 @@ class ListingUnit(models.Model):
     def save(self, *args, **kwargs):
         if not self.unit_number:
             max_unit = ListingUnit.objects.filter(listing=self.listing).aggregate(
-                models.Max('unit_number')
+                Max('unit_number')
             )['unit_number__max']
             self.unit_number = (max_unit or 0) + 1
         
