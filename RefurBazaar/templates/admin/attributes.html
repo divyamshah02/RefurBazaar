@@ -1,0 +1,163 @@
+{% extends 'admin/_base.html' %}
+{% load static %}
+{% block title %}Attributes{% endblock %}
+{% block nav_attributes %}active{% endblock %}
+{% block page_title %}Attributes{% endblock %}
+{% block page_subtitle %}Manage specification attributes used to describe products{% endblock %}
+
+{% block content %}
+<div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+  <div class="stat-card"><div class="stat-card-icon blue"><i class="fa-solid fa-sliders"></i></div><div class="stat-card-value" id="s-total">—</div><div class="stat-card-label">Total Attributes</div></div>
+  <div class="stat-card"><div class="stat-card-icon orange"><i class="fa-solid fa-mobile-screen"></i></div><div class="stat-card-value" id="s-mobile">—</div><div class="stat-card-label">Mobile</div></div>
+  <div class="stat-card"><div class="stat-card-icon purple"><i class="fa-solid fa-laptop"></i></div><div class="stat-card-value" id="s-laptop">—</div><div class="stat-card-label">Laptop</div></div>
+  <div class="stat-card"><div class="stat-card-icon yellow"><i class="fa-solid fa-tablet-screen-button"></i></div><div class="stat-card-value" id="s-tablet">—</div><div class="stat-card-label">Tablet</div></div>
+</div>
+
+<div class="panel">
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" class="input-search" id="q" placeholder="Search attribute name…" autocomplete="off" />
+    </div>
+    <select class="select-filter" id="f-category">
+      <option value="">All Categories</option>
+      <option value="mobile">Mobile</option>
+      <option value="laptop">Laptop</option>
+      <option value="tablet">Tablet</option>
+      <option value="accessory">Accessory</option>
+    </select>
+    <select class="select-filter" id="f-type">
+      <option value="">All Types</option>
+      <option value="text">Text</option>
+      <option value="number">Number</option>
+      <option value="select">Select</option>
+      <option value="boolean">Boolean</option>
+    </select>
+    <button class="btn btn-primary" onclick="openCreateAttr()">
+      <i class="fa-solid fa-plus"></i> Add Attribute
+    </button>
+  </div>
+
+  <div class="rb-table-wrap">
+    <table class="rb-table">
+      <thead>
+        <tr>
+          <th>Attribute Name</th>
+          <th>Category</th>
+          <th>Data Type</th>
+          <th>Possible Values</th>
+          <th>Filterable</th>
+          <th>Order</th>
+          <th style="text-align:right">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tbl-body">
+        <tr><td colspan="7" style="padding:48px;text-align:center">
+          <div class="skeleton" style="height:13px;width:50%;margin:0 auto 10px"></div>
+          <div class="skeleton" style="height:13px;width:35%;margin:0 auto"></div>
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Create / Edit Attribute Modal -->
+<div class="rb-overlay" id="modal-attr">
+  <div class="rb-modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-header-icon blue"><i class="fa-solid fa-sliders"></i></div>
+      <div>
+        <div class="modal-title" id="mattr-title">Add Attribute</div>
+        <div class="modal-subtitle">Define a new product specification</div>
+      </div>
+      <button class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="mattr-id" />
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="form-group">
+          <label class="form-label">Attribute Name <span style="color:var(--red)">*</span></label>
+          <input type="text" class="form-input" id="mattr-name" placeholder="e.g. Storage, RAM, Display Size" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category <span style="color:var(--red)">*</span></label>
+          <select class="form-select" id="mattr-category">
+            <option value="">Select…</option>
+            <option value="mobile">Mobile</option>
+            <option value="laptop">Laptop</option>
+            <option value="tablet">Tablet</option>
+            <option value="accessory">Accessory</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data Type <span style="color:var(--red)">*</span></label>
+          <select class="form-select" id="mattr-type" onchange="togglePossibleValues()">
+            <option value="">Select…</option>
+            <option value="text">Text (free input)</option>
+            <option value="number">Number</option>
+            <option value="select">Select (predefined list)</option>
+            <option value="boolean">Boolean (Yes/No)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Display Order</label>
+          <input type="number" class="form-input" id="mattr-order" placeholder="1" min="0" />
+        </div>
+        <div class="form-group" style="grid-column:span 2" id="mattr-values-wrap">
+          <label class="form-label">Possible Values <span class="text-muted fs-12">(comma-separated)</span></label>
+          <input type="text" class="form-input" id="mattr-values" placeholder="64GB, 128GB, 256GB, 512GB" />
+          <div class="text-muted fs-12" style="margin-top:4px">These become the dropdown options for refurbishers</div>
+        </div>
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="mattr-active" checked style="width:16px;height:16px;accent-color:var(--accent)" />
+            Active
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-attr')">Cancel</button>
+      <button class="btn btn-primary" id="mattr-save-btn" onclick="saveAttr()">Save Attribute</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirmation -->
+<div class="rb-overlay" id="modal-delete">
+  <div class="rb-modal" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-header-icon red"><i class="fa-solid fa-trash"></i></div>
+      <div>
+        <div class="modal-title">Delete Attribute</div>
+        <div class="modal-subtitle" id="mdel-sub"></div>
+      </div>
+      <button class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text-secondary);line-height:1.6">
+        This will permanently delete the attribute. Products using this attribute will lose it. This cannot be undone.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-delete')">Cancel</button>
+      <button class="btn btn-danger" id="mdel-confirm-btn">Delete</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/admin/attributes.js' %}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    InitAttributes(csrf, {
+      listUrl:   '/admin-api/dashboard/attributes/',
+      createUrl: '/admin-api/dashboard/attributes/',
+      updateUrl: '/admin-api/dashboard/attributes/',
+      deleteUrl: '/admin-api/dashboard/attributes/'
+    });
+  });
+</script>
+{% endblock %}

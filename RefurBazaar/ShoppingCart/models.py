@@ -5,6 +5,7 @@ from UserDetail.models import User
 from Product.models import ListingUnit
 
 
+
 class ShoppingCart(models.Model):
     """
     Shopping cart for both guest and authenticated users.

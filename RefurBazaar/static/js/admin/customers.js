@@ -1,106 +1,103 @@
-// Admin Customers Management
-let csrfToken = '';
-let customersApiUrl = '';
-let allCustomers = [];
+'use strict';
+/* customers.js */
 
-function InitializeAdminCustomers(csrf, customers_url) {
-    csrfToken = csrf;
-    customersApiUrl = customers_url;
-    
-    console.log('[v0] Initializing Admin Customers');
-    console.log('[v0] Customers URL:', customersApiUrl);
-    
-    loadCustomers();
-    
-    // Setup event listener
-    document.getElementById('searchInput').addEventListener('input', applySearch);
+let _cuCsrf, _cuUrls, _cuPage = 1, _cuPageSize = 20;
+
+/* ─── Entry ─────────────────────────────────────────────────────── */
+function InitCustomers(csrf, urls) {
+  _cuCsrf = csrf; _cuUrls = urls;
+  loadStats();
+  loadList();
+
+  let debounce;
+  document.getElementById('q').addEventListener('input', () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => { _cuPage=1; loadList(); }, 320);
+  });
+  document.getElementById('f-orders').addEventListener('change', () => { _cuPage=1; loadList(); });
+  document.getElementById('f-active').addEventListener('change', () => { _cuPage=1; loadList(); });
 }
 
-async function loadCustomers() {
-    try {
-        const [success, response] = await window.callApi('GET', customersApiUrl, null, csrfToken);
-        
-        console.log('[v0] Customers API Response:', response);
-        
-        if (success && response.success && response.data) {
-            allCustomers = response.data;
-            displayCustomers(allCustomers);
-        } else {
-            showError('Failed to load customers');
-        }
-    } catch (error) {
-        console.error('[v0] Error loading customers:', error);
-        showError('Failed to load customers');
-    }
+/* ─── Stats ─────────────────────────────────────────────────────── */
+async function loadStats() {
+  const [ok, res] = await callApi('GET', _cuUrls.statsUrl, null, _cuCsrf);
+  if (!ok || !res.success) return;
+  const d = res.data;
+  set('s-total',      num(d.total_customers));
+  set('s-with-orders', num(d.customers_with_orders));
+  set('s-new-month',  num(d.customers_new_month ?? d.new_customers_this_month));
+  set('s-inactive',   num(d.inactive_customers));
 }
 
-function applySearch() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    
-    if (!searchTerm) {
-        displayCustomers(allCustomers);
-        return;
-    }
-    
-    const filtered = allCustomers.filter(customer => 
-        (customer.first_name && customer.first_name.toLowerCase().includes(searchTerm)) ||
-        (customer.last_name && customer.last_name.toLowerCase().includes(searchTerm)) ||
-        (customer.email && customer.email.toLowerCase().includes(searchTerm)) ||
-        (customer.contact_number && customer.contact_number.includes(searchTerm)) ||
-        (customer.user_id && customer.user_id.toLowerCase().includes(searchTerm))
-    );
-    
-    displayCustomers(filtered);
+/* ─── List ──────────────────────────────────────────────────────── */
+async function loadList() {
+  const body = document.getElementById('tbl-body');
+  body.innerHTML = `<tr><td colspan="6" style="padding:36px;text-align:center">
+    <div class="skeleton" style="height:13px;width:50%;margin:0 auto 10px"></div>
+    <div class="skeleton" style="height:13px;width:35%;margin:0 auto"></div>
+  </td></tr>`;
+
+  const params = new URLSearchParams({ page: _cuPage, page_size: _cuPageSize });
+  const q       = document.getElementById('q').value.trim();
+  const orders  = document.getElementById('f-orders').value;
+  const active  = document.getElementById('f-active').value;
+  if (q)      params.set('search', q);
+  if (orders) params.set('has_orders', orders);
+  if (active) params.set('is_active', active);
+
+  const [ok, res] = await callApi('GET', `${_cuUrls.listUrl}?${params}`, null, _cuCsrf);
+  if (!ok || !res.success) {
+    body.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-circle-exclamation"></i><h4>Failed to load customers</h4></div></td></tr>`;
+    return;
+  }
+
+  const data = res.data;
+  const rows = data.results || data || [];
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-users"></i><h4>No customers found</h4><p>Try adjusting your search or filters</p></div></td></tr>`;
+    renderPag(0); return;
+  }
+
+  body.innerHTML = rows.map(c => {
+    const name     = `${c.first_name||''} ${c.last_name||''}`.trim() || 'Unknown';
+    const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const color    = avatarColor(name);
+    const isActive = c.is_active !== false;
+    return `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="background:${color};flex-shrink:0">${initials}</div>
+          <div>
+            <div class="fw-600">${name}</div>
+            <div class="text-muted fs-12">${c.email || '—'}</div>
+          </div>
+        </div>
+      </td>
+      <td class="mono">${c.phone || c.contact_number || '—'}</td>
+      <td class="fw-600">${(c.total_orders || 0).toLocaleString('en-IN')}</td>
+      <td class="fw-600">${fmtCurrency(c.total_spent || 0)}</td>
+      <td><span class="badge ${isActive ? 'badge-green' : 'badge-gray'}">${isActive ? 'Active' : 'Inactive'}</span></td>
+      <td class="text-muted fs-12">${fmtDate(c.date_joined || c.created_at)}</td>
+    </tr>`;
+  }).join('');
+
+  renderPag(data.count || rows.length);
 }
 
-function displayCustomers(customers) {
-    const tbody = document.getElementById('customersTable');
-    
-    if (customers.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="8" class="text-center text-muted">No customers found</td>
-            </tr>
-        `;
-        return;
-    }
-    
-    tbody.innerHTML = customers.map(customer => `
-        <tr>
-            <td><strong>${customer.user_id}</strong></td>
-            <td>${customer.first_name} ${customer.last_name}</td>
-            <td>${customer.email || 'N/A'}</td>
-            <td>${customer.contact_number}</td>
-            <td>${customer.stats?.total_orders || 0}</td>
-            <td>₹${Number(customer.stats?.total_spent || 0).toLocaleString('en-IN')}</td>
-            <td>${formatDate(customer.created_at)}</td>
-            <td>
-                <span class="badge ${customer.active_user ? 'bg-success' : 'bg-danger'}">
-                    ${customer.active_user ? 'Active' : 'Inactive'}
-                </span>
-            </td>
-        </tr>
-    `).join('');
+/* ─── Pagination ────────────────────────────────────────────────── */
+function renderPag(total) {
+  const pages = Math.ceil(total / _cuPageSize);
+  const info  = document.getElementById('pag-info');
+  const btns  = document.getElementById('pag-btns');
+  const start = (_cuPage-1)*_cuPageSize+1;
+  const end   = Math.min(_cuPage*_cuPageSize, total);
+  info.textContent = total ? `Showing ${start}–${end} of ${total}` : '';
+  if (pages <= 1) { btns.innerHTML=''; return; }
+  btns.innerHTML = `
+    <button class="btn btn-ghost btn-sm" ${_cuPage===1?'disabled':''} onclick="_cuPage--;loadList()"><i class="fa-solid fa-chevron-left"></i></button>
+    <span class="text-muted fs-12" style="padding:0 6px;line-height:30px">Page ${_cuPage} of ${pages}</span>
+    <button class="btn btn-ghost btn-sm" ${_cuPage>=pages?'disabled':''} onclick="_cuPage++;loadList()"><i class="fa-solid fa-chevron-right"></i></button>`;
 }
 
-function formatDate(dateString) {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric'
-    });
-}
-
-function showError(message) {
-    const tbody = document.getElementById('customersTable');
-    tbody.innerHTML = `
-        <tr>
-            <td colspan="8" class="text-center text-danger">${message}</td>
-        </tr>
-    `;
-}
-
-window.InitializeAdminCustomers = InitializeAdminCustomers;
-window.applySearch = applySearch;
+function set(id, v) { const el=document.getElementById(id); if(el) el.textContent=v; }
+function num(n) { return (n||0).toLocaleString('en-IN'); }

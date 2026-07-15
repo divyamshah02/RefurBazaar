@@ -103,8 +103,4 @@ class WishlistSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Wishlist
-<<<<<<< HEAD
         fields = ['id', 'user', 'items', 'created_at']
-=======
-        fields = ['id', 'user', 'items', 'created_at']
->>>>>>> 9a5139ab5f8d7dc0dd1b2f08152c3d8b26168424

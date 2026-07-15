@@ -1,111 +1,73 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customers - Admin Panel</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/static/css/style.css">
-    <style>
-        .sidebar {
-            min-height: 100vh;
-            background: #2c3e50;
-            color: white;
-        }
-        .sidebar .nav-link {
-            color: rgba(255,255,255,0.8);
-            padding: 12px 20px;
-            margin: 4px 0;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-        .sidebar .nav-link:hover {
-            background: rgba(255,255,255,0.1);
-            color: white;
-        }
-        .sidebar .nav-link.active {
-            background: #6bb044;
-            color: white;
-        }
-    </style>
-</head>
-<body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-2 sidebar p-0">
-                <div class="p-4">
-                    <h4 class="mb-4"><i class="fas fa-shield-alt me-2"></i>Admin Panel</h4>
-                    <nav class="nav flex-column">
-                        <a class="nav-link" href="/admin-dashboard/"><i class="fas fa-home me-2"></i>Dashboard</a>
-                        <a class="nav-link" href="/admin-orders/"><i class="fas fa-shopping-bag me-2"></i>Orders</a>
-                        <a class="nav-link" href="/admin-refurbishers/"><i class="fas fa-users me-2"></i>Refurbishers</a>
-                        <a class="nav-link" href="/admin-pending-refurbishers/"><i class="fas fa-clock me-2"></i>Pending Approvals</a>
-                        <a class="nav-link active" href="/admin-customers/"><i class="fas fa-user-friends me-2"></i>Customers</a>
-                    </nav>
-                </div>
-            </div>
+{% extends 'admin/_base.html' %}
+{% load static %}
+{% block title %}Customers{% endblock %}
+{% block nav_customers %}active{% endblock %}
+{% block page_title %}Customers{% endblock %}
+{% block page_subtitle %}All registered customer accounts{% endblock %}
 
-            <!-- Main Content -->
-            <div class="col-md-10 p-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2>All Customers</h2>
-                    <button class="btn btn-outline-secondary" onclick="location.reload()"><i class="fas fa-sync-alt me-2"></i>Refresh</button>
-                </div>
+{% block content %}
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-card-icon blue"><i class="fa-solid fa-users"></i></div><div class="stat-card-value" id="s-total">—</div><div class="stat-card-label">Total Customers</div></div>
+  <div class="stat-card"><div class="stat-card-icon green"><i class="fa-solid fa-cart-shopping"></i></div><div class="stat-card-value" id="s-with-orders">—</div><div class="stat-card-label">With Orders</div></div>
+  <div class="stat-card"><div class="stat-card-icon yellow"><i class="fa-solid fa-user-clock"></i></div><div class="stat-card-value" id="s-new-month">—</div><div class="stat-card-label">New This Month</div></div>
+  <div class="stat-card"><div class="stat-card-icon orange"><i class="fa-solid fa-user-xmark"></i></div><div class="stat-card-value" id="s-inactive">—</div><div class="stat-card-label">Inactive</div></div>
+</div>
 
-                <!-- Search -->
-                <div class="card shadow-sm mb-4">
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-md-10">
-                                <input type="text" id="searchInput" class="form-control" placeholder="Search by name, email, phone...">
-                            </div>
-                            <div class="col-md-2">
-                                <button class="btn btn-primary w-100" onclick="applySearch()"><i class="fas fa-search me-2"></i>Search</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Customers Table -->
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>User ID</th>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Contact</th>
-                                        <th>Total Orders</th>
-                                        <th>Total Spent</th>
-                                        <th>Registered On</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="customersTable">
-                                    <tr>
-                                        <td colspan="8" class="text-center"><i class="fas fa-spinner fa-spin me-2"></i>Loading customers...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="panel">
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" class="input-search" id="q" placeholder="Search name, email, phone…" autocomplete="off" />
     </div>
+    <select class="select-filter" id="f-orders">
+      <option value="">All Customers</option>
+      <option value="true">Has Orders</option>
+      <option value="false">No Orders</option>
+    </select>
+    <select class="select-filter" id="f-active">
+      <option value="">All Status</option>
+      <option value="true">Active</option>
+      <option value="false">Inactive</option>
+    </select>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/static/js/api_caller.js"></script>
-    <script src="/static/js/admin/customers.js"></script>
-    <script>
-        const csrfToken_p = '{{ csrf_token }}';
-        const customersApiUrl_p = '/admin-api/dashboard/customers/';
-        
-        InitializeAdminCustomers(csrfToken_p, customersApiUrl_p);
-    </script>
-</body>
-</html>
+  <div class="rb-table-wrap">
+    <table class="rb-table">
+      <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Phone</th>
+          <th>Orders</th>
+          <th>Total Spent</th>
+          <th>Status</th>
+          <th>Joined</th>
+        </tr>
+      </thead>
+      <tbody id="tbl-body">
+        <tr><td colspan="6" style="padding:48px;text-align:center">
+          <div class="skeleton" style="height:13px;width:50%;margin:0 auto 10px"></div>
+          <div class="skeleton" style="height:13px;width:35%;margin:0 auto"></div>
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--border-light);flex-wrap:wrap;gap:8px">
+    <span class="text-muted fs-12" id="pag-info"></span>
+    <div style="display:flex;gap:6px" id="pag-btns"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/admin/customers.js' %}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    InitCustomers(csrf, {
+      listUrl:  '/admin-api/dashboard/customers/',
+      statsUrl: '/admin-api/dashboard/stats/'
+    });
+  });
+</script>
+{% endblock %}

@@ -1,345 +1,120 @@
-/**
- * Listings Admin Management JavaScript
- * Manages the listings list page with filtering, search, and admin actions
- */
+'use strict';
+/* listings.js — list page */
 
-// Configuration initialization
-function InitializeListingsAdmin() {
-    const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]')?.value || '{{ csrf_token }}';
-    
-    window.ListingsConfig = {
-        csrfToken: csrfToken,
-        apiBaseUrl: '/api/products',
-        endpoints: {
-            listings: '/api/products/listings/',
-            approve: (id) => `/api/products/listings/${id}/approve/`,
-            reject: (id) => `/api/products/listings/${id}/reject/`
-        }
-    };
+let _lsCsrf, _lsUrls, _lsPage = 1, _lsPageSize = 20;
 
-    // Initialize event listeners
-    setupEventListeners();
-    
-    // Load initial data
-    loadListings();
+const LISTING_STATUS = {
+  active:   { label:'Active',    cls:'badge-green'  },
+  draft:    { label:'Draft',     cls:'badge-gray'   },
+  sold:     { label:'Sold Out',  cls:'badge-orange' },
+  inactive: { label:'Inactive',  cls:'badge-red'    },
+};
+function listingBadge(s) {
+  const m = LISTING_STATUS[s] || { label: s||'—', cls:'badge-gray' };
+  return `<span class="badge ${m.cls}">${m.label}</span>`;
 }
 
-/**
- * Setup event listeners for filters and search
- */
-function setupEventListeners() {
-    const searchInput = document.getElementById('searchInput');
-    const statusFilter = document.getElementById('statusFilter');
+/* ─── Entry ─────────────────────────────────────────────────────── */
+function InitListings(csrf, urls) {
+  _lsCsrf = csrf; _lsUrls = urls;
+  loadStats();
+  loadList();
 
-    if (searchInput) {
-        searchInput.addEventListener('input', debounce(filterListings, 300));
-    }
-
-    if (statusFilter) {
-        statusFilter.addEventListener('change', filterListings);
-    }
+  let debounce;
+  document.getElementById('q').addEventListener('input', () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => { _lsPage = 1; loadList(); }, 320);
+  });
+  document.getElementById('f-status').addEventListener('change',   () => { _lsPage=1; loadList(); });
+  document.getElementById('f-category').addEventListener('change', () => { _lsPage=1; loadList(); });
 }
 
-/**
- * Debounce helper function
- */
-function debounce(func, wait) {
-    let timeout;
-    return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
-    };
+/* ─── Stats ─────────────────────────────────────────────────────── */
+async function loadStats() {
+  const [ok, res] = await callApi('GET', _lsUrls.statsUrl, null, _lsCsrf);
+  if (!ok || !res.success) return;
+  const d = res.data;
+  set('s-total',  num(d.total_listings  ?? d.listings_total));
+  set('s-active', num(d.active_listings ?? d.listings_active));
+  set('s-draft',  num(d.draft_listings  ?? d.listings_draft));
+  set('s-sold',   num(d.sold_listings   ?? d.listings_sold));
 }
 
-/**
- * API call wrapper with CSRF token
- */
-async function callApi(url, options = {}) {
-    const defaultOptions = {
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': window.ListingsConfig.csrfToken
-        }
-    };
+/* ─── List ──────────────────────────────────────────────────────── */
+async function loadList() {
+  const body = document.getElementById('tbl-body');
+  body.innerHTML = `<tr><td colspan="8" style="padding:36px;text-align:center">
+    <div class="skeleton" style="height:13px;width:50%;margin:0 auto 10px"></div>
+    <div class="skeleton" style="height:13px;width:35%;margin:0 auto"></div>
+  </td></tr>`;
 
-    const mergedOptions = {
-        ...defaultOptions,
-        ...options,
-        headers: {
-            ...defaultOptions.headers,
-            ...options.headers
-        }
-    };
+  const params = new URLSearchParams({ page: _lsPage, page_size: _lsPageSize });
+  const q    = document.getElementById('q').value.trim();
+  const st   = document.getElementById('f-status').value;
+  const cat  = document.getElementById('f-category').value;
+  if (q)   params.set('search', q);
+  if (st)  params.set('status', st);
+  if (cat) params.set('category', cat);
 
-    try {
-        const response = await fetch(url, mergedOptions);
-        const data = await response.json();
+  const [ok, res] = await callApi('GET', `${_lsUrls.listUrl}?${params}`, null, _lsCsrf);
+  if (!ok || !res.success) {
+    body.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fa-solid fa-circle-exclamation"></i><h4>Failed to load</h4></div></td></tr>`;
+    return;
+  }
 
-        if (!response.ok) {
-            throw new Error(data.error || 'API Error');
-        }
+  const data = res.data;
+  const rows = data.results || data || [];
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fa-solid fa-layer-group"></i><h4>No listings found</h4><p>Try adjusting your search or filters</p></div></td></tr>`;
+    renderPag(0); return;
+  }
 
-        return data;
-    } catch (error) {
-        console.error('[v0] API Error:', error);
-        showNotification('Error: ' + error.message, 'error');
-        throw error;
-    }
+  body.innerHTML = rows.map(l => {
+    const product   = `${l.brand_name||''} ${l.model_name||''}`.trim() || '—';
+    const refurName = `${l.refurbisher_first_name||''} ${l.refurbisher_last_name||''}`.trim() || '—';
+    const s         = l.status || 'draft';
+    const lid       = l.listing_id || l.id;
+
+    // Compute price from units array (cheapest available unit)
+    const unitPrices = (l.units || []).map(u => parseFloat(u.price)).filter(p => !isNaN(p));
+    const priceStr   = unitPrices.length
+      ? fmtCurrency(Math.min(...unitPrices))
+      : '—';
+
+    return `<tr>
+      <td>
+        <div class="fw-600">${product}</div>
+        <div class="text-muted fs-12 mono">${lid}</div>
+      </td>
+      <td>${refurName}</td>
+      <td>${capFirst(l.category || '—')}</td>
+      <td class="fw-600">${priceStr}</td>
+      <td>${l.total_quantity ?? '—'}</td>
+      <td>${listingBadge(s)}</td>
+      <td class="text-muted fs-12">${fmtDate(l.created_at)}</td>
+      <td><div style="display:flex;gap:6px;justify-content:flex-end">
+        <a href="/admin-listing-detail/${lid}/" class="btn btn-ghost btn-sm"><i class="fa-solid fa-eye"></i> View</a>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  renderPag(data.count || rows.length);
 }
 
-/**
- * Load listings from API
- */
-async function loadListings() {
-    try {
-        console.log('[v0] Loading listings...');
-        showLoading(true);
-        
-        const response = await callApi(window.ListingsConfig.endpoints.listings);
-        window.allListings = response.data || [];
-        
-        console.log('[v0] Loaded listings:', window.allListings.length);
-        updateStats();
-        filterListings();
-        showLoading(false);
-    } catch (error) {
-        console.error('[v0] Failed to load listings:', error);
-        showLoading(false);
-    }
+/* ─── Pagination ────────────────────────────────────────────────── */
+function renderPag(total) {
+  const pages = Math.ceil(total / _lsPageSize);
+  const info  = document.getElementById('pag-info');
+  const btns  = document.getElementById('pag-btns');
+  const start = (_lsPage-1)*_lsPageSize+1;
+  const end   = Math.min(_lsPage*_lsPageSize, total);
+  info.textContent = total ? `Showing ${start}–${end} of ${total}` : '';
+  if (pages <= 1) { btns.innerHTML=''; return; }
+  btns.innerHTML = `
+    <button class="btn btn-ghost btn-sm" ${_lsPage===1?'disabled':''} onclick="_lsPage--;loadList()"><i class="fa-solid fa-chevron-left"></i></button>
+    <span class="text-muted fs-12" style="padding:0 6px;line-height:30px">Page ${_lsPage} of ${pages}</span>
+    <button class="btn btn-ghost btn-sm" ${_lsPage>=pages?'disabled':''} onclick="_lsPage++;loadList()"><i class="fa-solid fa-chevron-right"></i></button>`;
 }
 
-/**
- * Update statistics display
- */
-function updateStats() {
-    const stats = {
-        total: window.allListings.length,
-        active: window.allListings.filter(l => l.status === 'active').length,
-        pending: window.allListings.filter(l => l.status === 'pending_approval').length,
-        rejected: window.allListings.filter(l => l.status === 'rejected').length
-    };
-
-    const totalEl = document.getElementById('totalCount');
-    const activeEl = document.getElementById('activeCount');
-    const pendingEl = document.getElementById('pendingCount');
-    const rejectedEl = document.getElementById('rejectedCount');
-
-    if (totalEl) totalEl.textContent = stats.total;
-    if (activeEl) activeEl.textContent = stats.active;
-    if (pendingEl) pendingEl.textContent = stats.pending;
-    if (rejectedEl) rejectedEl.textContent = stats.rejected;
-
-    console.log('[v0] Stats updated:', stats);
-}
-
-/**
- * Filter listings based on search and status
- */
-function filterListings() {
-    const searchInput = document.getElementById('searchInput');
-    const statusFilter = document.getElementById('statusFilter');
-    
-    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-    const statusValue = statusFilter ? statusFilter.value : '';
-
-    const filtered = window.allListings.filter(listing => {
-        const matchesSearch = !searchTerm || 
-            listing.listing_id.toLowerCase().includes(searchTerm) ||
-            listing.model_name.toLowerCase().includes(searchTerm) ||
-            listing.refurbisher_name.toLowerCase().includes(searchTerm);
-
-        const matchesStatus = !statusValue || listing.status === statusValue;
-
-        return matchesSearch && matchesStatus;
-    });
-
-    console.log('[v0] Filtered listings:', filtered.length);
-    renderListings(filtered);
-}
-
-/**
- * Render listings table
- */
-function renderListings(listings) {
-    const table = document.getElementById('listingsTable');
-    const tbody = document.getElementById('listingsBody');
-    const emptyState = document.getElementById('emptyState');
-
-    if (!tbody) {
-        console.error('[v0] Listings table body not found');
-        return;
-    }
-
-    tbody.innerHTML = '';
-
-    if (listings.length === 0) {
-        if (table) table.style.display = 'none';
-        if (emptyState) emptyState.style.display = 'block';
-        return;
-    }
-
-    if (table) table.style.display = 'table';
-    if (emptyState) emptyState.style.display = 'none';
-
-    listings.forEach(listing => {
-        const row = createListingRow(listing);
-        tbody.appendChild(row);
-    });
-
-    console.log('[v0] Rendered listings:', listings.length);
-}
-
-/**
- * Create table row for listing
- */
-function createListingRow(listing) {
-    const row = document.createElement('tr');
-    const createdDate = new Date(listing.created_at).toLocaleDateString();
-    const statusBadgeClass = `badge-${listing.status}`;
-
-    row.innerHTML = `
-        <td>
-            <a href="/admin/listings/${listing.id}/" class="listing-id">
-                ${listing.listing_id}
-            </a>
-        </td>
-        <td>
-            <div>
-                <strong>${listing.brand_name} ${listing.model_name}</strong>
-                <br>
-                <small style="color: #999;">${listing.category_display}</small>
-            </div>
-        </td>
-        <td>
-            <div class="refurbisher-info">
-                <div class="avatar">${listing.refurbisher_name.charAt(0).toUpperCase()}</div>
-                <div>${listing.refurbisher_name}</div>
-            </div>
-        </td>
-        <td>
-            <strong>${listing.total_quantity}</strong> units<br>
-            <small style="color: #999;">${listing.available_units_count} available</small>
-        </td>
-        <td>
-            <span class="badge ${statusBadgeClass}">${listing.status_display}</span>
-        </td>
-        <td>${createdDate}</td>
-        <td>
-            <div class="actions">
-                <a href="/admin/listings/${listing.id}/" class="btn btn-view">
-                    <i class="fas fa-eye"></i> View
-                </a>
-                ${listing.status === 'pending_approval' ? `
-                    <button class="btn btn-approve" onclick="approveListing(${listing.id})">
-                        <i class="fas fa-check"></i> Approve
-                    </button>
-                    <button class="btn btn-reject" onclick="openRejectModal(${listing.id})">
-                        <i class="fas fa-times"></i> Reject
-                    </button>
-                ` : ''}
-            </div>
-        </td>
-    `;
-
-    return row;
-}
-
-/**
- * Approve listing
- */
-async function approveListing(listingId) {
-    if (!confirm('Are you sure you want to approve this listing?')) {
-        return;
-    }
-
-    try {
-        console.log('[v0] Approving listing:', listingId);
-        await callApi(window.ListingsConfig.endpoints.approve(listingId), { method: 'POST' });
-        showNotification('Listing approved successfully!', 'success');
-        loadListings();
-    } catch (error) {
-        console.error('[v0] Failed to approve listing:', error);
-    }
-}
-
-/**
- * Open rejection modal
- */
-function openRejectModal(listingId) {
-    window.currentRejectListingId = listingId;
-    const reasonInput = document.getElementById('rejectionReason');
-    if (reasonInput) {
-        reasonInput.value = '';
-    }
-    const modal = document.getElementById('rejectModal');
-    if (modal) {
-        modal.classList.add('active');
-    }
-}
-
-/**
- * Close rejection modal
- */
-function closeRejectModal() {
-    const modal = document.getElementById('rejectModal');
-    if (modal) {
-        modal.classList.remove('active');
-    }
-    window.currentRejectListingId = null;
-}
-
-/**
- * Confirm rejection
- */
-async function confirmReject() {
-    if (!window.currentRejectListingId) return;
-
-    const reasonInput = document.getElementById('rejectionReason');
-    const reason = reasonInput ? reasonInput.value.trim() : '';
-    
-    if (!reason) {
-        alert('Please provide a rejection reason.');
-        return;
-    }
-
-    try {
-        console.log('[v0] Rejecting listing:', window.currentRejectListingId);
-        await callApi(window.ListingsConfig.endpoints.reject(window.currentRejectListingId), {
-            method: 'POST',
-            body: JSON.stringify({ reason })
-        });
-        showNotification('Listing rejected successfully!', 'success');
-        closeRejectModal();
-        loadListings();
-    } catch (error) {
-        console.error('[v0] Failed to reject listing:', error);
-    }
-}
-
-/**
- * Show/hide loading state
- */
-function showLoading(show) {
-    const loadingState = document.getElementById('loadingState');
-    const table = document.getElementById('listingsTable');
-    const emptyState = document.getElementById('emptyState');
-
-    if (loadingState) loadingState.style.display = show ? 'block' : 'none';
-    if (table && !show) table.style.display = 'table';
-    if (emptyState && !show) emptyState.style.display = 'none';
-}
-
-/**
- * Show notification
- */
-function showNotification(message, type = 'info') {
-    console.log(`[v0] ${type.toUpperCase()}: ${message}`);
-    // You can integrate with a toast library here
-}
-
-// Initialize on page load
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', InitializeListingsAdmin);
-} else {
-    InitializeListingsAdmin();
-}
+function set(id, v) { const el=document.getElementById(id); if(el) el.textContent=v; }
+function num(n) { return (n||0).toLocaleString('en-IN'); }

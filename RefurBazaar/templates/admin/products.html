@@ -1,0 +1,155 @@
+{% extends 'admin/_base.html' %}
+{% load static %}
+{% block title %}Default Products{% endblock %}
+{% block nav_products %}active{% endblock %}
+{% block page_title %}Default Products{% endblock %}
+{% block page_subtitle %}Manage the master product catalog that refurbishers list against{% endblock %}
+
+{% block content %}
+<div class="stats-grid" style="grid-template-columns:repeat(5,1fr)">
+  <div class="stat-card"><div class="stat-card-icon blue"><i class="fa-solid fa-box"></i></div><div class="stat-card-value" id="s-total">—</div><div class="stat-card-label">Total Products</div></div>
+  <div class="stat-card"><div class="stat-card-icon green"><i class="fa-solid fa-circle-check"></i></div><div class="stat-card-value" id="s-active">—</div><div class="stat-card-label">Active</div></div>
+  <div class="stat-card"><div class="stat-card-icon orange"><i class="fa-solid fa-mobile-screen"></i></div><div class="stat-card-value" id="s-mobile">—</div><div class="stat-card-label">Mobiles</div></div>
+  <div class="stat-card"><div class="stat-card-icon purple"><i class="fa-solid fa-laptop"></i></div><div class="stat-card-value" id="s-laptop">—</div><div class="stat-card-label">Laptops</div></div>
+  <div class="stat-card"><div class="stat-card-icon yellow"><i class="fa-solid fa-tablet-screen-button"></i></div><div class="stat-card-value" id="s-tablet">—</div><div class="stat-card-label">Tablets</div></div>
+</div>
+
+<div class="panel">
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" class="input-search" id="q" placeholder="Search product name…" autocomplete="off" />
+    </div>
+    <select class="select-filter" id="f-category">
+      <option value="">All Categories</option>
+      <option value="mobile">Mobile</option>
+      <option value="laptop">Laptop</option>
+      <option value="tablet">Tablet</option>
+      <option value="accessory">Accessory</option>
+    </select>
+    <select class="select-filter" id="f-brand">
+      <option value="">All Brands</option>
+    </select>
+    <select class="select-filter" id="f-active">
+      <option value="">All Status</option>
+      <option value="true">Active</option>
+      <option value="false">Inactive</option>
+    </select>
+    <button class="btn btn-primary" onclick="openCreateProduct()">
+      <i class="fa-solid fa-plus"></i> Add Product
+    </button>
+  </div>
+
+  <div class="rb-table-wrap">
+    <table class="rb-table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Brand</th>
+          <th>Category</th>
+          <th>Year</th>
+          <th>Attributes</th>
+          <th>Status</th>
+          <th style="text-align:right">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tbl-body">
+        <tr><td colspan="7" style="padding:48px;text-align:center">
+          <div class="skeleton" style="height:13px;width:50%;margin:0 auto 10px"></div>
+          <div class="skeleton" style="height:13px;width:35%;margin:0 auto"></div>
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--border-light);flex-wrap:wrap;gap:8px">
+    <span class="text-muted fs-12" id="pag-info"></span>
+    <div style="display:flex;gap:6px" id="pag-btns"></div>
+  </div>
+</div>
+
+<!-- Create / Edit Product Modal -->
+<div class="rb-overlay" id="modal-product">
+  <div class="rb-modal" style="max-width:600px">
+    <div class="modal-header">
+      <div class="modal-header-icon blue"><i class="fa-solid fa-box"></i></div>
+      <div>
+        <div class="modal-title" id="mprod-title">Add Product</div>
+        <div class="modal-subtitle">Add a product to the master catalog</div>
+      </div>
+      <button class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="mprod-id" value="" />
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="form-group">
+          <label class="form-label">Brand <span style="color:var(--red)">*</span></label>
+          <select class="form-select" id="mprod-brand"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category <span style="color:var(--red)">*</span></label>
+          <select class="form-select" id="mprod-category">
+            <option value="">Select…</option>
+            <option value="mobile">Mobile</option>
+            <option value="laptop">Laptop</option>
+            <option value="tablet">Tablet</option>
+            <option value="accessory">Accessory</option>
+          </select>
+        </div>
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label">Product Name <span style="color:var(--red)">*</span></label>
+          <input type="text" class="form-input" id="mprod-name" placeholder="e.g. iPhone 16 Pro Max" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Release Year</label>
+          <input type="number" class="form-input" id="mprod-year" placeholder="2024" min="2000" max="2030" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:26px">
+            <input type="checkbox" id="mprod-active" checked style="width:16px;height:16px;accent-color:var(--accent)" />
+            Active (visible to refurbishers)
+          </label>
+        </div>
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label">Description</label>
+          <textarea class="form-textarea" id="mprod-desc" placeholder="Optional product description…" rows="2"></textarea>
+        </div>
+      </div>
+
+      <!-- Attributes -->
+      <div style="border-top:1px solid var(--border-light);margin-top:16px;padding-top:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="fw-600 fs-13">Product Attributes</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select class="select-filter" id="mprod-attr-category" style="font-size:12px;padding:5px 10px;height:30px">
+              <option value="">Select category first</option>
+            </select>
+          </div>
+        </div>
+        <div id="mprod-attrs-list" style="display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto">
+          <div class="text-muted fs-12" style="padding:12px 0">Select a category to see available attributes</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-product')">Cancel</button>
+      <button class="btn btn-primary" id="mprod-save-btn" onclick="saveProduct()">Save Product</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/admin/products.js' %}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    InitProducts(csrf, {
+      listUrl:   '/product-api/product-models-admin/',
+      createUrl: '/product-api/product-models-admin/',
+      brandsUrl: '/product-api/brands/',
+      attrsUrl:  '/admin-api/dashboard/attributes/'
+    });
+  });
+</script>
+{% endblock %}

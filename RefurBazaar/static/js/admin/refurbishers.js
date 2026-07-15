@@ -1,250 +1,183 @@
-// Admin Refurbishers Management
-let csrfToken = '';
-let apiUrl = '';
-let allData = [];
-let filteredData = [];
+'use strict';
+/* refurbishers.js — list page */
 
-function InitializeAdminRefurbishers(csrf, url) {
-    csrfToken = csrf;
-    apiUrl = url;
-    
-    console.log('[v0] Initializing Admin Refurbishers');
-    console.log('[v0] API URL:', apiUrl);
-    
-    loadData();
-    
-    // Add event listeners for real-time filtering
-    document.getElementById('searchInput').addEventListener('input', debounce(applyFilters, 300));
-    document.getElementById('statusFilter').addEventListener('change', applyFilters);
+let _rfCsrf, _rfUrls, _rfData = { results:[], count:0 }, _rfPage = 1, _rfPageSize = 20;
+
+const APPROVAL_STATUS = {
+  approved:   { label:'Approved',   cls:'badge-green'  },
+  pending:    { label:'Pending',    cls:'badge-yellow' },
+  rejected:   { label:'Rejected',  cls:'badge-red'    },
+  incomplete: { label:'Incomplete', cls:'badge-gray'   },
+};
+function approvalBadge(s) {
+  const m = APPROVAL_STATUS[s] || { label: s||'—', cls:'badge-gray' };
+  return `<span class="badge ${m.cls}">${m.label}</span>`;
 }
 
-async function loadData() {
-    try {
-        console.log('[v0] Loading refurbishers data...');
-        const [success, response] = await window.callApi('GET', apiUrl, null, csrfToken);
-        
-        console.log('[v0] Refurbishers API Response:', response);
-        
-        if (success && response.success && response.data) {
-            allData = response.data;
-            filteredData = [...allData];
-            updateStatistics();
-            displayData(allData);
-        } else {
-            showError(response.error || 'Failed to load refurbishers');
-        }
-    } catch (error) {
-        console.error('[v0] Error loading refurbishers:', error);
-        showError('Failed to load refurbishers. Please try again.');
-    }
+/* ─── Entry point ───────────────────────────────────────────────── */
+function InitRefurbishers(csrf, urls) {
+  _rfCsrf = csrf; _rfUrls = urls;
+  loadStats();
+  loadList();
+
+  let debounce;
+  document.getElementById('q').addEventListener('input', () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => { _rfPage = 1; loadList(); }, 320);
+  });
+  document.getElementById('f-status').addEventListener('change', () => { _rfPage = 1; loadList(); });
+  document.getElementById('f-active').addEventListener('change', () => { _rfPage = 1; loadList(); });
 }
 
-function updateStatistics() {
-    if (!allData || allData.length === 0) {
-        document.getElementById('totalRefurbishers').textContent = '0';
-        document.getElementById('approvedRefurbishers').textContent = '0';
-        document.getElementById('pendingRefurbishers').textContent = '0';
-        return;
-    }
-
-    const total = allData.length;
-    const approved = allData.filter(ref => ref.company_profile?.is_approved).length;
-    const pending = allData.filter(ref => 
-        ref.company_profile?.is_profile_complete && !ref.company_profile?.is_approved
-    ).length;
-
-    console.log('[v0] Statistics - Total:', total, 'Approved:', approved, 'Pending:', pending);
-
-    document.getElementById('totalRefurbishers').textContent = total;
-    document.getElementById('approvedRefurbishers').textContent = approved;
-    document.getElementById('pendingRefurbishers').textContent = pending;
+/* ─── Stats ─────────────────────────────────────────────────────── */
+async function loadStats() {
+  const [ok, res] = await callApi('GET', _rfUrls.statsUrl, null, _rfCsrf);
+  if (!ok || !res.success) return;
+  const d = res.data;
+  set('s-total',    num(d.total_refurbishers));
+  set('s-approved', num(d.approved_refurbishers));
+  set('s-pending',  num(d.pending_refurbishers));
+  set('s-rejected', num(d.rejected_refurbishers));
 }
 
-function applyFilters() {
-    console.log('[v0] Applying filters...');
-    
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const statusFilter = document.getElementById('statusFilter').value;
-    
-    filteredData = allData.filter(ref => {
-        // Search filter
-        if (searchTerm) {
-            const searchableFields = [
-                ref.user_id || '',
-                ref.first_name || '',
-                ref.last_name || '',
-                ref.email || '',
-                ref.contact_number || '',
-                ref.company_profile?.company_name || '',
-                ref.company_profile?.gst_registration_no || ''
-            ];
-            
-            const matches = searchableFields.some(field => 
-                field.toString().toLowerCase().includes(searchTerm)
-            );
-            
-            if (!matches) return false;
-        }
-        
-        // Status filter
-        if (statusFilter) {
-            if (statusFilter === 'approved') {
-                return ref.company_profile?.is_approved === true;
-            } else if (statusFilter === 'pending') {
-                return ref.company_profile?.is_profile_complete && !ref.company_profile?.is_approved;
-            } else if (statusFilter === 'incomplete') {
-                return !ref.company_profile?.is_profile_complete;
-            }
-        }
-        
-        return true;
-    });
-    
-    console.log('[v0] Filtered results:', filteredData.length);
-    displayData(filteredData);
+/* ─── List ──────────────────────────────────────────────────────── */
+async function loadList() {
+  const body = document.getElementById('tbl-body');
+  body.innerHTML = `<tr><td colspan="7" style="padding:36px;text-align:center">
+    <div class="skeleton" style="height:13px;width:50%;margin:0 auto 10px"></div>
+    <div class="skeleton" style="height:13px;width:35%;margin:0 auto"></div>
+  </td></tr>`;
+
+  const q       = document.getElementById('q').value.trim();
+  const status  = document.getElementById('f-status').value;
+  const active  = document.getElementById('f-active').value;
+  const params  = new URLSearchParams({ page: _rfPage, page_size: _rfPageSize });
+  if (q)      params.set('search', q);
+  if (status) params.set('status', status);
+  if (active) params.set('is_active', active);
+
+  const [ok, res] = await callApi('GET', `${_rfUrls.listUrl}?${params}`, null, _rfCsrf);
+  if (!ok || !res.success) {
+    body.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-circle-exclamation"></i><h4>Failed to load</h4><p>Check your connection and try again</p></div></td></tr>`;
+    return;
+  }
+
+  _rfData = res.data;
+  const rows = _rfData.results || _rfData || [];
+
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-store"></i><h4>No refurbishers found</h4><p>Try adjusting your search or filters</p></div></td></tr>`;
+    renderPagination(0);
+    return;
+  }
+
+  body.innerHTML = rows.map(r => {
+    const name     = `${r.first_name||''} ${r.last_name||''}`.trim() || '—';
+    const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const color    = avatarColor(name);
+    const cp       = r.company_profile;
+    const company  = cp?.company_name || '—';
+    const phone    = r.contact_number || r.phone || '—';
+    const email    = r.email || '';
+    const listings = r.stats?.total_listings ?? '—';
+    const uid      = r.user_id || r.id;
+
+    // Derive approval status from company_profile flags
+    let approvalStatus;
+    if (!cp || !cp.is_profile_complete) approvalStatus = 'incomplete';
+    else if (cp.is_approved)            approvalStatus = 'approved';
+    else                                approvalStatus = 'pending';
+
+    return `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="background:${color};flex-shrink:0">${initials}</div>
+          <div>
+            <div class="fw-600">${name}</div>
+            <div class="text-muted fs-12">${email}</div>
+          </div>
+        </div>
+      </td>
+      <td>${company}</td>
+      <td class="mono">${phone}</td>
+      <td>${listings}</td>
+      <td>${approvalBadge(approvalStatus)}</td>
+      <td class="text-muted fs-12">${fmtDate(r.date_joined || r.created_at)}</td>
+      <td>
+        <div style="display:flex;gap:6px;justify-content:flex-end">
+          <a href="/admin-refurbisher-detail/${uid}/" class="btn btn-ghost btn-sm"><i class="fa-solid fa-eye"></i> View</a>
+          ${approvalStatus === 'pending' ? `
+            <button class="btn btn-success btn-sm" onclick="promptAction('approve','${uid}','${name}')"><i class="fa-solid fa-check"></i> Approve</button>
+            <button class="btn btn-danger btn-sm" onclick="promptAction('reject','${uid}','${name}')"><i class="fa-solid fa-xmark"></i> Reject</button>
+          ` : ''}
+          ${approvalStatus === 'approved' ? `
+            <button class="btn btn-warning btn-sm" onclick="promptAction('reject','${uid}','${name}')"><i class="fa-solid fa-ban"></i> Revoke</button>
+          ` : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  renderPagination(_rfData.count || rows.length);
 }
 
-function displayData(refurbishers) {
-    console.log('[v0] Displaying refurbishers:', refurbishers.length);
-    
-    const tbody = document.getElementById('refurbishersTable');
-    
-    if (!refurbishers || refurbishers.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="7">
-                    <div class="empty-state">
-                        <i class="fas fa-search"></i>
-                        <p>No refurbishers found matching your criteria</p>
-                    </div>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    tbody.innerHTML = refurbishers.map(ref => {
-        const fullName = `${ref.first_name || ''} ${ref.last_name || ''}`.trim() || 'N/A';
-        const userInitials = getInitials(fullName);
-        const companyName = ref.company_profile?.company_name || 'N/A';
-        const contactPhone = formatPhoneNumber(ref.contact_number || '-');
-        const totalListings = ref.stats?.total_listings || 0;
-        const totalSales = ref.stats?.total_sales || 0;
-        
-        // Determine status
-        let statusBadge = '';
-        let statusClass = '';
-        if (ref.company_profile?.is_approved) {
-            statusBadge = '<span class="badge badge-success"><span class="status-dot active"></span>Active</span>';
-            statusClass = 'badge-success';
-        } else if (ref.company_profile?.is_profile_complete) {
-            statusBadge = '<span class="badge badge-warning"><span class="status-dot pending"></span>Pending</span>';
-            statusClass = 'badge-warning';
-        } else {
-            statusBadge = '<span class="badge badge-info"><span class="status-dot" style="background-color: #9ca3af;"></span>Incomplete</span>';
-            statusClass = 'badge-info';
-        }
-        
-        const actionButtons = `
-            <div class="action-buttons">
-                <a href="/admin-refurbisher-detail/?user_id=${ref.user_id}" class="btn btn-sm btn-outline-primary">
-                    <i class="fas fa-eye"></i>View Details
-                </a>
-            </div>
-        `;
-        
-        return `
-            <tr>
-                <td>
-                    <div class="user-cell">
-                        <div class="user-avatar">${userInitials}</div>
-                        <div class="user-info">
-                            <div class="user-name">${fullName}</div>
-                            <div class="user-id">${ref.user_id}</div>
-                        </div>
-                    </div>
-                </td>
-                <td>
-                    <div>
-                        <div class="company-name">${companyName}</div>
-                        <div class="company-type">${ref.company_profile?.business_type || 'N/A'}</div>
-                    </div>
-                </td>
-                <td>
-                    <div style="font-size: 13px;">
-                        <div>${contactPhone}</div>
-                        <div style="color: #9ca3af; font-size: 12px;">${ref.email || 'N/A'}</div>
-                    </div>
-                </td>
-                <td>
-                    <strong>${totalListings}</strong>
-                </td>
-                <td>
-                    <strong>${totalSales}</strong>
-                </td>
-                <td>
-                    ${statusBadge}
-                </td>
-                <td>
-                    ${actionButtons}
-                </td>
-            </tr>
-        `;
-    }).join('');
+/* ─── Pagination ────────────────────────────────────────────────── */
+function renderPagination(total) {
+  const pages = Math.ceil(total / _rfPageSize);
+  const info  = document.getElementById('pag-info');
+  const btns  = document.getElementById('pag-btns');
+  const start = (_rfPage - 1) * _rfPageSize + 1;
+  const end   = Math.min(_rfPage * _rfPageSize, total);
+  info.textContent = total ? `Showing ${start}–${end} of ${total}` : '';
+  if (pages <= 1) { btns.innerHTML = ''; return; }
+  btns.innerHTML = `
+    <button class="btn btn-ghost btn-sm" ${_rfPage===1?'disabled':''} onclick="_rfPage--;loadList()"><i class="fa-solid fa-chevron-left"></i></button>
+    <span class="text-muted fs-12" style="padding:0 6px;line-height:30px">Page ${_rfPage} of ${pages}</span>
+    <button class="btn btn-ghost btn-sm" ${_rfPage>=pages?'disabled':''} onclick="_rfPage++;loadList()"><i class="fa-solid fa-chevron-right"></i></button>`;
 }
 
-function formatPhoneNumber(phone) {
-    if (!phone || phone === '-') return '-';
-    const cleaned = phone.toString().replace(/\D/g, '').slice(-10);
-    if (cleaned.length === 10) {
-        return cleaned.replace(/(\d{5})(\d{5})/, '+91 $1 $2');
-    }
-    return phone;
+/* ─── Approve / Reject ──────────────────────────────────────────── */
+let _pendingAction = null;
+function promptAction(action, userId, name) {
+  _pendingAction = { action, userId };
+  const isApprove = action === 'approve';
+  const icon  = document.getElementById('mact-icon');
+  icon.className = `modal-header-icon ${isApprove ? 'green' : 'red'}`;
+  icon.innerHTML = `<i class="fa-solid ${isApprove ? 'fa-circle-check' : 'fa-ban'}"></i>`;
+  set('mact-title', isApprove ? 'Approve Refurbisher' : 'Reject / Revoke Refurbisher');
+  set('mact-sub', name);
+  set('mact-body', isApprove
+    ? `This will grant ${name} access to list products on RefurBazaar.`
+    : `This will revoke ${name}'s ability to list products. You can re-approve later.`);
+  document.getElementById('mact-reason-wrap').style.display = isApprove ? 'none' : 'block';
+  document.getElementById('mact-reason').value = '';
+  const confirmBtn = document.getElementById('mact-confirm-btn');
+  confirmBtn.className = `btn ${isApprove ? 'btn-success' : 'btn-danger'}`;
+  confirmBtn.textContent = isApprove ? 'Approve' : 'Reject';
+  confirmBtn.onclick = submitAction;
+  openModal('modal-action');
 }
 
-function getInitials(name) {
-    if (!name) return 'R';
-    const parts = name.trim().split(' ');
-    if (parts.length >= 2) {
-        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
+async function submitAction() {
+  if (!_pendingAction) return;
+  const { action, userId } = _pendingAction;
+  const reason = document.getElementById('mact-reason').value.trim();
+  const btn = document.getElementById('mact-confirm-btn');
+  btn.disabled = true; btn.textContent = 'Processing…';
+
+  const payload = { user_id: userId, action };
+  if (reason) payload.reason = reason;
+
+  const [ok, res] = await callApi('POST', _rfUrls.approveUrl, payload, _rfCsrf);
+  btn.disabled = false; btn.textContent = action === 'approve' ? 'Approve' : 'Reject';
+
+  if (ok && res.success) {
+    closeModal('modal-action');
+    showToast(`Refurbisher ${action === 'approve' ? 'approved' : 'rejected'} successfully`, 'success');
+    loadList(); loadStats();
+  } else {
+    showToast(res?.message || 'Action failed. Please try again.', 'error');
+  }
 }
 
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-function showError(message) {
-    const tbody = document.getElementById('refurbishersTable');
-    tbody.innerHTML = `
-        <tr>
-            <td colspan="7" class="text-center">
-                <div class="empty-state">
-                    <i class="fas fa-exclamation-circle" style="color: #ef4444;"></i>
-                    <p style="color: #ef4444;">${message}</p>
-                </div>
-            </td>
-        </tr>
-    `;
-    console.error('[v0] Error:', message);
-}
-
-function logout() {
-    if (confirm('Are you sure you want to logout?')) {
-        window.location.href = '/admin-logout/';
-    }
-}
-
-// Export functions to window
-window.InitializeAdminRefurbishers = InitializeAdminRefurbishers;
-window.applyFilters = applyFilters;
-window.logout = logout;
+function set(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }

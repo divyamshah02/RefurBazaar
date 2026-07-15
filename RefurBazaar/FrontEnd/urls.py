@@ -54,6 +54,9 @@ router.register(r'admin-listings', AdminListingsPageViewSet, basename='admin-lis
 router.register(r'admin-listing-detail', AdminListingDetailPageViewSet, basename='admin-listing-detail')
 router.register(r'admin-customers', AdminCustomersPageViewSet, basename='admin-customers')
 router.register(r'admin-add-products', AdminAddProductPageViewSet, basename='admin-add-products')
+router.register(r'admin-catalog-brands', AdminBrandsPageViewSet, basename='admin-catalog-brands')
+router.register(r'admin-catalog-products', AdminProductsPageViewSet, basename='admin-catalog-products')
+router.register(r'admin-catalog-attributes', AdminAttributesPageViewSet, basename='admin-catalog-attributes')
 
 urlpatterns = [
     path('', include(router.urls)),

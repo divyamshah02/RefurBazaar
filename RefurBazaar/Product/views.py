@@ -16,17 +16,70 @@ class BrandViewSet(viewsets.ViewSet):
     def list(self, request):
         """Get all brands, optionally filtered by category"""
         category = request.query_params.get('category')
-        
         if category:
-            # Get brands that have models in this category
             brands = Brand.objects.filter(models__category=category, models__is_active=True).distinct()
         else:
             brands = Brand.objects.all()
-            
         serializer = BrandSerializer(brands, many=True)
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None
+        }, status=status.HTTP_200_OK)
+
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def create(self, request):
+        """Create a brand (admin only)"""
+        serializer = BrandSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": serializer.data, "error": None
+            }, status=status.HTTP_201_CREATED)
+        return Response({
+            "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": None, "error": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def partial_update(self, request, pk=None):
+        """Partial update of a brand (admin only)"""
+        try:
+            brand = Brand.objects.get(pk=pk)
+        except Brand.DoesNotExist:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Brand not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+        serializer = BrandSerializer(brand, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": serializer.data, "error": None
+            }, status=status.HTTP_200_OK)
+        return Response({
+            "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": None, "error": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def destroy(self, request, pk=None):
+        """Delete a brand (admin only)"""
+        try:
+            brand = Brand.objects.get(pk=pk)
+        except Brand.DoesNotExist:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Brand not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+        brand.delete()
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": None, "error": None
         }, status=status.HTTP_200_OK)
 
 

@@ -1,158 +1,99 @@
-// Admin Dashboard Management
-let csrfToken = '';
-let statsApiUrl = '';
-let ordersApiUrl = '';
-let refurbishersApiUrl = '';
+'use strict';
 
-function InitializeAdminDashboard(csrf, stats_url, orders_url, refurbishers_url) {
-    csrfToken = csrf;
-    statsApiUrl = stats_url;
-    ordersApiUrl = orders_url;
-    refurbishersApiUrl = refurbishers_url;
-    
-    // Load dashboard data
-    loadStats();
-    loadRecentOrders();
-    loadPendingRefurbishers();
+/* shared status badge helper used by other pages too */
+const ORDER_STATUS_MAP = {
+  pending:    { label:'Pending',    cls:'badge-yellow' },
+  confirmed:  { label:'Confirmed',  cls:'badge-blue'   },
+  processing: { label:'Processing', cls:'badge-orange'  },
+  shipped:    { label:'Shipped',    cls:'badge-purple'  },
+  delivered:  { label:'Delivered',  cls:'badge-green'   },
+  cancelled:  { label:'Cancelled',  cls:'badge-red'     },
+};
+function orderStatusBadge(s) {
+  const m = ORDER_STATUS_MAP[s] || { label: s || '—', cls:'badge-gray' };
+  return `<span class="badge ${m.cls}">${m.label}</span>`;
 }
 
-async function loadStats() {
-    try {
-        const [success, response] = await window.callApi('GET', statsApiUrl, null, csrfToken);
-        
-        console.log('[v0] Stats API Response:', response);
-        
-        if (success && response.success && response.data) {
-            const stats = response.data;
-            document.getElementById('totalOrders').textContent = stats.total_orders || 0;
-            document.getElementById('totalRefurbishers').textContent = stats.total_refurbishers || 0;
-            document.getElementById('pendingRefurbishers').textContent = stats.pending_refurbishers || 0;
-            document.getElementById('pendingCount').textContent = stats.pending_refurbishers || 0;
-            document.getElementById('totalRevenue').textContent = `₹${Number(stats.total_revenue || 0).toLocaleString('en-IN')}`;
-        }
-    } catch (error) {
-        console.error('[v0] Error loading stats:', error);
-    }
+/* ─── Entry point ───────────────────────────────────────────────── */
+function InitDashboard(csrf, urls) {
+  loadStats(csrf, urls.statsUrl);
+  loadRecentOrders(csrf, urls.ordersUrl);
+  loadPendingRefurbishers(csrf, urls.pendingUrl);
 }
 
-async function loadRecentOrders() {
-    try {
-        const [success, response] = await window.callApi('GET', ordersApiUrl, null, csrfToken);
-        
-        console.log('[v0] Recent Orders API Response:', response);
-        
-        if (success && response.success && response.data) {
-            const orders = response.data.slice(0, 5); // Show only 5 recent orders
-            const tbody = document.getElementById('recentOrdersTable');
-            
-            if (orders.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center text-muted">No orders found</td>
-                    </tr>
-                `;
-                return;
-            }
-            
-            tbody.innerHTML = orders.map(order => `
-                <tr>
-                    <td><strong>${order.order_id}</strong></td>
-                    <td>${order.first_name} ${order.last_name}</td>
-                    <td>₹${Number(order.total_amount).toLocaleString('en-IN')}</td>
-                    <td>
-                        <span class="badge ${getStatusBadgeClass(order.status)}">
-                            ${order.status_display}
-                        </span>
-                    </td>
-                    <td>${formatDate(order.created_at)}</td>
-                    <td>
-                        <a href="/admin-order-detail/?order_id=${order.order_id}" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                    </td>
-                </tr>
-            `).join('');
-        }
-    } catch (error) {
-        console.error('[v0] Error loading recent orders:', error);
-        document.getElementById('recentOrdersTable').innerHTML = `
-            <tr>
-                <td colspan="6" class="text-center text-danger">Failed to load orders</td>
-            </tr>
-        `;
-    }
+/* ─── Stats cards ───────────────────────────────────────────────── */
+async function loadStats(csrf, url) {
+  const [ok, res] = await callApi('GET', url, null, csrf);
+  if (!ok || !res.success) return;
+  const d = res.data;
+  set('s-revenue',      fmtCurrency(d.total_revenue));
+  set('s-orders',       num(d.total_orders));
+  set('s-orders-today', num(d.orders_today));
+  set('s-refurbishers', num(d.total_refurbishers));
+  set('s-pending',      num(d.pending_refurbishers));
+  set('s-customers',    num(d.total_customers));
+  const badge = document.getElementById('sb-pending-count');
+  if (badge && (d.pending_refurbishers || 0) > 0) {
+    badge.textContent = d.pending_refurbishers;
+    badge.style.display = 'inline-flex';
+  }
 }
 
-async function loadPendingRefurbishers() {
-    try {
-        const url = `${refurbishersApiUrl}?status=pending`;
-        const [success, response] = await window.callApi('GET', url, null, csrfToken);
-        
-        console.log('[v0] Pending Refurbishers API Response:', response);
-        
-        if (success && response.success && response.data) {
-            const refurbishers = response.data.slice(0, 5); // Show only 5 pending
-            const tbody = document.getElementById('pendingRefurbishersTable');
-            
-            if (refurbishers.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="text-center text-muted">No pending approvals</td>
-                    </tr>
-                `;
-                return;
-            }
-            
-            tbody.innerHTML = refurbishers.map(ref => `
-                <tr>
-                    <td><strong>${ref.user_id}</strong></td>
-                    <td>${ref.company_profile?.company_name || 'N/A'}</td>
-                    <td>${ref.contact_number}</td>
-                    <td>${formatDate(ref.created_at)}</td>
-                    <td>
-                        <a href="/admin-refurbisher-detail/?user_id=${ref.user_id}" class="btn btn-sm btn-outline-primary me-2">
-                            <i class="fas fa-eye"></i> Review
-                        </a>
-                    </td>
-                </tr>
-            `).join('');
-        }
-    } catch (error) {
-        console.error('[v0] Error loading pending refurbishers:', error);
-        document.getElementById('pendingRefurbishersTable').innerHTML = `
-            <tr>
-                <td colspan="5" class="text-center text-danger">Failed to load pending approvals</td>
-            </tr>
-        `;
-    }
+/* ─── Recent orders ─────────────────────────────────────────────── */
+async function loadRecentOrders(csrf, url) {
+  const tbody = document.getElementById('recent-orders-body');
+  const [ok, res] = await callApi('GET', url, null, csrf);
+  const rows = res?.data?.results || res?.data || [];
+  if (!ok || !res.success || !rows.length) {
+    tbody.innerHTML = `<tr><td colspan="6">
+      <div class="empty-state"><i class="fa-solid fa-box-open"></i><h4>No orders yet</h4></div>
+    </td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.slice(0, 10).map(o => {
+    const cust = `${o.first_name||''} ${o.last_name||''}`.trim() || '—';
+    return `<tr style="cursor:pointer" onclick="location.href='/admin-order-detail/${o.order_id}/'">
+      <td><span class="mono">${o.order_id}</span></td>
+      <td>
+        <div class="fw-600">${cust}</div>
+        <div class="text-muted fs-12">${o.phone || ''}</div>
+      </td>
+      <td class="text-muted">${o.item_count ?? (o.items?.length ?? '—')}</td>
+      <td class="fw-600">${fmtCurrency(o.total_amount)}</td>
+      <td>${orderStatusBadge(o.status)}</td>
+      <td class="text-muted fs-12">${fmtDate(o.created_at)}</td>
+    </tr>`;
+  }).join('');
 }
 
-function getStatusBadgeClass(status) {
-    const statusClasses = {
-        'pending': 'bg-warning text-dark',
-        'processing': 'bg-info text-white',
-        'shipped': 'bg-primary text-white',
-        'delivered': 'bg-success text-white',
-        'cancelled': 'bg-danger text-white'
-    };
-    return statusClasses[status] || 'bg-secondary text-white';
+/* ─── Pending refurbishers ──────────────────────────────────────── */
+async function loadPendingRefurbishers(csrf, url) {
+  const container = document.getElementById('pending-list');
+  const [ok, res] = await callApi('GET', url, null, csrf);
+  const items = res?.data?.results || res?.data || [];
+  if (!ok || !res.success || !items.length) {
+    container.innerHTML = `<div class="empty-state" style="padding:36px 20px">
+      <i class="fa-solid fa-circle-check" style="color:var(--green);font-size:32px"></i>
+      <h4>All caught up</h4><p>No pending approvals</p>
+    </div>`;
+    return;
+  }
+  container.innerHTML = items.slice(0, 6).map(r => {
+    const name     = `${r.first_name||''} ${r.last_name||''}`.trim() || 'Unnamed';
+    const company  = r.company_profile?.company_name || r.business_name || '—';
+    const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const color    = avatarColor(name);
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 20px;border-bottom:1px solid var(--border-light)">
+      <div class="avatar" style="background:${color}">${initials}</div>
+      <div style="flex:1;min-width:0">
+        <div class="fw-600 fs-13 truncate">${name}</div>
+        <div class="text-muted fs-12 truncate">${company}</div>
+      </div>
+      <a href="/admin-refurbisher-detail/${r.user_id}/" class="btn btn-warning btn-sm">Review</a>
+    </div>`;
+  }).join('');
 }
 
-function formatDate(dateString) {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
-    });
-}
-
-function logout() {
-    if (confirm('Are you sure you want to logout?')) {
-        window.location.href = '/refurbisher-logout/';
-    }
-}
-
-// Export for HTML usage
-window.InitializeAdminDashboard = InitializeAdminDashboard;
+/* ─── Tiny helpers ──────────────────────────────────────────────── */
+function set(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
+function num(n) { return (n || 0).toLocaleString('en-IN'); }

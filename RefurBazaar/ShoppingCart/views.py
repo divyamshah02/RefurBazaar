@@ -11,11 +11,7 @@ from Product.models import ListingUnit
 
 from .models import Wishlist, WishlistItem
 from .serializers import WishlistSerializer, WishlistItemSerializer
-<<<<<<< HEAD
 from utils.decorators import handle_exceptions, check_authentication
-=======
->>>>>>> 9a5139ab5f8d7dc0dd1b2f08152c3d8b26168424
-
 
 def generate_unique_cart_id():
     """Generate a unique 10-digit cart ID"""
@@ -390,12 +386,6 @@ class CartTransferViewSet(viewsets.ViewSet):
 # ----------
 # Wishlist
 # ----------
-
-<<<<<<< HEAD
-=======
-from utils.decorators import handle_exceptions, check_authentication
-
->>>>>>> 9a5139ab5f8d7dc0dd1b2f08152c3d8b26168424
 class WishlistAPIViewSet(viewsets.ViewSet):
     """API for managing user wishlists"""
 
@@ -448,8 +438,7 @@ class WishlistAPIViewSet(viewsets.ViewSet):
             "user_not_logged_in": False, 
             "data": {"action": action_status}, 
             "error": None
-<<<<<<< HEAD
+
         }, status=status.HTTP_200_OK)
-=======
-        }, status=status.HTTP_200_OK)
->>>>>>> 9a5139ab5f8d7dc0dd1b2f08152c3d8b26168424
+
+

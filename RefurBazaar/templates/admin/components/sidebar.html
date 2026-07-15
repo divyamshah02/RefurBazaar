@@ -1,25 +1,69 @@
-<div class="d-flex" id="wrapper">
-    <!-- Sidebar -->
-    <div class="bg-dark" id="sidebar-wrapper" style="min-height: 100vh; width: 250px; position: fixed;">
-        <div class="sidebar-heading text-white p-4 border-bottom border-secondary">
-            <h4 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Admin Panel</h4>
-        </div>
-        <div class="list-group list-group-flush">
-            <a href="/admin-dashboard/" class="list-group-item list-group-item-action bg-dark text-white border-secondary {% if request.path == '/admin-dashboard/' %}active{% endif %}">
-                <i class="fas fa-chart-line me-2"></i>Dashboard
-            </a>
-            <a href="/admin-orders/" class="list-group-item list-group-item-action bg-dark text-white border-secondary {% if request.path == '/admin-orders/' %}active{% endif %}">
-                <i class="fas fa-shopping-cart me-2"></i>Orders
-            </a>
-            <a href="/admin-refurbishers/" class="list-group-item list-group-item-action bg-dark text-white border-secondary {% if request.path == '/admin-refurbishers/' %}active{% endif %}">
-                <i class="fas fa-store me-2"></i>Refurbishers
-            </a>
-            <a href="/admin-pending-refurbishers/" class="list-group-item list-group-item-action bg-dark text-white border-secondary {% if request.path == '/admin-pending-refurbishers/' %}active{% endif %}">
-                <i class="fas fa-clock me-2"></i>Pending Approvals
-            </a>
-            <a href="/admin-customers/" class="list-group-item list-group-item-action bg-dark text-white border-secondary {% if request.path == '/admin-customers/' %}active{% endif %}">
-                <i class="fas fa-users me-2"></i>Customers
-            </a>
-        </div>
+<div class="bg-dark" id="sidebar-wrapper" style="min-height: 100vh; width: 260px; position: fixed; top: 0; left: 0; z-index: 100; overflow-y: auto;">
+    <div class="sidebar-heading text-white p-4 border-bottom border-secondary" style="background: rgba(255,255,255,0.05);">
+        <h4 class="mb-0" style="font-size: 18px; font-weight: 700;">
+            <i class="fas fa-shield-alt me-2" style="color: #667eea;"></i>Admin Panel
+        </h4>
+        <div style="font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 4px;">RefurBazaar</div>
     </div>
+    <div class="list-group list-group-flush" style="padding: 12px 8px;">
+        <a href="/admin-dashboard/"
+           class="list-group-item list-group-item-action border-0 rounded mb-1"
+           style="background: {% if request.path == '/admin-dashboard/' %}rgba(102,126,234,0.2){% else %}transparent{% endif %};
+                  color: {% if request.path == '/admin-dashboard/' %}#a5b4fc{% else %}rgba(255,255,255,0.75){% endif %};
+                  padding: 11px 14px; font-size: 14px; font-weight: 500; transition: all 0.2s;">
+            <i class="fas fa-chart-line me-2" style="width: 16px;"></i>Dashboard
+        </a>
+        <a href="/admin-orders/"
+           class="list-group-item list-group-item-action border-0 rounded mb-1"
+           style="background: {% if '/admin-orders/' in request.path %}rgba(102,126,234,0.2){% else %}transparent{% endif %};
+                  color: {% if '/admin-orders/' in request.path %}#a5b4fc{% else %}rgba(255,255,255,0.75){% endif %};
+                  padding: 11px 14px; font-size: 14px; font-weight: 500; transition: all 0.2s;">
+            <i class="fas fa-shopping-cart me-2" style="width: 16px;"></i>Orders
+        </a>
+        <a href="/admin-listings/"
+           class="list-group-item list-group-item-action border-0 rounded mb-1"
+           style="background: {% if '/admin-listings/' in request.path %}rgba(102,126,234,0.2){% else %}transparent{% endif %};
+                  color: {% if '/admin-listings/' in request.path %}#a5b4fc{% else %}rgba(255,255,255,0.75){% endif %};
+                  padding: 11px 14px; font-size: 14px; font-weight: 500; transition: all 0.2s;">
+            <i class="fas fa-box-open me-2" style="width: 16px;"></i>Listings
+        </a>
+        <a href="/admin-refurbishers/"
+           class="list-group-item list-group-item-action border-0 rounded mb-1"
+           style="background: {% if request.path == '/admin-refurbishers/' %}rgba(102,126,234,0.2){% else %}transparent{% endif %};
+                  color: {% if request.path == '/admin-refurbishers/' %}#a5b4fc{% else %}rgba(255,255,255,0.75){% endif %};
+                  padding: 11px 14px; font-size: 14px; font-weight: 500; transition: all 0.2s;">
+            <i class="fas fa-store me-2" style="width: 16px;"></i>Refurbishers
+        </a>
+        <a href="/admin-pending-refurbishers/"
+           class="list-group-item list-group-item-action border-0 rounded mb-1"
+           style="background: {% if request.path == '/admin-pending-refurbishers/' %}rgba(102,126,234,0.2){% else %}transparent{% endif %};
+                  color: {% if request.path == '/admin-pending-refurbishers/' %}#a5b4fc{% else %}rgba(255,255,255,0.75){% endif %};
+                  padding: 11px 14px; font-size: 14px; font-weight: 500; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between;">
+            <span><i class="fas fa-clock me-2" style="width: 16px;"></i>Pending Approvals</span>
+        </a>
+        <a href="/admin-customers/"
+           class="list-group-item list-group-item-action border-0 rounded mb-1"
+           style="background: {% if request.path == '/admin-customers/' %}rgba(102,126,234,0.2){% else %}transparent{% endif %};
+                  color: {% if request.path == '/admin-customers/' %}#a5b4fc{% else %}rgba(255,255,255,0.75){% endif %};
+                  padding: 11px 14px; font-size: 14px; font-weight: 500; transition: all 0.2s;">
+            <i class="fas fa-users me-2" style="width: 16px;"></i>Customers
+        </a>
+
+        <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 12px 6px;"></div>
+
+        <a href="/admin-add-products/"
+           class="list-group-item list-group-item-action border-0 rounded mb-1"
+           style="background: {% if request.path == '/admin-add-products/' %}rgba(102,126,234,0.2){% else %}transparent{% endif %};
+                  color: {% if request.path == '/admin-add-products/' %}#a5b4fc{% else %}rgba(255,255,255,0.55){% endif %};
+                  padding: 11px 14px; font-size: 13px; font-weight: 500; transition: all 0.2s;">
+            <i class="fas fa-plus-circle me-2" style="width: 16px;"></i>Add Products
+        </a>
+    </div>
+
+    <style>
+        #sidebar-wrapper .list-group-item:hover {
+            background: rgba(255,255,255,0.08) !important;
+            color: white !important;
+        }
+    </style>
 </div>

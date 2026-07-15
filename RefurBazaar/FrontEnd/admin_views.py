@@ -68,3 +68,24 @@ class AdminAddProductPageViewSet(viewsets.ViewSet):
     @check_authentication(required_role='admin')
     def list(self, request):
         return render(request, 'admin/add_products.html')
+
+
+class AdminBrandsPageViewSet(viewsets.ViewSet):
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def list(self, request):
+        return render(request, 'admin/brands.html')
+
+
+class AdminProductsPageViewSet(viewsets.ViewSet):
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def list(self, request):
+        return render(request, 'admin/products.html')
+
+
+class AdminAttributesPageViewSet(viewsets.ViewSet):
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def list(self, request):
+        return render(request, 'admin/attributes.html')
