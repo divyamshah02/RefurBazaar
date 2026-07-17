@@ -722,7 +722,7 @@
         container.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         container.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
         btn.classList.add('active');
-        const target = btn.dataset.tab;
+        const target = btn.dataset.tab;        
         const pane = container.querySelector(`.tab-pane[data-tab="${target}"]`);
         if (pane) pane.classList.add('active');
       });

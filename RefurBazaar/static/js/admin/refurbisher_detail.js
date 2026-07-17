@@ -1,445 +1,215 @@
-// Admin Refurbisher Detail Management
-let csrfToken = '';
-let detailApiUrl = '';
-let approveApiUrl = '';
-let userId = '';
-let refurbisherData = null;
+'use strict';
+/* refurbisher_detail.js */
 
-function InitializeRefurbisherDetail(csrf, detail_url, approve_url, user_id) {
-    csrfToken = csrf;
-    detailApiUrl = detail_url;
-    approveApiUrl = approve_url;
-    userId = user_id;
-    
-    console.log('[v0] Initializing Refurbisher Detail');
-    console.log('[v0] Detail URL:', detailApiUrl);
-    console.log('[v0] Approve URL:', approveApiUrl);
-    console.log('[v0] User ID:', userId);
-    
-    if (!userId) {
-        showError('User ID not provided');
-        return;
-    }
-    
-    loadRefurbisherDetail();
+let _rdCsrf, _rdUrls, _rdId, _rdData;
+
+/* ─── Entry point ───────────────────────────────────────────────── */
+function InitRefurbisherDetail(csrf, uid, urls) {
+  _rdCsrf = csrf; _rdId = uid; _rdUrls = urls;
+  initTabs('#rd-tabs');
+  loadDetail();
 }
 
-async function loadRefurbisherDetail() {
-    try {
-        const [success, response] = await window.callApi('GET', detailApiUrl, null, csrfToken);
-        
-        console.log('[v0] Refurbisher Detail API Response:', response);
-        
-        if (success && response.success && response.data) {
-            refurbisherData = response.data;
-            displayRefurbisherDetail(refurbisherData);
-        } else {
-            showError(response.error || 'Failed to load refurbisher details');
-        }
-    } catch (error) {
-        console.error('[v0] Error loading refurbisher detail:', error);
-        showError('Failed to load refurbisher details');
-    }
+/* ─── Load profile ──────────────────────────────────────────────── */
+// The detail endpoint returns { user, company_profile, listings, orders }
+async function loadDetail() {
+  const [ok, res] = await callApi('GET', _rdUrls.detailUrl, null, _rdCsrf);
+  if (!ok || !res.success) {
+    showToast('Failed to load refurbisher data', 'error');
+    return;
+  }
+  _rdData = res.data;
+  // Unpack nested shape
+  const u  = _rdData.user        || _rdData;   // fallback: flat shape
+  const cp = _rdData.company_profile || {};
+  const listings = _rdData.listings || [];
+  const orders   = _rdData.orders   || [];
+  renderProfile(u, cp, listings, orders);
 }
 
-function displayRefurbisherDetail(data) {
-    const user = data.user || {};
-    const company = data.company_profile || {};
-    const listings = data.listings || [];
-    const orders = data.orders || [];
-    
-    // Check if profile is complete and not approved
-    const isPendingApproval = company.is_profile_complete && !company.is_approved;
-    
-    console.log('[v0] Display Data - User:', user, 'Company:', company, 'Pending:', isPendingApproval);
-    
-    // Update header
-    const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
-    document.getElementById('refurbisherTitle').textContent = `${fullName || 'Refurbisher'} Details`;
-    document.getElementById('refurbisherSubtitle').textContent = company.company_name || user.user_id;
-    
-    // Show/hide approval buttons
-    const approveBtn = document.getElementById('approveBtn');
-    const rejectBtn = document.getElementById('rejectBtn');
-    const approvalAlert = document.getElementById('approvalAlert');
-    
-    if (isPendingApproval) {
-        approveBtn.style.display = 'inline-block';
-        rejectBtn.style.display = 'inline-block';
-        approvalAlert.classList.add('show');
-    } else {
-        approveBtn.style.display = 'none';
-        rejectBtn.style.display = 'none';
-        approvalAlert.classList.remove('show');
-    }
-    
-    // --- Personal Info Tab ---
-    document.getElementById('userId').textContent = user.user_id || '-';
-    document.getElementById('userName').textContent = fullName || '-';
-    document.getElementById('userEmail').textContent = user.email || '-';
-    document.getElementById('userPhone').textContent = formatPhoneNumber(user.contact_number || '-');
-    document.getElementById('alternatePhone').textContent = user.alternate_phone ? formatPhoneNumber(user.alternate_phone) : '-';
-    document.getElementById('joinedDate').textContent = formatDate(user.created_at);
-    
-    // Status badges
-    document.getElementById('profileComplete').innerHTML = company.is_profile_complete 
-        ? '<span class="badge badge-success">Complete</span>' 
-        : '<span class="badge badge-warning">Incomplete</span>';
-    
-    document.getElementById('approvalStatus').innerHTML = company.is_approved 
-        ? '<span class="badge badge-success">Active</span>' 
-        : '<span class="badge badge-warning">Pending</span>';
-    
-    // --- Company Info Tab ---
-    displayCompanyInfo(company);
-    
-    // --- Address Info Tab ---
-    displayAddressInfo(company);
-    
-    // --- Documents Tab ---
-    displayDocuments(company);
-    
-    // --- Bank Info Tab ---
-    displayBankInfo(company);
-    
-    // --- Statistics ---
-    document.getElementById('totalListings').textContent = listings.length;
-    document.getElementById('totalOrders').textContent = orders.length;
-    
-    // Calculate total revenue from orders
-    let totalRevenue = 0;
-    orders.forEach(order => {
-        totalRevenue += parseFloat(order.total_price) || 0;
-    });
-    document.getElementById('totalRevenue').textContent = `₹${totalRevenue.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
-    
-    // --- Listings Table ---
-    displayListings(listings);
-    
-    // --- Orders Table ---
-    displayOrders(orders);
+function renderProfile(u, cp, listings, orders) {
+  const name    = `${u.first_name||''} ${u.last_name||''}`.trim() || 'Unknown';
+  const initials= name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const color   = avatarColor(name);
+
+  // Derive status from company_profile flags
+  let status;
+  if (!cp || !cp.is_profile_complete) status = 'incomplete';
+  else if (cp.is_approved)            status = 'approved';
+  else                                status = 'pending';
+
+  // Hero
+  const av = document.getElementById('rd-avatar');
+  av.textContent = initials; av.style.background = color;
+  set('rd-name-crumb', name);
+  set('rd-fullname', name);
+  set('rd-email', u.email || '—');
+  set('rd-phone', u.contact_number || u.phone || '—');
+
+  const statusBadgeMap = { approved:'badge-green', pending:'badge-yellow', rejected:'badge-red', incomplete:'badge-gray' };
+  document.getElementById('rd-status-badge').innerHTML =
+    `<span class="badge ${statusBadgeMap[status]||'badge-gray'}">${cap(status)}</span>`;
+
+  // Stats (from embedded data)
+  set('rd-stat-listings', listings.length.toLocaleString('en-IN'));
+  set('rd-stat-orders',   orders.length.toLocaleString('en-IN'));
+  const revenue = orders.reduce((s, o) => s + parseFloat(o.total_amount || 0), 0);
+  set('rd-stat-revenue',  fmtCurrency(revenue));
+
+  // Profile tab
+  set('rd-first-name', u.first_name || '—');
+  set('rd-last-name',  u.last_name  || '—');
+  set('rd-p-email',    u.email      || '—');
+  set('rd-p-phone',    u.contact_number || u.phone || '—');
+  set('rd-joined',     fmtDateTime(u.date_joined || u.created_at));
+  document.getElementById('rd-active').innerHTML = u.is_active
+    ? '<span class="badge badge-green">Active</span>'
+    : '<span class="badge badge-red">Inactive</span>';
+
+  set('rd-biz-name', cp.company_name || '—');
+  set('rd-gst',      cp.gst_registration_no || cp.gst_number || '—');
+  set('rd-pan',      cp.pan_number || '—');
+  document.getElementById('rd-approval').innerHTML =
+    `<span class="badge ${statusBadgeMap[status]||'badge-gray'}">${cap(status)}</span>`;
+  set('rd-acc-no', cp.account_number || '—');
+  set('rd-ifsc',   cp.ifsc_code      || '—');
+
+  // Address tab — CompanyProfileSerializer fields
+  set('rd-addr-street',  cp.address_line_1 || cp.address_line1 || '—');
+  set('rd-addr-city',    cp.city    || '—');
+  set('rd-addr-state',   cp.state   || '—');
+  set('rd-addr-pin',     cp.pincode || cp.pin || '—');
+  set('rd-addr-country', cp.country || 'India');
+
+  // Documents — CompanyProfileSerializer file fields
+  const docFields = [
+    { key: 'gst_certificate',      label: 'GST Certificate'   },
+    { key: 'business_license_file', label: 'Business License' },
+    { key: 'identity_proof',        label: 'Identity Proof'   },
+    { key: 'address_proof',         label: 'Address Proof'    },
+  ];
+  const docList = document.getElementById('rd-docs-list');
+  const uploaded = docFields.filter(d => cp[d.key]);
+  if (uploaded.length) {
+    docList.innerHTML = uploaded.map(d =>
+      `<a href="${cp[d.key]}" target="_blank" class="doc-chip">
+        <i class="fa-solid fa-file-lines"></i> ${d.label}
+      </a>`).join('');
+  }
+
+  // Approve/Reject buttons
+  const btnA = document.getElementById('btn-approve');
+  const btnR = document.getElementById('btn-reject');
+  if (status === 'pending') {
+    btnA.style.display = 'inline-flex';
+    btnR.style.display = 'inline-flex';
+  } else if (status === 'approved') {
+    btnR.style.display = 'inline-flex';
+    btnR.innerHTML = '<i class="fa-solid fa-ban"></i> Revoke';
+  }
+  btnA.onclick = () => promptAction('approve');
+  btnR.onclick = () => promptAction('reject');
+
+  // Render sub-tabs with embedded data
+  renderListings(listings);
+  renderOrders(orders);
 }
 
-function displayCompanyInfo(company) {
-    const companyInfoBody = document.getElementById('companyInfoBody');
-    
-    if (!company || Object.keys(company).length === 0) {
-        companyInfoBody.innerHTML = '<p class="text-muted">No company information available</p>';
-        return;
-    }
-    
-    companyInfoBody.innerHTML = `
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="info-label">Company Name</div>
-                <div class="info-value">${company.company_name || '-'}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Business Type</div>
-                <div class="info-value">${company.business_type || '-'}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">GST Registration No.</div>
-                <div class="info-value">${company.gst_registration_no || '-'}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Business License No.</div>
-                <div class="info-value">${company.business_license || '-'}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Contact Person Name</div>
-                <div class="info-value">${company.first_name ? company.first_name + ' ' + (company.last_name || '') : '-'}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Contact Email</div>
-                <div class="info-value">${company.email || '-'}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Contact Phone</div>
-                <div class="info-value">${formatPhoneNumber(company.contact_number || '-')}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Alternate Contact</div>
-                <div class="info-value">${company.alternate_contact_number ? formatPhoneNumber(company.alternate_contact_number) : '-'}</div>
-            </div>
-        </div>
-    `;
+/* ─── Listings sub-tab ──────────────────────────────────────────── */
+function renderListings(rows) {
+  const tbody = document.getElementById('rd-listings-body');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-layer-group"></i><h4>No listings yet</h4></div></td></tr>`;
+    return;
+  }
+  const STATUS_CLS = { active:'badge-green', draft:'badge-gray', sold:'badge-orange', inactive:'badge-red' };
+  tbody.innerHTML = rows.map(l => {
+    const name       = `${l.brand_name||''} ${l.model_name||''}`.trim() || '—';
+    const s          = l.status || 'draft';
+    const unitPrices = (l.units||[]).map(u=>parseFloat(u.price)).filter(p=>!isNaN(p));
+    const price      = unitPrices.length ? fmtCurrency(Math.min(...unitPrices)) : '—';
+    return `<tr>
+      <td class="fw-600">${name}</td>
+      <td class="fw-600">${price}</td>
+      <td>${l.total_quantity ?? '—'}</td>
+      <td><span class="badge ${STATUS_CLS[s]||'badge-gray'}">${cap(s)}</span></td>
+      <td class="text-muted fs-12">${fmtDate(l.created_at)}</td>
+      <td><a href="/admin-listing-detail/${l.listing_id||l.id}/" class="btn btn-ghost btn-sm"><i class="fa-solid fa-eye"></i></a></td>
+    </tr>`;
+  }).join('');
 }
 
-function displayAddressInfo(company) {
-    const addressInfoBody = document.getElementById('addressInfoBody');
-    
-    if (!company) {
-        addressInfoBody.innerHTML = '<p class="text-muted">No address information available</p>';
-        return;
-    }
-    
-    addressInfoBody.innerHTML = `
-        <div class="row">
-            <div class="col-md-6">
-                <h6 class="mb-3"><i class="fas fa-map-pin me-2"></i>Business Address</h6>
-                <div class="info-grid">
-                    <div class="info-item" style="grid-column: 1 / -1;">
-                        <div class="info-label">Address Line 1</div>
-                        <div class="info-value">${company.address_line_1 || '-'}</div>
-                    </div>
-                    <div class="info-item" style="grid-column: 1 / -1;">
-                        <div class="info-label">Address Line 2</div>
-                        <div class="info-value">${company.address_line_2 || '-'}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">City</div>
-                        <div class="info-value">${company.city || '-'}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">State</div>
-                        <div class="info-value">${company.state || '-'}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Pincode</div>
-                        <div class="info-value">${company.pincode || '-'}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Country</div>
-                        <div class="info-value">${company.country || '-'}</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <h6 class="mb-3"><i class="fas fa-undo me-2"></i>Return Address</h6>
-                <div class="info-grid">
-                    <div class="info-item" style="grid-column: 1 / -1;">
-                        <div class="info-label">Return Address Line 1</div>
-                        <div class="info-value">${company.return_address_line_1 || '-'}</div>
-                    </div>
-                    <div class="info-item" style="grid-column: 1 / -1;">
-                        <div class="info-label">Return Address Line 2</div>
-                        <div class="info-value">${company.return_address_line_2 || '-'}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
+/* ─── Orders sub-tab ────────────────────────────────────────────── */
+function renderOrders(rows) {
+  const tbody = document.getElementById('rd-orders-body');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-box-open"></i><h4>No orders yet</h4></div></td></tr>`;
+    return;
+  }
+  const STATUS = { pending:'badge-yellow', confirmed:'badge-blue', processing:'badge-orange', shipped:'badge-purple', delivered:'badge-green', cancelled:'badge-red' };
+  tbody.innerHTML = rows.map(o => {
+    const cust = `${o.first_name||''} ${o.last_name||''}`.trim() || '—';
+    const s    = o.status || 'pending';
+    return `<tr>
+      <td><span class="mono">${o.order_id}</span></td>
+      <td>${cust}</td>
+      <td>${o.items?.length ?? '—'}</td>
+      <td class="fw-600">${fmtCurrency(o.total_amount)}</td>
+      <td><span class="badge ${STATUS[s]||'badge-gray'}">${cap(s)}</span></td>
+      <td class="text-muted fs-12">${fmtDate(o.created_at)}</td>
+      <td><a href="/admin-order-detail/${o.order_id}/" class="btn btn-ghost btn-sm"><i class="fa-solid fa-eye"></i></a></td>
+    </tr>`;
+  }).join('');
 }
 
-function displayDocuments(company) {
-    const documentsBody = document.getElementById('documentsBody');
-    
-    if (!company) {
-        documentsBody.innerHTML = '<p class="text-muted">No documents available</p>';
-        return;
-    }
-    
-    const documents = [
-        { name: 'GST Certificate', url: company.gst_certificate, icon: 'fa-file-pdf' },
-        { name: 'Business License', url: company.business_license_file, icon: 'fa-file-pdf' },
-        { name: 'Identity Proof', url: company.identity_proof, icon: 'fa-id-card' },
-        { name: 'Address Proof', url: company.address_proof, icon: 'fa-file-alt' }
-    ];
-    
-    let documentsHTML = '';
-    documents.forEach(doc => {
-        const isUploaded = doc.url && doc.url.trim() !== '';
-        documentsHTML += `
-            <div class="document-item">
-                <div class="document-name">
-                    <i class="fas ${doc.icon}"></i>
-                    <div>
-                        <div style="font-weight: 500; color: #1f2937;">${doc.name}</div>
-                        <div style="font-size: 12px; color: #9ca3af;">${isUploaded ? 'Uploaded' : 'Not uploaded'}</div>
-                    </div>
-                </div>
-                ${isUploaded ? `
-                    <a href="${doc.url}" target="_blank" class="btn btn-sm btn-outline-primary" style="background: transparent; border: 1px solid var(--primary); color: var(--primary);">
-                        <i class="fas fa-download me-1"></i>Download
-                    </a>
-                ` : '<span class="document-status" style="color: #ef4444;">Missing</span>'}
-            </div>
-        `;
-    });
-    
-    documentsBody.innerHTML = documentsHTML || '<p class="text-muted">No documents found</p>';
+/* ─── Approve / Reject ──────────────────────────────────────────── */
+let _action = null;
+function promptAction(action) {
+  _action = action;
+  const name = _rdData ? `${_rdData.first_name||''} ${_rdData.last_name||''}`.trim() : '';
+  const isA  = action === 'approve';
+  const icon = document.getElementById('mc-icon');
+  icon.className = `modal-header-icon ${isA ? 'green' : 'red'}`;
+  icon.innerHTML = `<i class="fa-solid ${isA ? 'fa-circle-check' : 'fa-ban'}"></i>`;
+  set('mc-title', isA ? 'Approve Refurbisher' : 'Reject / Revoke');
+  set('mc-sub', name);
+  set('mc-body', isA
+    ? `This will grant ${name} access to list products on RefurBazaar.`
+    : `This will revoke ${name}'s listing access. You can re-approve them later.`);
+  document.getElementById('mc-reason-wrap').style.display = isA ? 'none' : 'block';
+  document.getElementById('mc-reason').value = '';
+  const btn = document.getElementById('mc-confirm-btn');
+  btn.className = `btn ${isA ? 'btn-success' : 'btn-danger'}`;
+  btn.textContent = isA ? 'Approve' : 'Reject';
+  btn.onclick = submitAction;
+  openModal('modal-confirm');
 }
 
-function displayBankInfo(company) {
-    const bankInfoBody = document.getElementById('bankInfoBody');
-    
-    if (!company) {
-        bankInfoBody.innerHTML = '<p class="text-muted">No bank information available</p>';
-        return;
-    }
-    
-    bankInfoBody.innerHTML = `
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="info-label">Account Holder Name</div>
-                <div class="info-value">${company.account_holder_name || '-'}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Bank Name</div>
-                <div class="info-value">${company.bank_name || '-'}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Branch Name</div>
-                <div class="info-value">${company.branch_name || '-'}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Account Number</div>
-                <div class="info-value" style="letter-spacing: 1px; font-family: monospace;">${maskAccountNumber(company.account_number || '-')}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">IFSC Code</div>
-                <div class="info-value" style="font-family: monospace; font-weight: 600;">${company.ifsc_code || '-'}</div>
-            </div>
-        </div>
-    `;
+async function submitAction() {
+  const btn    = document.getElementById('mc-confirm-btn');
+  const reason = document.getElementById('mc-reason').value.trim();
+  btn.disabled = true; btn.textContent = 'Processing…';
+
+  const payload = { user_id: _rdId, action: _action };
+  if (reason) payload.reason = reason;
+  const [ok, res] = await callApi('POST', _rdUrls.approveUrl, payload, _rdCsrf);
+
+  btn.disabled = false;
+  if (ok && res.success) {
+    closeModal('modal-confirm');
+    showToast(`Refurbisher ${_action === 'approve' ? 'approved' : 'rejected'} successfully`, 'success');
+    loadDetail();
+  } else {
+    showToast(res?.message || 'Action failed. Please try again.', 'error');
+  }
 }
 
-function displayListings(listings) {
-    const listingsTable = document.getElementById('listingsTable');
-    
-    if (!listings || listings.length === 0) {
-        listingsTable.innerHTML = '<tr><td colspan="5" class="text-center text-muted"><i class="fas fa-inbox"></i> No listings found</td></tr>';
-        return;
-    }
-    
-    listingsTable.innerHTML = listings.map(listing => {
-        const brandName = listing.model?.brand?.name || 'Unknown';
-        const modelName = listing.model?.name || '';
-        const productName = `${brandName} ${modelName}`.trim();
-        const status = listing.is_active ? 'Active' : 'Inactive';
-        const statusClass = listing.is_active ? 'badge-success' : 'badge-danger';
-        
-        return `
-            <tr>
-                <td><strong>${listing.id || listing.listing_id || 'N/A'}</strong></td>
-                <td>${productName}</td>
-                <td><strong>${listing.available_units || 0}</strong></td>
-                <td><span class="badge ${statusClass}">${status}</span></td>
-                <td>${formatDate(listing.created_at)}</td>
-            </tr>
-        `;
-    }).join('');
+/* ─── Helpers ───────────────────────────────────────────────────── */
+function set(id, v) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (typeof v === 'string' && v.includes('<')) el.innerHTML = v;
+  else el.textContent = v;
 }
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : '—'; }
 
-function displayOrders(orders) {
-    const ordersTable = document.getElementById('ordersTable');
-    
-    if (!orders || orders.length === 0) {
-        ordersTable.innerHTML = '<tr><td colspan="5" class="text-center text-muted"><i class="fas fa-inbox"></i> No orders found</td></tr>';
-        return;
-    }
-    
-    ordersTable.innerHTML = orders.map(order => {
-        const customerName = `${order.customer_name || order.first_name || 'N/A'} ${order.customer_last_name || order.last_name || ''}`.trim();
-        const statusClass = getStatusBadgeClass(order.order_status);
-        
-        return `
-            <tr>
-                <td><strong>${order.order_id}</strong></td>
-                <td>${customerName}</td>
-                <td>₹${parseFloat(order.total_price || 0).toLocaleString('en-IN', {maximumFractionDigits: 0})}</td>
-                <td><span class="badge ${statusClass}">${order.order_status || 'Unknown'}</span></td>
-                <td>${formatDate(order.created_at)}</td>
-            </tr>
-        `;
-    }).join('');
-}
-
-async function approveRefurbisher() {
-    if (!confirm('Are you sure you want to ACTIVATE this refurbisher? They will be able to add listings and start selling.')) {
-        return;
-    }
-    
-    try {
-        console.log('[v0] Approving refurbisher:', userId);
-        const [success, response] = await window.callApi('POST', approveApiUrl, { action: 'approve' }, csrfToken);
-        
-        console.log('[v0] Approve Response:', response);
-        
-        if (success && response.success) {
-            alert('Refurbisher activated successfully!');
-            loadRefurbisherDetail(); // Reload data
-        } else {
-            alert(response.error || 'Failed to activate refurbisher');
-        }
-    } catch (error) {
-        console.error('[v0] Error approving refurbisher:', error);
-        alert('Error activating refurbisher');
-    }
-}
-
-async function rejectRefurbisher() {
-    if (!confirm('Are you sure you want to REJECT this refurbisher? This will remove their approval status.')) {
-        return;
-    }
-    
-    try {
-        console.log('[v0] Rejecting refurbisher:', userId);
-        const [success, response] = await window.callApi('POST', approveApiUrl, { action: 'reject' }, csrfToken);
-        
-        console.log('[v0] Reject Response:', response);
-        
-        if (success && response.success) {
-            alert('Refurbisher rejected');
-            loadRefurbisherDetail(); // Reload data
-        } else {
-            alert(response.error || 'Failed to reject refurbisher');
-        }
-    } catch (error) {
-        console.error('[v0] Error rejecting refurbisher:', error);
-        alert('Error rejecting refurbisher');
-    }
-}
-
-function getStatusBadgeClass(status) {
-    const statusClasses = {
-        'pending': 'badge-warning',
-        'processing': 'badge-info',
-        'shipped': 'badge-primary',
-        'delivered': 'badge-success',
-        'cancelled': 'badge-danger'
-    };
-    return statusClasses[status] || 'badge-secondary';
-}
-
-function formatDate(dateString) {
-    if (!dateString) return '-';
-    try {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-IN', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric'
-        });
-    } catch (e) {
-        return '-';
-    }
-}
-
-function formatPhoneNumber(phone) {
-    if (!phone) return '-';
-    const cleaned = phone.toString().replace(/\D/g, '').slice(-10);
-    if (cleaned.length === 10) {
-        return cleaned.replace(/(\d{5})(\d{5})/, '$1 $2');
-    }
-    return phone;
-}
-
-function maskAccountNumber(accountNum) {
-    if (!accountNum || accountNum === '-') return accountNum;
-    const str = accountNum.toString();
-    if (str.length <= 4) return str;
-    const masked = '*'.repeat(str.length - 4) + str.slice(-4);
-    return masked;
-}
-
-function showError(message) {
-    alert(message);
-    console.error('[v0] Error:', message);
-}
-
-// Export functions to window
-window.InitializeRefurbisherDetail = InitializeRefurbisherDetail;
-window.approveRefurbisher = approveRefurbisher;
-window.rejectRefurbisher = rejectRefurbisher;

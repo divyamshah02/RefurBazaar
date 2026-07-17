@@ -15,10 +15,10 @@ function approvalBadge(s) {
 }
 
 /* ─── Entry point ───────────────────────────────────────────────── */
-function InitRefurbishers(csrf, urls) {
+async function InitRefurbishers(csrf, urls) {
   _rfCsrf = csrf; _rfUrls = urls;
-  loadStats();
-  loadList();
+  await loadStats();
+  await loadList();
 
   let debounce;
   document.getElementById('q').addEventListener('input', () => {
@@ -34,10 +34,11 @@ async function loadStats() {
   const [ok, res] = await callApi('GET', _rfUrls.statsUrl, null, _rfCsrf);
   if (!ok || !res.success) return;
   const d = res.data;
-  set('s-total',    num(d.total_refurbishers));
-  set('s-approved', num(d.approved_refurbishers));
-  set('s-pending',  num(d.pending_refurbishers));
-  set('s-rejected', num(d.rejected_refurbishers));
+  console.log('Refurbisher stats:', d);
+  set('s-total',    d.total_refurbishers);
+  set('s-approved', d.approved_refurbishers);
+  set('s-pending',  d.pending_refurbishers);
+  set('s-rejected', d.rejected_refurbishers);
 }
 
 /* ─── List ──────────────────────────────────────────────────────── */
@@ -167,8 +168,8 @@ async function submitAction() {
 
   const payload = { user_id: userId, action };
   if (reason) payload.reason = reason;
-
-  const [ok, res] = await callApi('POST', _rfUrls.approveUrl, payload, _rfCsrf);
+  const newUrl = _rfUrls.approveUrl.replace("uid", userId);
+  const [ok, res] = await callApi('POST', newUrl, payload, _rfCsrf);
   btn.disabled = false; btn.textContent = action === 'approve' ? 'Approve' : 'Reject';
 
   if (ok && res.success) {

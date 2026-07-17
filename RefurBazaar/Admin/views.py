@@ -366,6 +366,27 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             "error": None
         }, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['get'], url_path='listing-detail')
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def listing_detail(self, request, pk=None):
+        """Get a single listing by listing_id (pk)"""
+        listing = Listing.objects.select_related(
+            'model__brand', 'refurbisher'
+        ).prefetch_related('units__attributes').filter(listing_id=pk).first()
+
+        if not listing:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Listing not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ListingSerializer(listing)
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": serializer.data, "error": None
+        }, status=status.HTTP_200_OK)
+
     @action(detail=False, methods=['get'], url_path='customers')
     @handle_exceptions
     @check_authentication(required_role='admin')

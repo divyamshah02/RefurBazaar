@@ -23,6 +23,11 @@ class AdminOrderDetailPageViewSet(viewsets.ViewSet):
     def list(self, request):
         return render(request, 'admin/order_detail.html')
 
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def retrieve(self, request, pk=None):
+        return render(request, 'admin/order_detail.html')
+
 
 class AdminRefurbishersPageViewSet(viewsets.ViewSet):
     @handle_exceptions
@@ -44,6 +49,11 @@ class AdminRefurbisherDetailPageViewSet(viewsets.ViewSet):
     def list(self, request):
         return render(request, 'admin/refurbisher_detail.html')
 
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def retrieve(self, request, pk=None):
+        return render(request, 'admin/refurbisher_detail.html')
+
 class AdminListingsPageViewSet(viewsets.ViewSet):
     @handle_exceptions
     @check_authentication(required_role='admin')
@@ -54,6 +64,11 @@ class AdminListingDetailPageViewSet(viewsets.ViewSet):
     @handle_exceptions
     @check_authentication(required_role='admin')
     def list(self, request):
+        return render(request, 'admin/listing_detail.html')
+
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def retrieve(self, request, pk=None):
         return render(request, 'admin/listing_detail.html')
 
 

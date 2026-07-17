@@ -89,11 +89,11 @@
 {% block scripts %}
 <script src="{% static 'js/admin/refurbishers.js' %}"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    InitRefurbishers(csrf, {
+    await InitRefurbishers(csrf, {
       listUrl:    '/admin-api/dashboard/refurbishers/',
-      approveUrl: '/admin-api/dashboard/approve-refurbisher/',
+      approveUrl: '/admin-api/dashboard/uid/approve-refurbisher/',
       statsUrl:   '/admin-api/dashboard/stats/'
     });
   });
