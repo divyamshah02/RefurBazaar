@@ -1,6 +1,11 @@
 import os
 from pathlib import Path
 import base64
+import dj_database_url
+
+IS_LOCAL = False
+LOCAL_DB = True
+IS_PAYMENT_TEST_MODE = False
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -63,12 +68,38 @@ TEMPLATES = [
 WSGI_APPLICATION = 'RefurBazaar.wsgi.application'
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+if IS_LOCAL:
+    if LOCAL_DB:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
+    else:
+        DATABASES = {
+            "default": dj_database_url.config(
+                default="postgresql://bakershub_db_user:75cwuW3lVEn0K4G31l0vZxES96HtVKku@dpg-d5mj8nogjchc738ov0sg-a.singapore-postgres.render.com/bakershub_db",
+                conn_max_age=600,
+                ssl_require=True,
+            )
+        }
+
+else:
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=os.environ.get("DATABASE_URL"),
+            conn_max_age=600,
+            ssl_require=True,
+        )
     }
-}
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -102,6 +133,11 @@ STATICFILES_DIRS = [
 ]
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+# Use WhiteNoise to serve static files efficiently on Render
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+WHITENOISE_AUTOREFRESH = False
+WHITENOISE_USE_FINDERS = True
+
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR,'media')
@@ -113,5 +149,15 @@ def base64_to_text(b64_text):
     # Decode the Base64 string back to bytes, then to text
     return base64.b64decode(b64_text.encode()).decode()
 
-RAZORPAY_KEY_ID = base64_to_text("cnpwX3Rlc3RfUzV6OXlXcFh0d0VkVVg=")
-RAZORPAY_KEY_SECRET = base64_to_text("NTAyaldFeDBWUFE1b2RuSkJQVzNJblNS")
+# RAZORPAY_KEY_ID = base64_to_text("cnpwX3Rlc3RfUzV6OXlXcFh0d0VkVVg=")
+# RAZORPAY_KEY_SECRET = base64_to_text("NTAyaldFeDBWUFE1b2RuSkJQVzNJblNS")
+
+
+if IS_PAYMENT_TEST_MODE:
+    RAZORPAY_KEY_ID = base64_to_text("cnpwX3Rlc3RfUzV6OXlXcFh0d0VkVVg=")
+    RAZORPAY_KEY_SECRET = base64_to_text("NTAyaldFeDBWUFE1b2RuSkJQVzNJblNS")
+
+
+else:
+    RAZORPAY_KEY_ID = base64_to_text("cnpwX3Rlc3RfUzV6OXlXcFh0d0VkVVg=")
+    RAZORPAY_KEY_SECRET = base64_to_text("NTAyaldFeDBWUFE1b2RuSkJQVzNJblNS")
