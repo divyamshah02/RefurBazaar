@@ -16,12 +16,29 @@ class ProductModelImageSerializer(serializers.ModelSerializer):
 class ProductModelSerializer(serializers.ModelSerializer):
     brand_name = serializers.CharField(source='brand.name', read_only=True)
     images = ProductModelImageSerializer(many=True, read_only=True)
-    
+    # Included so the admin modal can pre-select attributes on edit
+    model_attributes = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = ProductModel
         fields = [
             'id', 'brand', 'brand_name', 'name', 'category',
-            'description', 'image', 'release_year', 'is_active', 'images'
+            'description', 'image', 'release_year', 'is_active', 'images',
+            'model_attributes',
+        ]
+
+    def get_model_attributes(self, obj):
+        qs = obj.model_attributes.select_related('attribute').all()
+        return [
+            {
+                'id': ma.id,
+                'attribute_id': ma.attribute_id,
+                'attribute_name': ma.attribute.name,
+                'is_required': ma.is_required,
+                'is_filter': ma.is_filter,
+                'section': ma.section,
+            }
+            for ma in qs
         ]
 
 
@@ -37,10 +54,10 @@ class AttributeMasterSerializer(serializers.ModelSerializer):
 class ProductModelAttributeSerializer(serializers.ModelSerializer):
     attribute = AttributeMasterSerializer(read_only=True)
     attribute_id = serializers.IntegerField(write_only=True)
-    
+
     class Meta:
         model = ProductModelAttribute
-        fields = ['id', 'attribute', 'attribute_id', 'is_required', 'is_filter']
+        fields = ['id', 'attribute', 'attribute_id', 'is_required', 'is_filter', 'section']
 
 
 class ListingUnitAttributeSerializer(serializers.ModelSerializer):

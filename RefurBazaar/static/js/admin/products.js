@@ -5,7 +5,7 @@ let _prCsrf, _prUrls, _prAll = [], _prFiltered = [], _prPage = 1;
 const _prPageSize = 25;
 let _prBrands = [], _prAttrs = [];
 
-const CAT_LABELS = { mobile:'Mobile', laptop:'Laptop', tablet:'Tablet', accessory:'Accessory' };
+const CAT_LABELS = { mobile: 'Mobile', laptop: 'Laptop', tablet: 'Tablet', accessory: 'Accessory' };
 
 /* ─── Entry ─────────────────────────────────────────────────────── */
 function InitProducts(csrf, urls) {
@@ -16,11 +16,11 @@ function InitProducts(csrf, urls) {
   let debounce;
   document.getElementById('q').addEventListener('input', () => {
     clearTimeout(debounce);
-    debounce = setTimeout(() => { _prPage=1; applyFilter(); }, 280);
+    debounce = setTimeout(() => { _prPage = 1; applyFilter(); }, 280);
   });
-  document.getElementById('f-category').addEventListener('change', () => { _prPage=1; applyFilter(); });
-  document.getElementById('f-brand').addEventListener('change',    () => { _prPage=1; applyFilter(); });
-  document.getElementById('f-active').addEventListener('change',   () => { _prPage=1; applyFilter(); });
+  document.getElementById('f-category').addEventListener('change', () => { _prPage = 1; applyFilter(); });
+  document.getElementById('f-brand').addEventListener('change', () => { _prPage = 1; applyFilter(); });
+  document.getElementById('f-active').addEventListener('change', () => { _prPage = 1; applyFilter(); });
 
   // When category changes in modal, reload attr options
   document.getElementById('mprod-category').addEventListener('change', () => {
@@ -35,11 +35,11 @@ async function loadBrandsForFilter() {
   const [ok, res] = await callApi('GET', _prUrls.brandsUrl, null, _prCsrf);
   if (!ok || !res.success) return;
   _prBrands = res.data || [];
-  const sel  = document.getElementById('f-brand');
+  const sel = document.getElementById('f-brand');
   const msel = document.getElementById('mprod-brand');
   const opts = _prBrands.filter(b => b.is_active).map(b => `<option value="${b.id}">${b.name}</option>`).join('');
-  sel.innerHTML  += opts;
-  msel.innerHTML  = `<option value="">Select brand…</option>` + opts;
+  sel.innerHTML += opts;
+  msel.innerHTML = `<option value="">Select brand…</option>` + opts;
 }
 
 /* ─── Load products ─────────────────────────────────────────────── */
@@ -56,26 +56,26 @@ async function loadProducts() {
     return;
   }
   _prAll = res.data || [];
-  set('s-total',  _prAll.length.toLocaleString('en-IN'));
-  set('s-active', _prAll.filter(p=>p.is_active).length.toLocaleString('en-IN'));
-  set('s-mobile', _prAll.filter(p=>p.category==='mobile').length.toLocaleString('en-IN'));
-  set('s-laptop', _prAll.filter(p=>p.category==='laptop').length.toLocaleString('en-IN'));
-  set('s-tablet', _prAll.filter(p=>p.category==='tablet').length.toLocaleString('en-IN'));
+  set('s-total', _prAll.length.toLocaleString('en-IN'));
+  set('s-active', _prAll.filter(p => p.is_active).length.toLocaleString('en-IN'));
+  set('s-mobile', _prAll.filter(p => p.category === 'mobile').length.toLocaleString('en-IN'));
+  set('s-laptop', _prAll.filter(p => p.category === 'laptop').length.toLocaleString('en-IN'));
+  set('s-tablet', _prAll.filter(p => p.category === 'tablet').length.toLocaleString('en-IN'));
   applyFilter();
 }
 
 /* ─── Filter ────────────────────────────────────────────────────── */
 function applyFilter() {
-  const q    = document.getElementById('q').value.toLowerCase();
-  const cat  = document.getElementById('f-category').value;
-  const bid  = document.getElementById('f-brand').value;
-  const act  = document.getElementById('f-active').value;
+  const q = document.getElementById('q').value.toLowerCase();
+  const cat = document.getElementById('f-category').value;
+  const bid = document.getElementById('f-brand').value;
+  const act = document.getElementById('f-active').value;
   _prFiltered = _prAll.filter(p => {
-    if (q   && !(p.name||'').toLowerCase().includes(q) && !(p.brand_name||'').toLowerCase().includes(q)) return false;
-    if (cat  && p.category !== cat)                        return false;
-    if (bid  && String(p.brand) !== bid && String(p.brand_id) !== bid) return false;
-    if (act === 'true'  && !p.is_active)  return false;
-    if (act === 'false' &&  p.is_active)  return false;
+    if (q && !(p.name || '').toLowerCase().includes(q) && !(p.brand_name || '').toLowerCase().includes(q)) return false;
+    if (cat && p.category !== cat) return false;
+    if (bid && String(p.brand) !== bid && String(p.brand_id) !== bid) return false;
+    if (act === 'true' && !p.is_active) return false;
+    if (act === 'false' && p.is_active) return false;
     return true;
   });
   renderTable();
@@ -84,8 +84,8 @@ function applyFilter() {
 /* ─── Render ────────────────────────────────────────────────────── */
 function renderTable() {
   const tbody = document.getElementById('tbl-body');
-  const start = (_prPage-1)*_prPageSize;
-  const slice = _prFiltered.slice(start, start+_prPageSize);
+  const start = (_prPage - 1) * _prPageSize;
+  const slice = _prFiltered.slice(start, start + _prPageSize);
 
   if (!slice.length) {
     tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-box"></i><h4>No products found</h4><p>Try adjusting your filters or add a product</p></div></td></tr>`;
@@ -97,9 +97,9 @@ function renderTable() {
       <td>
         <div style="display:flex;align-items:center;gap:10px">
           ${p.image
-            ? `<img src="${p.image}" alt="${p.name}" style="width:36px;height:36px;object-fit:contain;border-radius:6px;border:1px solid var(--border)">`
-            : `<div style="width:36px;height:36px;border-radius:6px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-box" style="color:var(--text-muted);font-size:13px"></i></div>`
-          }
+        ? `<img src="${p.image}" alt="${p.name}" style="width:36px;height:36px;object-fit:contain;border-radius:6px;border:1px solid var(--border)">`
+        : `<div style="width:36px;height:36px;border-radius:6px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-box" style="color:var(--text-muted);font-size:13px"></i></div>`
+      }
           <span class="fw-600">${p.name}</span>
         </div>
       </td>
@@ -122,27 +122,27 @@ function renderTable() {
 function renderPag() {
   const total = _prFiltered.length;
   const pages = Math.ceil(total / _prPageSize);
-  const info  = document.getElementById('pag-info');
-  const btns  = document.getElementById('pag-btns');
-  const start = (_prPage-1)*_prPageSize+1;
-  const end   = Math.min(_prPage*_prPageSize, total);
+  const info = document.getElementById('pag-info');
+  const btns = document.getElementById('pag-btns');
+  const start = (_prPage - 1) * _prPageSize + 1;
+  const end = Math.min(_prPage * _prPageSize, total);
   info.textContent = total ? `Showing ${start}–${end} of ${total}` : '';
-  if (pages <= 1) { btns.innerHTML=''; return; }
+  if (pages <= 1) { btns.innerHTML = ''; return; }
   btns.innerHTML = `
-    <button class="btn btn-ghost btn-sm" ${_prPage===1?'disabled':''} onclick="_prPage--;renderTable()"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="btn btn-ghost btn-sm" ${_prPage === 1 ? 'disabled' : ''} onclick="_prPage--;renderTable()"><i class="fa-solid fa-chevron-left"></i></button>
     <span class="text-muted fs-12" style="padding:0 6px;line-height:30px">Page ${_prPage} of ${pages}</span>
-    <button class="btn btn-ghost btn-sm" ${_prPage>=pages?'disabled':''} onclick="_prPage++;renderTable()"><i class="fa-solid fa-chevron-right"></i></button>`;
+    <button class="btn btn-ghost btn-sm" ${_prPage >= pages ? 'disabled' : ''} onclick="_prPage++;renderTable()"><i class="fa-solid fa-chevron-right"></i></button>`;
 }
 
 /* ─── Create / Edit modal ───────────────────────────────────────── */
 function openCreateProduct() {
   set('mprod-title', 'Add Product');
-  document.getElementById('mprod-id').value       = '';
-  document.getElementById('mprod-brand').value    = '';
+  document.getElementById('mprod-id').value = '';
+  document.getElementById('mprod-brand').value = '';
   document.getElementById('mprod-category').value = '';
-  document.getElementById('mprod-name').value     = '';
-  document.getElementById('mprod-year').value     = '';
-  document.getElementById('mprod-desc').value     = '';
+  document.getElementById('mprod-name').value = '';
+  document.getElementById('mprod-year').value = '';
+  document.getElementById('mprod-desc').value = '';
   document.getElementById('mprod-active').checked = true;
   document.getElementById('mprod-attrs-list').innerHTML = '<div class="text-muted fs-12" style="padding:12px 0">Select a category to see available attributes</div>';
   openModal('modal-product');
@@ -152,38 +152,105 @@ function editProduct(id) {
   const p = _prAll.find(x => x.id === id);
   if (!p) return;
   set('mprod-title', 'Edit Product');
-  document.getElementById('mprod-id').value       = p.id;
-  document.getElementById('mprod-brand').value    = p.brand || p.brand_id || '';
+  document.getElementById('mprod-id').value = p.id;
+  document.getElementById('mprod-brand').value = p.brand || p.brand_id || '';
   document.getElementById('mprod-category').value = p.category || '';
-  document.getElementById('mprod-name').value     = p.name || '';
-  document.getElementById('mprod-year').value     = p.release_year || '';
-  document.getElementById('mprod-desc').value     = p.description || '';
+  document.getElementById('mprod-name').value = p.name || '';
+  document.getElementById('mprod-year').value = p.release_year || '';
+  document.getElementById('mprod-desc').value = p.description || '';
   document.getElementById('mprod-active').checked = p.is_active;
-  if (p.category) loadAttrsForModal(p.category, p.attributes || []);
+  // model_attributes is now included in the list response — use it for pre-selection
+  if (p.category) loadAttrsForModal(p.category, p.model_attributes || []);
   openModal('modal-product');
 }
 
 /* ─── Load attrs for modal ──────────────────────────────────────── */
+// selectedAttrs: array of { attribute_id, is_required, section } from model_attributes
 async function loadAttrsForModal(category, selectedAttrs = []) {
   const container = document.getElementById('mprod-attrs-list');
   container.innerHTML = '<div class="text-muted fs-12" style="padding:8px 0">Loading…</div>';
-  if (!category) { container.innerHTML = '<div class="text-muted fs-12" style="padding:12px 0">Select a category first</div>'; return; }
+  if (!category) {
+    container.innerHTML = '<div class="text-muted fs-12" style="padding:12px 0">Select a category first</div>';
+    return;
+  }
 
   const [ok, res] = await callApi('GET', `${_prUrls.attrsUrl}?category=${category}`, null, _prCsrf);
-  if (!ok || !res.success) { container.innerHTML = '<div class="text-muted fs-12" style="padding:8px 0">Failed to load attributes</div>'; return; }
+  if (!ok || !res.success) {
+    container.innerHTML = '<div class="text-muted fs-12" style="padding:8px 0">Failed to load attributes</div>';
+    return;
+  }
 
   const attrs = res.data || [];
   _prAttrs = attrs;
-  const selectedIds = selectedAttrs.map(a => a.attribute?.id || a.attribute_id || a.id);
-  container.innerHTML = attrs.map(a => `
-    <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;border:1px solid var(--border-light);background:var(--surface)">
-      <input type="checkbox" name="attr" value="${a.id}" ${selectedIds.includes(a.id) ? 'checked' : ''} style="width:14px;height:14px;accent-color:var(--accent)" />
-      <span style="flex:1;font-size:13px">${a.name}</span>
-      <span class="text-muted fs-12">${a.data_type || ''}</span>
-      <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-muted)">
-        <input type="checkbox" name="req" value="${a.id}" style="width:12px;height:12px;accent-color:var(--accent)" /> Required
-      </label>
-    </label>`).join('');
+
+  // Build lookup by attribute_id for pre-selection
+  const selectedMap = {};
+  for (const ma of selectedAttrs) {
+    const aid = ma.attribute_id ?? ma.attribute?.id ?? ma.id;
+    selectedMap[String(aid)] = { is_required: ma.is_required, section: ma.section || 'main' };
+  }
+
+  if (!attrs.length) {
+    container.innerHTML = '<div class="text-muted fs-12" style="padding:12px 0">No attributes defined for this category</div>';
+    return;
+  }
+
+  container.innerHTML = attrs.map(a => {
+    const sel     = selectedMap[String(a.id)];
+    const checked = sel ? 'checked' : '';
+    const reqChk  = sel?.is_required ? 'checked' : '';
+    const section = sel?.section || 'main';
+    const show    = sel ? 'flex' : 'none';
+
+    const mainBg  = section === 'main'      ? 'var(--accent)' : 'transparent';
+    const mainClr = section === 'main'      ? '#fff'          : 'var(--text-muted)';
+    const secBg   = section === 'secondary' ? 'var(--accent)' : 'transparent';
+    const secClr  = section === 'secondary' ? '#fff'          : 'var(--text-muted)';
+
+    return `
+    <div class="attr-row" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;border:1px solid var(--border-light);background:var(--surface)">
+      <input type="checkbox" name="attr" value="${a.id}" ${checked}
+             style="width:15px;height:15px;accent-color:var(--accent);flex-shrink:0;cursor:pointer"
+             onchange="toggleAttrControls(this)" />
+      <span style="flex:1;font-size:13px;font-weight:500">${a.name}</span>
+      <span class="text-muted fs-12" style="min-width:44px;text-align:right">${a.data_type || ''}</span>
+      <div class="attr-controls" style="display:${show};align-items:center;gap:10px">
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;white-space:nowrap;color:var(--text-muted)">
+          <input type="checkbox" name="req" value="${a.id}" ${reqChk}
+                 style="width:13px;height:13px;accent-color:var(--accent)" />
+          Required
+        </label>
+        <div style="display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;font-size:11px;font-weight:600;flex-shrink:0">
+          <label style="display:flex;align-items:center;padding:4px 9px;cursor:pointer;background:${mainBg};color:${mainClr};transition:background .12s,color .12s">
+            <input type="radio" name="sec_${a.id}" value="main" ${section === 'main' ? 'checked' : ''}
+                   style="display:none" onchange="updateSectionStyle(this)" />
+            Main
+          </label>
+          <label style="display:flex;align-items:center;padding:4px 9px;cursor:pointer;background:${secBg};color:${secClr};transition:background .12s,color .12s">
+            <input type="radio" name="sec_${a.id}" value="secondary" ${section === 'secondary' ? 'checked' : ''}
+                   style="display:none" onchange="updateSectionStyle(this)" />
+            2nd
+          </label>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* Show/hide the Required + Section controls when the row checkbox toggles */
+function toggleAttrControls(cb) {
+  const controls = cb.closest('.attr-row').querySelector('.attr-controls');
+  controls.style.display = cb.checked ? 'flex' : 'none';
+}
+
+/* Keep section pill colours in sync after a radio click */
+function updateSectionStyle(radio) {
+  const siblings = document.querySelectorAll(`input[name="${radio.name}"]`);
+  siblings.forEach(r => {
+    const lbl = r.closest('label');
+    lbl.style.background = r.checked ? 'var(--accent)' : 'transparent';
+    lbl.style.color       = r.checked ? '#fff'          : 'var(--text-muted)';
+  });
 }
 
 /* ─── Save product ──────────────────────────────────────────────── */
@@ -200,13 +267,19 @@ async function saveProduct() {
     showToast('Brand, category, and name are required', 'error'); return;
   }
 
-  // Gather selected attributes
+  // Gather selected attributes including required flag and section
   const checkedAttrs = [...document.querySelectorAll('input[name="attr"]:checked')];
   const requiredIds  = new Set([...document.querySelectorAll('input[name="req"]:checked')].map(i => i.value));
-  const attributes   = checkedAttrs.map(cb => ({
-    attribute_id: Number(cb.value),
-    is_required:  requiredIds.has(cb.value)
-  }));
+
+  const attributes = checkedAttrs.map(cb => {
+    const aid      = cb.value;
+    const secRadio = document.querySelector(`input[name="sec_${aid}"]:checked`);
+    return {
+      attribute_id: Number(aid),
+      is_required:  requiredIds.has(aid),
+      section:      secRadio ? secRadio.value : 'main',
+    };
+  });
 
   const payload = { brand_id: Number(brand_id), category, name, is_active: active, attributes };
   if (year) payload.release_year = Number(year);
@@ -233,4 +306,4 @@ async function saveProduct() {
   }
 }
 
-function set(id, v) { const el=document.getElementById(id); if(el) el.textContent=v; }
+function set(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }

@@ -91,7 +91,7 @@ class CompanyProfile(models.Model):
     branch_name = models.CharField(max_length=255, null=True, blank=True)
 
     # Profile validation fields
-    is_approved = models.BooleanField(default=True, help_text="Admin approval status")
+    is_approved = models.BooleanField(default=False, help_text="Admin approval status")
     is_profile_complete = models.BooleanField(default=False, help_text="Whether all required fields are filled")
     approved_at = models.DateTimeField(null=True, blank=True)
     approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_profiles')

@@ -100,15 +100,24 @@ class AttributeMaster(models.Model):
 
 class ProductModelAttribute(models.Model):
     """Links ProductModel with AttributeMaster and defines if required"""
+    SECTION_CHOICES = [
+        ('main', 'Main'),
+        ('secondary', 'Secondary'),
+    ]
+
     product_model = models.ForeignKey(ProductModel, on_delete=models.CASCADE, related_name='model_attributes')
     attribute = models.ForeignKey(AttributeMaster, on_delete=models.CASCADE, related_name='product_models')
     is_required = models.BooleanField(default=True)
     is_filter = models.BooleanField(default=True, verbose_name="Customer side should it be filterable")
+    section = models.CharField(
+        max_length=20, choices=SECTION_CHOICES, default='main',
+        help_text="Which section of the product detail page this attribute appears in"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         unique_together = ['product_model', 'attribute']
-    
+
     def __str__(self):
         return f"{self.product_model} - {self.attribute.name}"
 

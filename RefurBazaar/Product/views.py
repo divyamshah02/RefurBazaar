@@ -1236,6 +1236,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
             for attr_data in attributes:
                 attr_id = attr_data.get('attribute_id')
                 is_required = attr_data.get('is_required', False)
+                section = attr_data.get('section', 'main')
 
                 if not attr_id:
                     continue
@@ -1247,7 +1248,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                 ProductModelAttribute.objects.get_or_create(
                     product_model=product_model,
                     attribute=attribute,
-                    defaults={'is_required': is_required}
+                    defaults={'is_required': is_required, 'section': section}
                 )
 
             serializer = ProductModelSerializer(product_model)
@@ -1312,6 +1313,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
             for attr_data in attributes:
                 attr_id = attr_data.get('attribute_id')
                 is_required = attr_data.get('is_required', False)
+                section = attr_data.get('section', 'main')
 
                 if not attr_id:
                     continue
@@ -1320,7 +1322,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                 ProductModelAttribute.objects.get_or_create(
                     product_model=product_model,
                     attribute=attribute,
-                    defaults={'is_required': is_required}
+                    defaults={'is_required': is_required, 'section': section}
                 )
 
         serializer = ProductModelSerializer(product_model)
