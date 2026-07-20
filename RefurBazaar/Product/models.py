@@ -64,45 +64,42 @@ class ProductModelImage(models.Model):
 
 
 class AttributeMaster(models.Model):
-    """Master list of attributes like Storage, Color, RAM, Processor"""
+    """Master list of attribute labels per category — e.g. Storage, Color, RAM.
+    Type and allowed values are defined per-product on ProductModelAttribute."""
     CATEGORY_CHOICES = [
         ('mobile', 'Mobile'),
         ('tablet', 'Tablet'),
         ('laptop', 'Laptop'),
         ('accessory', 'Accessory'),
     ]
-    
-    DATA_TYPE_CHOICES = [
-        ('text', 'Text'),
-        ('choice', 'Choice'),
-        ('number', 'Number'),
-    ]
-    
+
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
     name = models.CharField(max_length=100)
-    data_type = models.CharField(max_length=20, choices=DATA_TYPE_CHOICES, default='text')
-    possible_values = models.JSONField(
-        default=list,
-        blank=True,
-        help_text="List of possible values for choice type attributes"
-    )
     is_active = models.BooleanField(default=True)
     display_order = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         ordering = ['category', 'display_order', 'name']
         unique_together = ['category', 'name']
-    
+
     def __str__(self):
         return f"{self.category} - {self.name}"
 
 
 class ProductModelAttribute(models.Model):
-    """Links ProductModel with AttributeMaster and defines if required"""
+    """Links ProductModel with AttributeMaster.
+    Defines how this attribute behaves for THIS specific product — its type,
+    allowed values, whether it's required, filterable, and which page section it appears in."""
+
     SECTION_CHOICES = [
         ('main', 'Main'),
         ('secondary', 'Secondary'),
+    ]
+    DATA_TYPE_CHOICES = [
+        ('text', 'Text'),
+        ('choice', 'Choice'),
+        ('number', 'Number'),
     ]
 
     product_model = models.ForeignKey(ProductModel, on_delete=models.CASCADE, related_name='model_attributes')
@@ -113,13 +110,28 @@ class ProductModelAttribute(models.Model):
         max_length=20, choices=SECTION_CHOICES, default='main',
         help_text="Which section of the product detail page this attribute appears in"
     )
+    data_type = models.CharField(
+        max_length=20, choices=DATA_TYPE_CHOICES, default='text',
+        help_text="Input type for this attribute on this product"
+    )
+    possible_values = models.JSONField(
+        default=list, blank=True,
+        help_text="Allowed values when data_type is 'choice'"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ['product_model', 'attribute']
 
+    def save(self, *args, **kwargs):
+        if self.section == 'main':
+            self.is_filter = True
+        else:
+            self.is_filter = False
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.product_model} - {self.attribute.name}"
+        return f"{self.product_model} - {self.attribute.name} ({self.data_type})"
 
 
 class Listing(models.Model):

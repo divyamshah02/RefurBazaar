@@ -4,22 +4,21 @@ Usage:
     python manage.py seed_catalog
     python manage.py seed_catalog --dry-run          # preview only, no DB writes
     python manage.py seed_catalog --category laptop  # only one category
-    python manage.py seed_catalog --reset-attrs       # recompute possible_values for existing AttributeMaster rows
+    python manage.py seed_catalog --reset-attrs       # recompute possible_values on ProductModelAttribute rows
 
 What it does (in order):
   1. Reads  data/seed_data.json  (produced by parse_catalog.mjs)
-  2. Creates Brand rows           — skips if name already exists
-  3. Creates ProductModel rows    — skips if (brand, name, category) already exists
-  4. Creates AttributeMaster rows — skips if (category, name) already exists;
-                                    updates possible_values if new values appear
-  5. Creates ProductModelAttribute rows — skips if (product_model, attribute) already exists
+  2. Creates Brand rows                 — skips if name already exists
+  3. Creates ProductModel rows          — skips if (brand, name, category) already exists
+  4. Creates AttributeMaster rows       — name+category label only, skips if already exists
+  5. Creates ProductModelAttribute rows — stores data_type + possible_values PER PRODUCT;
+                                          skips if (product_model, attribute) already exists
 
 The script NEVER deletes existing rows.  Running it multiple times is safe.
 """
 
 import json
 import os
-import sys
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
@@ -34,8 +33,7 @@ CATEGORY_MAP = {
 }
 
 # ---------------------------------------------------------------------------
-# Attributes that should be treated as filter-able on the customer side
-# (kept short — only the most customer-relevant ones)
+# Attributes that should be filterable on the customer side
 # ---------------------------------------------------------------------------
 FILTER_ATTRS = {
     # Shared
@@ -49,6 +47,29 @@ FILTER_ATTRS = {
     # Wearable
     "Sub-Category", "Compatible With", "Battery Life",
 }
+
+# ---------------------------------------------------------------------------
+# Helper: decide the data_type and possible_values for a single attribute
+# value string on a specific product.
+# - If the value contains "/" and looks like a multi-option list → choice
+# - If it looks purely numeric → number
+# - Otherwise → text (no possible_values needed)
+# ---------------------------------------------------------------------------
+def _derive_type_and_values(val_str: str):
+    """Return (data_type, possible_values_list) for a raw attribute value."""
+    if "/" in val_str and len(val_str) < 200:
+        parts = sorted({p.strip() for p in val_str.split("/") if p.strip()})
+        if len(parts) > 1:
+            return "choice", parts
+
+    # Pure number check
+    try:
+        float(val_str.replace(",", "").strip())
+        return "number", []
+    except ValueError:
+        pass
+
+    return "text", []
 
 
 class Command(BaseCommand):
@@ -71,14 +92,14 @@ class Command(BaseCommand):
             "--reset-attrs",
             action="store_true",
             default=False,
-            help="Re-scan all models and refresh possible_values on AttributeMaster rows.",
+            help="Re-scan all models and refresh data_type/possible_values on ProductModelAttribute rows.",
         )
 
     # ------------------------------------------------------------------
     def handle(self, *args, **options):
-        dry_run      = options["dry_run"]
-        only_cat     = options["category"]
-        reset_attrs  = options["reset_attrs"]
+        dry_run     = options["dry_run"]
+        only_cat    = options["category"]
+        reset_attrs = options["reset_attrs"]
 
         # Locate the JSON file relative to this repo
         base_dir = os.path.dirname(  # RefurBazaar/
@@ -101,7 +122,6 @@ class Command(BaseCommand):
         brands_raw = data.get("brands", [])
         models_raw = data.get("models", [])
 
-        # Filter by category if requested
         if only_cat:
             brands_raw = [b for b in brands_raw if b["category"] == only_cat]
             models_raw = [m for m in models_raw if m["category"] == only_cat]
@@ -121,15 +141,15 @@ class Command(BaseCommand):
         # Counters
         # ------------------------------------------------------------------
         stats = {
-            "brands_created":    0,
-            "brands_skipped":    0,
-            "models_created":    0,
-            "models_skipped":    0,
-            "attrs_created":     0,
-            "attrs_updated":     0,
-            "attrs_skipped":     0,
-            "pma_created":       0,
-            "pma_skipped":       0,
+            "brands_created":  0,
+            "brands_skipped":  0,
+            "models_created":  0,
+            "models_skipped":  0,
+            "attrs_created":   0,
+            "attrs_skipped":   0,
+            "pma_created":     0,
+            "pma_skipped":     0,
+            "pma_updated":     0,
         }
 
         # ------------------------------------------------------------------
@@ -137,34 +157,26 @@ class Command(BaseCommand):
         # ------------------------------------------------------------------
         self.stdout.write("\n--- Phase 1: Brands ---")
 
-        brand_cache = {}  # "Brand Name|db_category" -> Brand instance
+        brand_cache = {}  # brand_name -> Brand instance
 
         for b in brands_raw:
-            db_cat = CATEGORY_MAP[b["category"]]
-            key    = b["name"]
-
+            key = b["name"]
             if key in brand_cache:
-                continue  # already resolved in this run
+                continue
 
             if dry_run:
-                existing = Brand.objects.filter(name=b["name"]).first()
-                if existing:
-                    brand_cache[key] = existing
-                    stats["brands_skipped"] += 1
-                else:
-                    # Create a fake in-memory object for dry-run navigation
-                    brand_cache[key] = type("Brand", (), {"id": None, "name": b["name"]})()
-                    stats["brands_created"] += 1
+                existing = Brand.objects.filter(name=key).first()
+                brand_cache[key] = existing or type("Brand", (), {"id": None, "name": key})()
+                stats["brands_created" if not existing else "brands_skipped"] += 1
                 continue
 
             brand_obj, created = Brand.objects.get_or_create(
-                name=b["name"],
-                defaults={"is_active": True},
+                name=key, defaults={"is_active": True}
             )
             brand_cache[key] = brand_obj
             if created:
                 stats["brands_created"] += 1
-                self.stdout.write(f"  + Brand: {b['name']}")
+                self.stdout.write(f"  + Brand: {key}")
             else:
                 stats["brands_skipped"] += 1
 
@@ -174,112 +186,63 @@ class Command(BaseCommand):
         )
 
         # ------------------------------------------------------------------
-        # PHASE 2 — AttributeMaster
-        # Build a per-category attribute registry so we can collect all
-        # possible_values across every model before we write.
+        # PHASE 2 — AttributeMaster (name + category label only — no type/values)
+        # We still scan all models to collect the full attribute name set first.
         # ------------------------------------------------------------------
-        self.stdout.write("\n--- Phase 2: AttributeMaster ---")
+        self.stdout.write("\n--- Phase 2: AttributeMaster (label registry) ---")
 
-        # attr_registry[db_cat][attr_name] = set of values seen across all models
-        attr_registry: dict[str, dict[str, set]] = {}
+        # attr_name_registry[db_cat] = {attr_name: display_order}
+        attr_name_registry: dict[str, dict[str, int]] = {}
 
         for m in models_raw:
             db_cat = CATEGORY_MAP[m["category"]]
-            if db_cat not in attr_registry:
-                attr_registry[db_cat] = {}
-            for attr_name, attr_val in m.get("attributes", {}).items():
-                if not attr_name or attr_val is None:
-                    continue
-                val_str = str(attr_val).strip()
-                if not val_str:
-                    continue
-                if attr_name not in attr_registry[db_cat]:
-                    attr_registry[db_cat][attr_name] = set()
-                # Explode multi-value cells (e.g. "128GB/256GB/512GB") into
-                # individual options so possible_values is useful for the UI.
-                # We only do this for slash-separated lists that look like
-                # storage/RAM/colour options (not general text).
-                if "/" in val_str and len(val_str) < 120:
-                    parts = [p.strip() for p in val_str.split("/") if p.strip()]
-                    attr_registry[db_cat][attr_name].update(parts)
-                else:
-                    attr_registry[db_cat][attr_name].add(val_str)
+            if db_cat not in attr_name_registry:
+                attr_name_registry[db_cat] = {}
+            for attr_name in m.get("attributes", {}).keys():
+                if attr_name and attr_name not in attr_name_registry[db_cat]:
+                    attr_name_registry[db_cat][attr_name] = len(attr_name_registry[db_cat])
 
-        # Now upsert AttributeMaster
         attr_master_cache = {}  # (db_cat, attr_name) -> AttributeMaster instance
 
-        for db_cat, attrs in attr_registry.items():
-            # Determine display_order by the order attributes first appear in
-            # a representative model of this category
-            order_map = {}
-            order_idx = 0
-            for m in models_raw:
-                if CATEGORY_MAP[m["category"]] != db_cat:
-                    continue
-                for attr_name in m.get("attributes", {}).keys():
-                    if attr_name not in order_map:
-                        order_map[attr_name] = order_idx
-                        order_idx += 1
-                break  # one model is enough for ordering
-
-            for attr_name, values_set in attrs.items():
-                possible_values = sorted(values_set)
-                display_order   = order_map.get(attr_name, 999)
-                is_filter       = attr_name in FILTER_ATTRS
-                cache_key       = (db_cat, attr_name)
+        for db_cat, name_order in attr_name_registry.items():
+            for attr_name, display_order in name_order.items():
+                cache_key = (db_cat, attr_name)
 
                 if dry_run:
                     existing = AttributeMaster.objects.filter(
                         category=db_cat, name=attr_name
                     ).first()
-                    if existing:
-                        attr_master_cache[cache_key] = existing
-                        stats["attrs_skipped"] += 1
-                    else:
-                        attr_master_cache[cache_key] = type(
-                            "AM", (), {"id": None, "name": attr_name}
-                        )()
-                        stats["attrs_created"] += 1
+                    attr_master_cache[cache_key] = existing or type(
+                        "AM", (), {"id": None, "name": attr_name}
+                    )()
+                    stats["attrs_created" if not existing else "attrs_skipped"] += 1
                     continue
 
                 am, created = AttributeMaster.objects.get_or_create(
                     category=db_cat,
                     name=attr_name,
                     defaults={
-                        "data_type":       "text",
-                        "possible_values": possible_values,
-                        "is_active":       True,
-                        "display_order":   display_order,
+                        "is_active":     True,
+                        "display_order": display_order,
                     },
                 )
                 attr_master_cache[cache_key] = am
-
                 if created:
                     stats["attrs_created"] += 1
                 else:
                     stats["attrs_skipped"] += 1
-                    # Merge any new possible values that weren't there before
-                    if reset_attrs or possible_values:
-                        existing_set = set(am.possible_values or [])
-                        new_vals     = set(possible_values)
-                        merged       = sorted(existing_set | new_vals)
-                        if merged != sorted(existing_set):
-                            am.possible_values = merged
-                            am.save(update_fields=["possible_values"])
-                            stats["attrs_updated"] += 1
 
         self.stdout.write(
             f"  AttributeMaster: {stats['attrs_created']} created, "
-            f"{stats['attrs_updated']} updated (new values), "
             f"{stats['attrs_skipped']} already existed."
         )
 
         # ------------------------------------------------------------------
         # PHASE 3 — ProductModel + ProductModelAttribute
+        # data_type and possible_values are stored HERE, per product.
         # ------------------------------------------------------------------
         self.stdout.write("\n--- Phase 3: ProductModel + ProductModelAttribute ---")
 
-        # Group models by brand for nicer console output
         for m in models_raw:
             brand_name  = m["brand"]
             db_cat      = CATEGORY_MAP[m["category"]]
@@ -288,21 +251,18 @@ class Command(BaseCommand):
 
             if brand_obj is None:
                 self.stdout.write(
-                    self.style.WARNING(f"  WARN: Brand '{brand_name}' not in cache — skipping model '{m['name']}'")
+                    self.style.WARNING(
+                        f"  WARN: Brand '{brand_name}' not in cache — "
+                        f"skipping model '{m['name']}'"
+                    )
                 )
                 continue
 
             if dry_run:
                 existing = ProductModel.objects.filter(
-                    brand__name=brand_name,
-                    name=m["name"],
-                    category=db_cat,
+                    brand__name=brand_name, name=m["name"], category=db_cat
                 ).first()
-                if existing:
-                    stats["models_skipped"] += 1
-                else:
-                    stats["models_created"] += 1
-                # Count PMA entries we would create
+                stats["models_created" if not existing else "models_skipped"] += 1
                 for attr_name, attr_val in m.get("attributes", {}).items():
                     if attr_val is not None and str(attr_val).strip():
                         stats["pma_created"] += 1
@@ -313,10 +273,7 @@ class Command(BaseCommand):
                     brand=brand_obj,
                     name=m["name"],
                     category=db_cat,
-                    defaults={
-                        "release_year": launch_year,
-                        "is_active":    True,
-                    },
+                    defaults={"release_year": launch_year, "is_active": True},
                 )
 
                 if pm_created:
@@ -325,8 +282,8 @@ class Command(BaseCommand):
                 else:
                     stats["models_skipped"] += 1
 
-                # ProductModelAttribute — only for models that were just created
-                # OR for models that exist but may be missing some attributes
+                # For each attribute on this model, create/update the PMA row
+                # with the type and allowed values derived from THIS model's value.
                 for attr_name, attr_val in m.get("attributes", {}).items():
                     if attr_val is None:
                         continue
@@ -340,17 +297,21 @@ class Command(BaseCommand):
                         self.stdout.write(
                             self.style.WARNING(
                                 f"    WARN: AttributeMaster ({db_cat}, {attr_name}) "
-                                "not in cache — skipping attribute."
+                                "not in cache — skipping."
                             )
                         )
                         continue
+
+                    data_type, possible_values = _derive_type_and_values(val_str)
 
                     pma, pma_created = ProductModelAttribute.objects.get_or_create(
                         product_model=pm,
                         attribute=am,
                         defaults={
-                            "is_required": True,
-                            "is_filter":   attr_name in FILTER_ATTRS,
+                            "is_required":     True,
+                            "is_filter":       attr_name in FILTER_ATTRS,
+                            "data_type":       data_type,
+                            "possible_values": possible_values,
                         },
                     )
 
@@ -358,6 +319,12 @@ class Command(BaseCommand):
                         stats["pma_created"] += 1
                     else:
                         stats["pma_skipped"] += 1
+                        # Optionally refresh type/values if --reset-attrs passed
+                        if reset_attrs:
+                            pma.data_type = data_type
+                            pma.possible_values = possible_values
+                            pma.save(update_fields=["data_type", "possible_values"])
+                            stats["pma_updated"] += 1
 
         self.stdout.write(
             f"  ProductModel: {stats['models_created']} created, "
@@ -365,6 +332,7 @@ class Command(BaseCommand):
         )
         self.stdout.write(
             f"  ProductModelAttribute: {stats['pma_created']} created, "
+            f"{stats['pma_updated']} updated, "
             f"{stats['pma_skipped']} already existed."
         )
 
@@ -383,8 +351,8 @@ class Command(BaseCommand):
             f"  ProductModels:        {stats['models_created']:>4} created  "
             f"{stats['models_skipped']:>4} skipped\n"
             f"  AttributeMaster:      {stats['attrs_created']:>4} created  "
-            f"{stats['attrs_updated']:>4} updated  "
             f"{stats['attrs_skipped']:>4} skipped\n"
             f"  ProductModelAttr:     {stats['pma_created']:>4} created  "
+            f"{stats['pma_updated']:>4} updated  "
             f"{stats['pma_skipped']:>4} skipped\n"
         )

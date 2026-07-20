@@ -674,76 +674,85 @@
             </div>
         </div> -->
 
-        <div class="row mt-5">
+        <!-- ── Product Specifications ──────────────────────────────────────── -->
+        <div class="row mt-5" id="specsSection" style="display:none;">
             <div class="col-12">
-
-                <section class="simple-tabs" style="display: none;">
+                <section class="simple-tabs">
 
                     <!-- Tab Buttons -->
                     <div class="tab-buttons">
-                        <button class="tab-btn active" data-tab="specs">Specifications</button>
-                        <!-- <button class="tab-btn" data-tab="condition">Condition</button> -->
-                        <!-- <button class="tab-btn" data-tab="warranty">Warranty & Returns</button> -->
+                        <!-- <button class="tab-btn active" data-tab="specs-main">Key Specs</button> -->
+                        <button class="tab-btn active" data-tab="specs-warranty">Warranty & Returns</button>
+                        <button class="tab-btn" id="specsSecondaryTabBtn" data-tab="specs-secondary" style="display:none;">More Details</button>
+                        <button class="tab-btn" data-tab="specs-condition">Condition</button>
                     </div>
 
                     <!-- Tab Content -->
                     <div class="tab-panels">
 
-                        <div class="tab-panel active" id="specs">
-                            <h5>Product Specifications</h5>
-
-                            <div class="spec-grid">
-                                <div><span>Brand</span><strong>Apple</strong></div>
-                                <div><span>Model</span><strong>iPhone 13 Pro</strong></div>
-                                <div><span>Storage</span><strong>128 GB</strong></div>
-                                <div><span>Color</span><strong>Graphite</strong></div>
-                                <div><span>Network</span><strong>Unlocked</strong></div>
+                        <!-- Main Attributes -->
+                        <!-- <div class="tab-panel active" id="specs-main">
+                            <h5>Key Specifications</h5>
+                            <div class="spec-grid" id="specsMainGrid">
+                                Populated by renderSpecsSections()
                             </div>
-                            <div class="spec-overview">
-                                <h5>Product Overview</h5>
-                                <p id="productDescription">Loading product specifications...</p>
+                            <div id="specsDescription" style="display:none;">
+                                <h5 style="margin-top:20px;">Product Overview</h5>
+                                <p id="productDescription" class="lead-text"></p>
                             </div>
-                        </div>
+                        </div> -->
 
-                        <div class="tab-panel" id="condition">
-                            <h5>Condition Details</h5>
-
-                            <p class="lead-text">
-                                Professionally refurbished and fully tested to ensure peak performance.
-                            </p>
-
-                            <ul class="check-list">
-                                <li>Battery health 85% or higher</li>
-                                <li>Screen free from cracks</li>
-                                <li>All buttons & ports tested</li>
-                                <li>Factory reset & sanitized</li>
-                            </ul>
-                        </div>
-
-                        <div class="tab-panel" id="warranty">
-                            <h5>Warranty & Returns</h5>
-
+                        <!-- Warranty & Returns -->
+                        <div class="tab-panel active" id="specs-warranty">
+                            <h5>Warranty &amp; Returns</h5>
                             <div class="info-cards">
                                 <div class="info-card">
                                     <h6>6-Month Warranty</h6>
                                     <p>Covers hardware defects and functionality issues.</p>
                                 </div>
-
                                 <div class="info-card">
                                     <h6>7-Day Returns</h6>
-                                    <p>Full refund if you’re not satisfied.</p>
+                                    <p>Full refund if you are not satisfied.</p>
                                 </div>
-
                                 <div class="info-card">
                                     <h6>Customer Support</h6>
-                                    <p>Available 7 days a week.</p>
+                                    <p>Available 7 days a week via chat and email.</p>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Secondary Attributes -->
+                        <div class="tab-panel" id="specs-secondary">
+                            <div id="specsDescription" style="display:none;">
+                                <h5 style="margin-top:20px;">Product Overview</h5>
+                                <p id="productDescription" class="lead-text"></p>
+                            </div>
+                            <h5>More Details</h5>
+                            <div class="spec-grid" id="specsSecondaryGrid">
+                                <!-- Populated by renderSpecsSections() -->
+                            </div>
+                        </div>
+
+                        <!-- Condition -->
+                        <div class="tab-panel" id="specs-condition">
+                            <h5>Condition Details</h5>
+                            <p class="lead-text">Every device is professionally refurbished and fully tested before listing.</p>
+                            <ul class="check-list">
+                                <li>Battery health 85% or higher</li>
+                                <li>Screen free from cracks or deep scratches</li>
+                                <li>All buttons, ports and functions tested and working</li>
+                                <li>Factory reset, cleaned and sanitized</li>
+                                <li>Cosmetic condition grade verified by refurbisher</li>
+                            </ul>
                         </div>
 
                     </div>
 
                 </section>
+            </div>
+        </div>
+
+
 
             </div>
         </div>

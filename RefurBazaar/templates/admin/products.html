@@ -70,16 +70,16 @@
 
 <!-- Create / Edit Product Modal -->
 <div class="rb-overlay" id="modal-product">
-  <div class="rb-modal" style="max-width:600px">
+  <div class="rb-modal" style="max-width:680px;width:95vw">
     <div class="modal-header">
       <div class="modal-header-icon blue"><i class="fa-solid fa-box"></i></div>
       <div>
         <div class="modal-title" id="mprod-title">Add Product</div>
-        <div class="modal-subtitle">Add a product to the master catalog</div>
+        <div class="modal-subtitle">Fill in product details then configure its attributes below</div>
       </div>
       <button class="modal-close"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body" style="padding-bottom:0">
       <input type="hidden" id="mprod-id" value="" />
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
         <div class="form-group">
@@ -104,8 +104,8 @@
           <label class="form-label">Release Year</label>
           <input type="number" class="form-input" id="mprod-year" placeholder="2024" min="2000" max="2030" />
         </div>
-        <div class="form-group">
-          <label class="form-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:26px">
+        <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:6px">
+          <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer;color:var(--text)">
             <input type="checkbox" id="mprod-active" checked style="width:16px;height:16px;accent-color:var(--accent)" />
             Active (visible to refurbishers)
           </label>
@@ -116,22 +116,22 @@
         </div>
       </div>
 
-      <!-- Attributes -->
-      <div style="border-top:1px solid var(--border-light);margin-top:16px;padding-top:16px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <div class="fw-600 fs-13">Product Attributes</div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <select class="select-filter" id="mprod-attr-category" style="font-size:12px;padding:5px 10px;height:30px">
-              <option value="">Select category first</option>
-            </select>
+      <!-- ── Attributes ─────────────────────────────────────────── -->
+      <div style="border-top:1px solid var(--border-light);margin-top:8px;padding:16px 0 0">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div>
+            <div class="fw-600 fs-13">Product Attributes</div>
+            <div class="text-muted fs-12" style="margin-top:2px">Tick to enable. Set type, options, section, and required flag per attribute.</div>
           </div>
+          <span id="mprod-attr-count" class="badge badge-gray" style="font-size:11px;flex-shrink:0;display:none"></span>
         </div>
-        <div id="mprod-attrs-list" style="display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto">
+        <div id="mprod-attrs-list"
+             style="display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;padding-right:2px">
           <div class="text-muted fs-12" style="padding:12px 0">Select a category to see available attributes</div>
         </div>
       </div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-footer" style="margin-top:16px">
       <button class="btn btn-ghost" onclick="closeModal('modal-product')">Cancel</button>
       <button class="btn btn-primary" id="mprod-save-btn" onclick="saveProduct()">Save Product</button>
     </div>

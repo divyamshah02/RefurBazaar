@@ -31,8 +31,8 @@ class ProductModelAdmin(admin.ModelAdmin):
 
 @admin.register(AttributeMaster)
 class AttributeMasterAdmin(admin.ModelAdmin):
-    list_display = ['name', 'category', 'data_type', 'is_active', 'display_order']
-    list_filter = ['category', 'data_type', 'is_active']
+    list_display = ['name', 'category', 'is_active', 'display_order']
+    list_filter = ['category', 'is_active']
     search_fields = ['name']
     ordering = ['category', 'display_order', 'name']
 

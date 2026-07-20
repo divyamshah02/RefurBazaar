@@ -15,8 +15,6 @@ function initAddListing(apiEndpoints, csrfToken) {
   API_ENDPOINTS = apiEndpoints
   CSRF_TOKEN = csrfToken
 
-  console.log("Initializing add listing page with endpoints:", API_ENDPOINTS)
-
   updateStepDisplay()
   setupEventListeners()
   loadCategories()
@@ -51,7 +49,6 @@ async function loadCategories() {
         categorySelect.appendChild(option)
       })
 
-      console.log("Loaded categories:", categories)
     }
   } catch (error) {
     console.error("Failed to load categories:", error)
@@ -92,7 +89,6 @@ async function onCategoryChange() {
         brandSelect.appendChild(option)
       })
 
-      console.log("Loaded brands for category:", category, brands)
     }
   } catch (error) {
     console.error("Failed to load brands:", error)
@@ -135,7 +131,6 @@ async function onBrandChange() {
         modelSelect.appendChild(option)
       })
 
-      console.log("Loaded models:", models)
     }
   } catch (error) {
     console.error("Failed to load models:", error)
@@ -180,8 +175,7 @@ async function onModelChange() {
 
     if (success2 && response2.success) {
       modelAttributes = response2.data
-      console.log("Selected model:", selectedModel)
-      console.log("Model attributes:", modelAttributes)
+
     }
   } catch (error) {
     console.error("Failed to load model attributes:", error)
@@ -203,27 +197,30 @@ function addNewUnit() {
 
   let attributesHtml = ""
   modelAttributes.forEach((attrLink) => {
-    const attr = attrLink.attribute
+    const attr      = attrLink.attribute
+    const dataType  = attrLink.data_type        // lives on pma, not pma.attribute
+    const possVals  = attrLink.possible_values  // lives on pma, not pma.attribute
     const isRequired = attrLink.is_required
 
-    if (attr.data_type === "choice" && attr.possible_values && attr.possible_values.length > 0) {
+    if (dataType === "choice" && possVals && possVals.length > 0) {
       attributesHtml += `
         <div class="col-md-6">
           <div class="form-group">
-            <label class="form-label">${attr.name} ${isRequired ? "*" : ""}</label>
+            <label class="form-label">${attr.name}${isRequired ? " *" : ""}</label>
             <select class="form-select" data-attr-id="${attr.id}" ${isRequired ? "required" : ""}>
               <option value="">Select ${attr.name}</option>
-              ${attr.possible_values.map((val) => `<option value="${val}">${val}</option>`).join("")}
+              ${possVals.map((val) => `<option value="${val}">${val}</option>`).join("")}
             </select>
           </div>
         </div>
       `
-    } else if (attr.data_type === "number") {
+    } else if (dataType === "number") {
       attributesHtml += `
         <div class="col-md-6">
           <div class="form-group">
-            <label class="form-label">${attr.name} ${isRequired ? "*" : ""}</label>
-            <input type="number" class="form-control" data-attr-id="${attr.id}" placeholder="Enter ${attr.name}" ${isRequired ? "required" : ""}>
+            <label class="form-label">${attr.name}${isRequired ? " *" : ""}</label>
+            <input type="number" class="form-control" data-attr-id="${attr.id}"
+                   placeholder="Enter ${attr.name}" ${isRequired ? "required" : ""}>
           </div>
         </div>
       `
@@ -231,8 +228,9 @@ function addNewUnit() {
       attributesHtml += `
         <div class="col-md-6">
           <div class="form-group">
-            <label class="form-label">${attr.name} ${isRequired ? "*" : ""}</label>
-            <input type="text" class="form-control" data-attr-id="${attr.id}" placeholder="Enter ${attr.name}" ${isRequired ? "required" : ""}>
+            <label class="form-label">${attr.name}${isRequired ? " *" : ""}</label>
+            <input type="text" class="form-control" data-attr-id="${attr.id}"
+                   placeholder="Enter ${attr.name}" ${isRequired ? "required" : ""}>
           </div>
         </div>
       `
@@ -315,7 +313,6 @@ function addNewUnit() {
     quantityContainer.style.display = this.checked ? "block" : "none"
   })
 
-  console.log("Added unit:", unitCounter)
 }
 
 /**
@@ -325,7 +322,6 @@ function removeUnit(unitId) {
   const unitCard = document.getElementById(unitId)
   if (unitCard) {
     unitCard.remove()
-    console.log("Removed unit:", unitId)
 
     // Show empty state if no units left
     const remainingUnits = document.querySelectorAll(".unit-card")
@@ -472,8 +468,6 @@ async function submitListing() {
     // Collect form data
     const formData = collectFormData()
 
-    console.log("Submitting listing:", formData)
-
     // Show loading state
     const submitBtn = document.getElementById("submitBtn")
     const originalText = submitBtn.innerHTML
@@ -483,7 +477,6 @@ async function submitListing() {
     const [success, response] = await callApi("POST", API_ENDPOINTS.listings, formData, CSRF_TOKEN)
 
     if (success && response.success) {
-      console.log("Listing created successfully:", response.data)
       showNotification("Listing created successfully", "success")
 
       // Redirect to listings page after 2 seconds
@@ -526,9 +519,7 @@ function collectFormData() {
     const condition = unitCard.querySelector('[data-field="condition"]')?.value
     // const hasMoreUnits = unitCard.querySelector('[data-field="quantity"]')?.parentElement?.parentElement?.parentElement?.previousElementSibling?.querySelector('input[type="checkbox"]')?.checked || false
     const hasMoreUnits = unitCard.querySelector('[data-field="hasmoreqty"]')?.checked || false
-    console.log(hasMoreUnits)
     const quantity = hasMoreUnits ? Number.parseInt(unitCard.querySelector('[data-field="quantity"]')?.value || 1) : 0
-    console.log(quantity)
 
     const attributes = []
     modelAttributes.forEach((attrLink) => {

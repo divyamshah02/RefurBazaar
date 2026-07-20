@@ -70,9 +70,75 @@ function renderProductInfo() {
 
   initializeThumbnailGallery()
 
-  // Set product description
-  if (productData.description) {
-    document.getElementById("productDescription").textContent = productData.description
+  // Set product description in specs tab
+  const descEl = document.getElementById("productDescription")
+  const descWrap = document.getElementById("specsDescription")
+  if (productData.description && descEl) {
+    descEl.textContent = productData.description
+    if (descWrap) descWrap.style.display = "block"
+  }
+
+  renderSpecsSections()
+  renderSpecsPanel()
+}
+
+function escapeHtml(str) {
+  if (!str) return ""
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+}
+
+/**
+ * Split attributesData by section and render two spec grids:
+ *   #specsMainGrid      — section === 'main'
+ *   #specsSecondaryGrid — section === 'secondary'
+ * Each card shows the attribute name and either the joined possible_values
+ * (for choice fields) or a type hint (text / number).
+ * The whole #specsSection row is revealed once there is data to show.
+ */
+function renderSpecsSections() {
+  const mainAttrs      = attributesData.filter((a) => a.section === "main")
+  const secondaryAttrs = attributesData.filter((a) => a.section === "secondary")
+
+  function buildCard(attr) {
+    let hint = "—"
+    // if (attr.data_type === "choice" && attr.available_values && attr.available_values.length > 0) {
+    //   hint = attr.available_values.join(", ")
+    // } else if (attr.data_type === "number") {
+    //   hint = "Numeric"
+    // } else {
+    //   hint = "Text"
+    // }
+    hint = attr.available_values.join(", ")
+    return `<div><span>${escapeHtml(attr.name)}</span><strong>${escapeHtml(hint)}</strong></div>`
+  }
+
+  // const mainGrid = document.getElementById("specsMainGrid")
+  const secGrid  = document.getElementById("specsSecondaryGrid")
+  const secBtn   = document.getElementById("specsSecondaryTabBtn")
+  const section  = document.getElementById("specsSection")
+
+  // if (mainGrid) {
+  //   mainGrid.innerHTML = mainAttrs.length > 0
+  //     ? mainAttrs.map(buildCard).join("")
+  //     : "<p class=\"text-muted\" style=\"font-size:0.9rem;\">No key specifications defined for this product.</p>"
+  // }
+
+  if (secGrid) {
+    if (secondaryAttrs.length > 0) {
+      secGrid.innerHTML = secondaryAttrs.map(buildCard).join("")
+      if (secBtn) secBtn.style.display = ""
+    } else {
+      if (secBtn) secBtn.style.display = "none"
+    }
+  }
+
+  // Reveal the specs block once there is something to show
+  if (section && (mainAttrs.length > 0 || secondaryAttrs.length > 0 || productData.description)) {
+    section.style.display = ""
   }
 }
 
@@ -193,26 +259,51 @@ function renderAttributeFilters() {
 
   let filtersHTML = ""
 
+
+  // Find the hex code attribute once
+  const colorHexAttr = attributesData.find(
+    (a) => a.name.toLowerCase() === "colour hex codes"
+  )
+
   attributesData.forEach((attr) => {
-    if (attr.is_filter) {
-      
-      if (attr.available_values.length > 0) {
-        // Determine filter type based on attribute name
-        const attrNameLower = attr.name.toLowerCase()
-  
-        if (attrNameLower.includes("storage") || attrNameLower.includes("memory")) {
-          // Storage-style filter
-          filtersHTML += renderStorageFilter(attr)
-        } else if (attrNameLower.includes("color") || attrNameLower.includes("colour")) {
-          // Color-style filter
-          filtersHTML += renderColorFilter(attr)
-        } else {
-          // Generic filter
-          filtersHTML += renderGenericFilter(attr)
-        }
-      }
+    if (!attr.is_filter) return
+    if (attr.available_values.length === 0) return
+
+    const attrNameLower = attr.name.toLowerCase()
+
+    // Skip rendering Colour Hex Codes
+    if (attrNameLower === "colour hex codes") return
+    if (attrNameLower === "refurb price range") return
+
+    if (attrNameLower.includes("storage") || attrNameLower.includes("memory")) {
+      filtersHTML += renderStorageFilter(attr)
+    } else if (attrNameLower.includes("color") || attrNameLower.includes("colour")) {
+      filtersHTML += renderColorFilter(attr, colorHexAttr)
+    } else {
+      filtersHTML += renderGenericFilter(attr)
     }
   })
+
+  // attributesData.forEach((attr) => {
+  //   if (attr.is_filter) {
+      
+  //     if (attr.available_values.length > 0) {
+  //       // Determine filter type based on attribute name
+  //       const attrNameLower = attr.name.toLowerCase()
+  
+  //       if (attrNameLower.includes("storage") || attrNameLower.includes("memory")) {
+  //         // Storage-style filter
+  //         filtersHTML += renderStorageFilter(attr)
+  //       } else if (attrNameLower.includes("color") || attrNameLower.includes("colour")) {
+  //         // Color-style filter
+  //         filtersHTML += renderColorFilter(attr)
+  //       } else {
+  //         // Generic filter
+  //         filtersHTML += renderGenericFilter(attr)
+  //       }
+  //     }
+  //   }
+  // })
 
   container.innerHTML = filtersHTML
 }
@@ -319,7 +410,7 @@ function renderStorageFilter(attr) {
 //     `
 // }
 
-function renderColorFilter(attr) {
+function renderColorFilter_default(attr) {
   const colorMap = {
     black: "#000000",
     white: "#ffffff",
@@ -362,6 +453,43 @@ function renderColorFilter(attr) {
             </div>
         </div>
     `
+}
+
+function renderColorFilter(attr, colorHexAttr) {
+  return `
+    <div class="selection-section">
+      <div class="section-header">
+        <h6>Select ${attr.name}</h6>
+      </div>
+
+      <div class="color-options">
+        ${attr.available_values
+          .map((value, index) => {
+            let colorValue = "#cccccc"
+
+            if (colorHexAttr && colorHexAttr.available_values[index]) {
+              colorValue = colorHexAttr.available_values[index]
+            }
+
+            return `
+              <div class="color-card"
+                   data-attribute="${attr.id}"
+                   data-value="${value}"
+                   onclick="selectAttribute(${attr.id}, '${value}')">
+
+                <div class="color-dot" style="background:${colorValue};"></div>
+                &nbsp;
+                <div class="color-info">
+                  <h6>${value}</h6>
+                  <p class="color-price"></p>
+                </div>
+              </div>
+            `
+          })
+          .join("")}
+      </div>
+    </div>
+  `
 }
 
 // function renderGenericFilter(attr) {
@@ -767,35 +895,4 @@ function renderSpecsPanel() {
   specsGrid.innerHTML = specsHTML;
 }
 
-// Render Product Info
-function renderProductInfo() {
-  document.getElementById("productTitle").textContent = productData.name
-  document.getElementById("breadcrumbProduct").textContent = `${productData.brand_name} ${productData.name}`
 
-  // Set product image
-  const mainImage = document.getElementById("mainImage")
-  if (productData.image) {
-    mainImage.src = productData.image
-  } else {
-    mainImage.src = "/static/images/iPhone 16 Pro.png"
-  }
-  mainImage.alt = `${productData.brand_name} ${productData.name}`
-
-  initializeThumbnailGallery()
-
-  // Set product description
-  const oldDescTab = document.getElementById("productDescription");
-  const sidePanelDesc = document.getElementById("sidePanelDescription");
-  
-  if (productData.description) {
-    if (oldDescTab) oldDescTab.textContent = productData.description;
-    if (sidePanelDesc) sidePanelDesc.textContent = productData.description;
-  } else {
-    // If no description exists in the database, clear the "Loading..." text
-    if (oldDescTab) oldDescTab.textContent = "No overview available for this product.";
-    if (sidePanelDesc) sidePanelDesc.textContent = "No overview available for this product.";
-  }
-
-  // Add this line to populate the side flap!
-  renderSpecsPanel();
-}

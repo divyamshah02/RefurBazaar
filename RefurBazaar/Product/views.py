@@ -298,10 +298,11 @@ class ProductModelViewSet(viewsets.ViewSet):
             attributes_data.append({
                 'id': attr.id,
                 'name': attr.name,
-                'data_type': attr.data_type,
-                'possible_values': attr.possible_values,
+                'data_type': pm_attr.data_type,
+                'possible_values': pm_attr.possible_values,
                 'is_required': pm_attr.is_required,
                 'is_filter': pm_attr.is_filter,
+                'section': pm_attr.section,
                 'available_values': list(available_values)
             })
         
@@ -1234,9 +1235,15 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                         attributes = []
 
             for attr_data in attributes:
-                attr_id = attr_data.get('attribute_id')
-                is_required = attr_data.get('is_required', False)
-                section = attr_data.get('section', 'main')
+                attr_id        = attr_data.get('attribute_id')
+                is_required    = attr_data.get('is_required', False)
+                section        = attr_data.get('section', 'main')
+                data_type      = attr_data.get('data_type', 'text')
+                possible_values = attr_data.get('possible_values', [])
+                if isinstance(possible_values, str):
+                    import json as _json
+                    try: possible_values = _json.loads(possible_values)
+                    except: possible_values = []
 
                 if not attr_id:
                     continue
@@ -1244,12 +1251,21 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                 # Verify attribute exists
                 attribute = get_object_or_404(AttributeMaster, id=attr_id)
 
-                # Create ProductModelAttribute link
-                ProductModelAttribute.objects.get_or_create(
+                # Create or update ProductModelAttribute link
+                pma, created = ProductModelAttribute.objects.get_or_create(
                     product_model=product_model,
                     attribute=attribute,
-                    defaults={'is_required': is_required, 'section': section}
+                    defaults={
+                        'is_required': is_required, 'section': section,
+                        'data_type': data_type, 'possible_values': possible_values,
+                    }
                 )
+                if not created:
+                    pma.is_required = is_required
+                    pma.section = section
+                    pma.data_type = data_type
+                    pma.possible_values = possible_values
+                    pma.save()
 
             serializer = ProductModelSerializer(product_model)
             return Response({
@@ -1271,7 +1287,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
 
     @handle_exceptions
     @check_authentication(required_role='admin')
-    def update(self, request, pk=None):
+    def patch(self, request, pk=None):
         """
         Update an existing ProductModel and its attributes.
         Partial updates are supported.
@@ -1311,18 +1327,27 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
 
             # Add new attributes
             for attr_data in attributes:
-                attr_id = attr_data.get('attribute_id')
-                is_required = attr_data.get('is_required', False)
-                section = attr_data.get('section', 'main')
+                attr_id         = attr_data.get('attribute_id')
+                is_required     = attr_data.get('is_required', False)
+                section         = attr_data.get('section', 'main')
+                data_type       = attr_data.get('data_type', 'text')
+                possible_values = attr_data.get('possible_values', [])
+                if isinstance(possible_values, str):
+                    import json as _json
+                    try: possible_values = _json.loads(possible_values)
+                    except: possible_values = []
 
                 if not attr_id:
                     continue
 
                 attribute = get_object_or_404(AttributeMaster, id=attr_id)
-                ProductModelAttribute.objects.get_or_create(
+                ProductModelAttribute.objects.create(
                     product_model=product_model,
                     attribute=attribute,
-                    defaults={'is_required': is_required, 'section': section}
+                    is_required=is_required,
+                    section=section,
+                    data_type=data_type,
+                    possible_values=possible_values,
                 )
 
         serializer = ProductModelSerializer(product_model)
@@ -1407,9 +1432,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
             {
                 'id': attr.id,
                 'name': attr.name,
-                'data_type': attr.data_type,
-                'possible_values': attr.possible_values,
-                'display_order': attr.display_order
+                'display_order': attr.display_order,
             }
             for attr in attributes
         ]

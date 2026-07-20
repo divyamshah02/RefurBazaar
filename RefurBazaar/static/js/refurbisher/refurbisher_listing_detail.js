@@ -253,6 +253,49 @@ function renderUnitsTable() {
 }
 
 /**
+ * Render a single attribute form field using the pma data_type and possible_values
+ * (both live on the pma object, not on pma.attribute).
+ * @param {Object} pma - ProductModelAttribute object from the API
+ * @param {string} currentValue - Pre-fill value when editing an existing unit
+ * @returns {string} HTML string for the form field
+ */
+function renderAttributeField(pma, currentValue = "") {
+  const attr      = pma.attribute
+  const dataType  = pma.data_type        // on pma, not pma.attribute
+  const possVals  = pma.possible_values  // on pma, not pma.attribute
+  const required  = pma.is_required ? "required" : ""
+  const label     = `${attr.name}${pma.is_required ? " *" : ""}`
+
+  if (dataType === "choice" && possVals && possVals.length > 0) {
+    const options = possVals
+      .map((v) => `<option value="${v}"${v === currentValue ? " selected" : ""}>${v}</option>`)
+      .join("")
+    return `
+      <div class="mb-3">
+        <label class="form-label">${label}</label>
+        <select class="form-control" data-attribute-id="${attr.id}" ${required}>
+          <option value="">Select ${attr.name}</option>
+          ${options}
+        </select>
+      </div>`
+  } else if (dataType === "number") {
+    return `
+      <div class="mb-3">
+        <label class="form-label">${label}</label>
+        <input type="number" class="form-control" data-attribute-id="${attr.id}"
+               placeholder="Enter ${attr.name}" value="${currentValue}" ${required}>
+      </div>`
+  } else {
+    return `
+      <div class="mb-3">
+        <label class="form-label">${label}</label>
+        <input type="text" class="form-control" data-attribute-id="${attr.id}"
+               placeholder="Enter ${attr.name}" value="${currentValue}" ${required}>
+      </div>`
+  }
+}
+
+/**
  * Show add unit modal
  */
 function showAddUnitModal() {
@@ -261,21 +304,9 @@ function showAddUnitModal() {
 
   document.getElementById("unitModalTitle").textContent = "Add New Unit"
 
-  // Populate attribute fields
   const container = document.getElementById("unit-attributes-container")
   container.innerHTML = productModelAttributes
-    .map((pma) => {
-      const attribute = pma.attribute
-      return `
-            <div class="mb-3">
-                <label class="form-label">${attribute.name}${pma.is_required ? " *" : ""}</label>
-                <select class="form-control" data-attribute-id="${attribute.id}" ${pma.is_required ? "required" : ""}>
-                    <option value="">Select ${attribute.name}</option>
-                    ${attribute.possible_values.map((value) => `<option value="${value}">${value}</option>`).join("")}
-                </select>
-            </div>
-        `
-    })
+    .map((pma) => renderAttributeField(pma, ""))
     .join("")
 
   document.getElementById("unit-price").value = ""
@@ -305,24 +336,10 @@ function editUnit(unitId) {
   const container = document.getElementById("unit-attributes-container")
   container.innerHTML = productModelAttributes
     .map((pma) => {
-      const attribute = pma.attribute
-      const currentAttr = unit.attributes.find((a) => a.attribute === attribute.id)
+      // unit.attributes items have shape: {id, attribute (int FK), attribute_name, value}
+      const currentAttr = unit.attributes.find((a) => a.attribute === pma.attribute.id)
       const currentValue = currentAttr ? currentAttr.value : ""
-
-      return `
-            <div class="mb-3">
-                <label class="form-label">${attribute.name}${pma.is_required ? " *" : ""}</label>
-                <select class="form-control" data-attribute-id="${attribute.id}" ${pma.is_required ? "required" : ""}>
-                    <option value="">Select ${attribute.name}</option>
-                    ${attribute.possible_values
-                      .map(
-                        (value) =>
-                          `<option value="${value}" ${value === currentValue ? "selected" : ""}>${value}</option>`,
-                      )
-                      .join("")}
-                </select>
-            </div>
-        `
+      return renderAttributeField(pma, currentValue)
     })
     .join("")
 
@@ -346,19 +363,19 @@ async function saveNewUnit() {
     return
   }
 
-  // Collect attributes
-  const attributeSelects = document.querySelectorAll("#unit-attributes-container select")
+  // Collect attributes — query all [data-attribute-id] elements (select + input)
+  const attributeFields = document.querySelectorAll("#unit-attributes-container [data-attribute-id]")
   const attributes = []
 
-  for (const select of attributeSelects) {
-    if (!select.value && select.required) {
-      showError(`Please select ${select.previousElementSibling.textContent}`)
+  for (const field of attributeFields) {
+    if (!field.value && field.required) {
+      showError(`Please fill in ${field.previousElementSibling?.textContent || "a required field"}`)
       return
     }
-    if (select.value) {
+    if (field.value) {
       attributes.push({
-        attribute: Number.parseInt(select.dataset.attributeId),
-        value: select.value,
+        attribute: Number.parseInt(field.dataset.attributeId),
+        value: field.value,
       })
     }
   }

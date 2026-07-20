@@ -37,6 +37,8 @@ class ProductModelSerializer(serializers.ModelSerializer):
                 'is_required': ma.is_required,
                 'is_filter': ma.is_filter,
                 'section': ma.section,
+                'data_type': ma.data_type,
+                'possible_values': ma.possible_values,
             }
             for ma in qs
         ]
@@ -45,10 +47,7 @@ class ProductModelSerializer(serializers.ModelSerializer):
 class AttributeMasterSerializer(serializers.ModelSerializer):
     class Meta:
         model = AttributeMaster
-        fields = [
-            'id', 'category', 'name', 'data_type', 'possible_values',
-            'is_active', 'display_order'
-        ]
+        fields = ['id', 'category', 'name', 'is_active', 'display_order']
 
 
 class ProductModelAttributeSerializer(serializers.ModelSerializer):
@@ -57,7 +56,11 @@ class ProductModelAttributeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductModelAttribute
-        fields = ['id', 'attribute', 'attribute_id', 'is_required', 'is_filter', 'section']
+        fields = [
+            'id', 'attribute', 'attribute_id',
+            'is_required', 'is_filter', 'section',
+            'data_type', 'possible_values',
+        ]
 
 
 class ListingUnitAttributeSerializer(serializers.ModelSerializer):
