@@ -144,6 +144,7 @@ function openCreateProduct() {
   document.getElementById('mprod-active').checked = true;
   document.getElementById('mprod-attrs-list').innerHTML = '<div class="text-muted fs-12" style="padding:12px 0">Select a category to see available attributes</div>';
   _updateAttrCount(0, 0);
+  _resetImageUI(null, []);
   openModal('modal-product');
 }
 
@@ -160,6 +161,8 @@ function editProduct(id) {
   document.getElementById('mprod-active').checked = p.is_active;
   // model_attributes is now included in the list response — use it for pre-selection
   if (p.category) loadAttrsForModal(p.category, p.model_attributes || []);
+  // Populate cover image + gallery images
+  _resetImageUI(p.image || null, p.images || []);
   openModal('modal-product');
 }
 
@@ -320,21 +323,164 @@ function updateSectionStyle(radio) {
   });
 }
 
-/* ─── Save product ──────────────────────────────────────────────── */
+/* ─── Image state ───────────────────────────────────────────────── */
+// Staged gallery files the user has picked but not yet uploaded
+let _stagedGalleryFiles = [];
+
+/* ─── Main cover image helpers ──────────────────────────────────── */
+
+/**
+ * Reset both the cover image preview and the gallery list.
+ * @param {string|null} coverUrl   - existing main image URL (or null)
+ * @param {Array}       galleryItems - existing gallery [{id, image}]
+ */
+function _resetImageUI(coverUrl, galleryItems) {
+  _stagedGalleryFiles = [];
+
+  // Cover image
+  const fileInput = document.getElementById('mprod-image-file');
+  const preview   = document.getElementById('mprod-img-preview');
+  const label     = document.getElementById('mprod-img-label');
+  if (fileInput) fileInput.value = '';
+  if (preview) {
+    preview.innerHTML = coverUrl
+      ? `<img src="${coverUrl}" alt="Cover" style="width:100%;height:100%;object-fit:contain;">`
+      : '<i class="fa-regular fa-image" style="font-size:22px;color:var(--text-muted)"></i>';
+  }
+  if (label) label.textContent = coverUrl ? 'Change cover image…' : 'Choose cover image…';
+
+  // Gallery
+  _renderGallery(galleryItems || []);
+
+  // Clear file input
+  const galleryInput = document.getElementById('mprod-gallery-files');
+  if (galleryInput) galleryInput.value = '';
+}
+
+/** Live-preview the selected cover image */
+function previewProductImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Image must be under 5 MB', 'error');
+    input.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const preview = document.getElementById('mprod-img-preview');
+    const label   = document.getElementById('mprod-img-label');
+    if (preview) preview.innerHTML = `<img src="${e.target.result}" alt="Preview" style="width:100%;height:100%;object-fit:contain;">`;
+    if (label)   label.textContent = file.name;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ─── Gallery helpers ───────────────────────────────────────────── */
+
+/**
+ * Render the gallery list — both saved items (with delete ×) and
+ * staged (local preview) items (with remove × before upload).
+ */
+function _renderGallery(savedItems) {
+  const list = document.getElementById('mprod-gallery-list');
+  if (!list) return;
+
+  const thumbStyle = `
+    position:relative;width:72px;height:72px;border-radius:8px;
+    border:1px solid var(--border);overflow:hidden;background:var(--surface);flex-shrink:0;
+  `;
+  const imgStyle = `width:100%;height:100%;object-fit:contain;display:block;`;
+  const xStyle = `
+    position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;
+    background:rgba(0,0,0,.55);color:#fff;border:none;cursor:pointer;
+    font-size:10px;line-height:18px;text-align:center;padding:0;
+  `;
+
+  // Saved images from the server
+  const savedHtml = savedItems.map(img => `
+    <div style="${thumbStyle}" id="gallery-item-${img.id}">
+      <img src="${img.image}" alt="Gallery" style="${imgStyle}">
+      <button type="button" style="${xStyle}" title="Delete image"
+              onclick="deleteProductImage(${img.id})">×</button>
+    </div>`).join('');
+
+  // Staged (local) preview images
+  const stagedHtml = _stagedGalleryFiles.map((f, idx) => {
+    const url = URL.createObjectURL(f);
+    return `
+      <div style="${thumbStyle}" id="staged-gallery-${idx}">
+        <img src="${url}" alt="Staged" style="${imgStyle}">
+        <button type="button" style="${xStyle}" title="Remove"
+                onclick="removeStagedGalleryImage(${idx})">×</button>
+      </div>`;
+  }).join('');
+
+  list.innerHTML = savedHtml + stagedHtml;
+}
+
+/** User picks new gallery files — stage them locally */
+function stageGalleryImages(input) {
+  const files = Array.from(input.files);
+  const oversized = files.filter(f => f.size > 5 * 1024 * 1024);
+  if (oversized.length) {
+    showToast(`${oversized.length} file(s) exceed 5 MB and were skipped`, 'warning');
+  }
+  _stagedGalleryFiles = _stagedGalleryFiles.concat(files.filter(f => f.size <= 5 * 1024 * 1024));
+  input.value = '';
+
+  // Re-read existing saved items from the current product data
+  const id = document.getElementById('mprod-id').value;
+  const p  = id ? _prAll.find(x => String(x.id) === String(id)) : null;
+  _renderGallery(p?.images || []);
+}
+
+/** Remove a not-yet-uploaded staged file */
+function removeStagedGalleryImage(idx) {
+  _stagedGalleryFiles.splice(idx, 1);
+  const id = document.getElementById('mprod-id').value;
+  const p  = id ? _prAll.find(x => String(x.id) === String(id)) : null;
+  _renderGallery(p?.images || []);
+}
+
+/** DELETE an already-saved gallery image via the API */
+async function deleteProductImage(imageId) {
+  const productId = document.getElementById('mprod-id').value;
+  if (!productId) return;
+
+  const [ok, res] = await callApi(
+    'DELETE',
+    `${_prUrls.imagesBaseUrl}${productId}/delete-image/${imageId}/`,
+    null, _prCsrf
+  );
+
+  if (ok && res.success) {
+    // Remove from the in-memory product record so _renderGallery stays consistent
+    const p = _prAll.find(x => String(x.id) === String(productId));
+    if (p && p.images) p.images = p.images.filter(i => i.id !== imageId);
+    _renderGallery(p?.images || []);
+    showToast('Image deleted', 'success');
+  } else {
+    showToast(res?.error || 'Failed to delete image', 'error');
+  }
+}
+
+/* ─── Save product (FormData for multipart / image support) ─────── */
 async function saveProduct() {
-  const id       = document.getElementById('mprod-id').value;
-  const brand_id = document.getElementById('mprod-brand').value;
-  const category = document.getElementById('mprod-category').value;
-  const name     = document.getElementById('mprod-name').value.trim();
-  const year     = document.getElementById('mprod-year').value;
-  const desc     = document.getElementById('mprod-desc').value.trim();
-  const active   = document.getElementById('mprod-active').checked;
+  const id        = document.getElementById('mprod-id').value;
+  const brand_id  = document.getElementById('mprod-brand').value;
+  const category  = document.getElementById('mprod-category').value;
+  const name      = document.getElementById('mprod-name').value.trim();
+  const year      = document.getElementById('mprod-year').value;
+  const desc      = document.getElementById('mprod-desc').value.trim();
+  const active    = document.getElementById('mprod-active').checked;
+  const coverFile = document.getElementById('mprod-image-file')?.files[0] || null;
 
   if (!brand_id || !category || !name) {
     showToast('Brand, category, and name are required', 'error'); return;
   }
 
-  // Gather selected attributes: required, section, data_type, possible_values
+  // Gather selected attributes
   const checkedAttrs = [...document.querySelectorAll('input[name="attr"]:checked')];
   const requiredIds  = new Set([...document.querySelectorAll('input[name="req"]:checked')].map(i => i.value));
 
@@ -358,29 +504,48 @@ async function saveProduct() {
     };
   });
 
-  const payload = { brand_id: Number(brand_id), category, name, is_active: active, attributes };
-  if (year) payload.release_year = Number(year);
-  if (desc) payload.description  = desc;
+  // ── Step 1: Save product (cover image + all fields) ──────────────
+  const fd = new FormData();
+  fd.append('brand_id',   brand_id);
+  fd.append('category',   category);
+  fd.append('name',       name);
+  fd.append('is_active',  active);
+  fd.append('attributes', JSON.stringify(attributes));
+  if (year)      fd.append('release_year', year);
+  if (desc)      fd.append('description',  desc);
+  if (coverFile) fd.append('image',        coverFile);
 
   const btn = document.getElementById('mprod-save-btn');
   btn.disabled = true; btn.textContent = 'Saving…';
 
-  let ok, res;
+  let ok, res, savedId;
   if (id) {
-    [ok, res] = await callApi('PATCH', `${_prUrls.createUrl}${id}/`, payload, _prCsrf);
+    [ok, res] = await callApi('PATCH', `${_prUrls.createUrl}${id}/`, fd, _prCsrf, true);
+    savedId = id;
   } else {
-    [ok, res] = await callApi('POST', _prUrls.createUrl, payload, _prCsrf);
+    [ok, res] = await callApi('POST', _prUrls.createUrl, fd, _prCsrf, true);
+    savedId = res?.data?.id;
+  }
+
+  if (!ok || !res?.success) {
+    btn.disabled = false; btn.textContent = 'Save Product';
+    showToast(res?.message || res?.error || 'Failed to save product', 'error');
+    return;
+  }
+
+  // ── Step 2: Upload staged gallery images (if any) ────────────────
+  if (_stagedGalleryFiles.length > 0 && savedId) {
+    btn.textContent = `Uploading ${_stagedGalleryFiles.length} image(s)…`;
+    const gfd = new FormData();
+    _stagedGalleryFiles.forEach(f => gfd.append('images', f));
+    await callApi('POST', `${_prUrls.imagesBaseUrl}${savedId}/add-image/`, gfd, _prCsrf, true);
+    _stagedGalleryFiles = [];
   }
 
   btn.disabled = false; btn.textContent = 'Save Product';
-
-  if (ok && res.success) {
-    closeModal('modal-product');
-    showToast(id ? 'Product updated' : 'Product created', 'success');
-    loadProducts();
-  } else {
-    showToast(res?.message || res?.error || 'Failed to save product', 'error');
-  }
+  closeModal('modal-product');
+  showToast(id ? 'Product updated' : 'Product created', 'success');
+  loadProducts();
 }
 
 function set(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }

@@ -1287,7 +1287,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
 
     @handle_exceptions
     @check_authentication(required_role='admin')
-    def patch(self, request, pk=None):
+    def update(self, request, pk=None):
         """
         Update an existing ProductModel and its attributes.
         Partial updates are supported.
@@ -1302,7 +1302,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
         if 'release_year' in request.data:
             product_model.release_year = request.data['release_year']
         if 'is_active' in request.data:
-            product_model.is_active = request.data['is_active']
+            product_model.is_active = True if request.data['is_active'] == 'true' else False
 
         # Handle image upload
         if 'image' in request.FILES:
@@ -1359,6 +1359,82 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
             "error": None
         }, status=status.HTTP_200_OK)
 
+
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def patch(self, request, pk=None):
+        """
+        Update an existing ProductModel and its attributes.
+        Partial updates are supported.
+        """
+        product_model = get_object_or_404(ProductModel, id=pk)
+
+        # Update basic fields
+        if 'name' in request.data:
+            product_model.name = request.data['name']
+        if 'description' in request.data:
+            product_model.description = request.data['description']
+        if 'release_year' in request.data:
+            product_model.release_year = request.data['release_year']
+        if 'is_active' in request.data:
+            product_model.is_active = True if request.data['is_active'] == 'true' else False
+
+        # Handle image upload
+        if 'image' in request.FILES:
+            product_model.image = request.FILES['image']
+
+        product_model.save()
+
+        # Handle attributes update if provided
+        if 'attributes' in request.data:
+            attributes = request.data.get('attributes')
+
+            # Parse if needed
+            import json
+            if isinstance(attributes, str):
+                try:
+                    attributes = json.loads(attributes)
+                except:
+                    attributes = []
+
+            # Remove existing attributes
+            ProductModelAttribute.objects.filter(product_model=product_model).delete()
+
+            # Add new attributes
+            for attr_data in attributes:
+                attr_id         = attr_data.get('attribute_id')
+                is_required     = attr_data.get('is_required', False)
+                section         = attr_data.get('section', 'main')
+                data_type       = attr_data.get('data_type', 'text')
+                possible_values = attr_data.get('possible_values', [])
+                if isinstance(possible_values, str):
+                    import json as _json
+                    try: possible_values = _json.loads(possible_values)
+                    except: possible_values = []
+
+                if not attr_id:
+                    continue
+
+                attribute = get_object_or_404(AttributeMaster, id=attr_id)
+                ProductModelAttribute.objects.create(
+                    product_model=product_model,
+                    attribute=attribute,
+                    is_required=is_required,
+                    section=section,
+                    data_type=data_type,
+                    possible_values=possible_values,
+                )
+
+        serializer = ProductModelSerializer(product_model)
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "user_unauthorized": False,
+            "data": serializer.data,
+            "error": None
+        }, status=status.HTTP_200_OK)
+
+
     @handle_exceptions
     @check_authentication(required_role='admin')
     def destroy(self, request, pk=None):
@@ -1375,6 +1451,36 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
             "data": None,
             "error": None
         }, status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['post'], url_path='add-image')
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def add_image(self, request, pk=None):
+        """Upload one or more gallery images for a product model.
+        Files must be sent as multipart/form-data under the key 'images' (multiple allowed).
+        """
+        product_model = get_object_or_404(ProductModel, id=pk)
+        files = request.FILES.getlist('images')
+        if not files:
+            return Response({"success": False, "error": "No images provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        created = []
+        for f in files:
+            img = ProductModelImage.objects.create(product_model=product_model, image=f)
+            created.append({'id': img.id, 'image': request.build_absolute_uri(img.image.url)})
+
+        return Response({"success": True, "data": created, "error": None}, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['delete'], url_path='delete-image/(?P<image_id>[0-9]+)')
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def delete_image(self, request, pk=None, image_id=None):
+        """Delete a single gallery image by its id."""
+        product_model = get_object_or_404(ProductModel, id=pk)
+        img = get_object_or_404(ProductModelImage, id=image_id, product_model=product_model)
+        img.image.delete(save=False)
+        img.delete()
+        return Response({"success": True, "data": None, "error": None}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'])
     @handle_exceptions

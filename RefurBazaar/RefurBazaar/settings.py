@@ -3,7 +3,7 @@ from pathlib import Path
 import base64
 import dj_database_url
 
-IS_LOCAL = False
+IS_LOCAL = True
 LOCAL_DB = True
 IS_PAYMENT_TEST_MODE = False
 

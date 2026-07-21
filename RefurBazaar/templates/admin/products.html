@@ -114,6 +114,48 @@
           <label class="form-label">Description</label>
           <textarea class="form-textarea" id="mprod-desc" placeholder="Optional product description…" rows="2"></textarea>
         </div>
+        <!-- ── Main / cover image ────────────────────────────────── -->
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label">Main Cover Image</label>
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+            <!-- Preview box -->
+            <div id="mprod-img-preview"
+                 style="width:80px;height:80px;border-radius:8px;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+              <i class="fa-regular fa-image" style="font-size:22px;color:var(--text-muted)"></i>
+            </div>
+            <div style="flex:1;min-width:0">
+              <label for="mprod-image-file"
+                     style="display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border:1px dashed var(--border);border-radius:7px;cursor:pointer;font-size:12px;color:var(--text-muted);transition:border-color .15s,color .15s"
+                     onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+                     onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">
+                <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                <span id="mprod-img-label">Choose cover image…</span>
+              </label>
+              <input type="file" id="mprod-image-file" accept="image/*"
+                     style="display:none" onchange="previewProductImage(this)" />
+              <div class="text-muted fs-12" style="margin-top:4px">JPG, PNG, WebP · max 5 MB · leave empty to keep existing.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Gallery images ─────────────────────────────────── -->
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label">Gallery Images</label>
+          <!-- Existing + staged thumbnails -->
+          <div id="mprod-gallery-list"
+               style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;min-height:0"></div>
+          <!-- Upload trigger -->
+          <label for="mprod-gallery-files"
+                 style="display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border:1px dashed var(--border);border-radius:7px;cursor:pointer;font-size:12px;color:var(--text-muted);transition:border-color .15s,color .15s"
+                 onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+                 onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">
+            <i class="fa-solid fa-images"></i>
+            <span>Add gallery images…</span>
+          </label>
+          <input type="file" id="mprod-gallery-files" accept="image/*" multiple
+                 style="display:none" onchange="stageGalleryImages(this)" />
+          <div class="text-muted fs-12" style="margin-top:4px">Multiple files allowed · JPG, PNG, WebP · max 5 MB each.</div>
+        </div>
       </div>
 
       <!-- ── Attributes ─────────────────────────────────────────── -->
@@ -145,10 +187,11 @@
   document.addEventListener('DOMContentLoaded', () => {
     const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
     InitProducts(csrf, {
-      listUrl:   '/product-api/product-models-admin/',
-      createUrl: '/product-api/product-models-admin/',
-      brandsUrl: '/product-api/brands/',
-      attrsUrl:  '/admin-api/dashboard/attributes/'
+      listUrl:       '/product-api/product-models-admin/',
+      createUrl:     '/product-api/product-models-admin/',
+      brandsUrl:     '/product-api/brands/',
+      attrsUrl:      '/admin-api/dashboard/attributes/',
+      imagesBaseUrl: '/product-api/product-models-admin/'
     });
   });
 </script>

@@ -161,6 +161,31 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             "error": None
         }, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['patch'], url_path='update-order-status')
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def update_order_status(self, request, pk=None):
+        """Update order status and/or payment_received flag"""
+        order = Order.objects.filter(order_id=pk).first()
+        if not order:
+            return Response({"success": False, "error": "Order not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        new_status = request.data.get('status')
+        payment_received = request.data.get('payment_received')
+
+        VALID_STATUSES = [s[0] for s in Order.STATUS_CHOICES]
+        if new_status and new_status not in VALID_STATUSES:
+            return Response({"success": False, "error": f"Invalid status '{new_status}'"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if new_status:
+            order.status = new_status
+        if payment_received is not None:
+            order.payment_received = bool(payment_received)
+        order.save()
+
+        serializer = OrderSerializer(order)
+        return Response({"success": True, "data": serializer.data, "error": None}, status=status.HTTP_200_OK)
+
     @action(detail=False, methods=['get'], url_path='refurbishers')
     @handle_exceptions
     @check_authentication(required_role='admin')
