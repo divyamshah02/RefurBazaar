@@ -13,10 +13,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="/static/css/homepage/styles.css">
-    <link href="/static/css/shop.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/navbar.css">
-    <link rel="stylesheet" href="/static/css/wishlist.css"> </head>
+    <link rel="stylesheet" href="{% static 'css/homepage/styles.css' %}">
+    <link href="{% static 'css/shop.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/wishlist.css' %}"> </head>
 
 <body class="bg-light">
 
@@ -118,6 +118,6 @@
         const CSRF_TOKEN = "{{ csrf_token }}";
         const SHOP_URL = "{% url 'shop-list' %}";
     </script>
-    <script src="/static/js/api_caller.js"></script>
-    <script src="/static/js/wishlist.js"></script> </body>
+    <script src="{% static 'js/api_caller.js' %}"></script>
+    <script src="{% static 'js/wishlist.js' %}"></script> </body>
 </html>
