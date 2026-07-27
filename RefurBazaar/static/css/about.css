@@ -10,7 +10,7 @@
 /* 1. Hero Section (Sleek Dark Theme) */
 .rc-about-hero {
     background-color: var(--black, #1A1A1A);
-    padding: 80px 0;
+    padding: 30px 0;
     color: var(--white, #ffffff);
     position: relative;
     overflow: hidden;
@@ -30,17 +30,17 @@
 
 .rc-about-tag {
     display: inline-block;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-weight: 700;
     letter-spacing: 1.5px;
     text-transform: uppercase;
     color: var(--primary-green, #2A8C3C);
-    margin-bottom: 15px;
+    /* margin-bottom: 15px; */
 }
 
 .rc-about-hl {
     font-family: var(--font-display, 'Poppins', sans-serif);
-    font-size: 3rem;
+    font-size: 2rem;
     color: white;
     font-weight: 700;
     line-height: 1.1;
@@ -49,7 +49,7 @@
 }
 
 .rc-about-sub {
-    font-size: 1.05rem;
+    font-size: 1rem;
     color: #AAAAAA;
     line-height: 1.6;
     max-width: 650px;
@@ -662,13 +662,13 @@
 }
 
 .close-three p strong {
-    color: var(--white, #ffffff);
+    color: var(--black, #000000);
 }
 
 .close-kicker {
     font-family: var(--font-display, 'Poppins', sans-serif);
     font-size: clamp(1.4rem, 2.5vw, 2rem);
-    color: var(--white, #ffffff);
+    color: var(--black, #000000);
     letter-spacing: -.02em;
     margin-bottom: 2.25rem;
     line-height: 1.3;

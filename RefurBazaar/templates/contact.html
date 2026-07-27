@@ -318,7 +318,7 @@
                                     <i class="fas fa-envelope"></i>
                                 </div>
                                 <h6 class="fw-bold mb-1">Email</h6>
-                                <p class="text-muted small mb-0">support@Recarvit.com</p>
+                                <p class="text-muted small mb-0">info@recarvit.com</p>
                             </div>
                         </div>
             
@@ -328,7 +328,7 @@
                                     <i class="fas fa-phone"></i>
                                 </div>
                                 <h6 class="fw-bold mb-1">Phone</h6>
-                                <p class="text-muted small mb-0">+91 1800-1234-733</p>
+                                <p class="text-muted small mb-0">+91 90042 97203</p>
                             </div>
                         </div>
             
@@ -338,11 +338,11 @@
                                     <i class="fas fa-map-marker-alt"></i>
                                 </div>
                                 <h6 class="fw-bold mb-1">Address</h6>
-                                <p class="text-muted small mb-0">Tech Park, Bangalore</p>
+                                <p class="text-muted small mb-0">Mumbai, India</p>
                             </div>
                         </div>
             
-                        <div class="col-6 col-md-2">
+                        <!-- <div class="col-6 col-md-2">
                             <div class="contact-info-box text-center">
                                 <div class="info-icon-circle">
                                     <i class="fas fa-clock"></i>
@@ -350,7 +350,7 @@
                                 <h6 class="fw-bold mb-1">Hours</h6>
                                 <p class="text-muted small mb-0">9 AM - 9 PM IST</p>
                             </div>
-                        </div>
+                        </div> -->
             
                     </div>
             
@@ -386,6 +386,7 @@
                                     <option value="warranty">🛡️ Warranty Claim</option>
                                     <option value="returns">🔄 Return a Device</option>
                                     <option value="bulk">🏢 Bulk Purchase / Business Enquiry</option>
+                                    <option value="partnership">🤝 Partnership / Media Enquiry</option>
                                     <option value="general">💬 General Enquiry</option>
                                 </select>
                             </div>
@@ -405,10 +406,10 @@
                                 </div>
     
                                 <div id="fields-warranty" class="dynamic-group d-none">
-                                    <div class="rc-warranty-note mb-4 bg-white">
+                                    <!-- <div class="rc-warranty-note mb-4 bg-white">
                                         <h6 class="fw-bold mb-1" style="color: #D4870A;">How warranty claims work</h6>
                                         <p class="mb-0 small" style="color: #5C3A00;">Warranty service is fulfilled directly by your verified seller. We'll connect you with them within 24 hours.</p>
-                                    </div>
+                                    </div> -->
                                     <div class="mb-3">
                                         <label class="form-label small fw-bold text-muted">Order ID *</label>
                                         <input type="text" class="form-control rc-input is-required" placeholder="e.g. REC-12345">
@@ -438,6 +439,10 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <div class="mb-0">
+                                        <label class="form-label small fw-bold text-muted">Description</label>
+                                        <textarea class="form-control rc-input" rows="2" placeholder="Explain your selected reason"></textarea>
+                                    </div>
                                 </div>
     
                                 <div id="fields-bulk" class="dynamic-group d-none">
@@ -456,11 +461,13 @@
                                             <label class="form-label small fw-bold text-muted">Looking to buy *</label>
                                             <select class="form-select rc-input is-required">
                                                 <option value="">Select category...</option>
-                                                <option>iPhones</option>
-                                                <option>MacBooks</option>
-                                                <option>Windows Laptops</option>
-                                                <option>Samsung Phones</option>
-                                                <option>iPads</option>
+                                                <option value="iPhones">iPhones</option>
+                                                <option value="Samsung">Samsung</option>
+                                                <option value="MacBooks">MacBooks</option>
+                                                <option value="Laptops">Laptops</option>
+                                                <option value="iPads">iPads</option>
+                                                <option value="Desktops">Desktops</option>
+                                                <option value="Accessories">Accessories</option>
                                                 <option>Mixed / Multiple categories</option>
                                             </select>
                                         </div>
@@ -476,13 +483,20 @@
                                         </div>
                                     </div>
                                     <div class="mb-0">
-                                        <label class="form-label small fw-bold text-muted">Specific Requirements (Optional)</label>
+                                        <label class="form-label small fw-bold text-muted">Specific Requirements</label>
                                         <textarea class="form-control rc-input" rows="2" placeholder="Models, grades, budget range..."></textarea>
                                     </div>
                                 </div>
-    
+                                
+                                <div id="fields-partnership" class="dynamic-group d-none">                                    
+                                    <div class="mb-0">
+                                        <label class="form-label small fw-bold text-muted">Your Message *</label>
+                                        <textarea class="form-control rc-input is-required" rows="4" placeholder="How can we collaborate?"></textarea>
+                                    </div>
+                                </div>
+
                                 <div id="fields-general" class="dynamic-group d-none">
-                                    <div class="mb-3">
+                                    <!-- <div class="mb-3">
                                         <label class="form-label small fw-bold text-muted">What is this about? *</label>
                                         <select class="form-select rc-input is-required">
                                             <option value="">Select subject...</option>
@@ -492,7 +506,7 @@
                                             <option>Investor relations</option>
                                             <option>Something else</option>
                                         </select>
-                                    </div>
+                                    </div> -->
                                     <div class="mb-0">
                                         <label class="form-label small fw-bold text-muted">Your Message *</label>
                                         <textarea class="form-control rc-input is-required" rows="4" placeholder="How can we help?"></textarea>
