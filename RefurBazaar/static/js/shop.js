@@ -1,4 +1,6 @@
+// ============================================================
 // Shop Page State
+// ============================================================
 let shop_api_url = null
 let csrf_token = null
 let currentCategory = "mobile"
@@ -11,7 +13,16 @@ let allProducts = []
 let allBrands = []
 let conditionCounts = {}
 
+// Price range bounds (set from API)
+let globalMinPrice = 0
+let globalMaxPrice = 250000
+
+// Price section collapse state
+let priceSectionOpen = true
+
+// ============================================================
 // Initialize Shop Page
+// ============================================================
 async function initShop(api_url, csrf) {
   shop_api_url = api_url
   csrf_token = csrf
@@ -23,141 +34,247 @@ async function initShop(api_url, csrf) {
   setupSortFilter()
   initCategoryFromQueryParam()
 
-  // Load initial data
   await loadShopData()
 }
 
+// ============================================================
 // Setup Category Filter
+// ============================================================
 function setupCategoryFilter() {
   const categorySelect = document.getElementById("categorySelect")
-
   categorySelect.addEventListener("change", async (e) => {
     currentCategory = e.target.value
     updateCategoryTitle()
+    // Reset price bounds on category change
+    minPrice = null
+    maxPrice = null
     await loadShopData()
   })
 }
 
+// ============================================================
 // Setup Brand Filters
+// ============================================================
 function setupBrandFilters() {
-  // Event delegation for dynamically created checkboxes
   document.getElementById("brandFilters").addEventListener("change", async (e) => {
     if (e.target.classList.contains("brand-filter")) {
-      const brandId = Number.parseInt(e.target.value)
-
+      const brandId = parseInt(e.target.value)
       if (e.target.checked) {
-        if (!selectedBrands.includes(brandId)) {
-          selectedBrands.push(brandId)
-        }
+        if (!selectedBrands.includes(brandId)) selectedBrands.push(brandId)
       } else {
         selectedBrands = selectedBrands.filter((id) => id !== brandId)
       }
-
       await loadShopData()
     }
   })
 }
 
+// ============================================================
 // Setup Price Filters
+// ============================================================
 function setupPriceFilters() {
-  const minPriceRange = document.getElementById("minPriceRange")
-  const maxPriceRange = document.getElementById("maxPriceRange")
-  const minPriceDisplay = document.getElementById("minPriceDisplay")
-  const maxPriceDisplay = document.getElementById("maxPriceDisplay")
-  const minPriceInput = document.getElementById("minPrice")
-  const maxPriceInput = document.getElementById("maxPrice")
+  const minRange = document.getElementById("minPriceRange")
+  const maxRange = document.getElementById("maxPriceRange")
+  const minInputBox = document.getElementById("minPriceInputBox")
+  const maxInputBox = document.getElementById("maxPriceInputBox")
 
   let priceTimeout
 
-  const updatePriceDisplay = () => {
-    const minVal = Number.parseInt(minPriceRange.value)
-    const maxVal = Number.parseInt(maxPriceRange.value)
+  // Slider → everything else
+  const onSliderChange = () => {
+    let minVal = parseInt(minRange.value)
+    let maxVal = parseInt(maxRange.value)
 
-    // Ensure min is not greater than max
     if (minVal > maxVal) {
-      minPriceRange.value = maxVal
+      if (document.activeElement === minRange) {
+        minRange.value = maxVal
+        minVal = maxVal
+      } else {
+        maxRange.value = minVal
+        maxVal = minVal
+      }
     }
 
-    // Update display
-    minPriceDisplay.textContent = formatPrice(minVal)
-    maxPriceDisplay.textContent = formatPrice(maxVal)
+    updatePriceUI(minVal, maxVal)
+    updateTrackFill()
+    clearActivePills()
 
-    // Update hidden inputs for API
-    minPriceInput.value = minVal
-    maxPriceInput.value = maxVal
-
-    // Clear existing timeout and set new one
     clearTimeout(priceTimeout)
     priceTimeout = setTimeout(async () => {
       minPrice = minVal
       maxPrice = maxVal
       await loadShopData()
-    }, 300)
+    }, 400)
   }
 
-  minPriceRange.addEventListener("input", updatePriceDisplay)
-  maxPriceRange.addEventListener("input", updatePriceDisplay)
+  minRange.addEventListener("input", onSliderChange)
+  maxRange.addEventListener("input", onSliderChange)
+
+  // Input boxes → slider + API
+  const onInputBoxChange = () => {
+    let minVal = parseInt(minInputBox.value) || globalMinPrice
+    let maxVal = parseInt(maxInputBox.value) || globalMaxPrice
+
+    minVal = Math.max(globalMinPrice, Math.min(minVal, globalMaxPrice))
+    maxVal = Math.max(globalMinPrice, Math.min(maxVal, globalMaxPrice))
+
+    if (minVal > maxVal) [minVal, maxVal] = [maxVal, minVal]
+
+    minRange.value = minVal
+    maxRange.value = maxVal
+    updatePriceUI(minVal, maxVal)
+    updateTrackFill()
+    clearActivePills()
+
+    clearTimeout(priceTimeout)
+    priceTimeout = setTimeout(async () => {
+      minPrice = minVal
+      maxPrice = maxVal
+      await loadShopData()
+    }, 600)
+  }
+
+  minInputBox.addEventListener("change", onInputBoxChange)
+  maxInputBox.addEventListener("change", onInputBoxChange)
 }
 
-// Setup Condition Filters
-function setupConditionFilters() {
-  const conditionCheckboxes = document.querySelectorAll(".condition-filter")
+// ============================================================
+// Price UI helpers
+// ============================================================
+function updatePriceUI(minVal, maxVal) {
+  document.getElementById("minPriceDisplay").textContent = formatPrice(minVal)
+  document.getElementById("maxPriceDisplay").textContent = formatPrice(maxVal)
+  document.getElementById("minPrice").value = minVal
+  document.getElementById("maxPrice").value = maxVal
 
-  conditionCheckboxes.forEach((checkbox) => {
+  const minInputBox = document.getElementById("minPriceInputBox")
+  const maxInputBox = document.getElementById("maxPriceInputBox")
+  if (minInputBox) minInputBox.value = minVal
+  if (maxInputBox) maxInputBox.value = maxVal
+}
+
+function updateTrackFill() {
+  const minRange = document.getElementById("minPriceRange")
+  const maxRange = document.getElementById("maxPriceRange")
+  const fill = document.getElementById("rangeTrackFill")
+  if (!fill) return
+
+  const min = parseInt(minRange.min)
+  const max = parseInt(minRange.max)
+  const minVal = parseInt(minRange.value)
+  const maxVal = parseInt(maxRange.value)
+
+  const leftPct = ((minVal - min) / (max - min)) * 100
+  const rightPct = ((maxVal - min) / (max - min)) * 100
+
+  fill.style.left = leftPct + "%"
+  fill.style.width = (rightPct - leftPct) + "%"
+}
+
+function clearActivePills() {
+  document.querySelectorAll(".price-pill.active").forEach(p => p.classList.remove("active"))
+}
+
+function initPriceRange(minP, maxP) {
+  globalMinPrice = Math.floor(minP || 0)
+  globalMaxPrice = Math.ceil(maxP || 250000)
+
+  const minRange = document.getElementById("minPriceRange")
+  const maxRange = document.getElementById("maxPriceRange")
+
+  minRange.min = globalMinPrice
+  minRange.max = globalMaxPrice
+  minRange.step = Math.max(100, Math.floor((globalMaxPrice - globalMinPrice) / 200))
+  maxRange.min = globalMinPrice
+  maxRange.max = globalMaxPrice
+  maxRange.step = minRange.step
+
+  // Only reset slider positions if no active price filter
+  if (minPrice === null) {
+    minRange.value = globalMinPrice
+    maxRange.value = globalMaxPrice
+    updatePriceUI(globalMinPrice, globalMaxPrice)
+  }
+
+  updateTrackFill()
+  renderPricePills()
+  renderPriceHistogram()
+}
+
+function renderPricePills() {
+  const container = document.getElementById("pricePills")
+  if (!container) return
+
+  const range = globalMaxPrice - globalMinPrice
+  const pills = []
+
+  // Generate sensible quick-filter pills based on the actual price range
+  const thresholds = [20000, 30000, 50000, 75000, 100000, 150000]
+  thresholds.forEach(t => {
+    if (t > globalMinPrice && t < globalMaxPrice) {
+      pills.push({ label: `Under ₹${t >= 100000 ? (t / 100000).toFixed(0) + "L" : (t / 1000) + "K"}`, max: t })
+    }
+  })
+
+  // Cap at 3 pills
+  const shown = pills.slice(0, 3)
+  container.innerHTML = shown.map(p =>
+    `<button class="price-pill" onclick="setPriceRangeQuick(${globalMinPrice}, ${p.max}, this)">${p.label}</button>`
+  ).join("")
+}
+
+function renderPriceHistogram() {
+  const container = document.getElementById("priceHistogram")
+  if (!container) return
+
+  // Generate 12 representative bars with slight variation (static visual)
+  const heights = [20, 35, 50, 68, 82, 100, 95, 78, 60, 42, 28, 14]
+  container.innerHTML = heights.map(h =>
+    `<div class="histogram-bar" style="height:${h}%"></div>`
+  ).join("")
+}
+
+// ============================================================
+// Setup Condition Filters
+// ============================================================
+function setupConditionFilters() {
+  document.querySelectorAll(".condition-filter").forEach((checkbox) => {
     checkbox.addEventListener("change", async (e) => {
       const condition = e.target.value
-
       if (e.target.checked) {
-        if (!selectedConditions.includes(condition)) {
-          selectedConditions.push(condition)
-        }
+        if (!selectedConditions.includes(condition)) selectedConditions.push(condition)
       } else {
         selectedConditions = selectedConditions.filter((c) => c !== condition)
       }
-
       await loadShopData()
     })
   })
 }
 
+// ============================================================
 // Setup Sort Filter
+// ============================================================
 function setupSortFilter() {
-  const sortSelect = document.getElementById("sortBy")
-
-  sortSelect.addEventListener("change", async (e) => {
+  document.getElementById("sortBy").addEventListener("change", async (e) => {
     sortBy = e.target.value
     await loadShopData()
   })
 }
 
+// ============================================================
 // Load Shop Data from API
+// ============================================================
 async function loadShopData() {
   showLoading()
 
-  // Build query parameters
-  const params = new URLSearchParams({
-    category: currentCategory,
-    sort_by: sortBy,
-  })
+  const params = new URLSearchParams({ category: currentCategory, sort_by: sortBy })
 
-  if (selectedBrands.length > 0) {
-    params.append("brand_ids", selectedBrands.join(","))
-  }
-
-  if (selectedConditions.length > 0) {
-    params.append("conditions", selectedConditions.join(","))
-  }
-
-  if (minPrice !== null) {
-    params.append("min_price", minPrice)
-  }
-
-  if (maxPrice !== null) {
-    params.append("max_price", maxPrice)
-  }
+  if (selectedBrands.length > 0) params.append("brand_ids", selectedBrands.join(","))
+  if (selectedConditions.length > 0) params.append("conditions", selectedConditions.join(","))
+  if (minPrice !== null) params.append("min_price", minPrice)
+  if (maxPrice !== null) params.append("max_price", maxPrice)
 
   const url = `${shop_api_url}?${params.toString()}`
-
   const [success, response] = await callApi("GET", url, null, csrf_token)
 
   if (success && response.success) {
@@ -166,49 +283,57 @@ async function loadShopData() {
     allBrands = data.brands
     conditionCounts = data.conditions
 
+    // Set price range bounds from API on first load (or category change)
+    if (data.price_range && minPrice === null && maxPrice === null) {
+      initPriceRange(data.price_range.min_price, data.price_range.max_price)
+    }
+
     renderBrandFilters()
     renderConditionCounts()
     renderProducts()
     updateResultsCount()
   } else {
     showError("Failed to load products. Please try again.")
-    hideLoading()
   }
 }
 
+// ============================================================
 // Render Brand Filters
+// ============================================================
 function renderBrandFilters() {
-  const brandFiltersContainer = document.getElementById("brandFilters")
-
+  const container = document.getElementById("brandFilters")
   if (allBrands.length === 0) {
-    brandFiltersContainer.innerHTML = '<p class="text-muted small">No brands available</p>'
+    container.innerHTML = '<p class="text-muted small">No brands available</p>'
     return
   }
-
-  brandFiltersContainer.innerHTML = allBrands
-    .map(
-      (brand) => `
+  container.innerHTML = allBrands.map((brand) => `
     <div class="form-check">
-      <input class="form-check-input brand-filter" type="checkbox" 
+      <input class="form-check-input brand-filter" type="checkbox"
              id="brand${brand.id}" value="${brand.id}"
              ${selectedBrands.includes(brand.id) ? "checked" : ""}>
       <label class="form-check-label" for="brand${brand.id}">
         ${brand.name} <span class="count">(${brand.count})</span>
       </label>
     </div>
-  `,
-    )
-    .join("")
+  `).join("")
 }
 
+// ============================================================
 // Render Condition Counts
+// ============================================================
 function renderConditionCounts() {
   document.getElementById("excellentCount").textContent = `(${conditionCounts.excellent || 0})`
   document.getElementById("goodCount").textContent = `(${conditionCounts.good || 0})`
   document.getElementById("fairCount").textContent = `(${conditionCounts.fair || 0})`
 }
 
+// ============================================================
 // Render Products
+// The card shows main-section attributes from model_attributes:
+//   - If attribute name includes "color/colour" → color dot (uses matching
+//     "Colour Hex Codes" attribute for the actual hex value)
+//   - Otherwise → text chip
+// ============================================================
 function renderProducts() {
   const productsContainer = document.getElementById("productsContainer")
   const emptyState = document.getElementById("emptyState")
@@ -223,129 +348,234 @@ function renderProducts() {
 
   emptyState.style.display = "none"
 
-  productsContainer.innerHTML = allProducts
-    .map(
-      (product) => {
-        // Extract storage/attributes info
-        const storage = product.storage || "128GB"
-        const colorVariants = product.colors || ["#000000", "#E5C8A8", "#C0C0C0"]
-        const colorName = product.color_name || "Black"
-        
-        // Color circles HTML
-        const colorCircles = colorVariants.slice(0, 3).map(color => {
-          return `<span class="color-dot" style="background-color: ${color};"></span>`
-        }).join("")
-        
-        // Calculate original price (30% markup for display)
-        const originalPrice = Math.round(product.min_price * 1.3)
+  productsContainer.innerHTML = allProducts.map((product) => {
+    const mainAttrs = (product.model_attributes || []).filter(a => a.section === "main")
 
-        return `
-    <div class="product-grid-item">
-      <div class="product-card" onclick="window.location.href='/product/${product.id}/'">
-        <div class="product-badge">
-          <i class="fas fa-bolt"></i>
-        </div>
-        <div class="wishlist-btn" onclick="event.stopPropagation(); addToWishlist(${product.id}, this)">
-          <i class="far fa-heart"></i>
-        </div>
-        <img src="${product.image || "/static/images/iPhone 16 Pro.png"}" 
-             alt="${product.brand_name} ${product.name}" class="product-img">
-        
-        <h5 class="product-title">${product.brand_name} ${product.name}</h5>
-        
-        <div class="product-variants">
-          <div class="color-options mb-2">
-            ${colorCircles}
-            <span class="color-text">+2</span>
-          </div>
-          <div class="product-specs">${storage}</div>
-        </div>
-        
-        <div class="product-pricing">
-          <span class="price-original">₹${formatPrice(originalPrice)}</span>
-          <span class="product-price">₹${formatPrice(product.min_price)}</span>
-        </div>
-
-        <div style="position:absolute; bottom:0; right:0; width:0; height:0; border-bottom:60px solid #e53935; border-left:60px solid transparent;"></div>
-        <div style="position:absolute; bottom:8px; right:6px; color:white; font-size:12px; font-weight:bold; transform:rotate(-45deg);">23%</div>
-        
-      </div>
-    </div>
-  `
-      },
+    // Locate color and hex-code attributes
+    const colorAttr = mainAttrs.find(a =>
+      a.attribute_name.toLowerCase().includes("color") ||
+      a.attribute_name.toLowerCase().includes("colour") &&
+      !a.attribute_name.toLowerCase().includes("hex")
     )
-    .join("")
+    const hexAttr = mainAttrs.find(a =>
+      a.attribute_name.toLowerCase().includes("colour hex") ||
+      a.attribute_name.toLowerCase().includes("color hex")
+    )
+
+    // Chip attributes: everything in main that is NOT the hex attribute
+    const chipAttrs = mainAttrs.filter(a =>
+      !a.attribute_name.toLowerCase().includes("colour hex") &&
+      !a.attribute_name.toLowerCase().includes("color hex") &&
+      !a.attribute_name.toLowerCase().includes("color") &&
+      !a.attribute_name.toLowerCase().includes("colour")
+    )
+
+    // Build color dots HTML (max 4, show +N if more)
+    let colorDotsHtml = ""
+    if (colorAttr && colorAttr.possible_values && colorAttr.possible_values.length > 0) {
+      const colors = colorAttr.possible_values
+      const hexValues = (hexAttr && hexAttr.possible_values) ? hexAttr.possible_values : []
+      const maxShow = 4
+      const shown = colors.slice(0, maxShow)
+      const extra = colors.length - maxShow
+
+      const dots = shown.map((colorName, i) => {
+        const hex = hexValues[i] || nameToHex(colorName)
+        return `<span class="color-dot" style="background-color:${hex};" title="${colorName}"></span>`
+      }).join("")
+
+      const extraBadge = extra > 0
+        ? `<span class="color-extra-badge">+${extra}</span>`
+        : ""
+
+      colorDotsHtml = `
+        <div class="card-colors">
+          ${dots}${extraBadge}
+        </div>`
+    }
+
+    // Build spec chips (first 2 chip attrs)
+    let chipsHtml = ""
+    if (chipAttrs.length > 0) {
+      const shown = chipAttrs.slice(0, 2)
+      chipsHtml = `<div class="card-chips">` +
+        shown.map(a => {
+          const val = a.possible_values && a.possible_values.length > 0
+            ? a.possible_values[0]
+            : ""
+          return val ? `<span class="card-chip">${escapeHtml(val)}</span>` : ""
+        }).join("") +
+        `</div>`
+    }
+
+    // Discount ribbon: calculate ~30% savings
+    const originalPrice = Math.round(product.min_price * 1.3)
+    const discountPct = Math.round(((originalPrice - product.min_price) / originalPrice) * 100)
+
+    return `
+      <div class="product-grid-item">
+        <div class="product-card" onclick="window.location.href='/product/${product.id}/'">
+          <div class="product-badge">
+            <i class="fas fa-bolt"></i>
+          </div>
+          <div class="wishlist-btn" onclick="event.stopPropagation(); addToWishlist(${product.id}, this)">
+            <i class="far fa-heart"></i>
+          </div>
+
+          <img src="${product.image || "/static/images/placeholder-product.png"}"
+               alt="${escapeHtml(product.brand_name)} ${escapeHtml(product.name)}"
+               class="product-img">
+
+          <h5 class="product-title">${escapeHtml(product.brand_name)} ${escapeHtml(product.name)}</h5>
+
+          <div class="product-variants">
+            ${colorDotsHtml}
+            ${chipsHtml}
+          </div>
+
+          <div class="product-pricing">
+            <span class="price-original">&#8377;${formatPrice(originalPrice)}</span>
+            <span class="product-price">&#8377;${formatPrice(product.min_price)}</span>
+            <span class="discount-badge">${discountPct}% off</span>
+          </div>
+        </div>
+      </div>
+    `
+  }).join("")
 }
 
+// ============================================================
+// Utility: fallback color name → hex
+// ============================================================
+function nameToHex(name) {
+  const map = {
+    black: "#1a1a1a", white: "#f5f5f5", blue: "#3b82f6", red: "#ef4444",
+    green: "#22c55e", pink: "#ec4899", gold: "#d97706", silver: "#9ca3af",
+    gray: "#6b7280", grey: "#6b7280", "space gray": "#4b5563",
+    starlight: "#f5f0e8", midnight: "#1c2437", purple: "#8b5cf6",
+    yellow: "#eab308", orange: "#f97316", titanium: "#8a8f94",
+    graphite: "#4a4a4a", "sierra blue": "#6b9fca", "pacific blue": "#1d6fa4",
+    "product red": "#e3001c",
+  }
+  return map[name.toLowerCase()] || "#cccccc"
+}
+
+function escapeHtml(str) {
+  if (!str) return ""
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+}
+
+// ============================================================
 // Update Results Count
+// ============================================================
 function updateResultsCount() {
-  const resultsCount = document.getElementById("resultsCount")
+  const el = document.getElementById("resultsCount")
   const total = allProducts.length
-
-  if (total === 0) {
-    resultsCount.textContent = "No results found"
-  } else if (total === 1) {
-    resultsCount.textContent = "Showing 1 result"
-  } else {
-    resultsCount.textContent = `Showing ${total} results`
-  }
+  if (total === 0) el.textContent = "No results found"
+  else if (total === 1) el.textContent = "Showing 1 result"
+  else el.textContent = `Showing ${total} results`
 }
 
+// ============================================================
 // Update Category Title
+// ============================================================
 function updateCategoryTitle() {
-  const categoryTitle = document.getElementById("categoryTitle")
-  const categoryMap = {
-    mobile: "Smartphones",
-    laptop: "Laptops",
-    tablet: "Tablets",
-    accessory: "Accessories",
-  }
-
-  categoryTitle.textContent = categoryMap[currentCategory] || "Products"
+  const map = { mobile: "Smartphones", laptop: "Laptops", tablet: "Tablets", accessory: "Accessories" }
+  document.getElementById("categoryTitle").textContent = map[currentCategory] || "Products"
 }
 
-// Set Price Range
+// ============================================================
+// Set Price Range (from quick pills)
+// ============================================================
 function setPriceRange(min, max) {
-  document.getElementById("minPriceRange").value = min
-  document.getElementById("maxPriceRange").value = max
-  document.getElementById("minPrice").value = min
-  document.getElementById("maxPrice").value = max
-  document.getElementById("minPriceDisplay").textContent = formatPrice(min)
-  document.getElementById("maxPriceDisplay").textContent = formatPrice(max)
+  const minRange = document.getElementById("minPriceRange")
+  const maxRange = document.getElementById("maxPriceRange")
+  minRange.value = min
+  maxRange.value = max
+  updatePriceUI(min, max)
+  updateTrackFill()
   minPrice = min
   maxPrice = max
   loadShopData()
 }
 
+function setPriceRangeQuick(min, max, btnEl) {
+  // Toggle active state on pills
+  document.querySelectorAll(".price-pill").forEach(p => p.classList.remove("active"))
+  if (btnEl) btnEl.classList.add("active")
+  setPriceRange(min, max)
+}
+
+// ============================================================
+// Toggle Price Section (collapsible)
+// ============================================================
+function togglePriceSection() {
+  priceSectionOpen = !priceSectionOpen
+  const body = document.getElementById("priceFilterBody")
+  const chevron = document.getElementById("priceChevron")
+  if (body) body.style.display = priceSectionOpen ? "block" : "none"
+  if (chevron) {
+    chevron.style.transform = priceSectionOpen ? "rotate(0deg)" : "rotate(180deg)"
+  }
+}
+
+// ============================================================
 // Clear All Filters
+// ============================================================
 function clearFilters() {
-  // Reset all filter states
   selectedBrands = []
   selectedConditions = []
   minPrice = null
   maxPrice = null
   sortBy = "featured"
 
-  // Reset UI
-  document.getElementById("minPriceRange").value = 0
-  document.getElementById("maxPriceRange").value = 250000
-  document.getElementById("minPrice").value = 0
-  document.getElementById("maxPrice").value = 250000
-  document.getElementById("minPriceDisplay").textContent = formatPrice(0)
-  document.getElementById("maxPriceDisplay").textContent = formatPrice(250000)
+  const minRange = document.getElementById("minPriceRange")
+  const maxRange = document.getElementById("maxPriceRange")
+  minRange.value = globalMinPrice
+  maxRange.value = globalMaxPrice
+
+  updatePriceUI(globalMinPrice, globalMaxPrice)
+  updateTrackFill()
+  clearActivePills()
+
   document.getElementById("sortBy").value = "featured"
-
-  // Uncheck all brand checkboxes
   document.querySelectorAll(".brand-filter").forEach((cb) => (cb.checked = false))
-
-  // Uncheck all condition checkboxes
   document.querySelectorAll(".condition-filter").forEach((cb) => (cb.checked = false))
 
-  // Reload data
   loadShopData()
 }
 
+// ============================================================
+// Mobile Filter Drawer
+// ============================================================
+function toggleMobileFilters() {
+  const sidebar = document.getElementById("filtersSidebar")
+  const overlay = document.getElementById("filterOverlay")
+  const isOpen = sidebar.classList.contains("mobile-open")
+  if (isOpen) {
+    closeMobileFilters()
+  } else {
+    sidebar.classList.add("mobile-open")
+    overlay.classList.add("active")
+    document.body.style.overflow = "hidden"
+  }
+}
+
+function closeMobileFilters() {
+  const sidebar = document.getElementById("filtersSidebar")
+  const overlay = document.getElementById("filterOverlay")
+  sidebar.classList.remove("mobile-open")
+  overlay.classList.remove("active")
+  document.body.style.overflow = ""
+}
+
+// ============================================================
 // View Toggle Functions
+// ============================================================
 function setGridView() {
   document.querySelector(".view-toggle .btn:first-child").classList.add("active")
   document.querySelector(".view-toggle .btn:last-child").classList.remove("active")
@@ -358,168 +588,102 @@ function setListView() {
   document.getElementById("productsContainer").classList.add("list-view")
 }
 
-// Helper Functions
+// ============================================================
+// Loading / Error helpers
+// ============================================================
 function showLoading() {
-  const productsContainer = document.getElementById("productsContainer")
-  productsContainer.innerHTML = `
+  document.getElementById("productsContainer").innerHTML = `
     <div class="col-12 text-center py-5">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
-    </div>
-  `
+    </div>`
 }
 
-function hideLoading() {
-  // Loading is hidden when products are rendered
-}
+function hideLoading() { /* loading hidden when products render */ }
 
 function showError(message) {
-  const productsContainer = document.getElementById("productsContainer")
-  productsContainer.innerHTML = `
+  document.getElementById("productsContainer").innerHTML = `
     <div class="col-12">
       <div class="alert alert-danger" role="alert">
         <i class="fas fa-exclamation-circle me-2"></i>${message}
       </div>
-    </div>
-  `
+    </div>`
 }
 
+// ============================================================
+// Format price (Indian locale)
+// ============================================================
 function formatPrice(price) {
   return new Intl.NumberFormat("en-IN").format(Math.round(price))
 }
 
-// Add to Wishlist
-// function addToWishlist(productId) {
-//   console.log(`[v0] Adding product ${productId} to wishlist`)
-  
-//   // Update wishlist badge
-//   const wishlistBadge = document.getElementById("wishlistCount")
-//   if (wishlistBadge) {
-//     const currentCount = Number.parseInt(wishlistBadge.textContent) || 0
-//     wishlistBadge.textContent = currentCount + 1
-//     wishlistBadge.style.display = "inline-block"
-//   }
-  
-//   // Show toast notification (optional)
-//   showToast("Added to wishlist!", "success")
-// }
-
-// Add to Wishlist (Connected to API)
-async function addToWishlist(productId, btnElement) {
-  console.log(`[v0] Toggling product ${productId} in wishlist`);
-  
-  try {
-      // Make the API call to your backend
-      const response = await callApi(
-          'POST', 
-          '/cart/wishlist-api/toggle/', // Change to /api/cart/wishlist-api/toggle/ if your URLs require it
-          { listing_unit_id: productId }, // Sending the ID to the backend
-          csrf_token
-      );
-      
-      if(response && response.success) {
-          const icon = btnElement.querySelector("i");
-          
-          if (response.data.action === "added") {
-              // Animate: Add to wishlist
-              icon.classList.remove("far");
-              icon.classList.add("fas");
-              btnElement.style.background = "#ec4899"; // Pink background
-              btnElement.style.color = "white";
-              btnElement.style.transform = "scale(1.2)";
-              setTimeout(() => { btnElement.style.transform = "scale(1)"; }, 200);
-              
-              showToast("Added to wishlist!", "success");
-              
-              // Update badge count if it exists
-              const wishlistBadge = document.getElementById("wishlistCount");
-              if (wishlistBadge) {
-                  const currentCount = Number.parseInt(wishlistBadge.textContent) || 0;
-                  wishlistBadge.textContent = currentCount + 1;
-                  wishlistBadge.style.display = "inline-block";
-              }
-          } else {
-              // Animate: Remove from wishlist
-              icon.classList.remove("fas");
-              icon.classList.add("far");
-              btnElement.style.background = "white";
-              btnElement.style.color = "#1a1a1a";
-              
-              showToast("Removed from wishlist!", "info");
-              
-              // Update badge count if it exists
-              const wishlistBadge = document.getElementById("wishlistCount");
-              if (wishlistBadge) {
-                  const currentCount = Number.parseInt(wishlistBadge.textContent) || 1;
-                  wishlistBadge.textContent = Math.max(0, currentCount - 1);
-                  if (wishlistBadge.textContent === "0") wishlistBadge.style.display = "none";
-              }
-          }
-      } else {
-          // If the user is not logged in, the API will fail and we catch it here
-          showToast("Please log in to save items.", "error");
-          setTimeout(() => {
-              window.location.href = '/login/'; 
-          }, 1500);
-      }
-  } catch (error) {
-      console.error("Wishlist Error:", error);
-      showToast("Something went wrong.", "error");
-  }
-}
-
-// Show Toast Notification
-function showToast(message, type = "info") {
-  const alertClass = type === "success" ? "alert-success" : type === "error" ? "alert-danger" : "alert-info"
-  
-  const toast = document.createElement("div")
-  toast.className = `alert ${alertClass} position-fixed top-0 end-0 m-3`
-  toast.style.zIndex = "9999"
-  toast.innerHTML = `
-    <i class="fas fa-check-circle me-2"></i>${message}
-  `
-  
-  document.body.appendChild(toast)
-  
-  setTimeout(() => {
-    toast.remove()
-  }, 3000)
-}
-
-/* =========================================
-   AUTO-SELECT CATEGORY FROM QUERY PARAM
-   ========================================= */
+// ============================================================
+// Auto-select category from query param
+// ============================================================
 function initCategoryFromQueryParam() {
-  // Get URL parameters
-  const urlParams = new URLSearchParams(window.location.search);
-  const categoryParam = urlParams.get('category');
-  
-  console.log('[v0] Checking for category query param:', categoryParam);
-  
+  const urlParams = new URLSearchParams(window.location.search)
+  const categoryParam = urlParams.get("category")
   if (categoryParam) {
-    // Get the category select element
-    const categorySelect = document.getElementById('categorySelect');
-    
+    const categorySelect = document.getElementById("categorySelect")
     if (categorySelect) {
-      // Set the select value to the category param
-      categorySelect.value = categoryParam;
-      
-      // Trigger change event to update filters
-      categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
-      
-      console.log('[v0] Category auto-selected:', categoryParam);
-      
-      // Scroll to the products section
-      setTimeout(() => {
-        const productsSection = document.querySelector('.products-header');
-        if (productsSection) {
-          productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 300);
+      categorySelect.value = categoryParam
+      currentCategory = categoryParam
+      updateCategoryTitle()
     }
   }
 }
 
-// Call this function when the page loads
-// document.addEventListener('DOMContentLoaded', initCategoryFromQueryParam);
+// ============================================================
+// Add to Wishlist
+// ============================================================
+async function addToWishlist(productId, btnElement) {
+  try {
+    const [success, response] = await callApi(
+      "POST",
+      "/cart/wishlist-api/toggle/",
+      { listing_unit_id: productId },
+      csrf_token
+    )
+
+    if (success && response && response.success) {
+      const icon = btnElement.querySelector("i")
+      if (response.data.action === "added") {
+        icon.classList.replace("far", "fas")
+        btnElement.style.background = "#ec4899"
+        btnElement.style.color = "white"
+        btnElement.style.transform = "scale(1.2)"
+        setTimeout(() => { btnElement.style.transform = "scale(1)" }, 200)
+        showToast("Added to wishlist!", "success")
+        const badge = document.getElementById("wishlistCount")
+        if (badge) {
+          badge.textContent = (parseInt(badge.textContent) || 0) + 1
+          badge.style.display = "inline-block"
+        }
+      } else {
+        icon.classList.replace("fas", "far")
+        btnElement.style.background = "white"
+        btnElement.style.color = "#1a1a1a"
+        showToast("Removed from wishlist!", "info")
+      }
+    } else {
+      showToast("Please log in to save items.", "error")
+      setTimeout(() => { window.location.href = "/login/" }, 1500)
+    }
+  } catch (error) {
+    showToast("Something went wrong.", "error")
+  }
+}
+
+// ============================================================
+// Toast notification
+// ============================================================
+function showToast(message, type = "info") {
+  const alertClass = type === "success" ? "alert-success" : type === "error" ? "alert-danger" : "alert-info"
+  const toast = document.createElement("div")
+  toast.className = `alert ${alertClass} position-fixed top-0 end-0 m-3`
+  toast.style.zIndex = "9999"
+  toast.innerHTML = `<i class="fas fa-check-circle me-2"></i>${message}`
+  document.body.appendChild(toast)
+  setTimeout(() => toast.remove(), 3000)
+}

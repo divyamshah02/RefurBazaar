@@ -24,7 +24,6 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/homepage/styles.css' %}">
     <link href="{% static 'css/shop.css' %}" rel="stylesheet">
-    
 
     <style>
         body {
@@ -34,29 +33,30 @@
 </head>
 
 <body>
-    <!-- Promotional Banner -->
-    <!-- <div class="promo-banner">
-        <div class="container-fluid px-3">
-            <p class="mb-0">
-                GET ₹100 OFF WITH CODE <strong>REFUR100</strong> + ₹200 CASHBACK!
-            </p>
-        </div>
-    </div> -->
-
-    <!-- Navbar -->
     {% include 'navbar.html' %}
 
+    <!-- Mobile Filter Overlay -->
+    <div class="filter-overlay" id="filterOverlay" onclick="closeMobileFilters()"></div>
+
     <!-- Shop Section -->
-    <section class="shop-section py-5">
-        <div class="container-fluid px-5">
-            <div class="row">
-                <!-- Filters Sidebar -->
-                <div class="col-lg-2 col-md-3 mb-4">
-                    <div class="filters-sidebar">
+    <section class="shop-section py-4">
+        <div class="container-fluid px-3 px-md-4 px-lg-5">
+            <div class="row g-3 align-items-start">
+
+                <!-- ===================== Filters Sidebar ===================== -->
+                <div class="col-lg-3 filters-sidebar-col" id="filtersSidebarCol">
+                    <div class="filters-sidebar" id="filtersSidebar">
+
                         <div class="filter-header">
                             <h5>Filters</h5>
-                            <button class="btn btn-link btn-sm p-0 text-decoration-none" onclick="clearFilters()">Clear
-                                All</button>
+                            <div class="filter-header-actions">
+                                <button class="btn btn-link btn-sm p-0 text-decoration-none clear-all-btn"
+                                    onclick="clearFilters()">Clear All</button>
+                                <button class="filter-close-btn d-lg-none" onclick="closeMobileFilters()"
+                                    aria-label="Close filters">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Category Filter -->
@@ -106,50 +106,73 @@
                             </div>
                         </div>
 
-                        <!-- Price Range Filter -->
-                        <div class="filter-section">
-                            <h6 class="mb-3">Price Range</h6>
+                        <!-- Price Range Filter - Redesigned -->
+                        <div class="filter-section price-filter-section">
 
-                            <div class="price-display-box">
-                                <div class="price-value">
-                                    <span class="price-label">From</span>
-                                    <span class="price-amount">₹<span id="minPriceDisplay">0</span></span>
+                            <div class="price-section-header" onclick="togglePriceSection()">
+                                <h6 class="mb-0">Price Range</h6>
+                                <i class="fas fa-chevron-up price-chevron" id="priceChevron"></i>
+                            </div>
+
+                            <div id="priceFilterBody">
+                                <!-- Histogram -->
+                                <div class="price-histogram mt-3">
+                                    <div class="histogram-bars" id="priceHistogram">
+                                        <!-- bars injected by JS -->
+                                    </div>
                                 </div>
-                                <div class="price-separator">to</div>
-                                <div class="price-value">
-                                    <span class="price-label">To</span>
-                                    <span class="price-amount">₹<span id="maxPriceDisplay">250000</span></span>
+
+                                <!-- Dual Range Slider -->
+                                <div class="range-slider-wrapper">
+                                    <div class="range-track">
+                                        <div class="range-track-fill" id="rangeTrackFill"></div>
+                                    </div>
+                                    <input type="range" id="minPriceRange" min="0" max="250000" step="1000" value="0"
+                                        class="range-input range-input-min">
+                                    <input type="range" id="maxPriceRange" min="0" max="250000" step="1000"
+                                        value="250000" class="range-input range-input-max">
+                                </div>
+
+                                <!-- Min / Max labels under slider -->
+                                <div class="price-range-labels">
+                                    <span>&#8377;<span id="minPriceDisplay">0</span></span>
+                                    <span>&#8377;<span id="maxPriceDisplay">2,50,000</span></span>
+                                </div>
+
+                                <!-- Quick Filter Pills -->
+                                <div class="price-quick-pills" id="pricePills">
+                                    <!-- injected by JS after price range is known -->
+                                </div>
+
+                                <!-- Price Input Boxes -->
+                                <div class="price-input-row">
+                                    <div class="price-input-wrap">
+                                        <input type="number" id="minPriceInputBox" class="price-input-box"
+                                            placeholder="Min">
+                                    </div>
+                                    <span class="price-input-dash">&mdash;</span>
+                                    <div class="price-input-wrap">
+                                        <input type="number" id="maxPriceInputBox" class="price-input-box"
+                                            placeholder="Max">
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Hidden inputs for API calls -->
+                            <!-- Hidden inputs for API -->
                             <input type="hidden" id="minPrice" value="0">
                             <input type="hidden" id="maxPrice" value="250000">
-
-                            <!-- Range Sliders -->
-                            <div class="range-slider-container">
-                                <input type="range" id="minPriceRange" min="0" max="250000" step="1000" value="0"
-                                    class="range-input range-input-min">
-                                <input type="range" id="maxPriceRange" min="0" max="250000" step="1000" value="250000"
-                                    class="range-input range-input-max">
-                            </div>
-
-                            <!-- Quick Price Suggestions -->
-                            <div class="price-suggestions mt-3" style="display: none;">
-                                <button class="price-btn" onclick="setPriceRange(0, 25000)">Under ₹25K</button>
-                                <button class="price-btn" onclick="setPriceRange(25000, 50000)">₹25K - ₹50K</button>
-                                <button class="price-btn" onclick="setPriceRange(50000, 250000)">₹50K - ₹1L</button>
-                            </div>
                         </div>
+
                     </div>
                 </div>
+                <!-- ==================== /Filters Sidebar ==================== -->
 
-                <!-- Products Grid -->
-                <div class="col-lg-10 col-md-9">
+                <!-- ===================== Products Grid ===================== -->
+                <div class="col-12 col-lg-9">
                     <div class="products-header">
                         <div class="results-info">
                             <h4 id="categoryTitle">Smartphones</h4>
-                            <p class="text-muted" id="resultsCount">Loading...</p>
+                            <p class="text-muted mb-0" id="resultsCount">Loading...</p>
                         </div>
                         <div class="sort-options">
                             <select class="form-select" id="sortBy">
@@ -158,21 +181,22 @@
                                 <option value="price_high">Price: High to Low</option>
                                 <option value="newest">Newest First</option>
                             </select>
-                            <div class="view-toggle">
-                                <button class="btn btn-outline-secondary btn-sm active" onclick="setGridView()">
+                            <!-- <div class="view-toggle">
+                                <button class="btn btn-outline-secondary btn-sm active" onclick="setGridView()"
+                                    title="Grid view">
                                     <i class="fas fa-th"></i>
                                 </button>
-                                <button class="btn btn-outline-secondary btn-sm" onclick="setListView()">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="setListView()"
+                                    title="List view">
                                     <i class="fas fa-list"></i>
                                 </button>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
 
-                    <!-- Products grid with dynamic content -->
+                    <!-- Products grid -->
                     <div class="product-grid" id="productsGrid">
-                        <div class="row products-grid" id="productsContainer">
-                            <!-- Products will be dynamically populated here -->
+                        <div class="row products-grid g-3" id="productsContainer">
                             <div class="col-12 text-center py-5">
                                 <div class="spinner-border text-primary" role="status">
                                     <span class="visually-hidden">Loading...</span>
@@ -181,12 +205,12 @@
                         </div>
                     </div>
 
-                    <!-- Empty state message -->
+                    <!-- Empty state -->
                     <div class="empty-state text-center py-5" id="emptyState" style="display: none;">
                         <i class="fas fa-search fa-3x text-muted mb-3"></i>
                         <h4 class="text-muted">No products found</h4>
-                        <p class="text-muted">We don't have any products matching your filters. Try adjusting your
-                            search!</p>
+                        <p class="text-muted">We don&apos;t have any products matching your filters. Try adjusting
+                            your search!</p>
                         <button class="btn btn-primary" onclick="clearFilters()">Clear Filters</button>
                     </div>
 
@@ -205,80 +229,19 @@
                         </ul>
                     </nav>
                 </div>
+                <!-- ==================== /Products Grid ==================== -->
+
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
-    <!-- <footer class="footer py-5 bg-dark text-white">
-        <div class="container-fluid px-5">
-            <div class="row g-4">
-                <div class="col-lg-3 col-md-6">
-                    <h5 class="fw-bold mb-3"><i class="fas fa-recycle me-2"></i>RefurBazar</h5>
-                    <p class="text-light">Your trusted marketplace for certified refurbished electronics. Quality
-                        devices at unbeatable prices.</p>
-                    <div class="social-links mt-3">
-                        <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-lg"></i></a>
-                        <a href="#" class="text-white me-3"><i class="fab fa-twitter fa-lg"></i></a>
-                        <a href="#" class="text-white me-3"><i class="fab fa-instagram fa-lg"></i></a>
-                        <a href="#" class="text-white"><i class="fab fa-linkedin fa-lg"></i></a>
-                    </div>
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <h5 class="fw-bold mb-3">Quick Links</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">About Us</a></li>
-                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">How It Works</a></li>
-                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">Quality Check</a></li>
-                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">Warranty Info</a></li>
-                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">Blog</a></li>
-                    </ul>
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <h5 class="fw-bold mb-3">Customer Support</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">Contact Us</a></li>
-                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">Shipping Info</a></li>
-                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">Returns & Refunds</a></li>
-                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">FAQs</a></li>
-                        <li><a href="#" class="text-light text-decoration-none d-block mb-2">Track Order</a></li>
-                    </ul>
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <h5 class="fw-bold mb-3">Newsletter</h5>
-                    <p class="text-light">Subscribe to get special offers and updates</p>
-                    <div class="input-group mb-3">
-                        <input type="email" class="form-control" placeholder="Your email">
-                        <button class="btn btn-primary" type="button">Subscribe</button>
-                    </div>
-                    <div class="payment-methods mt-4">
-                        <p class="small text-light mb-2">We Accept:</p>
-                        <i class="fab fa-cc-visa fa-2x text-light me-2"></i>
-                        <i class="fab fa-cc-mastercard fa-2x text-light me-2"></i>
-                        <i class="fab fa-cc-paypal fa-2x text-light"></i>
-                    </div>
-                </div>
-            </div>
-
-            <hr class="my-4 bg-light">
-
-            <div class="row">
-                <div class="col-md-6 text-center text-md-start">
-                    <p class="mb-0 text-light">&copy; 2026 RefurBazar. All rights reserved.</p>
-                </div>
-                <div class="col-md-6 text-center text-md-end">
-                    <a href="#" class="text-light text-decoration-none me-3">Privacy Policy</a>
-                    <a href="#" class="text-light text-decoration-none me-3">Terms of Service</a>
-                    <a href="#" class="text-light text-decoration-none">Cookie Policy</a>
-                </div>
-            </div>
-        </div>
-    </footer> -->
-
     {% include 'footer.html' %}
+
+    <!-- Mobile Floating Filter Button -->
+    <button class="mobile-filter-fab d-lg-none" onclick="toggleMobileFilters()">
+        <i class="fas fa-sliders-h"></i>
+        <span>Filters</span>
+    </button>
 
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -292,48 +255,6 @@
             await initShop("{% url 'products-shop' %}", "{{csrf_token}}")
         }
     </script>
-
-    <script>
-        const minRange = document.getElementById("minPriceRange");
-        const maxRange = document.getElementById("maxPriceRange");
-
-        const minInput = document.getElementById("minPrice");
-        const maxInput = document.getElementById("maxPrice");
-
-        const minDisplay = document.getElementById("minPriceDisplay");
-        const maxDisplay = document.getElementById("maxPriceDisplay");
-
-        function syncPriceRange() {
-            let min = parseInt(minRange.value);
-            let max = parseInt(maxRange.value);
-
-            // Hard constraint: min can never exceed max
-            if (min > max) {
-                if (event.target === minRange) {
-                    minRange.value = max;
-                    min = max;
-                } else {
-                    maxRange.value = min;
-                    max = min;
-                }
-            }
-
-            // Single source of truth (USE THESE FOR API)
-            minInput.value = min;
-            maxInput.value = max;
-
-            // UI display
-            minDisplay.textContent = min.toLocaleString("en-IN");
-            maxDisplay.textContent = max.toLocaleString("en-IN");
-        }
-
-        minRange.addEventListener("input", syncPriceRange);
-        maxRange.addEventListener("input", syncPriceRange);
-
-        // Init
-        syncPriceRange();
-    </script>
-
 
 </body>
 
