@@ -18,10 +18,9 @@
 
 {% block content %}
 
-<!-- Two-column layout -->
 <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
 
-  <!-- Left: main info -->
+  <!-- ── Left column ─────────────────────────────────────────── -->
   <div style="display:flex;flex-direction:column;gap:20px">
 
     <!-- Product identity -->
@@ -30,53 +29,53 @@
         <div><div class="panel-title">Product Details</div></div>
       </div>
       <div class="panel-body">
-        <div class="detail-grid" style="margin-bottom:20px">
+        <div class="detail-grid">
           <div class="detail-item"><div class="detail-key">Brand</div><div class="detail-val" id="ld-brand">—</div></div>
           <div class="detail-item"><div class="detail-key">Model</div><div class="detail-val" id="ld-model">—</div></div>
           <div class="detail-item"><div class="detail-key">Category</div><div class="detail-val" id="ld-category">—</div></div>
-          <div class="detail-item"><div class="detail-key">Grade</div><div class="detail-val" id="ld-grade">—</div></div>
-          <div class="detail-item"><div class="detail-key">Price</div><div class="detail-val fw-600" id="ld-price">—</div></div>
-          <div class="detail-item"><div class="detail-key">Units Available</div><div class="detail-val" id="ld-units">—</div></div>
-        </div>
-        <div class="section-label">Attributes</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px" id="ld-attrs">
-          <span class="text-muted fs-12">No attributes recorded.</span>
+          <div class="detail-item"><div class="detail-key">Total Units</div><div class="detail-val" id="ld-units">—</div></div>
+          <div class="detail-item"><div class="detail-key">Price (from)</div><div class="detail-val fw-600" id="ld-price">—</div></div>
+          <div class="detail-item"><div class="detail-key">Available Units</div><div class="detail-val" id="ld-available">—</div></div>
         </div>
       </div>
     </div>
 
-    <!-- Device condition / IMEI -->
+    <!-- Units table -->
     <div class="panel">
       <div class="panel-header">
         <div>
-          <div class="panel-title">Condition &amp; Verification</div>
-          <div class="panel-subtitle">Details added by refurbisher after order</div>
+          <div class="panel-title">Units</div>
+          <div class="panel-subtitle">All individual units in this listing</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="badge badge-gray" id="ld-unit-count">0 units</span>
         </div>
       </div>
-      <div class="panel-body">
-        <div class="detail-grid" style="margin-bottom:20px">
-          <div class="detail-item"><div class="detail-key">IMEI Number</div><div class="detail-val mono" id="ld-imei">—</div></div>
-          <div class="detail-item"><div class="detail-key">Condition Notes</div><div class="detail-val" id="ld-condition">—</div></div>
-          <div class="detail-item"><div class="detail-key">Warranty</div><div class="detail-val" id="ld-warranty">—</div></div>
-        </div>
-        <div class="section-label">Device Photos</div>
-        <div class="photo-grid" id="ld-photos">
-          <span class="text-muted fs-12">No photos uploaded yet.</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Description -->
-    <div class="panel">
-      <div class="panel-header"><div class="panel-title">Description</div></div>
-      <div class="panel-body">
-        <p id="ld-description" style="font-size:13px;color:var(--text-secondary);line-height:1.7">—</p>
+      <div class="rb-table-wrap">
+        <table class="rb-table">
+          <thead>
+            <tr>
+              <th>Unit #</th>
+              <th>Price</th>
+              <th>Condition</th>
+              <th>Attributes</th>
+              <th>Status</th>
+              <th>Added</th>
+            </tr>
+          </thead>
+          <tbody id="ld-units-tbody">
+            <tr><td colspan="6" style="padding:32px;text-align:center">
+              <div class="skeleton" style="height:13px;width:50%;margin:0 auto 10px"></div>
+              <div class="skeleton" style="height:13px;width:35%;margin:0 auto"></div>
+            </td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
   </div>
 
-  <!-- Right: sidebar info -->
+  <!-- ── Right sidebar ───────────────────────────────────────── -->
   <div style="display:flex;flex-direction:column;gap:16px">
 
     <!-- Refurbisher -->
@@ -90,8 +89,14 @@
             <div class="text-muted fs-12" id="ld-rf-biz">—</div>
           </div>
         </div>
-        <div class="detail-item" style="margin-bottom:8px"><div class="detail-key">Phone</div><div class="detail-val mono fs-12" id="ld-rf-phone">—</div></div>
-        <div class="detail-item"><div class="detail-key">Email</div><div class="detail-val fs-12" id="ld-rf-email">—</div></div>
+        <div class="detail-item" style="margin-bottom:8px">
+          <div class="detail-key">Phone</div>
+          <div class="detail-val mono fs-12" id="ld-rf-phone">—</div>
+        </div>
+        <div class="detail-item" style="margin-bottom:8px">
+          <div class="detail-key">Email</div>
+          <div class="detail-val fs-12" id="ld-rf-email">—</div>
+        </div>
         <div style="margin-top:14px">
           <a id="ld-rf-link" href="#" class="btn btn-ghost btn-sm" style="width:100%;justify-content:center">
             <i class="fa-solid fa-arrow-up-right-from-square"></i> View Full Profile
@@ -104,10 +109,45 @@
     <div class="panel">
       <div class="panel-header"><div class="panel-title">Listing Info</div></div>
       <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px">
-        <div class="detail-item"><div class="detail-key">Listing ID</div><div class="detail-val mono fs-12" id="ld-id">—</div></div>
-        <div class="detail-item"><div class="detail-key">Status</div><div id="ld-meta-status">—</div></div>
-        <div class="detail-item"><div class="detail-key">Created</div><div class="detail-val fs-12" id="ld-created">—</div></div>
-        <div class="detail-item"><div class="detail-key">Last Updated</div><div class="detail-val fs-12" id="ld-updated">—</div></div>
+        <div class="detail-item">
+          <div class="detail-key">Listing ID</div>
+          <div class="detail-val mono fs-12" id="ld-id">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">Status</div>
+          <div id="ld-meta-status">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">Created</div>
+          <div class="detail-val fs-12" id="ld-created">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">Last Updated</div>
+          <div class="detail-val fs-12" id="ld-updated">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Unit summary breakdown -->
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">Unit Summary</div></div>
+      <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px">
+        <div class="detail-item">
+          <div class="detail-key">Total</div>
+          <div class="detail-val fw-600" id="ld-sum-total">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">Available</div>
+          <div class="detail-val" style="color:var(--success)" id="ld-sum-available">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">Sold</div>
+          <div class="detail-val" style="color:var(--danger)" id="ld-sum-sold">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">On Hold</div>
+          <div class="detail-val" style="color:var(--warning)" id="ld-sum-hold">—</div>
+        </div>
       </div>
     </div>
 

@@ -14,15 +14,67 @@ let thumbnailSwiper = null
 
 // Condition options
 const CONDITION_OPTIONS = [
-  // { value: "fair", label: "Fair", description: "Visible wear" },
-  // { value: "good", label: "Good", description: "Minor wear" },
   { value: "excellent", label: "Excellent", description: "Like new" },
-  // { value: "premium", label: "Premium", description: "Perfect", icon: "fas fa-gem" },
-
-  // { value: "superb", label: "Superb", description: "Minimal to no signs of use" },
   { value: "good", label: "Good", description: "Light micro-scratches" },
   { value: "fair", label: "Fair", description: "Light cosmetic wear" },
 ]
+
+// Condition detail descriptions for the conditions panel
+const CONDITION_DETAILS = {
+  excellent: {
+    title: "Excellent",
+    bullets: [
+      "Like new condition and appearance. Technical condition and durability are the highest possible.",
+      "Battery Health is 95% and above.",
+      "All devices are 100% tested in depth and functional.",
+    ],
+  },
+  good: {
+    title: "Very Good",
+    bullets: [
+      "Light scratches, slightly visible from 20cm away. Technical condition is above average.",
+      "Battery Health is 90% and above.",
+      "All devices are 100% tested in depth and functional.",
+    ],
+  },
+  fair: {
+    title: "Good",
+    bullets: [
+      "Visible scratches and possible dents. Technical condition is within the average.",
+      "Battery Health is 85% and above.",
+      "All devices are 100% tested in depth and functional.",
+    ],
+  },
+}
+
+// Icon map for spec attributes — keyed by lowercase keyword fragments
+const SPEC_ICON_MAP = [
+  { keys: ["processor", "cpu", "chipset", "chip"],           icon: "fas fa-microchip" },
+  { keys: ["ram", "memory"],                                  icon: "fas fa-memory" },
+  { keys: ["storage", "ssd", "hdd", "disk", "drive"],        icon: "fas fa-hdd" },
+  { keys: ["sim"],                                            icon: "fas fa-sim-card" },
+  { keys: ["screen", "display", "monitor", "resolution", "refresh", "pixel", "ppi", "oled", "lcd", "amoled"], icon: "fas fa-desktop" },
+  { keys: ["camera", "photo", "rear camera", "front camera", "video"], icon: "fas fa-camera" },
+  { keys: ["battery", "capacity", "charging", "wireless charging", "fast charging"], icon: "fas fa-battery-full" },
+  { keys: ["wi-fi", "wifi", "bluetooth", "nfc", "5g", "4g", "network", "connectivity", "usb"], icon: "fas fa-wifi" },
+  { keys: ["os", "android", "ios", "windows", "launch os", "max os", "security update"], icon: "fas fa-code" },
+  { keys: ["weight", "dimension", "body", "material", "water", "depth", "height", "width"], icon: "fas fa-ruler-combined" },
+  { keys: ["color", "colour"],                                icon: "fas fa-palette" },
+  { keys: ["fingerprint", "biometric", "face", "sensor"],    icon: "fas fa-fingerprint" },
+  { keys: ["speaker", "audio", "sound", "mic", "headphone"], icon: "fas fa-volume-up" },
+  { keys: ["gps", "location", "navigation"],                  icon: "fas fa-map-marker-alt" },
+  { keys: ["brand", "model", "series", "generation"],        icon: "fas fa-tag" },
+]
+
+function getSpecIcon(attrName) {
+  const lower = attrName.toLowerCase()
+  for (const entry of SPEC_ICON_MAP) {
+    if (entry.keys.some((k) => lower.includes(k))) {
+      return entry.icon
+    }
+  }
+  return "fas fa-info-circle"
+}
 
 // Initialize Product Detail Page
 async function initProductDetail(detail_url, units_url, cart_url, csrf, prod_id) {
@@ -57,6 +109,11 @@ async function loadProductDetail() {
 // Render Product Info
 function renderProductInfo() {
   document.getElementById("productTitle").textContent = productData.name
+  document.getElementById("productTitle").innerHTML = `${productData.name} <div class="d-flex align-items-center gap-2">
+                        <div style="color: #f59e0b; font-size: 1.1rem;">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                        </div>                        
+                    </div>`
   document.getElementById("breadcrumbProduct").textContent = `${productData.brand_name} ${productData.name}`
 
   // Set product image
@@ -67,6 +124,12 @@ function renderProductInfo() {
     mainImage.src = "/static/images/iPhone 16 Pro.png"
   }
   mainImage.alt = `${productData.brand_name} ${productData.name}`
+
+  // Populate sticky bar product info
+  const stickyImg = document.getElementById("stickyProductImg")
+  const stickyName = document.getElementById("stickyProductName")
+  if (stickyImg) stickyImg.src = productData.image || "/static/images/iPhone 16 Pro.png"
+  if (stickyName) stickyName.textContent = `${productData.brand_name} ${productData.name}`
 
   initializeThumbnailGallery()
 
@@ -92,40 +155,30 @@ function escapeHtml(str) {
 }
 
 /**
- * Split attributesData by section and render two spec grids:
- *   #specsMainGrid      — section === 'main'
- *   #specsSecondaryGrid — section === 'secondary'
- * Each card shows the attribute name and either the joined possible_values
- * (for choice fields) or a type hint (text / number).
- * The whole #specsSection row is revealed once there is data to show.
+ * Build spec grid with icons for each attribute card.
  */
 function renderSpecsSections() {
   const mainAttrs      = attributesData.filter((a) => a.section === "main")
   const secondaryAttrs = attributesData.filter((a) => a.section === "secondary")
 
   function buildCard(attr) {
-    let hint = "—"
-    // if (attr.data_type === "choice" && attr.available_values && attr.available_values.length > 0) {
-    //   hint = attr.available_values.join(", ")
-    // } else if (attr.data_type === "number") {
-    //   hint = "Numeric"
-    // } else {
-    //   hint = "Text"
-    // }
-    hint = attr.available_values.join(", ")
-    return `<div><span>${escapeHtml(attr.name)}</span><strong>${escapeHtml(hint)}</strong></div>`
+    const hint = attr.available_values.join(", ")
+    const icon = getSpecIcon(attr.name)
+    return `
+      <div class="spec-card-item">
+        <div class="spec-icon-wrap">
+          <i class="${icon}"></i>
+        </div>
+        <div class="spec-card-body">
+          <span class="spec-label">${escapeHtml(attr.name)}</span>
+          <strong class="spec-value">${escapeHtml(hint)}</strong>
+        </div>
+      </div>`
   }
 
-  // const mainGrid = document.getElementById("specsMainGrid")
   const secGrid  = document.getElementById("specsSecondaryGrid")
   const secBtn   = document.getElementById("specsSecondaryTabBtn")
   const section  = document.getElementById("specsSection")
-
-  // if (mainGrid) {
-  //   mainGrid.innerHTML = mainAttrs.length > 0
-  //     ? mainAttrs.map(buildCard).join("")
-  //     : "<p class=\"text-muted\" style=\"font-size:0.9rem;\">No key specifications defined for this product.</p>"
-  // }
 
   if (secGrid) {
     if (secondaryAttrs.length > 0) {
@@ -136,7 +189,6 @@ function renderSpecsSections() {
     }
   }
 
-  // Reveal the specs block once there is something to show
   if (section && (mainAttrs.length > 0 || secondaryAttrs.length > 0 || productData.description)) {
     section.style.display = ""
   }
@@ -145,7 +197,6 @@ function renderSpecsSections() {
 function initializeThumbnailGallery() {
     const thumbnailWrapper = document.getElementById("thumbnailWrapper");
 
-    // Add main image as first thumbnail
     let thumbnailsHTML = `
         <div class="swiper-slide">
             <img src="${productData.image || "/static/images/iPhone 16 Pro.png"}" 
@@ -170,9 +221,7 @@ function initializeThumbnailGallery() {
 
     thumbnailWrapper.innerHTML = thumbnailsHTML;
 
-    // Initialize Swiper with RESPONSIVE Direction
     if (window.Swiper) {
-        // Destroy existing instance if it exists (prevents bugs on resize)
         if (thumbnailSwiper) {
             thumbnailSwiper.destroy(true, true);
         }
@@ -181,19 +230,16 @@ function initializeThumbnailGallery() {
             spaceBetween: 10,
             freeMode: true,
             watchSlidesProgress: true,
-            // Mousewheel control for vertical scrolling on desktop
             mousewheel: {
                 releaseOnEdges: true,
             },
             breakpoints: {
-                // Mobile settings (Horizontal)
                 320: {
                     slidesPerView: "auto",
                     direction: 'horizontal',
                 },
-                // Desktop settings (Vertical) - Matches Bootstrap 'lg'
                 992: {
-                    slidesPerView: 5, // Show ~5 thumbs vertically
+                    slidesPerView: 5,
                     direction: 'vertical',
                 },
             },
@@ -208,30 +254,8 @@ function changeMainImage(src) {
 // Render Filters
 function renderFilters() {
   renderConditionFilter()
-
   renderAttributeFilters()
 }
-
-// function renderConditionFilter() {
-//     const conditionGrid = document.getElementById("conditionGrid");
-
-//     const conditionHTML = CONDITION_OPTIONS.map(
-//         (condition) => `
-//         <div class="condition-card" data-condition="${condition.value}" onclick="selectCondition('${condition.value}')">
-//             <div class="condition-radio">
-//                 <input type="radio" name="condition" id="condition-${condition.value}" value="${condition.value}">
-//                 <label for="condition-${condition.value}"></label>
-//             </div>
-
-//             <div class="condition-info d-flex align-items-center">
-//                 <h6>${condition.label}</h6>
-//             </div>
-//         </div>
-//     `
-//     ).join("");
-
-//     conditionGrid.innerHTML = conditionHTML;
-// }
 
 function renderConditionFilter() {
     const conditionGrid = document.getElementById("conditionGrid");
@@ -240,7 +264,7 @@ function renderConditionFilter() {
         (condition) => `
         <div class="condition-card" data-condition="${condition.value}" onclick="selectCondition('${condition.value}')">
             <div class="condition-info d-flex align-items-center">
-                <h6>${condition.label}</h6>
+                <h6>${condition.label==="Excellent" ? 'Superb' : `${condition.label}`}</h6>
             </div>
         </div>
     `
@@ -259,8 +283,6 @@ function renderAttributeFilters() {
 
   let filtersHTML = ""
 
-
-  // Find the hex code attribute once
   const colorHexAttr = attributesData.find(
     (a) => a.name.toLowerCase() === "colour hex codes"
   )
@@ -271,7 +293,6 @@ function renderAttributeFilters() {
 
     const attrNameLower = attr.name.toLowerCase()
 
-    // Skip rendering Colour Hex Codes
     if (attrNameLower === "colour hex codes") return
     if (attrNameLower === "refurb price range") return
 
@@ -284,58 +305,8 @@ function renderAttributeFilters() {
     }
   })
 
-  // attributesData.forEach((attr) => {
-  //   if (attr.is_filter) {
-      
-  //     if (attr.available_values.length > 0) {
-  //       // Determine filter type based on attribute name
-  //       const attrNameLower = attr.name.toLowerCase()
-  
-  //       if (attrNameLower.includes("storage") || attrNameLower.includes("memory")) {
-  //         // Storage-style filter
-  //         filtersHTML += renderStorageFilter(attr)
-  //       } else if (attrNameLower.includes("color") || attrNameLower.includes("colour")) {
-  //         // Color-style filter
-  //         filtersHTML += renderColorFilter(attr)
-  //       } else {
-  //         // Generic filter
-  //         filtersHTML += renderGenericFilter(attr)
-  //       }
-  //     }
-  //   }
-  // })
-
   container.innerHTML = filtersHTML
 }
-
-// function renderStorageFilter(attr) {
-//   return `
-//         <div class="selection-section">
-//             <div class="section-header">
-//                 <h6>Select ${attr.name}</h6>
-//             </div>
-//             <div class="storage-options">
-//                 ${attr.available_values
-//                   .map(
-//                     (value) => `
-//                     <div class="storage-card" data-attribute="${attr.id}" data-value="${value}" 
-//                          onclick="selectAttribute(${attr.id}, '${value}')">
-//                         <div class="storage-info">
-//                             <h6>${value}</h6>
-//                             <p class="storage-price"></p>
-//                         </div>
-//                         <div class="storage-radio">
-//                             <input type="radio" name="attribute-${attr.id}" id="attr-${attr.id}-${value}" value="${value}">
-//                             <label for="attr-${attr.id}-${value}"></label>
-//                         </div>
-//                     </div>
-//                 `,
-//                   )
-//                   .join("")}
-//             </div>
-//         </div>
-//     `
-// }
 
 function renderStorageFilter(attr) {
   return `
@@ -353,102 +324,9 @@ function renderStorageFilter(attr) {
                             <h6>${value}</h6>
                             <p class="storage-price"></p>
                         </div>
-                        
                     </div>
                 `,
                   )
-                  .join("")}
-            </div>
-        </div>
-    `
-}
-
-// function renderColorFilter(attr) {
-//   const colorMap = {
-//     black: "#000000",
-//     white: "#ffffff",
-//     blue: "#4169e1",
-//     red: "#ff0000",
-//     green: "#00ff00",
-//     pink: "#ff69b4",
-//     purple: "#8a2be2",
-//     gold: "#ffd700",
-//     silver: "#c0c0c0",
-//     gray: "#808080",
-//     grey: "#808080",
-//     "space gray": "#5a5a5a",
-//     starlight: "#f5f5dc",
-//   }
-
-//   return `
-//         <div class="selection-section">
-//             <div class="section-header">
-//                 <h6>Select ${attr.name}</h6>
-//             </div>
-//             <div class="color-options">
-//                 ${attr.available_values
-//                   .map((value) => {
-//                     const colorValue = colorMap[value.toLowerCase()] || "#cccccc"
-//                     return `
-//                         <div class="color-card" data-attribute="${attr.id}" data-value="${value}" 
-//                              onclick="selectAttribute(${attr.id}, '${value}')">
-//                             <div class="color-radio">
-//                                 <input type="radio" name="attribute-${attr.id}" id="attr-${attr.id}-${value}" value="${value}">
-//                                 <label for="attr-${attr.id}-${value}"></label>
-//                             </div>
-//                             <div class="color-dot" style="background: ${colorValue};"></div>
-//                             <div class="color-info">
-//                                 <h6>${value}</h6>
-//                                 <p class="color-price"></p>
-//                             </div>
-//                         </div>
-//                     `
-//                   })
-//                   .join("")}
-//             </div>
-//         </div>
-//     `
-// }
-
-function renderColorFilter_default(attr) {
-  const colorMap = {
-    black: "#000000",
-    white: "#ffffff",
-    blue: "#4169e1",
-    red: "#ff0000",
-    green: "#00ff00",
-    pink: "#ff69b4",
-    purple: "#8a2be2",
-    gold: "#ffd700",
-    silver: "#c0c0c0",
-    gray: "#808080",
-    grey: "#808080",
-    "space gray": "#5a5a5a",
-    starlight: "#f5f5dc",
-  }
-
-  return `
-        <div class="selection-section">
-            <div class="section-header">
-                <h6>Select ${attr.name}</h6>
-            </div>
-            <div class="color-options">
-                ${attr.available_values
-                  .map((value) => {
-                    const colorValue = colorMap[value.toLowerCase()] || "#cccccc"
-                    return `
-                        <div class="color-card" data-attribute="${attr.id}" data-value="${value}" 
-                             onclick="selectAttribute(${attr.id}, '${value}')">
-                            
-                            <div class="color-dot" style="background: ${colorValue};"></div>
-                            &nbsp; <!-- Space between dot and text -->
-                            <div class="color-info">
-                                <h6>${value}</h6>
-                                <p class="color-price"></p>
-                            </div>
-                        </div>
-                    `
-                  })
                   .join("")}
             </div>
         </div>
@@ -461,22 +339,18 @@ function renderColorFilter(attr, colorHexAttr) {
       <div class="section-header">
         <h6>Select ${attr.name}</h6>
       </div>
-
       <div class="color-options">
         ${attr.available_values
           .map((value, index) => {
             let colorValue = "#cccccc"
-
             if (colorHexAttr && colorHexAttr.available_values[index]) {
               colorValue = colorHexAttr.available_values[index]
             }
-
             return `
               <div class="color-card"
                    data-attribute="${attr.id}"
                    data-value="${value}"
                    onclick="selectAttribute(${attr.id}, '${value}')">
-
                 <div class="color-dot" style="background:${colorValue};"></div>
                 &nbsp;
                 <div class="color-info">
@@ -491,35 +365,6 @@ function renderColorFilter(attr, colorHexAttr) {
     </div>
   `
 }
-
-// function renderGenericFilter(attr) {
-//   return `
-//         <div class="selection-section">
-//             <div class="section-header">
-//                 <h6>Select ${attr.name}</h6>
-//             </div>
-//             <div class="storage-options">
-//                 ${attr.available_values
-//                   .map(
-//                     (value) => `
-//                     <div class="storage-card" data-attribute="${attr.id}" data-value="${value}" 
-//                          onclick="selectAttribute(${attr.id}, '${value}')">
-//                         <div class="storage-info">
-//                             <h6>${value}</h6>
-//                             <p class="storage-price"></p>
-//                         </div>
-//                         <div class="storage-radio">
-//                             <input type="radio" name="attribute-${attr.id}" id="attr-${attr.id}-${value}" value="${value}">
-//                             <label for="attr-${attr.id}-${value}"></label>
-//                         </div>
-//                     </div>
-//                 `,
-//                   )
-//                   .join("")}
-//             </div>
-//         </div>
-//     `
-// }
 
 function renderGenericFilter(attr) {
   return `
@@ -537,7 +382,6 @@ function renderGenericFilter(attr) {
                             <h6>${value}</h6>
                             <p class="storage-price"></p>
                         </div>
-                        
                     </div>
                 `,
                   )
@@ -548,7 +392,6 @@ function renderGenericFilter(attr) {
 }
 
 function autoSelectFilters() {
-  // Auto-select first condition (excellent if available, otherwise first)
   const excellentCondition = CONDITION_OPTIONS.find((c) => c.value === "excellent")
   if (excellentCondition) {
     selectCondition("excellent")
@@ -556,19 +399,16 @@ function autoSelectFilters() {
     selectCondition(CONDITION_OPTIONS[0].value)
   }
 
-  // Auto-select first value for each attribute
   attributesData.forEach((attr) => {
     if (attr.available_values.length > 0) {
       selectAttribute(attr.id, attr.available_values[0])
     }
   })
 
-  // Load units with pre-selected filters
   loadAvailableUnits()
 }
 
 function selectCondition(value) {
-    // 1. Visual Update (Classes)
     document.querySelectorAll(".condition-card").forEach((card) => {
         card.classList.remove("active");
     });
@@ -578,51 +418,42 @@ function selectCondition(value) {
         selectedCard.classList.add("active");
     }
 
-    // 2. Logic Update
     selectedFilters["condition"] = value;
 
-    // 3. NEW: Update the Header Label Text
     const conditionObj = CONDITION_OPTIONS.find(c => c.value === value);
     if (conditionObj) {
-        // e.g. "Condition: Excellent"
         const labelEl = document.getElementById("selectedConditionLabel");
-        if(labelEl) labelEl.textContent = conditionObj.label;
+        // if(labelEl) labelEl.textContent = if conditionObj.label ==="Excellent" ? 'Superb' : `${conditionObj.label }`
+        if (labelEl) labelEl.textContent = conditionObj.label === "Excellent" ? "Superb" : conditionObj.label;
 
-        // e.g. "Like new, no scratches"
         const descEl = document.getElementById("selectedConditionDesc");
         if(descEl) descEl.textContent = `(${conditionObj.description})`;
     }
 
-    // 4. Load Data
     loadAvailableUnits();
 }
 
 function selectAttribute(attrId, value) {
-  // Remove active class from all cards for this attribute
   document.querySelectorAll(`[data-attribute="${attrId}"]`).forEach((card) => {
     card.classList.remove("active")
     const radio = card.querySelector('input[type="radio"]')
     if (radio) radio.checked = false
   })
 
-  // Add active class to selected card
   const selectedCard = document.querySelector(`[data-attribute="${attrId}"][data-value="${value}"]`)
   if (selectedCard) {
     selectedCard.classList.add("active")
     const radio = selectedCard.querySelector('input[type="radio"]')
     if (radio) radio.checked = true
 
-    // Update selected filters
     selectedFilters[`attribute_${attrId}`] = value
 
-    // Load available units
     loadAvailableUnits()
   }
 }
 
 // Load Available Units
 async function loadAvailableUnits() {
-  // Build query params from selected filters
   const params = new URLSearchParams()
 
   for (const [key, value] of Object.entries(selectedFilters)) {
@@ -641,7 +472,7 @@ async function loadAvailableUnits() {
   }
 }
 
-// Render Sellers
+// Render Sellers — auto-selects cheapest, shows all as compact selectable options
 function renderSellers() {
   const sellersContainer = document.getElementById("sellersList")
 
@@ -655,71 +486,83 @@ function renderSellers() {
         `
     document.getElementById("addToCartBtn").disabled = true
     updatePrice(null)
+    updateStickyBar(null)
     return
   }
 
-  sellersContainer.innerHTML = availableUnits
+  // Sort by price ascending — cheapest first / auto-selected
+  const sorted = [...availableUnits].sort((a, b) => parseFloat(a.price) - parseFloat(b.price))
+
+  sellersContainer.innerHTML = sorted
     .map(
-      (unit, index) => `
-        <div class="seller-card ${index === 0 ? "selected" : ""}" onclick="selectSeller(${unit.id})">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="seller-name">${unit.refurbisher.name}</div>
-                    <!-- <div class="seller-attributes small text-muted mt-1">
-                        ${unit.condition_display}
-                        ${unit.attributes.length > 0 ? " • " + unit.attributes.map((attr) => attr.value).join(" • ") : ""}
-                    </div> -->
-                </div>
-                <div class="text-end">
-                    <div class="seller-price">₹${formatPrice(unit.price)}</div>
-                </div>
+      (unit, index) => {
+        const isCheapest = index === 0
+        return `
+        <div class="seller-option ${isCheapest ? "selected" : ""}" 
+             data-unit-id="${unit.id}"
+             onclick="selectSeller(${unit.id})">
+          <div class="seller-option-left">
+            <div class="seller-option-check">
+              <i class="fas fa-check"></i>
             </div>
+            <div class="seller-option-info">
+              <span class="seller-option-name">${escapeHtml(unit.refurbisher.name)}</span>
+              ${isCheapest ? '<span class="seller-badge-best">Best Price</span>' : ''}
+            </div>
+          </div>
+          <div class="seller-option-price">
+            ₹${formatPrice(unit.price)}
+          </div>
         </div>
-    `,
+      `}
     )
     .join("")
 
-  // Auto-select first unit
-  if (availableUnits.length > 0) {
-    selectedUnit = availableUnits[0]
-    updatePrice(selectedUnit.price)
-    document.getElementById("addToCartBtn").disabled = false
-  }
+  // Auto-select cheapest
+  selectedUnit = sorted[0]
+  updatePrice(selectedUnit.price)
+  updateStickyBar(selectedUnit)
+  document.getElementById("addToCartBtn").disabled = false
 }
 
 // Select Seller
 function selectSeller(unitId) {
-  // Remove selected class from all cards
-  document.querySelectorAll(".seller-card").forEach((card) => {
+  document.querySelectorAll(".seller-option").forEach((card) => {
     card.classList.remove("selected")
   })
 
-  // Add selected class to clicked card
-  event.currentTarget.classList.add("selected")
+  const clickedCard = document.querySelector(`.seller-option[data-unit-id="${unitId}"]`)
+  if (clickedCard) clickedCard.classList.add("selected")
 
-  // Update selected unit
   selectedUnit = availableUnits.find((unit) => unit.id === unitId)
-  updatePrice(selectedUnit.price)
-  document.getElementById("addToCartBtn").disabled = false
+  if (selectedUnit) {
+    updatePrice(selectedUnit.price)
+    updateStickyBar(selectedUnit)
+    document.getElementById("addToCartBtn").disabled = false
+  }
+}
+
+// Update sticky bar info
+function updateStickyBar(unit) {
+  const stickyPrice = document.getElementById("stickyBarPrice")
+  if (!stickyPrice) return
+
+  if (unit) {
+    stickyPrice.textContent = `₹${formatPrice(unit.price)}`
+  } else {
+    stickyPrice.textContent = "₹0"
+  }
 }
 
 // Update Price Display
-// function updatePrice(price) {
-//   const priceElement = document.getElementById("displayPrice")
-//   if (price) {
-//     priceElement.textContent = `₹${formatPrice(price)}`
-//   } else {
-//     priceElement.textContent = "₹0"
-//   }
-// }
 function updatePrice(price) {
   const priceElement = document.getElementById("displayPrice");
-  const stickyPriceElement = document.getElementById("stickyMobilePrice"); 
+  const stickyPriceElement = document.getElementById("stickyMobilePrice");
   const warrantyToggle = document.getElementById("warrantyToggle");
   const warrantyCost = 1999;
-  
+
   let finalPrice = price || 0;
-  
+
   if (warrantyToggle && warrantyToggle.checked) {
       finalPrice += warrantyCost;
   }
@@ -756,20 +599,19 @@ document.addEventListener("DOMContentLoaded", () => {
           },
           breakpoints: {
               768: { slidesPerView: 2.2, spaceBetween: 20 },
-              1024: { slidesPerView: 3.2, spaceBetween: 24 } // Shows 3 cards cleanly on desktop
+              1024: { slidesPerView: 3.2, spaceBetween: 24 }
           }
       });
   }
 
-  // Mobile Sticky Bar Trigger
+  // Sticky buy bar — show when main add-to-cart is out of view
   const mainBuyBtn = document.getElementById('addToCartBtn');
-  const stickyBar = document.querySelector('.mobile-sticky-buy');
-  
+  const stickyBar = document.querySelector('.sticky-buy-bar');
+
   if (mainBuyBtn && stickyBar) {
       const observer = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
-              // Show sticky bar only when main button is scrolled out of view on mobile
-              if (!entry.isIntersecting && window.innerWidth < 992) {
+              if (!entry.isIntersecting) {
                   stickyBar.classList.add('visible');
               } else {
                   stickyBar.classList.remove('visible');
@@ -798,7 +640,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (success && response.success) {
         showToast("Product added to cart!", "success")
-        // Update cart count
         const cartCount = document.getElementById("cartCount")
         if (cartCount) {
           cartCount.textContent = Number.parseInt(cartCount.textContent) + 1
@@ -842,7 +683,6 @@ function formatPrice(price) {
 }
 
 function showToast(message, type = "info") {
-  // Create toast notification
   const toastHTML = `
         <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
@@ -852,7 +692,6 @@ function showToast(message, type = "info") {
         </div>
     `
 
-  // Add toast container if it doesn't exist
   let toastContainer = document.querySelector(".toast-container")
   if (!toastContainer) {
     toastContainer = document.createElement("div")
@@ -865,25 +704,21 @@ function showToast(message, type = "info") {
   const toast = new window.bootstrap.Toast(toastElement)
   toast.show()
 
-  // Remove toast after it's hidden
   toastElement.addEventListener("hidden.bs.toast", () => {
     toastElement.remove()
   })
 }
 
-
-// Render Dynamic Specifications in Side Panel (Minimal Version)
+// Render Dynamic Specifications in Side Panel
 function renderSpecsPanel() {
   const specsGrid = document.getElementById("dynamicSpecsGrid");
   if (!specsGrid) return;
 
-  // 1. Add Brand and Model (Always available from productData)
   let specsHTML = `
       <li class="minimal-spec-item"><span>Brand</span><strong>${productData.brand_name || 'N/A'}</strong></li>
       <li class="minimal-spec-item"><span>Model</span><strong>${productData.name || 'N/A'}</strong></li>
   `;
 
-  // 2. Loop through attributesData to add things like Storage, Color, etc.
   if (attributesData && attributesData.length > 0) {
       attributesData.forEach(attr => {
           if (attr.available_values && attr.available_values.length > 0) {
@@ -895,4 +730,23 @@ function renderSpecsPanel() {
   specsGrid.innerHTML = specsHTML;
 }
 
+// Update conditions panel when condition tab is clicked
+function selectConditionPanelTab(value) {
+  // Update active tab in panel
+  document.querySelectorAll(".cond-tab-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.cond === value)
+  })
 
+  const detail = CONDITION_DETAILS[value]
+  if (!detail) return
+
+  const descContainer = document.getElementById("condPanelDesc")
+  if (descContainer) {
+    descContainer.innerHTML = `
+      <h6 class="cond-panel-desc-title">Condition Description</h6>
+      <ul class="cond-panel-bullets">
+        ${detail.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join("")}
+      </ul>
+    `
+  }
+}

@@ -9,6 +9,7 @@ class CartItemListingUnitSerializer(serializers.ModelSerializer):
     """Nested serializer for ListingUnit with product details"""
     listing_id = serializers.CharField(source='listing.listing_id', read_only=True)
     model_name = serializers.CharField(source='listing.model.name', read_only=True)
+    model_id = serializers.CharField(source='listing.model.id', read_only=True)
     brand_name = serializers.CharField(source='listing.model.brand.name', read_only=True)
     category = serializers.CharField(source='listing.model.category', read_only=True)
     refurbisher_first_name = serializers.CharField(source='listing.refurbisher.first_name', read_only=True)
@@ -19,7 +20,7 @@ class CartItemListingUnitSerializer(serializers.ModelSerializer):
         model = ListingUnit
         fields = [
             'id', 'listing_id', 'unit_number', 'price', 'condition',
-            'model_name', 'brand_name', 'category',
+            'model_name', 'model_id', 'brand_name', 'category',
             'refurbisher_first_name', 'refurbisher_last_name',
             'attributes', 'is_available', 'is_sold'
         ]

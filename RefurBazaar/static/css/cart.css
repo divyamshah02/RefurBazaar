@@ -803,3 +803,173 @@
         font-size: 0.8rem;
     }
 }
+
+/* =============================================
+   CART PAGE — NEW / UPDATED STYLES
+   Append these to your existing cart.css
+   ============================================= */
+
+/* ------ Product name & image links ------ */
+.product-name-link {
+    text-decoration: none;
+    color: inherit;
+}
+.product-name-link:hover .product-name {
+    color: #2a8c3c;
+    text-decoration: underline;
+}
+.product-image-link {
+    display: block;
+    flex-shrink: 0;
+}
+.view-product-link {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.75rem;
+    color: #2a8c3c;
+    text-decoration: none;
+    margin-top: 4px;
+    font-weight: 500;
+    gap: 3px;
+}
+.view-product-link:hover {
+    text-decoration: underline;
+    color: #1e6b2e;
+}
+
+/* ------ Price Summary breakdown ------ */
+#priceSummaryBody {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    font-size: 0.92rem;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+}
+.price-row:last-of-type {
+    border-bottom: none;
+}
+
+.price-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #6b7280;
+}
+
+.label-badge {
+    font-size: 0.7rem;
+    background: #e8f5e9;
+    color: #2a8c3c;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-weight: 600;
+}
+
+.price-value {
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.discount-row .price-label {
+    color: #374151;
+}
+.discount-value {
+    color: #2a8c3c;
+    font-weight: 600;
+}
+
+.old-price {
+    text-decoration: line-through;
+    color: #9ca3af;
+    font-weight: 400;
+    font-size: 0.85rem;
+}
+
+.free-tag {
+    color: #2a8c3c;
+    font-weight: 600;
+}
+
+.price-divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 4px 0 8px;
+}
+
+.total-row {
+    border-bottom: none !important;
+    padding: 12px 0 4px;
+}
+.total-row .price-label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+}
+.total-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+/* Savings pill */
+.savings-pill {
+    display: inline-block;
+    background: #2a8c3c;
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 5px 14px;
+    margin-top: 10px;
+    align-self: flex-end;
+}
+
+/* Place Order button — black */
+.btn-place-order {
+    background: #111827;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 14px 0;
+    letter-spacing: 0.02em;
+    transition: background 0.2s;
+}
+.btn-place-order:hover {
+    background: #000;
+    color: #fff;
+}
+
+/* ------ E-waste card enhancements ------ */
+.ewaste-co2 {
+    min-width: 110px;
+}
+.ewaste-co2-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6b7280;
+    font-weight: 600;
+}
+.ewaste-co2-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #2a8c3c;
+}
+
+/* Taller, greener progress bar */
+.ewaste-savings-card .progress-bar {
+    background: linear-gradient(90deg, #4caf50, #2a8c3c);
+    border-radius: 99px;
+}

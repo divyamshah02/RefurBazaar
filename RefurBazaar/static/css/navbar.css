@@ -153,13 +153,25 @@
 }
 
 .secondary-nav .container-fluid {
-  overflow-x: auto;
+  /* overflow-x: auto; */
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding-left: 0;
   padding-right: 0;
 }
+
+
+.secondary-nav .container-fluid{
+    overflow: visible;
+}
+
+@media (max-width:991px){
+    .secondary-nav .container-fluid{
+        overflow-x:auto;
+    }
+}
+
 
 .secondary-nav .container-fluid::-webkit-scrollbar {
   display: none;

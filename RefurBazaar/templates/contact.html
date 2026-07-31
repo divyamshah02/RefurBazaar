@@ -291,26 +291,33 @@
                     <!-- <p class="fs-5 text-muted mx-auto" style="max-width: 600px;">
                         Select a topic below and fill out the details. We'll get back to you as soon as possible.
                     </p> -->
-                    <!-- <div class="d-flex flex-wrap justify-content-center gap-3 mt-4 mb-3">
-                                    
-                                    <div class="d-flex align-items-center gap-3 bg-white px-4 py-2 rounded-pill border shadow-sm">
-                                        <div class="fs-5">📞</div>
-                                        <div class="text-start">
-                                            <p class="fw-bold text-dark mb-0 lh-1">+91 9004297203</p>
-                                            <small class="text-muted" style="font-size: 0.75rem;">Monday–Saturday · 10:00 AM – 7:00 PM</small>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="d-flex align-items-center gap-3 bg-white px-4 py-2 rounded-pill border shadow-sm">
-                                        <div class="fs-5">✉️</div>
-                                        <div class="text-start">
-                                            <p class="fw-bold text-dark mb-0 lh-1">info@recarvit.com</p>
-                                            <small class="text-muted" style="font-size: 0.75rem;">We respond within 24 hours</small>
-                                        </div>
-                                    </div>
+                    <div class="d-flex flex-wrap justify-content-center gap-3 mt-4 mb-3">                                    
+                        <div class="d-flex align-items-center gap-3 bg-white px-4 py-2 rounded-pill border shadow-sm">
+                            <div class="fs-5 info-icon-circle-contact"><i class="fas fa-phone"></i></div>
+                            <div class="text-start">
+                                <p class="fw-bold text-dark mb-0 lh-1">+91 9004297203</p>
+                                <!-- <small class="text-muted" style="font-size: 0.75rem;">Monday–Saturday · 10:00 AM – 7:00 PM</small> -->
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center gap-3 bg-white px-4 py-2 rounded-pill border shadow-sm">
+                            <div class="fs-5 info-icon-circle-contact"><i class="fas fa-envelope"></i></div>
+                            <div class="text-start">
+                                <p class="fw-bold text-dark mb-0 lh-1">info@recarvit.com</p>
+                                <!-- <small class="text-muted" style="font-size: 0.75rem;">We respond within 24 hours</small> -->
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-3 bg-white px-4 py-2 rounded-pill border shadow-sm">
+                            <div class="fs-5 info-icon-circle-contact"><i class="fas fa-map-marker-alt"></i></div>
+                            <div class="text-start">
+                                <p class="fw-bold text-dark mb-0 lh-1">Mumbai, India</p>
+                                <!-- <small class="text-muted" style="font-size: 0.75rem;">We respond within 24 hours</small> -->
+                            </div>
+                        </div>
             
-                                </div> -->
-            
+                    </div>
+<!--             
                     <div class="row justify-content-center mb-4">
                         <div class="col-6 col-md-2">
                             <div class="contact-info-box text-center">
@@ -342,7 +349,7 @@
                             </div>
                         </div>
             
-                        <!-- <div class="col-6 col-md-2">
+                        <div class="col-6 col-md-2">
                             <div class="contact-info-box text-center">
                                 <div class="info-icon-circle">
                                     <i class="fas fa-clock"></i>
@@ -350,9 +357,9 @@
                                 <h6 class="fw-bold mb-1">Hours</h6>
                                 <p class="text-muted small mb-0">9 AM - 9 PM IST</p>
                             </div>
-                        </div> -->
+                        </div>
             
-                    </div>
+                    </div> -->
             
                 </div>
             </div>
@@ -459,7 +466,51 @@
                                     <div class="row g-3 mb-3">
                                         <div class="col-md-6">
                                             <label class="form-label small fw-bold text-muted">Looking to buy *</label>
-                                            <select class="form-select rc-input is-required">
+                                            <div class="rc-input is-required">
+                                                <div class="d-flex flex-wrap gap-3">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="cat-iphone" name="categories" value="iPhones">
+                                                        <label class="form-check-label" for="cat-iphone">iPhones</label>
+                                                    </div>
+
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="cat-samsung" name="categories" value="Samsung">
+                                                        <label class="form-check-label" for="cat-samsung">Samsung</label>
+                                                    </div>
+
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="cat-macbook" name="categories" value="MacBooks">
+                                                        <label class="form-check-label" for="cat-macbook">MacBooks</label>
+                                                    </div>
+
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="cat-laptop" name="categories" value="Laptops">
+                                                        <label class="form-check-label" for="cat-laptop">Laptops</label>
+                                                    </div>
+
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="cat-ipad" name="categories" value="iPads">
+                                                        <label class="form-check-label" for="cat-ipad">iPads</label>
+                                                    </div>
+
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="cat-desktop" name="categories" value="Desktops">
+                                                        <label class="form-check-label" for="cat-desktop">Desktops</label>
+                                                    </div>
+
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="cat-accessories" name="categories" value="Accessories">
+                                                        <label class="form-check-label" for="cat-accessories">Accessories</label>
+                                                    </div>
+
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="cat-mixed" name="categories" value="Mixed / Multiple categories">
+                                                        <label class="form-check-label" for="cat-mixed">Mixed / Multiple categories</label>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <!-- <select class="form-select rc-input is-required">
                                                 <option value="">Select category...</option>
                                                 <option value="iPhones">iPhones</option>
                                                 <option value="Samsung">Samsung</option>
@@ -469,7 +520,7 @@
                                                 <option value="Desktops">Desktops</option>
                                                 <option value="Accessories">Accessories</option>
                                                 <option>Mixed / Multiple categories</option>
-                                            </select>
+                                            </select> -->
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label small fw-bold text-muted">Approximate Quantity *</label>
@@ -483,7 +534,7 @@
                                         </div>
                                     </div>
                                     <div class="mb-0">
-                                        <label class="form-label small fw-bold text-muted">Specific Requirements</label>
+                                        <label class="form-label small fw-bold text-muted">Description</label>
                                         <textarea class="form-control rc-input" rows="2" placeholder="Models, grades, budget range..."></textarea>
                                     </div>
                                 </div>

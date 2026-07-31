@@ -9,22 +9,53 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" rel="stylesheet">
-    <!-- <link href="{% static 'css/style.css' %}" rel="stylesheet"> -->
     <link rel="stylesheet" href="{% static 'css/homepage/styles.css' %}">
     <link href="{% static 'css/product-enhanced.css' %}" rel="stylesheet">
-    <!-- Added Navbar css -->
     <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
     <style>
+        .whatsapp-fab{
+            position:fixed;
+            right:24px;
+            bottom:85px;
+            width:62px;
+            height:62px;
+            border-radius:50%;
+            background:#25D366;
+            color:#fff;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:34px;
+            text-decoration:none;
+            box-shadow:0 10px 30px rgba(0,0,0,.25);
+            z-index:9999;
+            transition:.25s ease;
+        }
+
+        .whatsapp-fab:hover{
+            color:#fff;
+            background:#1ebe5d;
+            transform:translateY(-4px) scale(1.08);
+            box-shadow:0 16px 40px rgba(0,0,0,.35);
+        }
+
+        .whatsapp-fab:active{
+            transform:scale(.95);
+        }
+
+        @media(max-width:768px){
+            .whatsapp-fab{
+                width:56px;
+                height:56px;
+                right:18px;
+                bottom:68px;
+                font-size:30px;
+            }
+        }
+
         .thumbnailSwiper .swiper-slide {
             width: auto !important;
-            }
-        /* ===== Premium Design Variables ===== */
-        /* :root {
-            --primary-gradient: linear-gradient(135deg, #a855f7, #ec4899);
-            --primary-color: #a855f7;
-            --secondary-color: #ec4899;
-            --accent-color: #6fba2c;
-        } */
+        }
 
         /* ===== Simple Tabs Wrapper ===== */
         .simple-tabs {
@@ -35,7 +66,6 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
 
-        /* ===== Tab Buttons ===== */
         .tab-buttons {
             display: flex;
             background: linear-gradient(to right, #f9fafb, #ffffff);
@@ -55,124 +85,136 @@
             transition: all 0.3s ease;
         }
 
-        .tab-btn:hover {
-            color: #6fba2c;
-            background: rgba(111, 186, 44, 0.05);
+        .tab-btn:hover { color: #6fba2c; background: rgba(111, 186, 44, 0.05); }
+        .tab-btn.active { color: #6fba2c; background: rgba(111, 186, 44, 0.08); }
+        .tab-btn.active::after {
+            content: "";
+            position: absolute;
+            bottom: -2px; left: 0; right: 0;
+            height: 2px;
+            background: #6fba2c;
         }
 
-        .tab-btn.active {
-            color: #6fba2c;
-            background: rgba(111, 186, 44, 0.08);
-        }
+        .tab-panels { padding: 28px; }
 
-        /* ===== Panels ===== */
-        .tab-panels {
-            padding: 24px;
-        }
+        .tab-panel { display: none; animation: fadeUp 0.25s ease; }
+        .tab-panel.active { display: block; }
 
-        .tab-panel {
-            display: none;
-            animation: fadeUp 0.25s ease;
-        }
-
-        .tab-panel.active {
-            display: block;
-        }
-
-        /* ===== Typography ===== */
         .tab-panel h5 {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 700;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             color: #6fba2c;
         }
 
-        .lead-text {
-            color: #4b5563;
-            margin-bottom: 16px;
-        }
+        .lead-text { color: #4b5563; margin-bottom: 16px; }
 
-        /* ===== Specs Grid ===== */
+        /* ===== Spec Grid with Icons ===== */
         .spec-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            padding: 16px 0;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 14px;
+            padding: 4px 0;
         }
 
-        .spec-grid div {
-            background: linear-gradient(135deg, #f9fafb, #ffffff);
+        .spec-card-item {
+            background: #ffffff;
             border: 1px solid #e5e7eb;
             border-radius: 12px;
-            padding: 14px;
-            transition: all 0.3s ease;
+            padding: 14px 14px 14px 14px;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
             position: relative;
             overflow: hidden;
         }
 
-        .spec-grid div::before {
+        .spec-card-item::before {
             content: "";
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
+            top: 0; left: 0; right: 0;
             height: 3px;
-            background: #6fba2c;
+            background: linear-gradient(90deg, #6fba2c, #8dd43e);
+            border-radius: 12px 12px 0 0;
         }
 
-        .spec-grid div:hover {
+        .spec-card-item:hover {
             border-color: #6fba2c;
-            box-shadow: 0 4px 12px rgba(111, 186, 44, 0.1);
+            box-shadow: 0 4px 14px rgba(111, 186, 44, 0.12);
             transform: translateY(-2px);
         }
 
-        .spec-grid span {
-            display: block;
-            font-size: 0.75rem;
-            color: #6b7280;
-            margin-bottom: 4px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .spec-icon-wrap {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: rgba(111, 186, 44, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
         }
 
-        .spec-grid strong {
-            font-size: 0.95rem;
+        .spec-icon-wrap i {
+            font-size: 0.85rem;
+            color: #6fba2c;
+        }
+
+        .spec-card-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .spec-label {
+            display: block;
+            font-size: 0.7rem;
+            color: #9ca3af;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 5px;
+        }
+
+        .spec-value {
+            display: block;
+            font-size: 0.88rem;
             color: #111827;
             font-weight: 700;
+            word-break: break-word;
+            line-height: 1.3;
         }
 
         /* ===== Check List ===== */
-        .check-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
+        .check-list { list-style: none; padding: 0; margin: 0; }
         .check-list li {
             position: relative;
-            padding-left: 26px;
-            margin-bottom: 10px;
+            padding-left: 28px;
+            margin-bottom: 12px;
             color: #374151;
+            font-size: 0.9rem;
+            line-height: 1.5;
         }
-
         .check-list li::before {
+            content: "";
+            position: absolute;
+            left: 0; top: 5px;
+            width: 16px; height: 16px;
+            background: rgba(111, 186, 44, 0.15);
+            border-radius: 50%;
+        }
+        .check-list li::after {
             content: "✓";
             position: absolute;
-            left: 0;
-            top: 0;
-            color: #10b981;
-            font-weight: 700;
-            font-size: 1.1rem;
+            left: 3px; top: 3px;
+            color: #6fba2c;
+            font-weight: 800;
+            font-size: 0.75rem;
         }
 
         /* ===== Info Cards ===== */
-        .info-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-        }
-
+        .info-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
         .info-card {
             background: linear-gradient(135deg, #f9fafb, #ffffff);
             border: 1px solid #e5e7eb;
@@ -182,183 +224,269 @@
             position: relative;
             overflow: hidden;
         }
-
         .info-card::before {
             content: "";
             position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200px;
-            height: 200px;
+            top: -50%; right: -50%;
+            width: 200px; height: 200px;
             background: radial-gradient(circle, rgba(111, 186, 44, 0.1), transparent);
             border-radius: 50%;
         }
-
         .info-card:hover {
             border-color: #6fba2c;
             box-shadow: 0 8px 24px rgba(111, 186, 44, 0.12);
             transform: translateY(-4px);
         }
+        .info-card h6 { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; color: #111827; position: relative; z-index: 1; }
+        .info-card p { font-size: 0.85rem; color: #4b5563; margin: 0; position: relative; z-index: 1; }
 
-        .info-card h6 {
-            font-size: 0.95rem;
-            font-weight: 700;
-            margin-bottom: 6px;
-            color: #111827;
-            position: relative;
-            z-index: 1;
+        .info-card .card-icon {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            background: rgba(111, 186, 44, 0.12);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 12px;
+            position: relative; z-index: 1;
         }
-
-        .info-card p {
-            font-size: 0.85rem;
-            color: #4b5563;
-            margin: 0;
-            position: relative;
-            z-index: 1;
-        }
+        .info-card .card-icon i { color: #6fba2c; font-size: 1rem; }
 
         /* ===== Animation ===== */
         @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(6px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* ===== Trust Badges Section ===== */
+        /* ===== Trust Badges ===== */
         .trust-badges {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 16px;
             margin: 2rem 0;
-            padding: 0;
-            background: transparent;
-            border: none;
         }
-
         .badge-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            padding: 16px 12px;
-            border-radius: 16px;
-            background: #ffffff;
-            border: 1px solid #f3f4f6;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+            padding: 16px 12px; border-radius: 16px;
+            background: #ffffff; border: 1px solid #f3f4f6;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
         }
+        .badge-item:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(111, 186, 44, 0.08); border-color: rgba(111, 186, 44, 0.2); }
+        .badge-item i { font-size: 1.6rem; color: #6fba2c; margin-bottom: 8px; background: rgba(111, 186, 44, 0.1); width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+        .badge-item .badge-label { font-size: 0.8rem; font-weight: 700; color: #111827; }
+        .badge-item .badge-desc { font-size: 0.7rem; color: #6b7280; margin-top: 4px; }
 
-        .badge-item:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(111, 186, 44, 0.08);
-            border-color: rgba(111, 186, 44, 0.2);
-        }
-
-        .badge-item i {
-            font-size: 1.6rem;
-            color: #6fba2c;
-            margin-bottom: 8px;
-            background: rgba(111, 186, 44, 0.1);
-            width: 45px;
-            height: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-        }
-
-        .badge-item .badge-label {
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: #111827;
-        }
-
-        .badge-item .badge-desc {
-            font-size: 0.7rem;
-            color: #6b7280;
-            margin-top: 4px;
-        }
-
-        .minimal-spec-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #f3f4f6;
-            font-size: 0.9rem;
-        }
+        .minimal-spec-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f3f4f6; font-size: 0.9rem; }
         .minimal-spec-item span { color: #6b7280; }
         .minimal-spec-item strong { color: #111827; font-weight: 500; }
+
+        /* ===== Seller Options (new design) ===== */
+        .sellers-section h6 { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #9ca3af; margin-bottom: 10px; }
+
+        .seller-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 11px 14px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+            background: #fff;
+        }
+        .seller-option:hover { border-color: #6fba2c; background: rgba(111, 186, 44, 0.03); }
+        .seller-option.selected { border-color: #6fba2c; background: rgba(111, 186, 44, 0.06); }
+
+        .seller-option-left { display: flex; align-items: center; gap: 10px; }
+
+        .seller-option-check {
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            border: 2px solid #d1d5db;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .seller-option-check i { font-size: 0.6rem; color: transparent; }
+        .seller-option.selected .seller-option-check { background: #6fba2c; border-color: #6fba2c; }
+        .seller-option.selected .seller-option-check i { color: #fff; }
+
+        .seller-option-info { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .seller-option-name { font-size: 0.875rem; font-weight: 600; color: #111827; }
+
+        .seller-badge-best {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 2px 7px;
+            background: rgba(111, 186, 44, 0.15);
+            color: #3d7a00;
+            border-radius: 20px;
+        }
+
+        .seller-option-price { font-size: 0.95rem; font-weight: 700; color: #6fba2c; }
+
+        /* ===== Sticky Buy Bar (all screen sizes) ===== */
+        .sticky-buy-bar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: #fff;
+            border-top: 1px solid #e5e7eb;
+            padding: 10px 20px;
+            z-index: 1040;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+        }
+        .sticky-buy-bar.visible { transform: translateY(0); }
+
+        .sticky-buy-inner {
+            /* max-width: 1400px; */
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .sticky-product-thumb {
+            /* width: 44px; height: 44px; */
+            width: 5rem; height: 5rem;
+            border-radius: 8px;
+            object-fit: contain;
+            flex-shrink: 0;
+            border: 1px solid #f3f4f6;
+            background: #f9fafb;
+            padding: 3px;
+        }
+
+        .sticky-product-info { flex: 1; min-width: 0; }
+        .sticky-product-name { font-size: 1.5rem; font-weight: 700; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sticky-product-sub  { font-size: 1.2rem; color: #6b7280; margin-top: 1px; }
+
+        .sticky-price-block { text-align: right; }
+        .sticky-price-main  { font-size: 1.5rem; font-weight: 800; color: #111827; line-height: 1; }
+
+        .sticky-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+        .sticky-cart-btn {
+            height: 42px;
+            padding: 0 20px;
+            background: #fff;
+            color: #6fba2c;
+            border: 2px solid #6fba2c;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .sticky-cart-btn:hover { background: rgba(111, 186, 44, 0.06); }
+
+        .sticky-buynow-btn {
+            height: 42px;
+            padding: 0 22px;
+            background: #6fba2c;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .sticky-buynow-btn:hover { background: #5ea824; }
+
+        .sticky-whatsapp {
+            width: 42px; height: 42px;
+            background: #25D366;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background 0.2s;
+        }
+        .sticky-whatsapp:hover { background: #1ebe5d; }
+
+        @media (max-width: 575px) {
+            .sticky-product-thumb { display: none; }
+            .sticky-product-info { display: none; }
+            .sticky-price-block { flex: 1; text-align: left; }
+        }
+
+        /* ===== Conditions Panel Redesign ===== */
+        .cond-image-carousel {
+            display: flex;
+            gap: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            background: #f5f3ff;
+            height: 220px;
+        }
+        .cond-image-carousel img {
+            width: 50%;
+            height: 100%;
+            object-fit: contain;
+            padding: 16px;
+        }
+
+        .cond-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .cond-tab-btn {
+            flex: 1;
+            padding: 9px 12px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 8px;
+            background: #fff;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .cond-tab-btn:hover { border-color: #6fba2c; color: #6fba2c; }
+        .cond-tab-btn.active { background: #6fba2c; border-color: #6fba2c; color: #fff; }
+
+        .cond-panel-desc-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 14px;
+        }
+        .cond-panel-bullets {
+            list-style: none;
+            padding: 0; margin: 0;
+        }
+        .cond-panel-bullets li {
+            position: relative;
+            padding-left: 22px;
+            margin-bottom: 12px;
+            color: #374151;
+            font-size: 0.9rem;
+            line-height: 1.55;
+        }
+        .cond-panel-bullets li::before {
+            content: "•";
+            position: absolute;
+            left: 0; top: 0;
+            color: #6fba2c;
+            font-size: 1.2rem;
+            line-height: 1.3;
+        }
     </style>
 </head>
 
 <body>
-    <!-- 2. Primary Navigation (Navbar) -->
-    <!-- <nav class="navbar-main">
-        <div class="container-fluid px-3 px-lg-5">
-            <div class="d-flex align-items-center justify-content-between navbar-container">
-
-                <div class="brand-col d-flex align-items-center">
-                    <a class="brand-logo" href="index.html">
-                        <img src="/static/images/homepage/refurbazaar-20final-20logo.png" alt="RefurBazaar">
-                    </a>
-                </div>
-
-                <div class="search-col flex-grow-1 d-flex justify-content-center px-lg-4">
-                    <div class="search-wrapper">
-                        <form class="search-input-group">
-                            <input type="search" class="form-control" placeholder="Search for iPhones, Laptops..."
-                                aria-label="Search">
-                            <button class="btn" type="button">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="icons-col d-flex align-items-center gap-2 gap-lg-3">
-                    <a href="#" class="nav-icon-btn" aria-label="Profile">
-                        <i class="far fa-user"></i>
-                    </a>
-                    <a href="#" class="nav-icon-btn" aria-label="Wishlist">
-                        <i class="far fa-heart"></i>
-                    </a>
-                    <a href="#" class="nav-icon-btn" aria-label="Cart">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="badge rounded-pill bg-danger cart-count">2</span>
-                    </a>
-                </div>
-
-            </div>
-        </div>
-    </nav> -->
-
-    <!-- 3. Secondary Navigation (Category Nav) -->
-    <!-- <div class="secondary-nav">
-        <div class="container-fluid">
-            <div class="d-flex">
-                <a href="/shop/?category=sale" class="cat-link highlight-red">
-                    End of Year Sale <i class="fas fa-fire ms-1"></i>
-                </a>
-                <a href="/shop/?category=mobile" class="cat-link">iPhones</a>
-                <a href="/shop/?category=mobile" class="cat-link">Samsung</a>
-                <a href="/shop/?category=laptop" class="cat-link">MacBooks</a>
-                <a href="/shop/?category=laptop" class="cat-link">Laptops</a>
-                <a href="/shop/?category=tablet" class="cat-link">iPads</a>
-                <a href="/shop/?category=accessory" class="cat-link">Accessories</a>
-                <a href="#inquiry-section" class="cat-link">For Business</a>
-                <a href="/shop/?category=express" class="cat-link highlight-blue">
-                    RefurBazaar Express <i class="fas fa-bolt ms-1"></i>
-                </a>
-            </div>
-        </div>
-    </div> -->
-
     {% include 'navbar.html' %}
 
     <!-- Breadcrumb -->
@@ -367,7 +495,6 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/">Home</a></li>
                 <li class="breadcrumb-item"><a href="/shop/">Shop</a></li>
-                <!-- <li class="breadcrumb-item"><a href="#" id="breadcrumbCategory">Category</a></li> -->
                 <li class="breadcrumb-item active" id="breadcrumbProduct">Loading...</li>
             </ol>
         </nav>
@@ -388,7 +515,7 @@
         <div class="text-center py-5">
             <i class="fas fa-exclamation-circle" style="font-size: 64px; color: #dee2e6;"></i>
             <h4 class="mt-3">Product Not Found</h4>
-            <p class="text-muted">The product you're looking for doesn't exist or is no longer available.</p>
+            <p class="text-muted">The product you&apos;re looking for doesn&apos;t exist or is no longer available.</p>
             <a href="/shop/" class="btn btn-primary">Back to Shop</a>
         </div>
     </div>
@@ -396,61 +523,33 @@
     <!-- Product Detail -->
     <div class="px-4 pb-5" id="productContent" style="display: none;">
         <div class="row g-4">
-            <div class="col-lg-7">
+            <div class="col-lg-6">
                 <div class="product-gallery sticky-top" style="top: 100px; z-index: 1;">
                     <div class="gallery-layout-wrapper">
-                
                         <div class="thumbnail-images">
                             <div class="swiper thumbnailSwiper">
-                                <div class="swiper-wrapper" id="thumbnailWrapper">
-                                </div>
+                                <div class="swiper-wrapper" id="thumbnailWrapper"></div>
                             </div>
                         </div>
-                
                         <div class="main-image">
                             <img src="/static/images/iPhone 16 Pro.png" alt="Product" id="mainImage">
                         </div>
                     </div>
-                
-                    <!-- <div class="trust-badges mt-3">
-                        <div class="badge-item">
-                            <i class="fas fa-shield-alt"></i>
-                            <div class="badge-label">Certified</div>
-                            <div class="badge-desc">Expert Verified</div>
-                        </div>
-                        <div class="badge-item">
-                            <i class="fas fa-check-circle"></i>
-                            <div class="badge-label">Warranty</div>
-                            <div class="badge-desc">6 Months</div>
-                        </div>
-                        <div class="badge-item">
-                            <i class="fas fa-undo"></i>
-                            <div class="badge-label">Returns</div>
-                            <div class="badge-desc">7-Day Easy Return</div>
-                        </div>
-                        <div class="badge-item">
-                            <i class="fas fa-lock"></i>
-                            <div class="badge-label">Secure</div>
-                            <div class="badge-desc">100% Safe Payment</div>
-                        </div>
-                    </div> -->
                 </div>
             </div>
 
-            <div class="col-lg-5">
-
-                <div class="product-header mb-3">
-                    <h1 id="productTitle" class="h3 fw-bold mb-0">Loading...</h1>
-
-                    <a href="javascript:void(0)" onclick="toggleSpecsPanel()"
-                        class="d-inline-flex align-items-center mt-2 text-decoration-none"
-                        style="color: #2A8C3C; font-size: 0.9rem; font-weight: 600; transition: opacity 0.2s;"
-                        onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
-                        <i class="fas fa-sliders-h me-2"></i> View Specifications
-                    </a>
-                </div>
-
+            <div class="col-lg-6">
                 <div class="product-details">
+
+                    <div class="product-header mb-3">
+                        <h1 id="productTitle" class="h3 fw-bold mb-0">Loading...</h1>
+                        <a href="javascript:void(0)" onclick="toggleSpecsPanel()"
+                            class="d-inline-flex align-items-center mt-2 text-decoration-none"
+                            style="color: #2A8C3C; font-size: 0.9rem; font-weight: 600; transition: opacity 0.2s;"
+                            onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                            <i class="fas fa-sliders-h me-2"></i> View Specifications
+                        </a>
+                    </div>
 
                     <div class="selection-section border-top-0">
                         <div class="section-header d-flex justify-content-between align-items-center">
@@ -458,30 +557,26 @@
                                 Condition: <span id="selectedConditionLabel" class="text-primary fw-bold">Select...</span>
                                 <small id="selectedConditionDesc" class="text-muted ms-2 fw-normal" style="font-size: 0.8rem;"></small>
                             </h6>
-                    
                             <button class="btn btn-link p-0 text-decoration-none" style="font-size: 0.95rem;"
-                                onclick="toggleConditionsPanel()">
+                                onclick="openConditionsPanel()">
                                 Compare <i class="fas fa-chevron-right ms-1"></i>
                             </button>
                         </div>
                         <div class="condition-options">
-                            <div class="condition-grid" id="conditionGrid">
-                            </div>
+                            <div class="condition-grid" id="conditionGrid"></div>
                         </div>
                     </div>
 
-                    <div id="attributeFiltersContainer">
-                    </div>
+                    <div id="attributeFiltersContainer"></div>
 
+                    <!-- Sellers — auto selected, shown as compact options -->
                     <div class="sellers-section">
                         <h6 class="mb-2">Available from</h6>
-                        <div class="sellers-list" id="sellersList">
-                        </div>
+                        <div class="sellers-list" id="sellersList"></div>
                     </div>
 
                     <div class="warranty-addon-box mb-3 p-3 shadow-sm">
                         <i class="fas fa-shield-alt watermark"></i>
-                        
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div class="d-flex align-items-center gap-2">
                                 <div class="icon-circle">
@@ -491,238 +586,123 @@
                                     <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.95rem;">Extended Warranty</h6>
                                 </div>
                             </div>
-                            
                             <label class="theme-switch mt-1">
                                 <input type="checkbox" id="warrantyToggle">
                                 <span class="slider round"></span>
                             </label>
                         </div>
-                        
                         <p class="text-muted mb-2 ps-1" style="font-size: 0.8rem; line-height: 1.4; max-width: 85%;">
                             Upgrade your protection. Extend your coverage for 24 months to cover all hardware defects, battery issues, and internal malfunctions.
                         </p>
-                        
                         <div class="d-flex align-items-center gap-2 ps-1">
                             <span class="fw-bold" style="color: #2A8C3C; font-size: 0.95rem;">+ ₹1,999</span>
                             <span class="text-muted" style="font-size: 0.75rem;">(Billed once)</span>
                         </div>
                     </div>
 
-                    <div class="purchase-options mb-4 sticky-top-mobile" style="padding: 1.5rem;">
+                    <div class="purchase-options mb-4" style="padding: 1.5rem;">
                         <div class="purchase-option border-0 p-0 mb-0">
-
                             <input type="radio" name="purchase" id="buyNow" checked class="d-none">
-
                             <div class="d-flex align-items-center justify-content-between gap-3 mb-3 py-2">
-
                                 <div class="price-area flex-grow-1">
-                                    <small class="text-muted d-block fw-medium"
-                                        style="font-size: 0.85rem; margin-bottom: 2px;">Total
-                                        Price</small>
+                                    <small class="text-muted d-block fw-medium" style="font-size: 0.85rem; margin-bottom: 2px;">Total Price</small>
                                     <span class="price h2 fw-bold m-0 text-primary" id="displayPrice">₹0</span>
                                 </div>
-
                                 <button class="btn btn-primary px-5 py-2 shadow-sm" id="addToCartBtn"
                                     style="height: 50px; font-weight: 600;" disabled>
                                     <i class="fas fa-shopping-cart me-2"></i>Add to Cart
                                 </button>
                             </div>
 
+                            <!-- Free Shipping + Returns row -->
                             <div class="d-flex justify-content-between align-items-center bg-light rounded px-3 py-2 mt-2">
                                 <small class="text-muted" style="font-size: 0.75rem;">
-                                    <i class="fas fa-lock me-1"></i>Secure Pay
+                                    <i class="fa fa-lock me-1"></i>Secure Pay
                                 </small>
                                 <div class="d-flex gap-3">
                                     <small class="text-success fw-bold" style="font-size: 0.75rem;">
-                                        <i class="fas fa-undo me-1"></i>7-Day Return
+                                        <i class="fas fa-truck me-1"></i>Free Shipping
                                     </small>
-                                    <small class="text-success fw-bold" style="font-size: 0.75rem;">
-                                        <i class="fas fa-shield-alt me-1"></i>6 Warranty
+                                    <small class="text-muted" style="font-size: 0.75rem;">
+                                        4-7 business days
                                     </small>
                                 </div>
                             </div>
-
+                            <div class="d-flex justify-content-end gap-3 mt-1 px-1">
+                                <small class="text-success fw-bold" style="font-size: 0.75rem;">
+                                    <i class="fas fa-undo me-1"></i>7-Day Return
+                                </small>
+                                <small class="text-success fw-bold" style="font-size: 0.75rem;">
+                                    <i class="fas fa-shield-alt me-1"></i>6 Month Warranty
+                                </small>
+                            </div>
                         </div>
                     </div>
 
                     <div class="whats-included-box">
-                        <h6>What's in the box</h6>
-                        
+                        <h6>What&apos;s in the box</h6>
                         <div class="included-list">
                             <div class="included-item">
-                                <div class="included-icon">
-                                    <i class="fas fa-mobile-alt"></i>
-                                </div>
+                                <div class="included-icon"><i class="fas fa-mobile-alt"></i></div>
                                 <div class="included-text">
                                     <span class="title">The Device</span>
-                                    <span class="desc">Tested, cleaned & fully refurbished</span>
+                                    <span class="desc">Tested, cleaned &amp; fully refurbished</span>
                                 </div>
                             </div>
-                            
                             <div class="included-item">
-                                <div class="included-icon">
-                                    <i class="fas fa-plug"></i>
-                                </div>
+                                <div class="included-icon"><i class="fas fa-plug"></i></div>
                                 <div class="included-text">
                                     <span class="title">Charging Cable</span>
                                     <span class="desc">High-quality compatible charging cable</span>
                                 </div>
                             </div>
-
-                            <!-- <div class="included-item">
-                                <div class="included-icon">
-                                    <i class="fas fa-file-contract"></i>
-                                </div>
-                                <div class="included-text">
-                                    <span class="title">Warranty Card</span>
-                                    <span class="desc">Details of your extended coverage</span>
-                                </div>
-                            </div> -->
                         </div>
                     </div>
-                    
-                    <!-- <div class="product-features mt-3 py-2 bg-white border-0">
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.8rem;">
-                                    <i class="fas fa-truck text-success"></i> Free Delivery
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.8rem;">
-                                    <i class="fas fa-unlock text-primary"></i> Unlocked
-                                </div>
-                            </div>
-                        </div>
-                    </div> -->
+
                 </div>
             </div>
         </div>
 
-        <!-- Product Specifications -->
-        <!-- <div class="row mt-5">
-            <div class="col-12">
-                <div class="product-tabs">
-                    <ul class="nav nav-tabs" id="productTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="specs-tab" data-bs-toggle="tab" data-bs-target="#specs"
-                                type="button" role="tab">
-                                Specifications
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="condition-tab" data-bs-toggle="tab" data-bs-target="#condition"
-                                type="button" role="tab">
-                                Condition Details
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="warranty-tab" data-bs-toggle="tab" data-bs-target="#warranty"
-                                type="button" role="tab">
-                                Warranty & Returns
-                            </button>
-                        </li>
-                    </ul>
-                    <div class="tab-content" id="productTabsContent">
-                        <div class="tab-pane show active" id="specs" role="tabpanel">
-                            <div class="specifications-content">
-                                <div class="spec-overview">
-                                    <h5>Product Overview</h5>
-                                    <p id="productDescription">Loading product specifications...</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="condition" role="tabpanel">
-                            <div class="condition-details">
-                                <div class="condition-info-card">
-                                    <h6><i class="fas fa-star text-warning me-2"></i>Excellent Condition</h6>
-                                    <p>This device has been professionally refurbished and tested to ensure optimal
-                                        performance. It may show minimal signs of wear but functions like new.</p>
-                                    <ul class="condition-features">
-                                        <li><i class="fas fa-check text-success me-2"></i>Battery health: 85%+ capacity
-                                        </li>
-                                        <li><i class="fas fa-check text-success me-2"></i>Screen: No cracks or scratches
-                                        </li>
-                                        <li><i class="fas fa-check text-success me-2"></i>Body: Minor cosmetic wear
-                                            possible</li>
-                                        <li><i class="fas fa-check text-success me-2"></i>All functions tested and
-                                            working</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="warranty" role="tabpanel">
-                            <div class="warranty-details">
-                                <div class="warranty-card">
-                                    <h6><i class="fas fa-shield-alt text-primary me-2"></i>1-Year Warranty</h6>
-                                    <p>All refurbished devices come with a comprehensive 1-year warranty covering
-                                        hardware defects and functionality issues.</p>
-                                </div>
-                                <div class="warranty-card">
-                                    <h6><i class="fas fa-undo text-success me-2"></i>30-Day Returns</h6>
-                                    <p>Not satisfied? Return your device within 30 days for a full refund, no questions
-                                        asked.</p>
-                                </div>
-                                <div class="warranty-card">
-                                    <h6><i class="fas fa-headset text-info me-2"></i>Customer Support</h6>
-                                    <p>24/7 customer support available to help with any questions or issues you may
-                                        have.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> -->
-
-        <!-- ── Product Specifications ──────────────────────────────────────── -->
+        <!-- ── Product Specifications Tabs ───────────────────────────────────── -->
         <div class="row mt-5" id="specsSection" style="display:none;">
             <div class="col-12">
                 <section class="simple-tabs">
-
-                    <!-- Tab Buttons -->
                     <div class="tab-buttons">
-                        <!-- <button class="tab-btn active" data-tab="specs-main">Key Specs</button> -->
-                        <button class="tab-btn active" data-tab="specs-warranty">Warranty & Returns</button>
+                        <button class="tab-btn active" data-tab="specs-warranty">Warranty &amp; Returns</button>
                         <button class="tab-btn" id="specsSecondaryTabBtn" data-tab="specs-secondary" style="display:none;">More Details</button>
                         <button class="tab-btn" data-tab="specs-condition">Condition</button>
                     </div>
 
-                    <!-- Tab Content -->
                     <div class="tab-panels">
-
-                        <!-- Main Attributes -->
-                        <!-- <div class="tab-panel active" id="specs-main">
-                            <h5>Key Specifications</h5>
-                            <div class="spec-grid" id="specsMainGrid">
-                                Populated by renderSpecsSections()
-                            </div>
-                            <div id="specsDescription" style="display:none;">
-                                <h5 style="margin-top:20px;">Product Overview</h5>
-                                <p id="productDescription" class="lead-text"></p>
-                            </div>
-                        </div> -->
 
                         <!-- Warranty & Returns -->
                         <div class="tab-panel active" id="specs-warranty">
                             <h5>Warranty &amp; Returns</h5>
                             <div class="info-cards">
                                 <div class="info-card">
+                                    <div class="card-icon"><i class="fas fa-shield-alt"></i></div>
                                     <h6>6-Month Warranty</h6>
                                     <p>Covers hardware defects and functionality issues.</p>
                                 </div>
                                 <div class="info-card">
+                                    <div class="card-icon"><i class="fas fa-undo"></i></div>
                                     <h6>7-Day Returns</h6>
-                                    <p>Full refund if you are not satisfied.</p>
+                                    <p>Full refund if you are not satisfied, no questions asked.</p>
                                 </div>
                                 <div class="info-card">
+                                    <div class="card-icon"><i class="fas fa-truck"></i></div>
+                                    <h6>Free Shipping</h6>
+                                    <p>Fast delivery in 4-7 business days, all across India.</p>
+                                </div>
+                                <div class="info-card">
+                                    <div class="card-icon"><i class="fas fa-headset"></i></div>
                                     <h6>Customer Support</h6>
                                     <p>Available 7 days a week via chat and email.</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Secondary Attributes -->
+                        <!-- Secondary Attributes (More Details) -->
                         <div class="tab-panel" id="specs-secondary">
                             <div id="specsDescription" style="display:none;">
                                 <h5 style="margin-top:20px;">Product Overview</h5>
@@ -748,13 +728,7 @@
                         </div>
 
                     </div>
-
                 </section>
-            </div>
-        </div>
-
-
-
             </div>
         </div>
 
@@ -767,12 +741,9 @@
                 <h2 class="fw-bold mb-0">You May Also Like It</h2>
                 <a href="/shop/" class="btn btn-outline-dark rounded-pill px-4" style="font-weight: 600;">See all</a>
             </div>
-    
             <div class="product-slider-wrapper">
                 <button class="product-slider-arrow arrow-prev" id="recPrev"><i class="fas fa-chevron-left"></i></button>
-    
                 <div class="product-track" id="recommendedTrack">
-                    
                     <div class="product-slide">
                         <a href="/shop/?category=accessory" class="product-card-link">
                             <div class="product-card">
@@ -786,7 +757,6 @@
                             </div>
                         </a>
                     </div>
-                    
                     <div class="product-slide">
                         <a href="/shop/?category=mobile" class="product-card-link">
                             <div class="product-card">
@@ -803,7 +773,6 @@
                             </div>
                         </a>
                     </div>
-                    
                     <div class="product-slide">
                         <a href="/shop/?category=accessory" class="product-card-link">
                             <div class="product-card">
@@ -817,7 +786,6 @@
                             </div>
                         </a>
                     </div>
-                    
                     <div class="product-slide">
                         <a href="/shop/?category=tablet" class="product-card-link">
                             <div class="product-card">
@@ -831,7 +799,6 @@
                             </div>
                         </a>
                     </div>
-                    
                     <div class="product-slide">
                         <a href="/shop/?category=laptop" class="product-card-link">
                             <div class="product-card">
@@ -846,7 +813,6 @@
                         </a>
                     </div>
                 </div>
-    
                 <button class="product-slider-arrow arrow-next" id="recNext"><i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
@@ -855,7 +821,6 @@
     <!-- Reviews Section -->
     <section class="reviews-section bg-white" style="padding: 4rem 0; border-top: 1px solid #f3f4f6;">
         <div class="container-fluid px-3 px-lg-5">
-            
             <div class="d-flex justify-content-between align-items-end mb-4">
                 <div>
                     <h2 class="fw-bold mb-2">Customer Reviews</h2>
@@ -868,315 +833,127 @@
                     </div>
                 </div>
                 <div class="review-nav d-flex gap-2">
-                    <button class="btn btn-outline-secondary rounded-circle review-prev" style="width: 40px; height: 40px; padding: 0;">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button class="btn btn-outline-secondary rounded-circle review-next" style="width: 40px; height: 40px; padding: 0;">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
+                    <button class="btn btn-outline-secondary rounded-circle review-prev" style="width: 40px; height: 40px; padding: 0;"><i class="fas fa-chevron-left"></i></button>
+                    <button class="btn btn-outline-secondary rounded-circle review-next" style="width: 40px; height: 40px; padding: 0;"><i class="fas fa-chevron-right"></i></button>
                 </div>
             </div>
-            
             <div class="row">
                 <div class="col-12">
                     <div class="swiper reviewsSwiper pb-3">
                         <div class="swiper-wrapper">
-                            
                             <div class="swiper-slide h-auto">
                                 <div class="review-card p-4 bg-white border rounded-4 h-100 shadow-sm">
                                     <div class="d-flex justify-content-between align-items-start mb-3">
                                         <div class="d-flex align-items-center gap-3">
-                                            <div class="avatar" style="width: 42px; height: 42px; background: #2A8C3C; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">AK</div>
+                                            <div class="avatar" style="width:42px;height:42px;background:#2A8C3C;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:0.9rem;">AK</div>
                                             <div>
-                                                <h6 class="mb-0 fw-bold">Amit K. <i class="fas fa-check-circle text-success ms-1" style="font-size: 0.8rem;"></i></h6>
-                                                <div style="color: #f59e0b; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                                                <h6 class="mb-0 fw-bold">Amit K. <i class="fas fa-check-circle text-success ms-1" style="font-size:0.8rem;"></i></h6>
+                                                <div style="color:#f59e0b;font-size:0.8rem;margin-top:2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
                                             </div>
                                         </div>
                                         <small class="text-muted">2 days ago</small>
                                     </div>
                                     <h6 class="fw-bold mb-2">Looks Brand New!</h6>
-                                    <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">"The device looked brand new and the battery health was at 92%. Very satisfied with the packaging and fast delivery."</p>
+                                    <p class="mb-0 text-muted" style="font-size:0.9rem;line-height:1.6;">"The device looked brand new and the battery health was at 92%. Very satisfied with the packaging and fast delivery."</p>
                                 </div>
                             </div>
-
                             <div class="swiper-slide h-auto">
                                 <div class="review-card p-4 bg-white border rounded-4 h-100 shadow-sm">
                                     <div class="d-flex justify-content-between align-items-start mb-3">
                                         <div class="d-flex align-items-center gap-3">
-                                            <div class="avatar" style="width: 42px; height: 42px; background: #0ea5e9; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">SJ</div>
+                                            <div class="avatar" style="width:42px;height:42px;background:#0ea5e9;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:0.9rem;">SJ</div>
                                             <div>
-                                                <h6 class="mb-0 fw-bold">Sneha J. <i class="fas fa-check-circle text-success ms-1" style="font-size: 0.8rem;"></i></h6>
-                                                <div style="color: #f59e0b; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
+                                                <h6 class="mb-0 fw-bold">Sneha J. <i class="fas fa-check-circle text-success ms-1" style="font-size:0.8rem;"></i></h6>
+                                                <div style="color:#f59e0b;font-size:0.8rem;margin-top:2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
                                             </div>
                                         </div>
                                         <small class="text-muted">1 week ago</small>
                                     </div>
                                     <h6 class="fw-bold mb-2">Great value for money</h6>
-                                    <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">"The screen is flawless. Phone itself is perfect and works just like a new one. Highly recommended!"</p>
+                                    <p class="mb-0 text-muted" style="font-size:0.9rem;line-height:1.6;">"The screen is flawless. Phone itself is perfect and works just like a new one. Highly recommended!"</p>
                                 </div>
                             </div>
-
                             <div class="swiper-slide h-auto">
                                 <div class="review-card p-4 bg-white border rounded-4 h-100 shadow-sm">
                                     <div class="d-flex justify-content-between align-items-start mb-3">
                                         <div class="d-flex align-items-center gap-3">
-                                            <div class="avatar" style="width: 42px; height: 42px; background: #8b5cf6; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">RM</div>
+                                            <div class="avatar" style="width:42px;height:42px;background:#8b5cf6;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:0.9rem;">RM</div>
                                             <div>
-                                                <h6 class="mb-0 fw-bold">Rahul M. <i class="fas fa-check-circle text-success ms-1" style="font-size: 0.8rem;"></i></h6>
-                                                <div style="color: #f59e0b; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                                                <h6 class="mb-0 fw-bold">Rahul M. <i class="fas fa-check-circle text-success ms-1" style="font-size:0.8rem;"></i></h6>
+                                                <div style="color:#f59e0b;font-size:0.8rem;margin-top:2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
                                             </div>
                                         </div>
                                         <small class="text-muted">2 weeks ago</small>
                                     </div>
                                     <h6 class="fw-bold mb-2">Exceeded Expectations</h6>
-                                    <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">"I was skeptical about buying refurbished, but this exceeded my expectations. Not a single scratch!"</p>
+                                    <p class="mb-0 text-muted" style="font-size:0.9rem;line-height:1.6;">"I was skeptical about buying refurbished, but this exceeded my expectations. Not a single scratch!"</p>
                                 </div>
                             </div>
-
-                            <div class="swiper-slide h-auto">
-                                <div class="review-card p-4 bg-white border rounded-4 h-100 shadow-sm">
-                                    <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="avatar" style="width: 42px; height: 42px; background: #f43f5e; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">PS</div>
-                                            <div>
-                                                <h6 class="mb-0 fw-bold">Priya S. <i class="fas fa-check-circle text-success ms-1" style="font-size: 0.8rem;"></i></h6>
-                                                <div style="color: #f59e0b; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div>
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">3 weeks ago</small>
-                                    </div>
-                                    <h6 class="fw-bold mb-2">Very Good Condition</h6>
-                                    <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">"Phone works perfectly. There was one tiny scratch on the back, but since I use a cover anyway, it doesn't bother me at all."</p>
-                                </div>
-                            </div>
-
-                            <div class="swiper-slide h-auto">
-                                <div class="review-card p-4 bg-white border rounded-4 h-100 shadow-sm">
-                                    <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="avatar" style="width: 42px; height: 42px; background: #f59e0b; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">VT</div>
-                                            <div>
-                                                <h6 class="mb-0 fw-bold">Vikram T. <i class="fas fa-check-circle text-success ms-1" style="font-size: 0.8rem;"></i></h6>
-                                                <div style="color: #f59e0b; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">1 month ago</small>
-                                    </div>
-                                    <h6 class="fw-bold mb-2">Smooth like butter!</h6>
-                                    <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">"Fast delivery! Ordered on Tuesday and got it by Thursday. Performance is super fast with absolutely no lag."</p>
-                                </div>
-                            </div>
-
-                            <div class="swiper-slide h-auto">
-                                <div class="review-card p-4 bg-white border rounded-4 h-100 shadow-sm">
-                                    <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="avatar" style="width: 42px; height: 42px; background: #10b981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">AR</div>
-                                            <div>
-                                                <h6 class="mb-0 fw-bold">Ananya R. <i class="fas fa-check-circle text-success ms-1" style="font-size: 0.8rem;"></i></h6>
-                                                <div style="color: #f59e0b; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">1 month ago</small>
-                                    </div>
-                                    <h6 class="fw-bold mb-2">Perfect support</h6>
-                                    <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">"Excellent customer service! I had a question about the warranty and they replied within minutes. The device is flawless."</p>
-                                </div>
-                            </div>
-
-                            <div class="swiper-slide h-auto">
-                                <div class="review-card p-4 bg-white border rounded-4 h-100 shadow-sm">
-                                    <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="avatar" style="width: 42px; height: 42px; background: #3b82f6; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">KD</div>
-                                            <div>
-                                                <h6 class="mb-0 fw-bold">Karan D. <i class="fas fa-check-circle text-success ms-1" style="font-size: 0.8rem;"></i></h6>
-                                                <div style="color: #f59e0b; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">2 months ago</small>
-                                    </div>
-                                    <h6 class="fw-bold mb-2">100% Battery Health!</h6>
-                                    <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">"I bought the 'Excellent' condition and was amazed to see 100% battery health. Very happy with this purchase."</p>
-                                </div>
-                            </div>
-
-                            <div class="swiper-slide h-auto">
-                                <div class="review-card p-4 bg-white border rounded-4 h-100 shadow-sm">
-                                    <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="avatar" style="width: 42px; height: 42px; background: #ec4899; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">NW</div>
-                                            <div>
-                                                <h6 class="mb-0 fw-bold">Neha W. <i class="fas fa-check-circle text-success ms-1" style="font-size: 0.8rem;"></i></h6>
-                                                <div style="color: #f59e0b; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">2 months ago</small>
-                                    </div>
-                                    <h6 class="fw-bold mb-2">Secure packaging</h6>
-                                    <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">"Will definitely buy again. The box was packed perfectly with bubble wrap to ensure no damage during transit."</p>
-                                </div>
-                            </div>
-
-                            <div class="swiper-slide h-auto">
-                                <div class="review-card p-4 bg-white border rounded-4 h-100 shadow-sm">
-                                    <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="avatar" style="width: 42px; height: 42px; background: #64748b; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">RP</div>
-                                            <div>
-                                                <h6 class="mb-0 fw-bold">Rajat P. <i class="fas fa-check-circle text-success ms-1" style="font-size: 0.8rem;"></i></h6>
-                                                <div style="color: #f59e0b; font-size: 0.8rem; margin-top: 2px;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div>
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">3 months ago</small>
-                                    </div>
-                                    <h6 class="fw-bold mb-2">Works perfectly</h6>
-                                    <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">"Phone works great. The included charging cable is of very high quality too. Good job guys."</p>
-                                </div>
-                            </div>
-
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    
-    <div class="mobile-sticky-buy d-block d-lg-none">
-        <div class="d-flex justify-content-between align-items-center w-100">
-            <div class="price-col">
-                <small class="text-muted d-block"
-                    style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Total
-                    Price</small>
-                <span class="fs-4 fw-bold text-dark" id="stickyMobilePrice" style="line-height: 1;">₹0</span>
+
+    <!-- ===== Sticky Buy Bar (all screen sizes) ===== -->
+    <div class="sticky-buy-bar" id="stickyBuyBar">
+        <div class="sticky-buy-inner">
+            <img id="stickyProductImg" src="/static/images/iPhone 16 Pro.png" alt="Product" class="sticky-product-thumb">
+            <div class="sticky-product-info">
+                <div class="sticky-product-name" id="stickyProductName">Loading...</div>
+                <div class="sticky-product-sub">Refurbished &bull; Verified</div>
             </div>
-            <button class="btn btn-primary rounded-pill px-4 shadow-sm"
-                style="height: 48px; font-weight: 700; background: #6fba2c; border: none;"
-                onclick="document.getElementById('addToCartBtn').click();">
-                Add to Cart
-            </button>
+            <div class="sticky-price-block">
+                <div class="sticky-price-main" id="stickyBarPrice">₹0</div>
+            </div>
+            <div class="sticky-actions">
+                <button class="sticky-cart-btn" onclick="document.getElementById('addToCartBtn').click();">
+                    <i class="fas fa-shopping-cart me-1"></i> Add to Cart
+                </button>
+                <button class="sticky-buynow-btn" onclick="document.getElementById('addToCartBtn').click();">
+                    Buy Now <i class="fas fa-arrow-right"></i>
+                </button>
+                <!-- <button class="sticky-whatsapp" onclick="window.open('https://wa.me/918888888888','_blank')" aria-label="WhatsApp">
+                    <i class="fab fa-whatsapp"></i>
+                </button> -->
+            </div>
         </div>
     </div>
 
-    <!-- Conditions Comparison Side Panel -->
+    <!-- ===== Conditions Comparison Side Panel (redesigned) ===== -->
     <div class="conditions-panel" id="conditionsPanel">
         <div class="panel-overlay" onclick="toggleConditionsPanel()"></div>
         <div class="panel-content">
             <div class="panel-header">
-                <h4>Compare conditions</h4>
+                <h4>Condition Details</h4>
                 <button class="close-btn" onclick="toggleConditionsPanel()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
 
             <div class="panel-body">
-                <div class="condition-comparison">
-                    <div class="comparison-header">
-                        <h5>Both tested. Perfected. Refurbished.</h5>
-                        <div class="carousel-dots">
-                            <span class="dot active" data-slide="0"></span>
-                            <span class="dot" data-slide="1"></span>
-                            <span class="dot" data-slide="2"></span>
-                            <span class="dot" data-slide="3"></span>
-                            <span class="dot" data-slide="4"></span>
-                            <span class="dot" data-slide="5"></span>
-                            <span class="dot" data-slide="6"></span>
-                        </div>
-                    </div>
+                <!-- Product image duo -->
+                <div class="cond-image-carousel">
+                    <img id="condPanelImg1" src="/static/images/iPhone 16 Pro.png" alt="Product front">
+                    <img id="condPanelImg2" src="/static/images/iPhone 16 Pro.png" alt="Product back">
+                </div>
 
-                    <div class="inspection-carousel">
-                        <div class="carousel-slides">
-                            <div class="carousel-slide active" data-slide="0">
-                                <div class="slide-icon">
-                                    <i class="fas fa-sim-card"></i>
-                                </div>
-                                <div class="slide-content">
-                                    <h6>SIM and/or memory card reader</h6>
-                                    <p>This tests that SIM cards and memory cards are correctly read by the device, and
-                                        any trays or slots to insert or remove the card works properly.</p>
-                                </div>
-                            </div>
+                <!-- Condition tabs -->
+                <div class="cond-tabs">
+                    <button class="cond-tab-btn active" data-cond="excellent" onclick="selectConditionPanelTab('excellent')">Superb</button>
+                    <button class="cond-tab-btn" data-cond="good"      onclick="selectConditionPanelTab('good')">Good</button>
+                    <button class="cond-tab-btn" data-cond="fair"      onclick="selectConditionPanelTab('fair')">Fair</button>
+                </div>
 
-                            <div class="carousel-slide" data-slide="1">
-                                <div class="slide-icon">
-                                    <i class="fas fa-camera"></i>
-                                </div>
-                                <div class="slide-content">
-                                    <h6>Cameras</h6>
-                                    <p>All cameras are inspected for functionality, image capture and quality. This
-                                        includes video conferencing.</p>
-                                </div>
-                            </div>
-
-                            <div class="carousel-slide" data-slide="2">
-                                <div class="slide-icon">
-                                    <i class="fas fa-trash-alt"></i>
-                                </div>
-                                <div class="slide-content">
-                                    <h6>Data deletion</h6>
-                                    <p>All personal data is completely wiped from the device using industry-standard
-                                        data deletion methods.</p>
-                                </div>
-                            </div>
-
-                            <div class="carousel-slide" data-slide="3">
-                                <div class="slide-icon">
-                                    <i class="fas fa-plug"></i>
-                                </div>
-                                <div class="slide-content">
-                                    <h6>Chargers and/or cables</h6>
-                                    <p>Charging functionality is tested to ensure proper power delivery and connection
-                                        stability.</p>
-                                </div>
-                            </div>
-
-                            <div class="carousel-slide" data-slide="4">
-                                <div class="slide-icon">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                </div>
-                                <div class="slide-content">
-                                    <h6>GPS and/or positioning system</h6>
-                                    <p>Location services and GPS accuracy are tested to ensure proper navigation and
-                                        location-based features.</p>
-                                </div>
-                            </div>
-
-                            <div class="carousel-slide" data-slide="5">
-                                <div class="slide-icon">
-                                    <i class="fas fa-satellite-dish"></i>
-                                </div>
-                                <div class="slide-content">
-                                    <h6>External sensors</h6>
-                                    <p>All external sensors including accelerometer, gyroscope, and ambient light
-                                        sensors are tested for proper functionality.</p>
-                                </div>
-                            </div>
-
-                            <div class="carousel-slide" data-slide="6">
-                                <div class="slide-icon">
-                                    <i class="fas fa-fingerprint"></i>
-                                </div>
-                                <div class="slide-content">
-                                    <h6>Biometric sensors</h6>
-                                    <p>Face ID, Touch ID, and other biometric authentication methods are tested for
-                                        accuracy and security.</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="carousel-navigation">
-                            <button class="carousel-btn prev" onclick="previousSlide()" disabled>
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <button class="carousel-btn next" onclick="nextSlide()">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="discover-section">
-                        <button class="discover-btn">Discover Verified Refurbished</button>
-                    </div>
+                <!-- Description area — populated by JS -->
+                <div id="condPanelDesc">
+                    <h6 class="cond-panel-desc-title">Condition Description</h6>
+                    <ul class="cond-panel-bullets">
+                        <li>Like new condition and appearance. Technical condition and durability are the highest possible.</li>
+                        <li>Battery Health is 95% and above.</li>
+                        <li>All devices are 100% tested in depth and functional.</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -1192,11 +969,8 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-
             <div class="panel-body">
-                <ul class="list-unstyled mb-4" id="dynamicSpecsGrid">
-                    </ul>
-                
+                <ul class="list-unstyled mb-4" id="dynamicSpecsGrid"></ul>
                 <div class="mt-4">
                     <h6 class="mb-2 fw-bold text-dark" style="font-size: 0.95rem;">Overview</h6>
                     <p id="sidePanelDescription" class="text-muted mb-0" style="font-size: 0.9rem; line-height: 1.6;">Loading product specifications...</p>
@@ -1204,6 +978,15 @@
             </div>
         </div>
     </div>
+
+    <a href="https://wa.me/9004297203?text=Hi"
+   class="whatsapp-fab"
+   target="_blank"
+   rel="noopener">
+
+    <i class="fab fa-whatsapp"></i>
+
+</a>
 
     <!-- Footer -->
     {% include 'footer.html' %}
@@ -1213,13 +996,10 @@
     <script src="{% static 'js/api_caller.js' %}"></script>
     <script src="{% static 'js/product-detail.js' %}"></script>
 
-    <!-- Tab Functionality -->
     <script>
-        // Initialize on page load
         window.onload = async function () {
-            // Get product ID from URL
             const urlParts = window.location.pathname.split('/');
-            const productId = urlParts[urlParts.length - 2]; // Assuming URL is /product/<id>/
+            const productId = urlParts[urlParts.length - 2];
 
             await initProductDetail(
                 "/product-api/products/" + productId + "/detail/",
@@ -1230,83 +1010,46 @@
             );
         }
 
-        // Conditions panel toggle
+        // Conditions panel toggle — opens and refreshes to currently selected condition
+        function openConditionsPanel() {
+            const panel = document.getElementById('conditionsPanel');
+            if (panel) {
+                panel.classList.add('active');
+                // Sync panel tab to current selected condition
+                const currentCond = document.getElementById('selectedConditionLabel');
+                const condMap = { 'Excellent': 'excellent', 'Good': 'good', 'Fair': 'fair' };
+                const key = currentCond ? (condMap[currentCond.textContent] || 'excellent') : 'excellent';
+                selectConditionPanelTab(key);
+
+                // Update images if product loaded
+                if (typeof productData !== 'undefined' && productData && productData.image) {
+                    const img1 = document.getElementById('condPanelImg1');
+                    const img2 = document.getElementById('condPanelImg2');
+                    if (img1) img1.src = productData.image;
+                    if (img2) img2.src = productData.image;
+                }
+            }
+        }
+
         function toggleConditionsPanel() {
             const panel = document.getElementById('conditionsPanel');
-            panel.classList.toggle('active');
+            if (panel) panel.classList.toggle('active');
         }
 
-        // Carousel functionality
-        let currentSlide = 0;
-        const totalSlides = 7;
-
-        function nextSlide() {
-            if (currentSlide < totalSlides - 1) {
-                currentSlide++;
-                updateCarousel();
-            }
-        }
-
-        function previousSlide() {
-            if (currentSlide > 0) {
-                currentSlide--;
-                updateCarousel();
-            }
-        }
-
-        function updateCarousel() {
-            // Update slides
-            document.querySelectorAll('.carousel-slide').forEach((slide, index) => {
-                slide.classList.toggle('active', index === currentSlide);
-            });
-
-            // Update dots
-            document.querySelectorAll('.carousel-dots .dot').forEach((dot, index) => {
-                dot.classList.toggle('active', index === currentSlide);
-            });
-
-            // Update navigation buttons
-            document.querySelector('.carousel-btn.prev').disabled = currentSlide === 0;
-            document.querySelector('.carousel-btn.next').disabled = currentSlide === totalSlides - 1;
-        }
-
-        // Add click handlers to dots
-        document.querySelectorAll('.carousel-dots .dot').forEach((dot, index) => {
-            dot.addEventListener('click', () => {
-                currentSlide = index;
-                updateCarousel();
-            });
-        });
-
-        // Toggle Conditions Panel
-        function toggleConditionsPanel() {
-            const panel = document.querySelector('.conditions-panel');
-            if (panel) {
-                panel.classList.toggle('active');
-            }
-        }
-
-        // Toggle Specifications Panel
         function toggleSpecsPanel() {
             const panel = document.getElementById('specsPanel');
-            if (panel) {
-                panel.classList.toggle('active');
-            }
+            if (panel) panel.classList.toggle('active');
         }
-    </script>
-    <script>
+
+        // Tab functionality
         document.querySelectorAll(".tab-btn").forEach(btn => {
             btn.addEventListener("click", () => {
                 document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
                 document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
-
                 btn.classList.add("active");
                 document.getElementById(btn.dataset.tab).classList.add("active");
             });
         });
     </script>
-
-
 </body>
-
 </html>

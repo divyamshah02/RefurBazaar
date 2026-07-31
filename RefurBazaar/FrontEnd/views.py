@@ -140,6 +140,13 @@ class PartnerApplicationViewSet(viewsets.ViewSet):
         return render(request, 'partner-application.html')
 
 
+class PartnerEnterpriseSolutionViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return render(request, 'Recarvit_Enterprise_Solutions.html')
+
+
 class ShopViewSet(viewsets.ViewSet):
 
     @handle_exceptions

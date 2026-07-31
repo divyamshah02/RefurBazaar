@@ -69,7 +69,20 @@ function renderOrderItems(data) {
   container.innerHTML = data.items
     .map((item) => {
       const unit = item.listing_unit
-      const attributes = unit.attributes.map((attr) => `${attr.value}`).join(" • ")
+      
+      // const attributes = unit.attributes.map((attr) => `${attr.value}`).join(" • ")
+      
+      
+      const primaryAttrs = (unit.attributes || [])
+        .filter(attr => attr.section === 'main' || !attr.section)
+        .slice(0, 4)
+        .map(attr => attr.value)
+      const condition = unit.condition
+        ? unit.condition.charAt(0).toUpperCase() + unit.condition.slice(1)
+        : ''
+      const attributes = [...primaryAttrs, condition].filter(Boolean).join(' • ')
+
+
       const imageUrl = unit.image || "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=60&h=60&fit=crop"
 
       return `
@@ -257,6 +270,19 @@ function setupEventListeners() {
       if (cartData) {
         updateOrderSummary(cartData) // Recalculate totals on click
       }
+    })
+  }
+
+  const gstToggle = document.getElementById("gstToggle")
+  if (gstToggle) {
+    gstToggle.addEventListener("change", function () {        
+        
+        if (gstToggle && gstToggle.checked) {
+            document.getElementById("enterGST").style.display = '';
+        }
+        else {
+            document.getElementById("enterGST").style.display = 'none';
+        }
     })
   }
 }

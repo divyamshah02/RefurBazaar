@@ -653,6 +653,21 @@ a {
     margin: 0 auto 8px auto;
 }
 
+
+.info-icon-circle-contact {
+    width: 38px;
+    height: 38px;
+    background: rgba(111, 186, 44, 0.1);
+    color: var(--primary-green);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    /* margin: 0 auto 8px auto; */
+}
+
+
 /* 3. Text Styles */
 .contact-info-box h6 {
     font-size: 0.9rem;
@@ -1161,6 +1176,37 @@ textarea.form-control {
   border-color: #5a9e22;
 }
 
+.secondary-nav .dropdown-toggle::after {
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.secondary-nav .dropdown-menu {
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.12);
+    border: 0;
+    margin-top: 8px;
+}
+
+.secondary-nav .dropdown-item {
+    padding: 8px 16px;
+}
+
+.secondary-nav .dropdown-item:hover {
+    background: #f8f9fa;
+}
+
+.secondary-nav,
+.secondary-nav .container-fluid,
+.secondary-nav .dropdown {
+    position: relative;
+}
+
+.secondary-nav .dropdown-menu {
+    z-index: 999999 !important;
+    position: absolute !important;
+}
+
 /* Nav Icons */
 .nav-icon-btn {
   color: var(--dark);
@@ -1220,12 +1266,23 @@ textarea.form-control {
 }
 
 .secondary-nav .container-fluid {
-  overflow-x: auto;
+  /* overflow-x: auto; */
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding-left: 0;
   padding-right: 0;
+}
+
+
+.secondary-nav .container-fluid{
+    overflow: visible;
+}
+
+@media (max-width:991px){
+    .secondary-nav .container-fluid{
+        overflow-x:auto;
+    }
 }
 
 .secondary-nav .container-fluid::-webkit-scrollbar {
@@ -1273,7 +1330,7 @@ textarea.form-control {
 
   .secondary-nav .container-fluid {
     padding-left: 3rem;
-    padding-right: 3rem;
+    padding-right: 3rem;    
   }
 }
 
@@ -2901,7 +2958,7 @@ textarea.form-control {
    16. PREMIUM FAQ SECTION
    ========================================= */
 .faq-section {
-  padding: 100px 0;
+  padding: 100px 0 50px;
 }
 
 /* The Sticky Left Sidebar */
@@ -5554,4 +5611,9 @@ footer .fas.fa-shield-alt {
 
 @media (max-width: 575px) {
     .sbp-arrow { display: none; }
+}
+
+.custom-tooltip {
+  --bs-tooltip-bg: var(--green-tint);
+  --bs-tooltip-color: var(--dark);
 }

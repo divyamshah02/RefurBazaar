@@ -14,6 +14,7 @@ urlpatterns = [
     path('cart-api/', include('ShoppingCart.urls')),
     path('order-api/', include('Order.urls')),
     path('admin-api/', include('Admin.urls')),
+    path('admin-homepage-api/', include('Admin.homepage_urls')),
     # path('marketplace-api/', include('MarketPlace.urls')),
     
     

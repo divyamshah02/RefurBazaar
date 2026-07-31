@@ -291,6 +291,12 @@ async function loadShopData() {
     renderBrandFilters()
     renderConditionCounts()
     renderProducts()
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+        bootstrap.Tooltip.getOrCreateInstance(el, {
+            html: true,
+            container: 'body'
+        });
+    });
     updateResultsCount()
   } else {
     showError("Failed to load products. Please try again.")
@@ -415,8 +421,24 @@ function renderProducts() {
     return `
       <div class="product-grid-item">
         <div class="product-card" onclick="window.location.href='/product/${product.id}/'">
-          <div class="product-badge">
-            <i class="fas fa-bolt"></i>
+          <div class="product-badge" data-bs-toggle="tooltip" data-bs-placement="right"
+              data-bs-custom-class="custom-tooltip"
+              data-bs-html="true"
+              data-bs-title="
+                  <div class='text-start'>
+                      <div class='fw-bold mb-1' style='font-size:18px !important;'>
+                          🛡️ RecarvIt Guarantee
+                      </div>
+
+                      <div style='font-size:9px !important; line-height:1'>
+                          Every asset is professionally inspected,
+                          cleaned &amp; tested.
+                          Comes with a <strong>6-month warranty</strong>
+                          and a <strong>7-day easy return.</strong>
+                      </div>
+                  </div>
+              ">              
+            <i class="fas fa-shield-halved"></i>
           </div>
           <div class="wishlist-btn" onclick="event.stopPropagation(); addToWishlist(${product.id}, this)">
             <i class="far fa-heart"></i>
@@ -426,7 +448,8 @@ function renderProducts() {
                alt="${escapeHtml(product.brand_name)} ${escapeHtml(product.name)}"
                class="product-img">
 
-          <h5 class="product-title">${escapeHtml(product.brand_name)} ${escapeHtml(product.name)}</h5>
+          <h5 class="product-title mb-0">${escapeHtml(product.brand_name)}</h5>
+          <h3 class="product-title" style="font-size: 18px">${escapeHtml(product.name)}</h3>
 
           <div class="product-variants">
             ${colorDotsHtml}

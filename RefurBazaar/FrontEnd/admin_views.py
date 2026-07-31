@@ -10,6 +10,13 @@ class AdminDashboardPageViewSet(viewsets.ViewSet):
         return render(request, 'admin/dashboard.html')
 
 
+class AdminHomePageViewSet(viewsets.ViewSet):
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def list(self, request):
+        return render(request, 'admin/homepage.html')
+
+
 class AdminOrdersPageViewSet(viewsets.ViewSet):
     @handle_exceptions
     @check_authentication(required_role='admin')

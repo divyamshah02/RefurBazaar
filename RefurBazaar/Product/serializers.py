@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import *
 
+
 class BrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand
@@ -66,7 +67,7 @@ class ProductModelAttributeSerializer(serializers.ModelSerializer):
 class ListingUnitAttributeSerializer(serializers.ModelSerializer):
     attribute_name = serializers.CharField(source='attribute.name', read_only=True)
     attribute_id = serializers.IntegerField(write_only=True, required=False)
-    
+
     class Meta:
         model = ListingUnitAttribute
         fields = ['id', 'attribute', 'attribute_id', 'attribute_name', 'value']
@@ -74,28 +75,51 @@ class ListingUnitAttributeSerializer(serializers.ModelSerializer):
 
 class ListingUnitSerializer(serializers.ModelSerializer):
     attributes = ListingUnitAttributeSerializer(many=True, read_only=True)
-    
+
     class Meta:
         model = ListingUnit
-        fields = ['id', 'unit_number', 'price', 'condition', 'is_available', 'is_sold', 'attributes', 'created_at']
+        fields = [
+            'id', 'unit_number', 'price', 'condition',
+            'is_available', 'is_sold', 'half_sold',
+            'attributes', 'created_at',
+        ]
 
 
 class ListingSerializer(serializers.ModelSerializer):
-    model_name = serializers.CharField(source='model.name', read_only=True)
-    brand_name = serializers.CharField(source='model.brand.name', read_only=True)
-    brand_id = serializers.IntegerField(source='model.brand.id', read_only=True)
-    category = serializers.CharField(source='model.category', read_only=True)
+    model_name  = serializers.CharField(source='model.name',               read_only=True)
+    brand_name  = serializers.CharField(source='model.brand.name',         read_only=True)
+    brand_id    = serializers.IntegerField(source='model.brand.id',        read_only=True)
+    category    = serializers.CharField(source='model.category',           read_only=True)
     category_display = serializers.CharField(source='model.get_category_display', read_only=True)
+
+    # Refurbisher basic name fields (already present)
     refurbisher_first_name = serializers.CharField(source='refurbisher.first_name', read_only=True)
-    refurbisher_last_name = serializers.CharField(source='refurbisher.last_name', read_only=True)
+    refurbisher_last_name  = serializers.CharField(source='refurbisher.last_name',  read_only=True)
+
+    # Additional refurbisher detail fields for listing detail page
+    refurbisher_id      = serializers.CharField(source='refurbisher.user_id',        read_only=True)
+    refurbisher_email   = serializers.EmailField(source='refurbisher.email',         read_only=True)
+    refurbisher_phone   = serializers.CharField(source='refurbisher.contact_number', read_only=True)
+    refurbisher_company = serializers.SerializerMethodField()
+
     units = ListingUnitSerializer(many=True, read_only=True)
-    
+
     class Meta:
         model = Listing
         fields = [
             'id', 'listing_id', 'model', 'model_name', 'brand_name', 'brand_id',
-            'category', 'category_display', 'refurbisher', 'refurbisher_first_name',
-            'refurbisher_last_name', 'total_quantity', 'status', 'units',
-            'created_at', 'updated_at'
+            'category', 'category_display',
+            'refurbisher', 'refurbisher_id',
+            'refurbisher_first_name', 'refurbisher_last_name',
+            'refurbisher_email', 'refurbisher_phone', 'refurbisher_company',
+            'total_quantity', 'status', 'units',
+            'created_at', 'updated_at',
         ]
         read_only_fields = ['listing_id', 'refurbisher', 'created_at', 'updated_at']
+
+    def get_refurbisher_company(self, obj):
+        """Return company name from CompanyProfile if it exists."""
+        try:
+            return obj.refurbisher.company_profile.company_name or '—'
+        except Exception:
+            return '—'

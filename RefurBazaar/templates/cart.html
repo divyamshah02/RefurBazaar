@@ -19,33 +19,22 @@
     <!-- Primary Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm" style="display: none;">
         <div class="container-fluid px-4 d-flex align-items-center">
-
-            <!-- LEFT -->
             <div class="navbar-left d-flex align-items-center">
                 <a class="navbar-brand" href="/">
                     <img src="/static/images/refurbazaar-final-logo.png" alt="RefurBazaar" height="90">
                 </a>
             </div>
-
-            <!-- CENTER -->
             <div class="navbar-center flex-grow-1 d-flex justify-content-center">
                 <div class="search-container">
                     <div class="input-group">
-                        <input type="text" class="form-control" placeholder="What are you looking for..."
-                            id="searchInput">
-                        <button class="btn btn-search" type="button">
-                            <i class="fas fa-search"></i>
-                        </button>
+                        <input type="text" class="form-control" placeholder="What are you looking for..." id="searchInput">
+                        <button class="btn btn-search" type="button"><i class="fas fa-search"></i></button>
                     </div>
                 </div>
             </div>
-
-            <!-- RIGHT -->
             <div class="navbar-right d-flex align-items-center">
                 <ul class="navbar-nav flex-row align-items-center">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="far fa-user"></i></a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="far fa-user"></i></a></li>
                     <li class="nav-item">
                         <a class="nav-link" href="#" id="wishlistBtn">
                             <i class="far fa-heart"></i>
@@ -60,47 +49,8 @@
                     </li>
                 </ul>
             </div>
-
         </div>
     </nav>
-
-    <!-- Secondary Navigation (Category Nav) -->
-    <!-- <div class="secondary-nav">
-        <div class="container-fluid px-4">
-            <ul class="nav justify-content-center flex-wrap">
-                <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fas fa-fire"></i> End of Year Sale</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">iPhones</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Samsung</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">MacBooks</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Laptops</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">iPads</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Accessories and Audio</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">For Businesses</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Need Help?</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fas fa-bolt"></i> RefurBazar Express</a>
-                </li>
-            </ul>
-        </div>
-    </div> -->
 
     {% include 'navbar.html' %}
 
@@ -118,20 +68,10 @@
 
         <div class="container" style="max-width: 95%">
             <div class="row">
+                <!-- LEFT COLUMN: cart items + e-waste -->
                 <div class="col-lg-8">
                     <h2 class="fw-bold mb-1">Your Cart</h2>
                     <p class="text-muted mb-4" id="cartItemCount">0 items in your cart</p>
-
-                    <!-- Cashback Banner -->
-                    <!-- <div class="cashback-banner mb-4" id="cashbackBanner" style="display: none;">
-                        <div class="cashback-content">
-                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='50' font-size='60'%3E💵%3C/text%3E%3C/svg%3E" alt="Cashback" class="cashback-icon">
-                            <div class="cashback-text">
-                                <i class="fas fa-info-circle me-2"></i>
-                                <span id="cashbackAmount">100 ₹Cashback</span>
-                            </div>
-                        </div>
-                    </div> -->
 
                     <!-- Cart Table -->
                     <div class="cart-table-wrapper" id="cartTableWrapper" style="display: none;">
@@ -146,7 +86,7 @@
                                 </tr>
                             </thead>
                             <tbody id="cartItemsContainer">
-                                <!-- Cart items will be dynamically loaded here -->
+                                <!-- Cart items injected by cart.js -->
                             </tbody>
                         </table>
                     </div>
@@ -155,7 +95,7 @@
                     <div id="emptyCartMessage" class="text-center py-5">
                         <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
                         <h5 class="text-muted">Your cart is empty</h5>
-                        <p class="text-muted mb-4">Looks like you haven't added any items to your cart yet.</p>
+                        <p class="text-muted mb-4">Looks like you haven&apos;t added any items to your cart yet.</p>
                         <a href="/shop" class="btn btn-primary">Continue Shopping</a>
                     </div>
 
@@ -169,27 +109,30 @@
                                 <div class="ewaste-label">E-Waste Saved</div>
                                 <div class="ewaste-amount" id="eWasteSaved">0 kg</div>
                             </div>
-                        </div>
-                        <div class="ewaste-progress">
-                            <div class="progress" style="height: 6px;">
-                                <div class="progress-bar" id="eWasteBar" role="progressbar" style="width: 0%"></div>
+                            <div class="ewaste-co2 ms-auto text-end">
+                                <div class="ewaste-co2-label">CO&#8322; Equivalent</div>
+                                <div class="ewaste-co2-value" id="eWasteCo2">0 kg CO&#8322;</div>
                             </div>
                         </div>
-                        <div class="ewaste-footer text-center">
-                            <small class="text-muted">by choosing refurbished</small>
+                        <div class="ewaste-progress mt-3">
+                            <div class="progress" style="height: 8px; border-radius: 99px;">
+                                <div class="progress-bar" id="eWasteBar" role="progressbar" style="width: 0%; transition: width 0.8s ease;"></div>
+                            </div>
+                        </div>
+                        <div class="ewaste-footer text-center mt-2">
+                            <small class="text-muted">by choosing refurbished over new</small>
                         </div>
                     </div>
-
                 </div>
 
+                <!-- RIGHT COLUMN: order summary -->
                 <div class="col-lg-4">
                     <div class="order-summary-card" id="cartSummary" style="display: none;">
-                        <h5 class="fw-bold mb-4">Order Summary</h5>
+                        <h5 class="fw-bold mb-4">Price Summary</h5>
 
-                        <!-- Warranty -->
-                        <div class="warranty-addon-box mb-3 p-3 shadow-sm">
+                        <!-- Extended Warranty add-on -->
+                        <div class="warranty-addon-box mb-4 p-3 shadow-sm">
                             <i class="fas fa-shield-alt watermark"></i>
-                        
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="icon-circle">
@@ -199,31 +142,25 @@
                                         <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.95rem;">Extended Warranty</h6>
                                     </div>
                                 </div>
-                        
                                 <label class="theme-switch mt-1">
                                     <input type="checkbox" id="warrantyToggle">
                                     <span class="slider round"></span>
                                 </label>
                             </div>
-                        
                             <p class="text-muted mb-2 ps-1" style="font-size: 0.8rem; line-height: 1.4; max-width: 85%;">
-                                Upgrade your protection. Extend your coverage for 24 months to cover all hardware defects, battery issues, and
-                                internal malfunctions.
+                                Extend your coverage for 24 months — covers hardware defects, battery issues, and internal malfunctions.
                             </p>
-                        
                             <div class="d-flex align-items-center gap-2 ps-1">
-                                <span class="fw-bold" style="color: #2A8C3C; font-size: 0.95rem;">+ ₹1,999</span>
+                                <span class="fw-bold" style="color: #2A8C3C; font-size: 0.95rem;">+ &#8377;1,499</span>
                                 <span class="text-muted" style="font-size: 0.75rem;">(Billed once)</span>
                             </div>
                         </div>
 
-                        <div class="summary-total mb-4">
-                            <span class="summary-total-label">Total</span>
-                            <span class="summary-total-amount" id="summaryTotal">₹0</span>
-                        </div>
+                        <!-- Dynamic price breakdown rows — injected by renderPriceSummary() -->
+                        <div id="priceSummaryBody"></div>
 
-                        <a href="/checkout" class="btn btn-primary btn-lg w-100 mb-3">
-                            Proceed To Checkout
+                        <a href="/checkout" class="btn btn-place-order w-100 mt-3 mb-3">
+                            Place Order
                         </a>
 
                         <p class="checkout-note text-center mb-4">Proceed to Checkout to select your Payment Method</p>
@@ -231,9 +168,7 @@
                         <!-- Payment Methods -->
                         <div class="payment-secure row mb-4">
                             <div class="col-6 d-flex align-items-center">
-                                <div class="secure-icon">
-                                    <i class="fas fa-lock"></i>
-                                </div>
+                                <div class="secure-icon"><i class="fas fa-lock"></i></div>
                                 <span class="ms-2">100% Secure Payment</span>
                             </div>
                             <div class="col-6 payment-logos text-end">
@@ -242,15 +177,6 @@
                                 <i class="fab fa-brands fa-dark fa-google-pay"></i>
                             </div>
                         </div>
-
-                        <!-- Buy Now Pay Later -->
-                        <!-- <div class="bnpl-section mb-4">
-                            <h6 class="fw-semibold mb-3">Buy Now, Pay Later</h6>
-                            <div class="bnpl-logos">
-                                <span class="bnpl-badge">tabby</span>
-                                <span class="bnpl-badge">tamara</span>
-                            </div>
-                        </div> -->
 
                         <!-- Trust Badges -->
                         <div class="trust-badges-inline">
@@ -283,17 +209,14 @@
     </div>
 
     <!-- Similar Units Modal -->
-    <div class="modal fade" id="similarUnitsModal" tabindex="-1" aria-labelledby="similarUnitsModalLabel"
-        aria-hidden="true">
+    <div class="modal fade" id="similarUnitsModal" tabindex="-1" aria-labelledby="similarUnitsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="similarUnitsModalLabel">Similar Units Available</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body" id="similarUnitsBody">
-                    <!-- Similar units will be loaded here -->
-                </div>
+                <div class="modal-body" id="similarUnitsBody"></div>
             </div>
         </div>
     </div>

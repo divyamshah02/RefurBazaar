@@ -1,0 +1,294 @@
+{% extends 'admin/_base.html' %}
+{% load static %}
+{% block title %}Homepage Manager{% endblock %}
+{% block nav_homepage %}active{% endblock %}
+{% block page_title %}Homepage Manager{% endblock %}
+{% block page_subtitle %}Control every section of the public homepage dynamically{% endblock %}
+
+{% block content %}
+
+<!-- Section Tabs -->
+<div class="panel" style="padding:0;margin-bottom:20px;">
+    <div style="display:flex;overflow-x:auto;border-bottom:1px solid var(--border-light);scrollbar-width:none;">
+        {% for tab_id, tab_label in tabs %}
+        <button class="hp-tab-btn {% if forloop.first %}active{% endif %}"
+            data-tab="{{ tab_id }}" onclick="switchTab('{{ tab_id }}')">
+            {{ tab_label }}
+        </button>
+        {% endfor %}
+        <!-- fallback if template tags not available — tabs injected by JS -->
+    </div>
+</div>
+
+<!-- Tab Panes -->
+
+<!-- ── Hero Slides ── -->
+<div class="hp-pane" id="pane-hero">
+    <div class="panel">
+        <div class="filter-bar">
+            <h4 style="margin:0;font-weight:700;">Hero Banner Slides</h4>
+            <button class="btn btn-primary btn-sm" onclick="HP.openModal('hero')">
+                <i class="fa-solid fa-plus me-1"></i> Add Slide
+            </button>
+        </div>
+        <div class="rb-table-wrap">
+            <table class="rb-table">
+                <thead><tr>
+                    <th>#</th><th>Heading</th><th>Background</th>
+                    <th>Buttons</th><th>Active</th><th style="text-align:right">Actions</th>
+                </tr></thead>
+                <tbody id="tbl-hero"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ── Trust Strip ── -->
+<div class="hp-pane" id="pane-trust" style="display:none">
+    <div class="panel">
+        <div class="filter-bar">
+            <h4 style="margin:0;font-weight:700;">Trust Strip Items</h4>
+            <button class="btn btn-primary btn-sm" onclick="HP.openModal('trust')"><i class="fa-solid fa-plus me-1"></i> Add Item</button>
+        </div>
+        <div class="rb-table-wrap">
+            <table class="rb-table">
+                <thead><tr><th>#</th><th>Icon</th><th>Title</th><th>Subtitle</th><th>Active</th><th style="text-align:right">Actions</th></tr></thead>
+                <tbody id="tbl-trust"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ── Nav Links ── -->
+<div class="hp-pane" id="pane-nav" style="display:none">
+    <div class="panel">
+        <div class="filter-bar">
+            <h4 style="margin:0;font-weight:700;">Secondary Nav Links</h4>
+            <button class="btn btn-primary btn-sm" onclick="HP.openModal('nav')"><i class="fa-solid fa-plus me-1"></i> Add Link</button>
+        </div>
+        <div class="rb-table-wrap">
+            <table class="rb-table">
+                <thead><tr><th>#</th><th>Label</th><th>URL</th><th>Highlight</th><th>Active</th><th style="text-align:right">Actions</th></tr></thead>
+                <tbody id="tbl-nav"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ── Categories ── -->
+<div class="hp-pane" id="pane-categories" style="display:none">
+    <div class="panel">
+        <div class="filter-bar">
+            <h4 style="margin:0;font-weight:700;">Category Cards</h4>
+            <button class="btn btn-primary btn-sm" onclick="HP.openModal('categories')"><i class="fa-solid fa-plus me-1"></i> Add Category</button>
+        </div>
+        <div class="rb-table-wrap">
+            <table class="rb-table">
+                <thead><tr><th>#</th><th>Name</th><th>Badge</th><th>Products</th><th>Start Price</th><th>Active</th><th style="text-align:right">Actions</th></tr></thead>
+                <tbody id="tbl-categories"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ── Product Sections ── -->
+<div class="hp-pane" id="pane-sections" style="display:none">
+    <div class="panel">
+        <div class="filter-bar">
+            <h4 style="margin:0;font-weight:700;">Product Sections</h4>
+            <button class="btn btn-primary btn-sm" onclick="HP.openModal('sections')"><i class="fa-solid fa-plus me-1"></i> Add Section</button>
+        </div>
+        <p class="text-muted fs-12" style="padding:0 20px 12px;">Each section is a product slider or certified grid on the homepage. Manage section items separately below.</p>
+        <div class="rb-table-wrap">
+            <table class="rb-table">
+                <thead><tr><th>#</th><th>Title</th><th>Type</th><th>BG</th><th>Items</th><th>Active</th><th style="text-align:right">Actions</th></tr></thead>
+                <tbody id="tbl-sections"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ── Section Items ── -->
+<div class="hp-pane" id="pane-items" style="display:none">
+    <div class="panel">
+        <div class="filter-bar">
+            <div class="search-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <select class="input-search" id="item-section-filter" style="min-width:240px;padding:8px 12px;" onchange="HP.loadItems()">
+                    <option value="">— All Sections —</option>
+                </select>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="HP.openModal('items')"><i class="fa-solid fa-plus me-1"></i> Add Item</button>
+        </div>
+        <div class="rb-table-wrap">
+            <table class="rb-table">
+                <thead><tr><th>#</th><th>Image</th><th>Name</th><th>Section</th><th>Badge</th><th>Price</th><th>Active</th><th style="text-align:right">Actions</th></tr></thead>
+                <tbody id="tbl-items"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ── Spotlight ── -->
+<div class="hp-pane" id="pane-spotlight" style="display:none">
+    <div class="panel">
+        <div class="filter-bar">
+            <h4 style="margin:0;font-weight:700;">Today&apos;s Spotlight</h4>
+            <button class="btn btn-primary btn-sm" onclick="HP.openModal('spotlight')"><i class="fa-solid fa-plus me-1"></i> Set Spotlight</button>
+        </div>
+        <div class="rb-table-wrap">
+            <table class="rb-table">
+                <thead><tr><th>Brand</th><th>Product Name</th><th>Price</th><th>Original</th><th>Discount %</th><th>Reviews</th><th>Active</th><th style="text-align:right">Actions</th></tr></thead>
+                <tbody id="tbl-spotlight"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ── Price Range ── -->
+<div class="hp-pane" id="pane-price-range" style="display:none">
+    <div class="panel">
+        <div class="filter-bar">
+            <h4 style="margin:0;font-weight:700;">Price Range Cards</h4>
+            <button class="btn btn-primary btn-sm" onclick="HP.openModal('price-range')"><i class="fa-solid fa-plus me-1"></i> Add Card</button>
+        </div>
+        <div class="rb-table-wrap">
+            <table class="rb-table">
+                <thead><tr><th>#</th><th>Tier</th><th>Label</th><th>Description</th><th>URL</th><th>Dark</th><th>Active</th><th style="text-align:right">Actions</th></tr></thead>
+                <tbody id="tbl-price-range"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ── Shop by Price ── -->
+<div class="hp-pane" id="pane-sbp" style="display:none">
+    <div class="panel">
+        <div class="filter-bar">
+            <h4 style="margin:0;font-weight:700;">Shop by Price Slides</h4>
+            <button class="btn btn-primary btn-sm" onclick="HP.openModal('sbp')"><i class="fa-solid fa-plus me-1"></i> Add Slide</button>
+        </div>
+        <div class="rb-table-wrap">
+            <table class="rb-table">
+                <thead><tr><th>#</th><th>Label</th><th>URL</th><th>Active</th><th style="text-align:right">Actions</th></tr></thead>
+                <tbody id="tbl-sbp"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ── Testimonials ── -->
+<div class="hp-pane" id="pane-testimonials" style="display:none">
+    <div class="panel">
+        <div class="filter-bar">
+            <h4 style="margin:0;font-weight:700;">Testimonials</h4>
+            <button class="btn btn-primary btn-sm" onclick="HP.openModal('testimonials')"><i class="fa-solid fa-plus me-1"></i> Add Review</button>
+        </div>
+        <div class="rb-table-wrap">
+            <table class="rb-table">
+                <thead><tr><th>#</th><th>Name</th><th>Location</th><th>Product</th><th>Rating</th><th>Active</th><th style="text-align:right">Actions</th></tr></thead>
+                <tbody id="tbl-testimonials"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ── FAQs ── -->
+<div class="hp-pane" id="pane-faqs" style="display:none">
+    <div class="panel">
+        <div class="filter-bar">
+            <h4 style="margin:0;font-weight:700;">FAQ Items</h4>
+            <button class="btn btn-primary btn-sm" onclick="HP.openModal('faqs')"><i class="fa-solid fa-plus me-1"></i> Add FAQ</button>
+        </div>
+        <div class="rb-table-wrap">
+            <table class="rb-table">
+                <thead><tr><th>#</th><th>Question</th><th>Active</th><th style="text-align:right">Actions</th></tr></thead>
+                <tbody id="tbl-faqs"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ── Stats ── -->
+<div class="hp-pane" id="pane-stats" style="display:none">
+    <div class="panel">
+        <div class="filter-bar">
+            <h4 style="margin:0;font-weight:700;">Stats Counters</h4>
+            <button class="btn btn-primary btn-sm" onclick="HP.openModal('stats')"><i class="fa-solid fa-plus me-1"></i> Add Stat</button>
+        </div>
+        <div class="rb-table-wrap">
+            <table class="rb-table">
+                <thead><tr><th>#</th><th>Label</th><th>Target</th><th>Suffix</th><th>Active</th><th style="text-align:right">Actions</th></tr></thead>
+                <tbody id="tbl-stats"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ── Banners / CTA ── -->
+<div class="hp-pane" id="pane-banners" style="display:none">
+    <div class="panel" style="margin-bottom:20px;">
+        <div class="filter-bar"><h4 style="margin:0;font-weight:700;">Promo Banner (top strip)</h4></div>
+        <div class="rb-table-wrap">
+            <table class="rb-table">
+                <thead><tr><th>Text</th><th>Active</th><th style="text-align:right">Actions</th></tr></thead>
+                <tbody id="tbl-promo"></tbody>
+            </table>
+        </div>
+        <div style="padding:12px 20px;border-top:1px solid var(--border-light);">
+            <button class="btn btn-primary btn-sm" onclick="HP.openModal('promo')"><i class="fa-solid fa-plus me-1"></i> Add Banner</button>
+        </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:20px;">
+        <div class="filter-bar"><h4 style="margin:0;font-weight:700;">Renewed Banner</h4></div>
+        <div class="rb-table-wrap">
+            <table class="rb-table">
+                <thead><tr><th>Heading</th><th>Subtext</th><th>CTA Text</th><th>Active</th><th style="text-align:right">Actions</th></tr></thead>
+                <tbody id="tbl-renewed"></tbody>
+            </table>
+        </div>
+        <div style="padding:12px 20px;border-top:1px solid var(--border-light);">
+            <button class="btn btn-primary btn-sm" onclick="HP.openModal('renewed')"><i class="fa-solid fa-plus me-1"></i> Edit Banner</button>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="filter-bar"><h4 style="margin:0;font-weight:700;">Partner CTA Banner (green strip)</h4></div>
+        <div class="rb-table-wrap">
+            <table class="rb-table">
+                <thead><tr><th>Heading</th><th>Subtext</th><th>Button</th><th>Active</th><th style="text-align:right">Actions</th></tr></thead>
+                <tbody id="tbl-partner"></tbody>
+            </table>
+        </div>
+        <div style="padding:12px 20px;border-top:1px solid var(--border-light);">
+            <button class="btn btn-primary btn-sm" onclick="HP.openModal('partner')"><i class="fa-solid fa-plus me-1"></i> Edit CTA</button>
+        </div>
+    </div>
+</div>
+
+<!-- ─── MODAL ─────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="hp-modal-overlay" style="display:none;" onclick="HP.closeModal()"></div>
+<div class="modal-drawer" id="hp-modal-drawer" style="display:none;">
+    <div class="modal-drawer-header">
+        <h5 id="hp-modal-title">Edit</h5>
+        <button class="btn btn-ghost btn-sm" onclick="HP.closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-drawer-body" id="hp-modal-body"></div>
+    <div class="modal-drawer-footer">
+        <button class="btn btn-ghost btn-sm" onclick="HP.closeModal()">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="hp-modal-save-btn" onclick="HP.saveModal()">Save</button>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/admin/homepage_admin.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        HP.init(csrf, '/admin-homepage-api/');
+    });
+</script>
+{% endblock %}

@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Min, Max, Count, Q
 from .models import *
 from .serializers import *
+from UserDetail.models import *
 from utils.decorators import *
 import pandas as pd
 from django.db import transaction
@@ -385,6 +386,7 @@ class ProductModelViewSet(viewsets.ViewSet):
         # Serialize with refurbisher details
         units_data = []
         for unit in queryset:
+            company_profile = CompanyProfile.objects.filter(user=unit.listing.refurbisher).first()
             unit_data = {
                 'id': unit.id,
                 'unit_number': unit.unit_number,
@@ -393,7 +395,8 @@ class ProductModelViewSet(viewsets.ViewSet):
                 'condition_display': unit.get_condition_display(),
                 'refurbisher': {
                     'id': unit.listing.refurbisher.user_id,
-                    'name': unit.listing.refurbisher.first_name,
+                    'name': company_profile.company_name,
+                    # 'name': unit.listing.refurbisher.first_name,
                     'email': unit.listing.refurbisher.email
                 },
                 'attributes': [
