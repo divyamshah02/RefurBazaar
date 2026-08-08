@@ -295,7 +295,12 @@ function renderAttributeFilters() {
   )
 
   attributesData.forEach((attr) => {
-    if (!attr.is_filter) return
+    // Only real per-unit variant attributes (RAM, Storage, Colour, ...) are
+    // rendered as selectable filter chips. Fixed model specs (Processor,
+    // Screen Size, SIM Slots, ...) have is_required=false and a single
+    // default_value copied onto every unit — they're shown in the read-only
+    // Specifications section, never as a pickable filter.
+    if (!attr.is_filter || !attr.is_required) return
     if (attr.available_values.length === 0) return
 
     const attrNameLower = attr.name.toLowerCase()
@@ -326,7 +331,7 @@ function renderStorageFilter(attr) {
                   .map(
                     (value) => `
                     <div class="storage-card" data-attribute="${attr.id}" data-value="${escapeHtml(value)}" 
-                         onclick="selectAttribute(${attr.id}, '${escapeHtml(value)}')">
+                         onclick="selectAttribute(${attr.id}, '${escapeHtml(value).replace(/'/g, "\\'")}')">
                         <div class="storage-info">
                             <h6>${escapeHtml(value)}</h6>
                             <p class="storage-price"></p>
@@ -356,12 +361,12 @@ function renderColorFilter(attr, colorHexAttr) {
             return `
               <div class="color-card"
                    data-attribute="${attr.id}"
-                   data-value="${value}"
-                   onclick="selectAttribute(${attr.id}, '${value}')">
-                <div class="color-dot" style="background:${colorValue};"></div>
+                   data-value="${escapeHtml(value)}"
+                   onclick="selectAttribute(${attr.id}, '${escapeHtml(value).replace(/'/g, "\\'")}')">
+                <div class="color-dot me-2" style="background:${colorValue};"></div>
                 &nbsp;
                 <div class="color-info">
-                  <h6>${value}</h6>
+                  <h6>${escapeHtml(value)}</h6>
                   <p class="color-price"></p>
                 </div>
               </div>
@@ -383,10 +388,10 @@ function renderGenericFilter(attr) {
                 ${attr.available_values
                   .map(
                     (value) => `
-                    <div class="storage-card" data-attribute="${attr.id}" data-value="${value}" 
-                         onclick="selectAttribute(${attr.id}, '${value}')">
+                    <div class="storage-card" data-attribute="${attr.id}" data-value="${escapeHtml(value)}" 
+                         onclick="selectAttribute(${attr.id}, '${escapeHtml(value).replace(/'/g, "\\'")}')">
                         <div class="storage-info">
-                            <h6>${value}</h6>
+                            <h6>${escapeHtml(value)}</h6>
                             <p class="storage-price"></p>
                         </div>
                     </div>
@@ -407,7 +412,9 @@ function autoSelectFilters() {
   }
 
   attributesData.forEach((attr) => {
-    if (attr.available_values.length > 0) {
+    // Same scoping as renderAttributeFilters — only auto-select real
+    // per-unit variant attributes, not fixed model specs.
+    if (attr.is_filter && attr.is_required && attr.available_values.length > 0) {
       selectAttribute(attr.id, attr.available_values[0])
     }
   })
@@ -447,7 +454,12 @@ function selectAttribute(attrId, value) {
     if (radio) radio.checked = false
   })
 
-  const selectedCard = document.querySelector(`[data-attribute="${attrId}"][data-value="${value}"]`)
+  // Escape the value for safe use inside a CSS attribute selector — values
+  // can contain quotes (e.g. Screen Size = 6.72") which would otherwise
+  // produce an invalid selector and throw.
+  const selectedCard = document.querySelector(
+    `[data-attribute="${attrId}"][data-value="${CSS.escape(String(value))}"]`,
+  )
   if (selectedCard) {
     selectedCard.classList.add("active")
     const radio = selectedCard.querySelector('input[type="radio"]')

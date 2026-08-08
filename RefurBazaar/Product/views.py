@@ -11,6 +11,28 @@ import pandas as pd
 from django.db import transaction
 
 
+def _copy_fixed_attributes_to_unit(unit, product_model):
+    """
+    Auto-copy fixed-spec attributes (Processor, Screen Size, OS, etc. — anything
+    with is_required=False and a stored default_value) from the ProductModel onto
+    a ListingUnit. The refurbisher is never asked for these; they're carried over
+    automatically so filtering/product-detail (which read from ListingUnitAttribute)
+    keep working unchanged. Existing values for the same attribute on this unit
+    are left untouched (e.g. a real choice attribute the refurbisher already set).
+    """
+    fixed_attrs = ProductModelAttribute.objects.filter(
+        product_model=product_model,
+        is_required=False,
+    ).exclude(default_value__isnull=True).exclude(default_value='').select_related('attribute')
+
+    for pma in fixed_attrs:
+        ListingUnitAttribute.objects.get_or_create(
+            listing_unit=unit,
+            attribute=pma.attribute,
+            defaults={'value': pma.default_value},
+        )
+
+
 class BrandViewSet(viewsets.ViewSet):
 
     @handle_exceptions
@@ -304,6 +326,7 @@ class ProductModelViewSet(viewsets.ViewSet):
                 'is_required': pm_attr.is_required,
                 'is_filter': pm_attr.is_filter,
                 'section': pm_attr.section,
+                'default_value': pm_attr.default_value,
                 'available_values': list(available_values)
             })
         
@@ -535,6 +558,10 @@ class ListingViewSet(viewsets.ViewSet):
                         value=attr.get('value')
                     )
 
+                # Auto-copy fixed specs (Processor, Screen Size, OS, ...) that the
+                # refurbisher was never asked for.
+                _copy_fixed_attributes_to_unit(unit, model)
+
         serializer = ListingSerializer(listing)
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
@@ -645,7 +672,11 @@ class ListingViewSet(viewsets.ViewSet):
                 attribute=attr_obj,
                 value=attr.get('value')
             )
-        
+
+        # Auto-copy fixed specs (Processor, Screen Size, OS, ...) that the
+        # refurbisher was never asked for.
+        _copy_fixed_attributes_to_unit(unit, listing.model)
+
         # Update listing total quantity
         listing.total_quantity = listing.units.count()
         listing.save()
@@ -690,7 +721,10 @@ class ListingViewSet(viewsets.ViewSet):
                     attribute=attr_obj,
                     value=attr.get('value')
                 )
-        
+
+            # Re-copy fixed specs since we just wiped all attributes for this unit.
+            _copy_fixed_attributes_to_unit(unit, listing.model)
+
         unit.save()
         
         serializer = ListingUnitSerializer(unit)
@@ -763,6 +797,10 @@ class ListingUnitViewSet(viewsets.ViewSet):
                 attribute=attr_obj,
                 value=attr.get('value')
             )
+
+        # Auto-copy fixed specs (Processor, Screen Size, OS, ...) that the
+        # refurbisher was never asked for.
+        _copy_fixed_attributes_to_unit(unit, listing.model)
 
         serializer = ListingUnitSerializer(unit)
         return Response({
@@ -1180,6 +1218,8 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
             category = request.data.get('category')
             description = request.data.get('description', '')
             release_year = request.data.get('release_year')
+            price_min = request.data.get('price_min') or None
+            price_max = request.data.get('price_max') or None
             image = request.FILES.get('image') if hasattr(request, 'FILES') else None
             attributes = request.data.getlist('attributes') if isinstance(request.data.get('attributes'), list) else []
 
@@ -1219,6 +1259,8 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                 category=category,
                 description=description,
                 release_year=release_year if release_year else None,
+                price_min=price_min,
+                price_max=price_max,
                 image=image,
                 is_active=True
             )
@@ -1243,6 +1285,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                 section        = attr_data.get('section', 'main')
                 data_type      = attr_data.get('data_type', 'text')
                 possible_values = attr_data.get('possible_values', [])
+                default_value  = attr_data.get('default_value') or None
                 if isinstance(possible_values, str):
                     import json as _json
                     try: possible_values = _json.loads(possible_values)
@@ -1261,6 +1304,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                     defaults={
                         'is_required': is_required, 'section': section,
                         'data_type': data_type, 'possible_values': possible_values,
+                        'default_value': default_value,
                     }
                 )
                 if not created:
@@ -1268,6 +1312,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                     pma.section = section
                     pma.data_type = data_type
                     pma.possible_values = possible_values
+                    pma.default_value = default_value
                     pma.save()
 
             serializer = ProductModelSerializer(product_model)
@@ -1304,6 +1349,10 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
             product_model.description = request.data['description']
         if 'release_year' in request.data:
             product_model.release_year = request.data['release_year']
+        if 'price_min' in request.data:
+            product_model.price_min = request.data.get('price_min') or None
+        if 'price_max' in request.data:
+            product_model.price_max = request.data.get('price_max') or None
         if 'is_active' in request.data:
             product_model.is_active = True if request.data['is_active'] == 'true' else False
 
@@ -1335,6 +1384,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                 section         = attr_data.get('section', 'main')
                 data_type       = attr_data.get('data_type', 'text')
                 possible_values = attr_data.get('possible_values', [])
+                default_value   = attr_data.get('default_value') or None
                 if isinstance(possible_values, str):
                     import json as _json
                     try: possible_values = _json.loads(possible_values)
@@ -1351,6 +1401,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                     section=section,
                     data_type=data_type,
                     possible_values=possible_values,
+                    default_value=default_value,
                 )
 
         serializer = ProductModelSerializer(product_model)
@@ -1379,6 +1430,10 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
             product_model.description = request.data['description']
         if 'release_year' in request.data:
             product_model.release_year = request.data['release_year']
+        if 'price_min' in request.data:
+            product_model.price_min = request.data.get('price_min') or None
+        if 'price_max' in request.data:
+            product_model.price_max = request.data.get('price_max') or None
         if 'is_active' in request.data:
             product_model.is_active = True if request.data['is_active'] == 'true' else False
 
@@ -1410,6 +1465,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                 section         = attr_data.get('section', 'main')
                 data_type       = attr_data.get('data_type', 'text')
                 possible_values = attr_data.get('possible_values', [])
+                default_value   = attr_data.get('default_value') or None
                 if isinstance(possible_values, str):
                     import json as _json
                     try: possible_values = _json.loads(possible_values)
@@ -1426,6 +1482,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                     section=section,
                     data_type=data_type,
                     possible_values=possible_values,
+                    default_value=default_value,
                 )
 
         serializer = ProductModelSerializer(product_model)

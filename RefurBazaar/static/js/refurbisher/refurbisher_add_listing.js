@@ -7,7 +7,7 @@ let selectedModel = null
 let modelAttributes = []
 let unitCounter = 0 // Track unit count for unique IDs
 const units = []
-
+let new_return_id = null
 /**
  * Initialize the add listing page
  */
@@ -184,8 +184,36 @@ async function onModelChange() {
 }
 
 /**
+ * Returns a small helper hint under the price field showing the catalog's
+ * guide refurb price range for the selected model, if available. Reference
+ * only — the refurbisher's entered price is never overridden or blocked.
+ */
+function priceGuideHint(min, max) {
+  if (min == null && max == null) return ""
+  const formatINR = (v) => `₹${Number(v).toLocaleString("en-IN")}`
+  const rangeText =
+    min != null && max != null && Number(min) !== Number(max)
+      ? `${formatINR(min)} – ${formatINR(max)}`
+      : formatINR(min ?? max)
+  return `<small class="text-muted">Market guide: ${rangeText}</small>`
+}
+
+/**
  * Add a new unit to the listing
  */
+
+function isLightColor(hex) {
+    hex = hex.replace("#", "");
+
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+
+    return brightness > 128;
+}
+
 function addNewUnit() {
   unitCounter++
   const unitId = `unit_${unitCounter}`
@@ -196,25 +224,40 @@ function addNewUnit() {
   unitCard.dataset.unitId = unitCounter
 
   let attributesHtml = ""
-  modelAttributes.forEach((attrLink) => {
+  // Only attributes with real choices (multiple possible_values) are asked of the
+  // refurbisher per unit. Fixed specs (Processor, Screen Size, OS, ...) have
+  // is_required=false + a stored default_value and are auto-copied onto the unit
+  // by the backend — they are never rendered here, and shown instead as read-only
+  // "Model Specifications" info in showSelectedDeviceInfo().
+  modelAttributes.filter((attrLink) => attrLink.is_required).forEach((attrLink) => {
     const attr      = attrLink.attribute
     const dataType  = attrLink.data_type        // lives on pma, not pma.attribute
     const possVals  = attrLink.possible_values  // lives on pma, not pma.attribute
     const isRequired = attrLink.is_required
 
-    if (dataType === "choice" && possVals && possVals.length > 0) {
+    if (dataType === "choice" && possVals && possVals.length > 0) {      
       attributesHtml += `
         <div class="col-md-6">
           <div class="form-group">
             <label class="form-label">${attr.name}${isRequired ? " *" : ""}</label>
-            <select class="form-select" data-attr-id="${attr.id}" ${isRequired ? "required" : ""}>
-              <option value="">Select ${attr.name}</option>
-              ${possVals.map((val) => `<option value="${val}">${val}</option>`).join("")}
-            </select>
+            
+            ${attr.name == "Colour Hex Codes" ? `
+              <select class="form-select" data-attr-id="${attr.id}" ${isRequired ? "required" : ""}>
+                  <option value="">Select ${attr.name}</option>
+                  ${possVals.map((val) => `
+                      <option value="${val}" style="background-color: ${val}; color: ${isLightColor(val) ? '#000' : '#fff'};">${val}</option>
+                  `).join("")}
+              </select>
+              ` : `
+              <select class="form-select" data-attr-id="${attr.id}" ${isRequired ? "required" : ""}>
+                <option value="">Select ${attr.name}</option>
+                ${possVals.map((val) => `<option value="${val}">${val}</option>`).join("")}
+              </select> 
+              `}                                   
           </div>
         </div>
       `
-    } else if (dataType === "number") {
+    } else if (dataType === "number") {      
       attributesHtml += `
         <div class="col-md-6">
           <div class="form-group">
@@ -225,15 +268,28 @@ function addNewUnit() {
         </div>
       `
     } else {
-      attributesHtml += `
-        <div class="col-md-6">
-          <div class="form-group">
-            <label class="form-label">${attr.name}${isRequired ? " *" : ""}</label>
-            <input type="text" class="form-control" data-attr-id="${attr.id}"
-                   placeholder="Enter ${attr.name}" ${isRequired ? "required" : ""}>
+      if (attr.name == "Refurb Price Range") {
+        new_return_id = `refurb_price_range_${attr.id}`
+        attributesHtml += `
+          <div class="col-md-6" style="display: none;">
+            <div class="form-group">
+              <label class="form-label">${attr.name}${isRequired ? " *" : ""}</label>
+              <input type="text" class="form-control" data-attr-id="${attr.id}" id="refurb_price_range_${attr.id}"
+                    placeholder="Enter ${attr.name}" ${isRequired ? "required" : ""}>
+            </div>
           </div>
-        </div>
-      `
+        `  
+      } else {
+        attributesHtml += `
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">${attr.name}${isRequired ? " *" : ""}</label>
+              <input type="text" class="form-control" data-attr-id="${attr.id}"
+                     placeholder="Enter ${attr.name}" ${isRequired ? "required" : ""}>
+            </div>
+          </div>
+        `
+      }
     }
   })
 
@@ -250,7 +306,8 @@ function addNewUnit() {
         <div class="col-md-6">
           <div class="form-group">
             <label class="form-label">Price (₹) *</label>
-            <input type="number" class="form-control" data-field="price" placeholder="Enter price" required>
+            <input type="number" class="form-control" data-field="price" placeholder="Enter price" required onchange="document.getElementById('${new_return_id}').value = this.value">
+            ${priceGuideHint(selectedModel?.price_min, selectedModel?.price_max)}
           </div>
         </div>
         <div class="col-md-6">
@@ -357,13 +414,85 @@ function changeStep(direction) {
 }
 
 /**
- * Show selected device info at the top of step 2
+ * Show selected device info at the top of step 2, including the model's
+ * fixed specifications (auto-filled, not asked per unit) and a guide price
+ * range extracted from the catalog to help the refurbisher price their units.
  */
 function showSelectedDeviceInfo() {
   const brandName = document.getElementById("brandSelect").options[document.getElementById("brandSelect").selectedIndex].text
   const categoryName = document.getElementById("categorySelect").options[document.getElementById("categorySelect").selectedIndex].text
   document.getElementById("deviceInfoText").textContent = `${categoryName} - ${brandName} ${selectedModel.name}`
   document.getElementById("selectedDeviceInfo").style.display = ""
+
+  renderFixedSpecs()
+  renderPriceGuide()
+}
+
+/**
+ * Render the model's fixed specs (is_required === false, default_value set)
+ * as a read-only summary. These are auto-copied onto every unit by the
+ * backend, so the refurbisher never fills them in.
+ */
+function renderFixedSpecs() {
+  const container = document.getElementById("fixedSpecsContainer")
+  if (!container) return
+
+  const fixedSpecs = modelAttributes.filter(
+    (attrLink) => !attrLink.is_required && attrLink.default_value,
+  )
+
+  if (fixedSpecs.length === 0) {
+    container.innerHTML = ""
+    container.style.display = "none"
+    return
+  }
+
+  container.innerHTML = `
+    <div class="mb-2 fw-semibold text-muted small text-uppercase">Model Specifications</div>
+    <div class="d-flex flex-wrap gap-2">
+      ${fixedSpecs
+        .map(
+          (attrLink) => `
+        <span class="badge rounded-pill text-bg-light border">
+          ${attrLink.attribute.name}: <strong>${attrLink.default_value}</strong>
+        </span>
+      `,
+        )
+        .join("")}
+    </div>
+  `
+  container.style.display = ""
+}
+
+/**
+ * Render the catalog's guide refurb price range (price_min/price_max on the
+ * ProductModel) as a helper hint. The refurbisher still sets their own price
+ * for each unit — this is reference only, not enforced.
+ */
+function renderPriceGuide() {
+  const container = document.getElementById("priceGuideContainer")
+  if (!container) return
+
+  const min = selectedModel?.price_min
+  const max = selectedModel?.price_max
+
+  if (min == null && max == null) {
+    container.innerHTML = ""
+    container.style.display = "none"
+    return
+  }
+
+  const formatINR = (v) => `₹${Number(v).toLocaleString("en-IN")}`
+  const rangeText =
+    min != null && max != null && Number(min) !== Number(max)
+      ? `${formatINR(min)} – ${formatINR(max)}`
+      : formatINR(min ?? max)
+
+  container.innerHTML = `
+    <i class="fas fa-circle-info me-1"></i>
+    Market guide refurb price for this model: <strong>${rangeText}</strong>
+  `
+  container.style.display = ""
 }
 
 /**

@@ -36,6 +36,14 @@ class ProductModel(models.Model):
     description = models.TextField(blank=True)    
     image = models.ImageField(upload_to='product_models/', blank=True, null=True)
     release_year = models.IntegerField(blank=True, null=True)
+    price_min = models.DecimalField(
+        max_digits=10, decimal_places=2, blank=True, null=True,
+        help_text="Guide/reference refurb price range (lower bound) — extracted from catalog data. Refurbishers still set their own unit price."
+    )
+    price_max = models.DecimalField(
+        max_digits=10, decimal_places=2, blank=True, null=True,
+        help_text="Guide/reference refurb price range (upper bound) — extracted from catalog data. Refurbishers still set their own unit price."
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
@@ -117,6 +125,14 @@ class ProductModelAttribute(models.Model):
     possible_values = models.JSONField(
         default=list, blank=True,
         help_text="Allowed values when data_type is 'choice'"
+    )
+    default_value = models.CharField(
+        max_length=200, blank=True, null=True,
+        help_text=(
+            "Fixed spec value for this attribute on this product (e.g. Processor, Screen Size). "
+            "Only used when is_required is False — the refurbisher is not asked for it, "
+            "and it is auto-copied onto every unit of this model's listings."
+        )
     )
     created_at = models.DateTimeField(auto_now_add=True)
 

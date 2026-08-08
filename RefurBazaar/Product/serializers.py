@@ -25,7 +25,7 @@ class ProductModelSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'brand', 'brand_name', 'name', 'category',
             'description', 'image', 'release_year', 'is_active', 'images',
-            'model_attributes',
+            'price_min', 'price_max', 'model_attributes',
         ]
 
     def get_model_attributes(self, obj):
@@ -40,6 +40,7 @@ class ProductModelSerializer(serializers.ModelSerializer):
                 'section': ma.section,
                 'data_type': ma.data_type,
                 'possible_values': ma.possible_values,
+                'default_value': ma.default_value,
             }
             for ma in qs
         ]
@@ -60,7 +61,7 @@ class ProductModelAttributeSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'attribute', 'attribute_id',
             'is_required', 'is_filter', 'section',
-            'data_type', 'possible_values',
+            'data_type', 'possible_values', 'default_value',
         ]
 
 
