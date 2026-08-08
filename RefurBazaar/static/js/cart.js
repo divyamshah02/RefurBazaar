@@ -4,7 +4,7 @@ let cartListUrl = null
 let cartClearUrl = null
 let cartData = null
 
-const PROCESSING_FEE_ORIGINAL = 249
+const PROCESSING_FEE_ORIGINAL = 449
 const PROCESSING_FEE_DISCOUNTED = 199
 const DELIVERY_ORIGINAL = 100
 const WARRANTY_COST = 1499
@@ -174,7 +174,7 @@ function updateCartSummary(data) {
   }
   if (eWasteBar) {
     // Scale: 5kg = 100%. Start bar at a minimum of 15% so it's always visible
-    const progressWidth = Math.max(Math.min((totalEWaste / 5) * 100, 100), 15)
+    const progressWidth = Math.max(Math.min((totalEWaste / 5) * 100, 100), 25)
     eWasteBar.style.width = progressWidth + '%'
   }
   if (eWasteCo2El) {
@@ -186,6 +186,17 @@ function updateCartSummary(data) {
   // Update cart badge
   const cartBadge = document.getElementById("cartCount")
   if (cartBadge) cartBadge.textContent = data.items.length
+}
+
+function calculateGST(mrpTotal) {
+    const baseAmount = mrpTotal / 1.18;
+    const gstAmount = mrpTotal - baseAmount;
+
+    return {
+        baseAmount: Number(baseAmount.toFixed(2)),
+        gstAmount: Number(gstAmount.toFixed(2)),
+        total: Number(mrpTotal.toFixed(2))
+    };
 }
 
 function renderPriceSummary(itemCount, mrpTotal, discount, baseTotal) {
@@ -217,13 +228,21 @@ function renderPriceSummary(itemCount, mrpTotal, discount, baseTotal) {
 
     <div class="price-details mt-3" style="display:none;">
       <div class="price-row">
-        <span class="price-label">Price (${itemCount} Item${itemCount !== 1 ? 's' : ''})</span>
+        <span class="price-label">Price</span>
         <span class="price-value">₹${fmt(mrpTotal)}</span>
       </div>
 
       <div class="price-row discount-row">
         <span class="price-label">Discount</span>
         <span class="price-value discount-value">-₹${fmt(discount)}</span>
+      </div>
+
+      <div class="price-row">
+        <span class="price-label">6 Month Warranty</span>
+        <span class="price-value">
+          <span class="free-tag">Free</span>
+          <span class="old-price ms-1">₹1,000</span>
+        </span>
       </div>
 
       ${warrantyChecked ? `
@@ -234,15 +253,7 @@ function renderPriceSummary(itemCount, mrpTotal, discount, baseTotal) {
         </span>
         <span class="price-value">₹${fmt(WARRANTY_COST)}</span>
       </div>` : ''}
-
-      <div class="price-row">
-        <span class="price-label">Processing Fee</span>
-        <span class="price-value">
-          <span class="old-price">₹${fmt(PROCESSING_FEE_ORIGINAL)}</span>
-          <span class="ms-1">₹${fmt(PROCESSING_FEE_DISCOUNTED)}</span>
-        </span>
-      </div>
-
+     
       <div class="price-row">
         <span class="price-label">Delivery Charges</span>
         <span class="price-value">
@@ -250,13 +261,19 @@ function renderPriceSummary(itemCount, mrpTotal, discount, baseTotal) {
           <span class="old-price ms-1">₹${fmt(DELIVERY_ORIGINAL)}</span>
         </span>
       </div>
-
-      <div class="price-divider"></div>
-
-      <div class="savings-pill">
-        You&apos;ve saved ₹${fmt(totalSaved)}
+      
+      <div class="price-row">
+        <span class="price-label">Tax</span>
+        <span class="price-value">₹${fmt(calculateGST(totalAmount).gstAmount)}</span>
       </div>
+
+      <div class="price-divider"></div>      
     </div>
+    <div class="text-start">
+    <div class="savings-pill">
+      You&apos;ve saved ₹${fmt(totalSaved)}
+    </div>
+    </div>  
   `;
 
 

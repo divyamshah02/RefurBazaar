@@ -13,476 +13,676 @@
     <link href="{% static 'css/product-enhanced.css' %}" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
     <style>
-        .whatsapp-fab{
-            position:fixed;
-            right:24px;
-            bottom:85px;
-            width:62px;
-            height:62px;
-            border-radius:50%;
-            background:#25D366;
-            color:#fff;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-size:34px;
-            text-decoration:none;
-            box-shadow:0 10px 30px rgba(0,0,0,.25);
-            z-index:9999;
-            transition:.25s ease;
-        }
+        /* =============================================
+           PAGE-LEVEL OVERRIDES & NEW COMPONENT STYLES
+           ============================================= */
 
-        .whatsapp-fab:hover{
-            color:#fff;
-            background:#1ebe5d;
-            transform:translateY(-4px) scale(1.08);
-            box-shadow:0 16px 40px rgba(0,0,0,.35);
-        }
+        /* --- Page background --- */
+        body { background: #f7f7f6; }
 
-        .whatsapp-fab:active{
-            transform:scale(.95);
-        }
-
-        @media(max-width:768px){
-            .whatsapp-fab{
-                width:56px;
-                height:56px;
-                right:18px;
-                bottom:68px;
-                font-size:30px;
-            }
-        }
-
-        .thumbnailSwiper .swiper-slide {
-            width: auto !important;
-        }
-
-        /* ===== Simple Tabs Wrapper ===== */
-        .simple-tabs {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        }
-
-        .tab-buttons {
-            display: flex;
-            background: linear-gradient(to right, #f9fafb, #ffffff);
-            border-bottom: 2px solid #e5e7eb;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 16px 12px;
-            background: transparent;
-            border: none;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #6b7280;
-            cursor: pointer;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .tab-btn:hover { color: #6fba2c; background: rgba(111, 186, 44, 0.05); }
-        .tab-btn.active { color: #6fba2c; background: rgba(111, 186, 44, 0.08); }
-        .tab-btn.active::after {
-            content: "";
-            position: absolute;
-            bottom: -2px; left: 0; right: 0;
-            height: 2px;
-            background: #6fba2c;
-        }
-
-        .tab-panels { padding: 28px; }
-
-        .tab-panel { display: none; animation: fadeUp 0.25s ease; }
-        .tab-panel.active { display: block; }
-
-        .tab-panel h5 {
-            font-size: 1.05rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #6fba2c;
-        }
-
-        .lead-text { color: #4b5563; margin-bottom: 16px; }
-
-        /* ===== Spec Grid with Icons ===== */
-        .spec-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-            gap: 14px;
-            padding: 4px 0;
-        }
-
-        .spec-card-item {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 14px 14px 14px 14px;
-            transition: all 0.25s ease;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .spec-card-item::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #6fba2c, #8dd43e);
-            border-radius: 12px 12px 0 0;
-        }
-
-        .spec-card-item:hover {
-            border-color: #6fba2c;
-            box-shadow: 0 4px 14px rgba(111, 186, 44, 0.12);
-            transform: translateY(-2px);
-        }
-
-        .spec-icon-wrap {
-            width: 34px;
-            height: 34px;
-            border-radius: 8px;
-            background: rgba(111, 186, 44, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            margin-top: 2px;
-        }
-
-        .spec-icon-wrap i {
-            font-size: 0.85rem;
-            color: #6fba2c;
-        }
-
-        .spec-card-body {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .spec-label {
-            display: block;
-            font-size: 0.7rem;
-            color: #9ca3af;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            margin-bottom: 5px;
-        }
-
-        .spec-value {
-            display: block;
-            font-size: 0.88rem;
-            color: #111827;
-            font-weight: 700;
-            word-break: break-word;
-            line-height: 1.3;
-        }
-
-        /* ===== Check List ===== */
-        .check-list { list-style: none; padding: 0; margin: 0; }
-        .check-list li {
-            position: relative;
-            padding-left: 28px;
-            margin-bottom: 12px;
-            color: #374151;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-        .check-list li::before {
-            content: "";
-            position: absolute;
-            left: 0; top: 5px;
-            width: 16px; height: 16px;
-            background: rgba(111, 186, 44, 0.15);
-            border-radius: 50%;
-        }
-        .check-list li::after {
-            content: "✓";
-            position: absolute;
-            left: 3px; top: 3px;
-            color: #6fba2c;
-            font-weight: 800;
-            font-size: 0.75rem;
-        }
-
-        /* ===== Info Cards ===== */
-        .info-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
-        .info-card {
-            background: linear-gradient(135deg, #f9fafb, #ffffff);
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 18px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        .info-card::before {
-            content: "";
-            position: absolute;
-            top: -50%; right: -50%;
-            width: 200px; height: 200px;
-            background: radial-gradient(circle, rgba(111, 186, 44, 0.1), transparent);
-            border-radius: 50%;
-        }
-        .info-card:hover {
-            border-color: #6fba2c;
-            box-shadow: 0 8px 24px rgba(111, 186, 44, 0.12);
-            transform: translateY(-4px);
-        }
-        .info-card h6 { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; color: #111827; position: relative; z-index: 1; }
-        .info-card p { font-size: 0.85rem; color: #4b5563; margin: 0; position: relative; z-index: 1; }
-
-        .info-card .card-icon {
-            width: 38px; height: 38px;
-            border-radius: 10px;
-            background: rgba(111, 186, 44, 0.12);
+        /* --- WhatsApp FAB --- */
+        .whatsapp-fab {
+            position: fixed; right: 24px; bottom: 85px;
+            width: 56px; height: 56px; border-radius: 50%;
+            background: #25D366; color: #fff;
             display: flex; align-items: center; justify-content: center;
-            margin-bottom: 12px;
-            position: relative; z-index: 1;
+            font-size: 28px; text-decoration: none;
+            box-shadow: 0 8px 24px rgba(0,0,0,.22); z-index: 9999;
+            transition: .25s ease;
         }
-        .info-card .card-icon i { color: #6fba2c; font-size: 1rem; }
+        .whatsapp-fab:hover { color: #fff; background: #1ebe5d; transform: translateY(-4px) scale(1.08); }
+        .whatsapp-fab:active { transform: scale(.95); }
+        @media(max-width:768px){ .whatsapp-fab { width:50px; height:50px; right:16px; bottom:72px; font-size:24px; } }
 
-        /* ===== Animation ===== */
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(6px); }
-            to   { opacity: 1; transform: translateY(0); }
+        /* --- Thumbnail Swiper fix --- */
+        .thumbnailSwiper .swiper-slide { width: auto !important; }
+
+        /* =============================================
+           BREADCRUMB
+           ============================================= */
+        .pd-breadcrumb {
+            background: #fff;
+            border-bottom: 1px solid #e8eaed;
+            padding: 10px 0;
+        }
+        .pd-breadcrumb .breadcrumb { margin: 0; font-size: 0.82rem; }
+        .pd-breadcrumb .breadcrumb-item a { color: #6fba2c; text-decoration: none; font-weight: 600; }
+        .pd-breadcrumb .breadcrumb-item.active { color: #6b7280; }
+
+        /* =============================================
+           PRODUCT PAGE WRAPPER
+           ============================================= */
+        .pd-page-wrapper { max-width: 1320px; margin: 0 auto; padding: 28px 20px 60px; }
+
+        /* =============================================
+           LEFT COLUMN — GALLERY
+           ============================================= */
+        .gallery-layout-wrapper { display: flex; gap: 14px; }
+
+        .main-image {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #e8eaed;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; padding: 2rem;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+            transition: all 0.4s ease;
+        }
+        .main-image img {
+            max-height: 100%; object-fit: contain;
+            filter: drop-shadow(0 20px 32px rgba(0,0,0,0.07));
+            transition: transform 0.5s cubic-bezier(0.165,0.84,0.44,1);
+        }
+        .main-image:hover img { transform: scale(1.04) translateY(-4px); filter: drop-shadow(0 30px 40px rgba(111,186,44,0.12)); }
+
+        @media (min-width: 992px) {
+            .gallery-layout-wrapper { flex-direction: row; height: 500px; }
+            .thumbnail-images { width: 90px; flex-shrink: 0; height: 100%; }
+            .thumbnailSwiper { height: 100%; }
+            .thumbnailSwiper .swiper-slide img {
+                width: 100%; height: 76px; object-fit: contain;
+                border: 1.5px solid #e8eaed; background: #fff;
+                border-radius: 12px; padding: 6px; cursor: pointer;
+                transition: all 0.2s ease;
+            }
+            .thumbnailSwiper .swiper-slide img:hover { border-color: #b0d87a; transform: translateY(-2px); }
+            .thumbnailSwiper .swiper-slide-thumb-active img { border: 2px solid #6fba2c; box-shadow: 0 4px 14px rgba(111,186,44,0.18); }
+            .main-image { flex-grow: 1; height: 100%; }
+            .main-image img { max-height: 100%; }
+        }
+        @media (max-width: 991px) {
+            .gallery-layout-wrapper { flex-direction: column-reverse; }
+            .thumbnail-images { width: 100%; height: auto; overflow: hidden; }
+            .thumbnailSwiper .swiper-slide { width: 68px !important; height: 68px !important; margin-right: 10px; }
+            .thumbnailSwiper .swiper-slide img { width: 100%; height: 100%; object-fit: contain; border: 1px solid #e8eaed; border-radius: 8px; padding: 4px; }
+            .main-image { width: 100%; height: 320px; }
         }
 
-        /* ===== Trust Badges ===== */
-        .trust-badges {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 16px;
-            margin: 2rem 0;
+        /* Product condition badge on gallery */
+        .gallery-condition-badge {
+            position: absolute; top: 14px; left: 14px;
+            background: rgba(111,186,44,0.12);
+            color: #2A8C3C; border: 1px solid rgba(111,186,44,0.3);
+            padding: 4px 12px; border-radius: 20px;
+            font-size: 0.73rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;
+            z-index: 2;
         }
-        .badge-item {
-            display: flex; flex-direction: column; align-items: center; text-align: center;
-            padding: 16px 12px; border-radius: 16px;
-            background: #ffffff; border: 1px solid #f3f4f6;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+
+        /* =============================================
+           RIGHT COLUMN — PRODUCT DETAILS
+           ============================================= */
+        .pd-right { background: #fff; border-radius: 20px; border: 1px solid #e8eaed; padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
+
+        /* --- Product Header --- */
+        .pd-brand-tag {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(111,186,44,0.1); color: #2A8C3C;
+            border: 1px solid rgba(111,186,44,0.25);
+            padding: 4px 12px; border-radius: 20px;
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+            margin-bottom: 10px;
         }
-        .badge-item:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(111, 186, 44, 0.08); border-color: rgba(111, 186, 44, 0.2); }
-        .badge-item i { font-size: 1.6rem; color: #6fba2c; margin-bottom: 8px; background: rgba(111, 186, 44, 0.1); width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
-        .badge-item .badge-label { font-size: 0.8rem; font-weight: 700; color: #111827; }
-        .badge-item .badge-desc { font-size: 0.7rem; color: #6b7280; margin-top: 4px; }
+        #productTitle {
+            font-size: 1.55rem !important; font-weight: 800 !important;
+            color: #111827 !important; line-height: 1.25 !important;
+            margin-bottom: 0 !important;
+        }
+        .pd-ratings { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+        .pd-stars { color: #f59e0b; font-size: 0.85rem; }
+        .pd-rating-text { font-size: 0.78rem; color: #6b7280; }
+        .pd-spec-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: #6fba2c; font-size: 0.82rem; font-weight: 700;
+            text-decoration: none; border-bottom: 1px dashed rgba(111,186,44,0.5);
+            transition: all 0.2s; padding-bottom: 1px; margin-top: 6px;
+        }
+        .pd-spec-link:hover { color: #2A8C3C; border-bottom-color: #2A8C3C; }
 
-        .minimal-spec-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f3f4f6; font-size: 0.9rem; }
-        .minimal-spec-item span { color: #6b7280; }
-        .minimal-spec-item strong { color: #111827; font-weight: 500; }
+        /* --- Divider --- */
+        .pd-divider { border: none; border-top: 1px solid #f0f1f3; margin: 18px 0; }
 
-        /* ===== Seller Options (new design) ===== */
-        .sellers-section h6 { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #9ca3af; margin-bottom: 10px; }
+        /* =============================================
+           FILTER SECTIONS — CONDITION / ATTRIBUTES
+           ============================================= */
+        .pd-section-label {
+            font-size: 0.72rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.8px; color: #9ca3af; margin-bottom: 10px; display: block;
+        }
+        .pd-condition-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .pd-condition-selected { font-size: 0.9rem; font-weight: 700; color: #111827; }
+        .pd-condition-selected span { color: #6fba2c; }
+        .pd-compare-btn {
+            font-size: 0.78rem; font-weight: 700; color: #6fba2c;
+            background: none; border: none; padding: 0; cursor: pointer;
+            display: flex; align-items: center; gap: 4px;
+            transition: color 0.2s;
+        }
+        .pd-compare-btn:hover { color: #2A8C3C; }
+
+        .condition-grid, .storage-options, .color-options {
+            display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 4px;
+        }
+
+        /* Unified chip button */
+        .condition-card, .storage-card, .color-card {
+            flex: 0 0 auto; background: #fff;
+            border: 1.5px solid #e5e7eb; border-radius: 10px;
+            padding: 9px 20px !important; cursor: pointer;
+            transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
+            display: flex; align-items: center; justify-content: center; text-align: center;
+            min-width: unset; width: auto !important; min-height: unset !important;
+        }
+        .condition-card:hover, .storage-card:hover, .color-card:hover {
+            border-color: #b0d87a; background: #fafff5; transform: translateY(-1px);
+        }
+        .condition-card.active, .storage-card.active, .color-card.active {
+            background: rgba(111,186,44,0.07) !important;
+            border: 2px solid #6fba2c !important;
+            padding: 8.5px 19.5px !important;
+            box-shadow: 0 3px 12px rgba(111,186,44,0.15);
+        }
+        .condition-card h6, .storage-card h6, .color-card h6 {
+            margin: 0 !important; font-size: 0.88rem !important;
+            font-weight: 600 !important; color: #374151;
+            transition: color 0.2s;
+        }
+        .condition-card.active h6, .storage-card.active h6, .color-card.active h6 { color: #2A8C3C !important; }
+        .condition-radio, .storage-radio, .color-radio { display: none !important; }
+        .condition-price, .storage-price, .color-price, .condition-premium-icon { display: none !important; }
+
+        /* Color card special */
+        .color-card .color-dot {
+            width: 16px; height: 16px; border-radius: 50%;
+            border: 1.5px solid rgba(0,0,0,0.12); flex-shrink: 0;
+        }
+        .color-card.active .color-dot { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #6fba2c; }
+
+        .selection-section { margin: 14px 0; }
+        .selection-section.border-top-0 { border-top: none !important; }
+
+        /* =============================================
+           SELLERS SECTION — COMPLETE REVAMP
+           ============================================= */
+        .sellers-section { margin: 16px 0 8px; }
+
+        /* Available from label */
+        .sellers-label {
+            font-size: 0.72rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.8px; color: #9ca3af; margin-bottom: 10px; display: block;
+        }
+
+        .sellers-list { display: flex; flex-direction: column; gap: 8px; }
 
         .seller-option {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 11px 14px;
-            border: 1.5px solid #e5e7eb;
-            border-radius: 10px;
-            cursor: pointer;
-            margin-bottom: 8px;
-            transition: all 0.2s ease;
-            background: #fff;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; border: 1.5px solid #e5e7eb;
+            border-radius: 12px; cursor: pointer; transition: all 0.2s ease; background: #fff;
         }
-        .seller-option:hover { border-color: #6fba2c; background: rgba(111, 186, 44, 0.03); }
-        .seller-option.selected { border-color: #6fba2c; background: rgba(111, 186, 44, 0.06); }
+        .seller-option:hover { border-color: #b0d87a; background: #fafff5; }
+        .seller-option.selected { border-color: #6fba2c; background: rgba(111,186,44,0.05); box-shadow: 0 3px 14px rgba(111,186,44,0.12); }
 
-        .seller-option-left { display: flex; align-items: center; gap: 10px; }
+        .seller-option-left { display: flex; align-items: center; gap: 12px; }
 
         .seller-option-check {
-            width: 20px; height: 20px;
-            border-radius: 50%;
+            width: 20px; height: 20px; border-radius: 50%;
             border: 2px solid #d1d5db;
             display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s;
-            flex-shrink: 0;
+            transition: all 0.2s; flex-shrink: 0;
         }
         .seller-option-check i { font-size: 0.6rem; color: transparent; }
         .seller-option.selected .seller-option-check { background: #6fba2c; border-color: #6fba2c; }
         .seller-option.selected .seller-option-check i { color: #fff; }
 
-        .seller-option-info { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-        .seller-option-name { font-size: 0.875rem; font-weight: 600; color: #111827; }
-
+        .seller-option-info { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .seller-option-name { font-size: 0.875rem; font-weight: 700; color: #111827; }
         .seller-badge-best {
-            font-size: 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            padding: 2px 7px;
-            background: rgba(111, 186, 44, 0.15);
-            color: #3d7a00;
-            border-radius: 20px;
+            font-size: 0.63rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.4px; padding: 3px 8px;
+            background: rgba(111,186,44,0.14); color: #2A8C3C; border-radius: 20px;
+        }
+        .seller-option-price { font-size: 1rem; font-weight: 800; color: #111827; }
+
+        /* No sellers state */
+        .no-sellers-state {
+            text-align: center; padding: 28px 16px;
+            background: #f9fafb; border-radius: 12px; border: 1px dashed #e5e7eb;
+        }
+        .no-sellers-state i { font-size: 2.5rem; color: #d1d5db; margin-bottom: 12px; display: block; }
+        .no-sellers-state p { margin: 0; color: #6b7280; font-size: 0.88rem; }
+
+        /* =============================================
+           WARRANTY ADD-ON BOX
+           ============================================= */
+        .warranty-addon-box {
+            background: linear-gradient(135deg, #fff 0%, #f0fdf4 100%);
+            border: 1.5px solid #6fba2c; border-radius: 14px;
+            position: relative; overflow: hidden;
+            padding: 14px 16px !important;
+            margin-bottom: 14px !important;
+            transition: all 0.3s ease;
+        }
+        .warranty-addon-box .watermark {
+            position: absolute; right: -14px; bottom: -14px;
+            font-size: 5rem; color: rgba(111,186,44,0.07);
+            transform: rotate(-15deg); z-index: 0; pointer-events: none;
+        }
+        .warranty-addon-box > * { position: relative; z-index: 1; }
+        .warranty-addon-box .icon-circle {
+            width: 32px; height: 32px; background: rgba(111,186,44,0.15);
+            color: #2A8C3C; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
+        }
+        .theme-switch { position: relative; display: inline-block; width: 42px; height: 24px; margin: 0; flex-shrink: 0; }
+        .theme-switch input { opacity: 0; width: 0; height: 0; }
+        .theme-switch .slider { position: absolute; cursor: pointer; top:0;left:0;right:0;bottom:0; background: #cbd5e1; transition:.4s; border-radius: 34px; }
+        .theme-switch .slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:#fff; transition:.4s; border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,.2); }
+        .theme-switch input:checked + .slider { background: #6fba2c; }
+        .theme-switch input:checked + .slider:before { transform: translateX(18px); }
+
+        /* =============================================
+           PURCHASE BOX — PRICE + ADD TO CART
+           ============================================= */
+        .purchase-options {
+            background: rgba(255,255,255,0.9) !important;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(111,186,44,0.2) !important;
+            border-radius: 18px !important; padding: 20px !important;
+            box-shadow: 0 16px 36px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.03) !important;
+            margin-bottom: 14px !important;
+            transition: transform 0.4s cubic-bezier(0.165,0.84,0.44,1);
+        }
+        .purchase-options:hover { transform: translateY(-3px); box-shadow: 0 22px 44px rgba(111,186,44,0.08) !important; }
+        .purchase-option { padding: 0 !important; border: none !important; }
+        .price-area .text-muted { text-transform: uppercase; letter-spacing: 1.2px; font-size: 0.68rem !important; font-weight: 800 !important; }
+        .price-area .price {
+            font-size: 2.2rem !important; font-weight: 800 !important;
+            color: #111827 !important; line-height: 1.1;
+        }
+        #addToCartBtn {
+            background: linear-gradient(135deg, #6fba2c 0%, #5a9e22 100%) !important;
+            border: none !important; border-radius: 50px !important;
+            font-size: 1rem !important; font-weight: 700 !important; letter-spacing: 0.4px;
+            padding: 0 28px !important; height: 52px !important;
+            box-shadow: 0 6px 18px rgba(111,186,44,0.28) !important;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4,0,0.2,1) !important;
+            white-space: nowrap;
+        }
+        #addToCartBtn:hover:not(:disabled) { transform: translateY(-2px) scale(1.02); box-shadow: 0 10px 24px rgba(111,186,44,0.38) !important; }
+        #addToCartBtn:active:not(:disabled) { transform: translateY(0) scale(0.98); }
+        #addToCartBtn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+        /* Trust bar below add-to-cart */
+        .trust-bar {
+            display: flex; align-items: center; justify-content: center; gap: 18px;
+            background: #f9fafb; border: 1px solid #e8eaed; border-radius: 12px;
+            padding: 10px 16px; margin-top: 12px; flex-wrap: wrap;
+        }
+        .trust-item { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #4b5563; font-weight: 600; }
+        .trust-item i { font-size: 0.8rem; color: #6fba2c; }
+
+        /* =============================================
+           WHAT'S IN THE BOX
+           ============================================= */
+        .whats-included-box {
+            background: #f9fafb !important; border: none !important;
+            border-radius: 16px !important; padding: 20px !important; margin-bottom: 0;
+        }
+        .whats-included-box h6 {
+            font-size: 0.72rem !important; text-transform: uppercase; letter-spacing: 1.2px;
+            font-weight: 800 !important; color: #9ca3af !important; margin-bottom: 16px !important;
+        }
+        .included-item { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.04); }
+        .included-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .included-icon {
+            width: 44px; height: 44px; background: #fff; color: #2A8C3C;
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; box-shadow: 0 3px 10px rgba(0,0,0,0.04); flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+        .included-item:hover .included-icon { transform: scale(1.06); }
+        .included-text .title { display: block; font-weight: 700; color: #111827; font-size: 0.88rem; margin-bottom: 2px; }
+        .included-text .desc { display: block; color: #6b7280; font-size: 0.78rem; line-height: 1.3; }
+
+        /* =============================================
+           SPECS / TABS SECTION — FULL REVAMP
+           ============================================= */
+        .pd-tabs-section { margin-top: 32px; }
+
+        /* Tab container */
+        .pd-tabs-container {
+            background: #fff; border-radius: 20px;
+            border: 1px solid #e8eaed;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04); overflow: hidden;
         }
 
-        .seller-option-price { font-size: 0.95rem; font-weight: 700; color: #6fba2c; }
+        /* Tab navigation */
+        .pd-tab-nav {
+            display: flex; background: #f9fafb;
+            border-bottom: 2px solid #e8eaed; overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .pd-tab-nav::-webkit-scrollbar { display: none; }
 
-        /* ===== Sticky Buy Bar (all screen sizes) ===== */
+        .tab-btn {
+            flex: 1; min-width: 120px; padding: 16px 14px;
+            background: transparent; border: none;
+            font-size: 0.875rem; font-weight: 700; color: #6b7280;
+            cursor: pointer; position: relative; transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+        .tab-btn i { margin-right: 6px; font-size: 0.85rem; }
+        .tab-btn:hover { color: #6fba2c; background: rgba(111,186,44,0.04); }
+        .tab-btn.active { color: #6fba2c; background: rgba(111,186,44,0.06); }
+        .tab-btn.active::after {
+            content: ""; position: absolute; bottom: -2px; left: 0; right: 0;
+            height: 2px; background: #6fba2c;
+        }
+
+        /* Tab panels wrapper */
+        .tab-panels { padding: 32px; }
+        .tab-panel { display: none; animation: pdFadeUp 0.25s ease; }
+        .tab-panel.active { display: block; }
+        @keyframes pdFadeUp { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+
+        .tab-panel-title {
+            font-size: 1rem; font-weight: 800; color: #111827;
+            margin-bottom: 22px; display: flex; align-items: center; gap: 10px;
+        }
+        .tab-panel-title i {
+            width: 34px; height: 34px; border-radius: 10px;
+            background: rgba(111,186,44,0.1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem; color: #6fba2c; flex-shrink: 0;
+        }
+
+        /* --- MORE DETAILS SPEC GRID (fully revamped) --- */
+        .spec-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 12px;
+        }
+
+        .spec-card-item {
+            background: #fafbfc; border: 1.5px solid #e8eaed; border-radius: 14px;
+            padding: 14px 16px; transition: all 0.22s ease;
+            display: flex; align-items: center; gap: 14px;
+            position: relative; overflow: hidden;
+        }
+        .spec-card-item::after {
+            content: ""; position: absolute; top: 0; left: 0; bottom: 0;
+            width: 3px; background: linear-gradient(180deg, #6fba2c, #8dd43e);
+            border-radius: 14px 0 0 14px;
+        }
+        .spec-card-item:hover {
+            border-color: #6fba2c; background: #fff;
+            box-shadow: 0 4px 16px rgba(111,186,44,0.1); transform: translateY(-2px);
+        }
+
+        .spec-icon-wrap {
+            width: 38px; height: 38px; border-radius: 10px;
+            background: rgba(111,186,44,0.1); flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .spec-icon-wrap i { font-size: 0.9rem; color: #6fba2c; }
+
+        .spec-card-body { flex: 1; min-width: 0; }
+        .spec-label {
+            display: block; font-size: 0.65rem; color: #9ca3af;
+            font-weight: 800; text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 3px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .spec-value {
+            display: block; font-size: 0.9rem; color: #111827; font-weight: 700;
+            word-break: break-word; line-height: 1.3;
+        }
+
+        /* Product overview block */
+        .pd-overview-block {
+            background: linear-gradient(135deg, #f9fafb 0%, #fff 100%);
+            border: 1px solid #e8eaed; border-radius: 14px; padding: 20px 22px;
+            margin-bottom: 24px;
+        }
+        .pd-overview-block .overview-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: #9ca3af; margin-bottom: 8px; display: block; }
+        .pd-overview-block p { color: #374151; font-size: 0.9rem; line-height: 1.65; margin: 0; }
+
+        /* Key specs quick row */
+        .key-specs-row {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px; margin-bottom: 26px;
+        }
+        .key-spec-badge {
+            background: #f9fafb; border: 1px solid #e8eaed; border-radius: 10px;
+            padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+        }
+        .key-spec-badge i { color: #6fba2c; font-size: 0.95rem; flex-shrink: 0; }
+        .key-spec-badge span { font-size: 0.82rem; font-weight: 700; color: #374151; }
+
+        /* --- WARRANTY & RETURNS CARDS --- */
+        .info-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+        .info-card {
+            background: linear-gradient(135deg, #f9fafb, #fff);
+            border: 1px solid #e8eaed; border-radius: 14px; padding: 18px;
+            transition: all 0.3s ease; position: relative; overflow: hidden;
+        }
+        .info-card::before {
+            content: ""; position: absolute; top: -50%; right: -50%;
+            width: 180px; height: 180px;
+            background: radial-gradient(circle, rgba(111,186,44,0.08), transparent);
+            border-radius: 50%;
+        }
+        .info-card:hover { border-color: #b0d87a; box-shadow: 0 8px 24px rgba(111,186,44,0.1); transform: translateY(-4px); }
+        .info-card h6 { font-size: 0.92rem; font-weight: 700; margin-bottom: 5px; color: #111827; position: relative; z-index: 1; }
+        .info-card p { font-size: 0.83rem; color: #4b5563; margin: 0; position: relative; z-index: 1; }
+        .info-card .card-icon {
+            width: 40px; height: 40px; border-radius: 10px;
+            background: rgba(111,186,44,0.12);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 12px; position: relative; z-index: 1;
+        }
+        .info-card .card-icon i { color: #6fba2c; font-size: 1.05rem; }
+
+        /* --- CONDITION TAB --- */
+        .check-list { list-style: none; padding: 0; margin: 0; }
+        .check-list li {
+            position: relative; padding: 12px 0 12px 36px;
+            border-bottom: 1px solid #f3f4f6; color: #374151;
+            font-size: 0.9rem; line-height: 1.5;
+        }
+        .check-list li:last-child { border-bottom: none; }
+        .check-list li::before {
+            content: ""; position: absolute; left: 0; top: 14px;
+            width: 20px; height: 20px; background: rgba(111,186,44,0.12);
+            border-radius: 50%;
+        }
+        .check-list li::after {
+            content: "✓"; position: absolute; left: 4px; top: 12px;
+            color: #6fba2c; font-weight: 800; font-size: 0.78rem;
+        }
+        .condition-grades {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px; margin-top: 20px;
+        }
+        .grade-card {
+            border: 1px solid #e8eaed; border-radius: 14px; padding: 18px;
+            transition: all 0.25s ease;
+        }
+        .grade-card:hover { border-color: #b0d87a; transform: translateY(-2px); box-shadow: 0 6px 18px rgba(111,186,44,0.08); }
+        .grade-badge {
+            display: inline-block; padding: 3px 12px; border-radius: 20px;
+            font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .grade-excellent { background: rgba(16,185,129,0.1); color: #059669; }
+        .grade-good      { background: rgba(245,158,11,0.1); color: #d97706; }
+        .grade-fair      { background: rgba(239,68,68,0.1); color: #dc2626; }
+        .grade-card h6 { font-size: 0.88rem; font-weight: 700; color: #111827; margin-bottom: 4px; }
+        .grade-card p  { font-size: 0.8rem; color: #6b7280; margin: 0; line-height: 1.4; }
+
+        .lead-text { color: #4b5563; margin-bottom: 18px; font-size: 0.9rem; line-height: 1.6; }
+
+        /* =============================================
+           STICKY BUY BAR
+           ============================================= */
         .sticky-buy-bar {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: #fff;
-            border-top: 1px solid #e5e7eb;
-            padding: 10px 20px;
-            z-index: 1040;
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(255,255,255,0.96); backdrop-filter: blur(14px);
+            border-top: 1px solid #e5e7eb; padding: 10px 20px;
+            z-index: 1040; transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+            box-shadow: 0 -6px 24px rgba(0,0,0,0.08);
         }
         .sticky-buy-bar.visible { transform: translateY(0); }
-
-        .sticky-buy-inner {
-            /* max-width: 1400px; */
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .sticky-product-thumb {
-            /* width: 44px; height: 44px; */
-            width: 5rem; height: 5rem;
-            border-radius: 8px;
-            object-fit: contain;
-            flex-shrink: 0;
-            border: 1px solid #f3f4f6;
-            background: #f9fafb;
-            padding: 3px;
-        }
-
+        .sticky-buy-inner { max-width: 1320px; margin: 0 auto; display: flex; align-items: center; gap: 16px; }
+        .sticky-product-thumb { width: 56px; height: 56px; border-radius: 10px; object-fit: contain; flex-shrink: 0; border: 1px solid #f0f1f3; background: #f9fafb; padding: 4px; }
         .sticky-product-info { flex: 1; min-width: 0; }
-        .sticky-product-name { font-size: 1.5rem; font-weight: 700; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .sticky-product-sub  { font-size: 1.2rem; color: #6b7280; margin-top: 1px; }
-
+        .sticky-product-name { font-size: 0.95rem; font-weight: 700; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sticky-product-sub  { font-size: 0.75rem; color: #6b7280; margin-top: 1px; }
         .sticky-price-block { text-align: right; }
-        .sticky-price-main  { font-size: 1.5rem; font-weight: 800; color: #111827; line-height: 1; }
-
+        .sticky-price-main  { font-size: 1.3rem; font-weight: 800; color: #111827; line-height: 1; }
         .sticky-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-
         .sticky-cart-btn {
-            height: 42px;
-            padding: 0 20px;
-            background: #fff;
-            color: #6fba2c;
-            border: 2px solid #6fba2c;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
+            height: 42px; padding: 0 18px; background: #fff; color: #6fba2c;
+            border: 2px solid #6fba2c; border-radius: 10px; font-weight: 700;
+            font-size: 0.85rem; cursor: pointer; transition: all 0.2s; white-space: nowrap;
         }
-        .sticky-cart-btn:hover { background: rgba(111, 186, 44, 0.06); }
-
+        .sticky-cart-btn:hover { background: rgba(111,186,44,0.06); }
         .sticky-buynow-btn {
-            height: 42px;
-            padding: 0 22px;
-            background: #6fba2c;
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
+            height: 42px; padding: 0 22px; background: #6fba2c; color: #fff;
+            border: none; border-radius: 10px; font-weight: 700; font-size: 0.85rem;
+            cursor: pointer; transition: all 0.2s; white-space: nowrap;
             display: flex; align-items: center; gap: 6px;
         }
         .sticky-buynow-btn:hover { background: #5ea824; }
-
-        .sticky-whatsapp {
-            width: 42px; height: 42px;
-            background: #25D366;
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem;
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: background 0.2s;
-        }
-        .sticky-whatsapp:hover { background: #1ebe5d; }
-
         @media (max-width: 575px) {
             .sticky-product-thumb { display: none; }
             .sticky-product-info { display: none; }
             .sticky-price-block { flex: 1; text-align: left; }
         }
 
-        /* ===== Conditions Panel Redesign ===== */
-        .cond-image-carousel {
-            display: flex;
-            gap: 0;
-            overflow: hidden;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            background: #f5f3ff;
-            height: 220px;
+        /* =============================================
+           CONDITIONS COMPARISON SIDE PANEL
+           ============================================= */
+        .conditions-panel {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1050; visibility: hidden; opacity: 0; transition: all 0.3s ease;
         }
-        .cond-image-carousel img {
-            width: 50%;
-            height: 100%;
-            object-fit: contain;
-            padding: 16px;
+        .conditions-panel.active { visibility: visible; opacity: 1; }
+        .panel-overlay { position: absolute; top:0;left:0; width:100%;height:100%; background: rgba(17,24,39,0.5); backdrop-filter: blur(2px); }
+        .panel-content {
+            position: absolute; top:0; right:0; width: 460px; max-width: 96vw;
+            height: 100%; background: #fff;
+            box-shadow: -4px 0 32px rgba(0,0,0,0.12);
+            transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+            overflow-y: auto; display: flex; flex-direction: column;
         }
+        .conditions-panel.active .panel-content { transform: translateX(0); }
+        .panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 24px; border-bottom: 1px solid #e8eaed;
+            position: sticky; top:0; background: #fff; z-index: 10;
+        }
+        .panel-header h4 { font-size: 1.15rem; font-weight: 800; color: #111827; margin: 0; }
+        .close-btn {
+            background: #f3f4f6; border: none; width: 36px; height: 36px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; color: #6b7280; cursor: pointer; transition: all 0.2s;
+        }
+        .close-btn:hover { background: #e5e7eb; color: #111827; }
+        .panel-body { padding: 24px; flex: 1; }
 
-        .cond-tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
+        .cond-image-carousel {
+            display: flex; gap: 12px; border-radius: 14px; margin-bottom: 20px;
+            background: #f9fafb; border: 1px solid #e8eaed; height: 200px; overflow: hidden;
         }
+        .cond-image-carousel img { width: 50%; height: 100%; object-fit: contain; padding: 16px; }
+        .cond-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
         .cond-tab-btn {
-            flex: 1;
-            padding: 9px 12px;
-            border: 1.5px solid #e5e7eb;
-            border-radius: 8px;
-            background: #fff;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #6b7280;
-            cursor: pointer;
-            transition: all 0.2s;
+            flex: 1; padding: 10px 12px; border: 1.5px solid #e5e7eb;
+            border-radius: 10px; background: #fff; font-size: 0.85rem; font-weight: 700;
+            color: #6b7280; cursor: pointer; transition: all 0.2s;
         }
         .cond-tab-btn:hover { border-color: #6fba2c; color: #6fba2c; }
         .cond-tab-btn.active { background: #6fba2c; border-color: #6fba2c; color: #fff; }
-
-        .cond-panel-desc-title {
-            font-size: 1rem;
-            font-weight: 700;
-            color: #111827;
-            margin-bottom: 14px;
-        }
-        .cond-panel-bullets {
-            list-style: none;
-            padding: 0; margin: 0;
-        }
+        .cond-panel-desc-title { font-size: 0.95rem; font-weight: 800; color: #111827; margin-bottom: 14px; }
+        .cond-panel-bullets { list-style: none; padding: 0; margin: 0; }
         .cond-panel-bullets li {
-            position: relative;
-            padding-left: 22px;
-            margin-bottom: 12px;
-            color: #374151;
-            font-size: 0.9rem;
-            line-height: 1.55;
+            position: relative; padding: 10px 0 10px 24px;
+            border-bottom: 1px solid #f3f4f6; color: #374151;
+            font-size: 0.88rem; line-height: 1.55;
         }
-        .cond-panel-bullets li::before {
-            content: "•";
-            position: absolute;
-            left: 0; top: 0;
-            color: #6fba2c;
-            font-size: 1.2rem;
-            line-height: 1.3;
+        .cond-panel-bullets li:last-child { border-bottom: none; }
+        .cond-panel-bullets li::before { content: "•"; position: absolute; left:0; top:10px; color: #6fba2c; font-size: 1.2rem; line-height: 1.3; }
+
+        /* =============================================
+           MINIMAL SPEC ITEM (Specs Side Panel)
+           ============================================= */
+        .minimal-spec-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 11px 0; border-bottom: 1px solid #f3f4f6; font-size: 0.88rem;
         }
+        .minimal-spec-item:last-child { border-bottom: none; }
+        .minimal-spec-item span { color: #6b7280; font-weight: 500; }
+        .minimal-spec-item strong { color: #111827; font-weight: 700; text-align: right; max-width: 55%; }
+
+        /* =============================================
+           TRUST BADGES BAR (between gallery and details)
+           ============================================= */
+        .trust-badges-bar {
+            display: flex; align-items: center; justify-content: center;
+            gap: 0; background: #fff;
+            border: 1px solid #e8eaed; border-radius: 14px; overflow: hidden;
+            margin-top: 16px;
+        }
+        .trust-badge-item {
+            flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center;
+            padding: 14px 8px; border-right: 1px solid #f0f1f3; transition: background 0.2s;
+        }
+        .trust-badge-item:last-child { border-right: none; }
+        .trust-badge-item:hover { background: #fafff5; }
+        .trust-badge-item i { font-size: 1.1rem; color: #6fba2c; margin-bottom: 5px; }
+        .trust-badge-item .tb-label { font-size: 0.72rem; font-weight: 700; color: #111827; }
+        .trust-badge-item .tb-sub   { font-size: 0.65rem; color: #9ca3af; margin-top: 1px; }
+
+        /* =============================================
+           RESPONSIVE / MOBILE
+           ============================================= */
+        @media (max-width: 991px) {
+            body { padding-bottom: 80px !important; }
+            .pd-right { border-radius: 16px; padding: 20px; }
+            .tab-panels { padding: 20px; }
+        }
+        @media (max-width: 575px) {
+            #productTitle { font-size: 1.3rem !important; }
+            .price-area .price { font-size: 1.9rem !important; }
+            .trust-badges-bar { display: grid; grid-template-columns: repeat(2,1fr); }
+            .trust-badge-item { border-right: 1px solid #f0f1f3; }
+            .trust-badge-item:nth-child(even) { border-right: none; }
+            .trust-badge-item:nth-child(3), .trust-badge-item:nth-child(4) { border-top: 1px solid #f0f1f3; }
+            .spec-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* =============================================
+           YOU MAY ALSO LIKE
+           ============================================= */
+        .products-section { padding: 3.5rem 0; }
+
+        /* =============================================
+           REVIEWS SECTION
+           ============================================= */
+        .swiper.reviewsSwiper { padding-top: 8px !important; padding-bottom: 14px !important; }
+        .review-card { transition: all 0.3s ease; }
+        .review-card:hover { border-color: #b0d87a !important; box-shadow: 0 8px 24px rgba(0,0,0,0.06) !important; transform: translateY(-3px); }
+
+        /* =============================================
+           LOADING / ERROR STATES
+           ============================================= */
+        .pd-loading-skeleton {
+            animation: shimmer 1.6s ease-in-out infinite;
+            background: linear-gradient(90deg, #f0f1f3 25%, #e4e6e8 50%, #f0f1f3 75%);
+            background-size: 400px 100%; border-radius: 8px;
+        }
+        @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
     </style>
 </head>
 
@@ -490,91 +690,183 @@
     {% include 'navbar.html' %}
 
     <!-- Breadcrumb -->
-    <div class="px-4 py-3">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/">Home</a></li>
-                <li class="breadcrumb-item"><a href="/shop/">Shop</a></li>
-                <li class="breadcrumb-item active" id="breadcrumbProduct">Loading...</li>
-            </ol>
-        </nav>
+    <div class="pd-breadcrumb">
+        <div class="container-fluid px-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/"><i class="fas fa-home me-1"></i>Home</a></li>
+                    <li class="breadcrumb-item"><a href="/shop/">Shop</a></li>
+                    <li class="breadcrumb-item active" id="breadcrumbProduct">Loading...</li>
+                </ol>
+            </nav>
+        </div>
     </div>
 
-    <!-- Loading State -->
-    <div id="loadingState" class="px-4 pb-5">
-        <div class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+    <!-- Product Finder Banner -->
+    <!-- <div style="background: linear-gradient(135deg, #111827 0%, #1f2937 100%); padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <div class="container-fluid px-4 d-flex align-items-center justify-content-between gap-3 flex-wrap">
+            <div class="d-flex align-items-center gap-3">
+                <div style="width: 34px; height: 34px; background: rgba(111,186,44,0.18); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fas fa-magic" style="color: #6fba2c; font-size: 0.85rem;"></i>
+                </div>
+                <div>
+                    <p style="margin: 0; font-size: 0.82rem; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700;">Product Concierge</p>
+                    <p style="margin: 0; font-size: 0.92rem; font-weight: 700; color: #fff;">Not sure what to get? Let us help you find the perfect device.</p>
+                </div>
             </div>
-            <p class="mt-3 text-muted">Loading product details...</p>
+            <button onclick="openProductFinder()"
+                style="flex-shrink:0; padding: 9px 22px; border-radius: 50px;
+                    background: #6fba2c; color: #fff; border: none; font-weight: 700;
+                    font-size: 0.85rem; cursor: pointer; white-space: nowrap;
+                    box-shadow: 0 4px 14px rgba(111,186,44,0.35); transition: all 0.2s;"
+                onmouseover="this.style.background='#5a9e22';this.style.transform='translateY(-1px)'"
+                onmouseout="this.style.background='#6fba2c';this.style.transform='translateY(0)'"
+            >
+                <i class="fas fa-arrow-right me-2"></i> Find My Device
+            </button>
+        </div>
+    </div> -->
+
+    <!-- Loading State -->
+    <div id="loadingState" class="pd-page-wrapper">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="pd-loading-skeleton" style="height: 500px; border-radius: 20px;"></div>
+            </div>
+            <div class="col-lg-6">
+                <div class="pd-loading-skeleton mb-3" style="height: 28px; width: 80%;"></div>
+                <div class="pd-loading-skeleton mb-3" style="height: 20px; width: 50%;"></div>
+                <div class="pd-loading-skeleton mb-3" style="height: 120px;"></div>
+                <div class="pd-loading-skeleton mb-3" style="height: 80px;"></div>
+                <div class="pd-loading-skeleton" style="height: 64px;"></div>
+            </div>
         </div>
     </div>
 
     <!-- Error State -->
-    <div id="errorState" class="px-4 pb-5" style="display: none;">
+    <div id="errorState" class="pd-page-wrapper" style="display: none;">
         <div class="text-center py-5">
-            <i class="fas fa-exclamation-circle" style="font-size: 64px; color: #dee2e6;"></i>
-            <h4 class="mt-3">Product Not Found</h4>
+            <div style="width: 80px; height: 80px; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                <i class="fas fa-exclamation-circle" style="font-size: 2rem; color: #ef4444;"></i>
+            </div>
+            <h4 class="fw-bold text-dark">Product Not Found</h4>
             <p class="text-muted">The product you&apos;re looking for doesn&apos;t exist or is no longer available.</p>
-            <a href="/shop/" class="btn btn-primary">Back to Shop</a>
+            <a href="/shop/" class="btn btn-primary px-5 py-2 rounded-pill fw-bold mt-2">Back to Shop</a>
         </div>
     </div>
 
-    <!-- Product Detail -->
-    <div class="px-4 pb-5" id="productContent" style="display: none;">
+    <!-- Product Detail Content -->
+    <div class="pd-page-wrapper" id="productContent" style="display: none;">
         <div class="row g-4">
+
+            <!-- LEFT: Gallery -->
             <div class="col-lg-6">
-                <div class="product-gallery sticky-top" style="top: 100px; z-index: 1;">
-                    <div class="gallery-layout-wrapper">
-                        <div class="thumbnail-images">
-                            <div class="swiper thumbnailSwiper">
-                                <div class="swiper-wrapper" id="thumbnailWrapper"></div>
+                <div class="product-gallery sticky-top" style="top: 90px; z-index: 1;">
+                    <div style="position: relative;">
+                        <div class="gallery-layout-wrapper">
+                            <div class="thumbnail-images">
+                                <div class="swiper thumbnailSwiper">
+                                    <div class="swiper-wrapper" id="thumbnailWrapper"></div>
+                                </div>
+                            </div>
+                            <div class="main-image">
+                                <img src="/static/images/iPhone 16 Pro.png" alt="Product" id="mainImage">
                             </div>
                         </div>
-                        <div class="main-image">
-                            <img src="/static/images/iPhone 16 Pro.png" alt="Product" id="mainImage">
+                        <!-- <div class="gallery-condition-badge" id="galleryConditionBadge" style="display:none;">
+                            <i class="fas fa-certificate"></i> Certified Refurbished
+                        </div> -->
+                    </div>
+
+                    <!-- Trust badges bar below gallery -->
+                    <div class="trust-badges-bar">
+                        <div class="trust-badge-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span class="tb-label">6M Warranty</span>
+                            <span class="tb-sub">Hardware cover</span>
+                        </div>
+                        <div class="trust-badge-item">
+                            <i class="fas fa-undo"></i>
+                            <span class="tb-label">7-Day Return</span>
+                            <span class="tb-sub">No questions asked</span>
+                        </div>
+                        <div class="trust-badge-item">
+                            <i class="fas fa-truck"></i>
+                            <span class="tb-label">Free Shipping</span>
+                            <span class="tb-sub">4–7 business days</span>
+                        </div>
+                        <div class="trust-badge-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span class="tb-label">Verified Sellers</span>
+                            <span class="tb-sub">Vetted refurbishers</span>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- RIGHT: Product Details -->
             <div class="col-lg-6">
-                <div class="product-details">
+                <div class="pd-right">
 
-                    <div class="product-header mb-3">
+                    <!-- Header -->
+                    <div class="product-header mb-2">
+                        <div class="pd-brand-tag" id="productBrandTag">
+                            <i class="fas fa-recycle" style="font-size:0.7rem;"></i> Recarvit Certified
+                        </div>
                         <h1 id="productTitle" class="h3 fw-bold mb-0">Loading...</h1>
-                        <a href="javascript:void(0)" onclick="toggleSpecsPanel()"
-                            class="d-inline-flex align-items-center mt-2 text-decoration-none"
-                            style="color: #2A8C3C; font-size: 0.9rem; font-weight: 600; transition: opacity 0.2s;"
-                            onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
-                            <i class="fas fa-sliders-h me-2"></i> View Specifications
-                        </a>
+                        <div class="pd-ratings">
+                            <div class="pd-stars">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <span class="pd-rating-text">4.8 (1,245 reviews)</span>
+                            <a href="javascript:void(0)" onclick="toggleSpecsPanel()" class="pd-spec-link ms-2">
+                                <i class="fas fa-sliders-h"></i> View Specifications
+                            </a>
+                        </div>
                     </div>
 
+                    <hr class="pd-divider">
+
+                    <!-- Condition Filter -->
                     <div class="selection-section border-top-0">
-                        <div class="section-header d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0">
-                                Condition: <span id="selectedConditionLabel" class="text-primary fw-bold">Select...</span>
-                                <small id="selectedConditionDesc" class="text-muted ms-2 fw-normal" style="font-size: 0.8rem;"></small>
-                            </h6>
-                            <button class="btn btn-link p-0 text-decoration-none" style="font-size: 0.95rem;"
-                                onclick="openConditionsPanel()">
-                                Compare <i class="fas fa-chevron-right ms-1"></i>
+                        <div class="pd-condition-row">
+                            <div>
+                                <span class="pd-section-label">Condition</span>
+                                <div class="pd-condition-selected">
+                                    <span id="selectedConditionLabel">Select...</span>
+                                    <small id="selectedConditionDesc" class="text-muted ms-2 fw-normal" style="font-size: 0.78rem;"></small>
+                                </div>
+                            </div>
+                            <button class="pd-compare-btn" onclick="openConditionsPanel()">
+                                Compare <i class="fas fa-chevron-right"></i>
                             </button>
                         </div>
-                        <div class="condition-options">
+                        <div class="condition-options mt-2">
                             <div class="condition-grid" id="conditionGrid"></div>
                         </div>
                     </div>
 
+                    <!-- Dynamic Attribute Filters (storage, color, etc.) -->
                     <div id="attributeFiltersContainer"></div>
 
-                    <!-- Sellers — auto selected, shown as compact options -->
+                    <hr class="pd-divider">
+
+                    <!-- Sellers — Available From -->
                     <div class="sellers-section">
-                        <h6 class="mb-2">Available from</h6>
-                        <div class="sellers-list" id="sellersList"></div>
+                        <span class="sellers-label">Available from</span>
+                        <span id="custom-out-of-stock-label" style="display:none; 
+                display: inline-block; background: #fee2e2; color: #dc2626;
+                font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
+                letter-spacing: 1px; padding: 4px 14px; border-radius: 20px; margin-bottom: 14px;
+            ">Out of Stock</span>
+                        <div class="sellers-list" id="sellersList">
+                            <!-- populated by JS -->
+                        </div>
                     </div>
 
+                    <hr class="pd-divider">
+
+                    <!-- Extended Warranty Add-on -->
                     <div class="warranty-addon-box mb-3 p-3 shadow-sm">
                         <i class="fas fa-shield-alt watermark"></i>
                         <div class="d-flex justify-content-between align-items-start mb-2">
@@ -583,7 +875,8 @@
                                     <i class="fas fa-shield-alt"></i>
                                 </div>
                                 <div>
-                                    <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.95rem;">Extended Warranty</h6>
+                                    <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.9rem;">Extended Warranty</h6>
+                                    <small class="text-muted" style="font-size: 0.75rem;">+24 months coverage</small>
                                 </div>
                             </div>
                             <label class="theme-switch mt-1">
@@ -591,54 +884,41 @@
                                 <span class="slider round"></span>
                             </label>
                         </div>
-                        <p class="text-muted mb-2 ps-1" style="font-size: 0.8rem; line-height: 1.4; max-width: 85%;">
-                            Upgrade your protection. Extend your coverage for 24 months to cover all hardware defects, battery issues, and internal malfunctions.
+                        <p class="text-muted mb-2 ps-1" style="font-size: 0.8rem; line-height: 1.4; max-width: 90%;">
+                            Covers all hardware defects, battery issues, and internal malfunctions for 24 months.
                         </p>
                         <div class="d-flex align-items-center gap-2 ps-1">
-                            <span class="fw-bold" style="color: #2A8C3C; font-size: 0.95rem;">+ ₹1,999</span>
-                            <span class="text-muted" style="font-size: 0.75rem;">(Billed once)</span>
+                            <span class="fw-bold" style="color: #2A8C3C; font-size: 0.9rem;">+ ₹1,999</span>
+                            <span class="text-muted" style="font-size: 0.73rem;">(One-time charge)</span>
                         </div>
                     </div>
 
-                    <div class="purchase-options mb-4" style="padding: 1.5rem;">
+                    <!-- Price + Add to Cart -->
+                    <div class="purchase-options" style="padding: 1.5rem;">
                         <div class="purchase-option border-0 p-0 mb-0">
                             <input type="radio" name="purchase" id="buyNow" checked class="d-none">
-                            <div class="d-flex align-items-center justify-content-between gap-3 mb-3 py-2">
-                                <div class="price-area flex-grow-1">
-                                    <small class="text-muted d-block fw-medium" style="font-size: 0.85rem; margin-bottom: 2px;">Total Price</small>
-                                    <span class="price h2 fw-bold m-0 text-primary" id="displayPrice">₹0</span>
+                            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                                <div class="price-area">
+                                    <small class="text-muted d-block fw-medium" style="font-size: 0.7rem; margin-bottom: 2px;">Total Price</small>
+                                    <span class="price h2 fw-bold m-0" id="displayPrice">₹0</span>
                                 </div>
-                                <button class="btn btn-primary px-5 py-2 shadow-sm" id="addToCartBtn"
-                                    style="height: 50px; font-weight: 600;" disabled>
+                                <button class="btn btn-primary px-4" id="addToCartBtn"
+                                    style="height: 52px; font-weight: 700; font-size: 1rem;" disabled>
                                     <i class="fas fa-shopping-cart me-2"></i>Add to Cart
                                 </button>
                             </div>
 
-                            <!-- Free Shipping + Returns row -->
-                            <div class="d-flex justify-content-between align-items-center bg-light rounded px-3 py-2 mt-2">
-                                <small class="text-muted" style="font-size: 0.75rem;">
-                                    <i class="fa fa-lock me-1"></i>Secure Pay
-                                </small>
-                                <div class="d-flex gap-3">
-                                    <small class="text-success fw-bold" style="font-size: 0.75rem;">
-                                        <i class="fas fa-truck me-1"></i>Free Shipping
-                                    </small>
-                                    <small class="text-muted" style="font-size: 0.75rem;">
-                                        4-7 business days
-                                    </small>
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-end gap-3 mt-1 px-1">
-                                <small class="text-success fw-bold" style="font-size: 0.75rem;">
-                                    <i class="fas fa-undo me-1"></i>7-Day Return
-                                </small>
-                                <small class="text-success fw-bold" style="font-size: 0.75rem;">
-                                    <i class="fas fa-shield-alt me-1"></i>6 Month Warranty
-                                </small>
+                            <!-- Trust micro-row -->
+                            <div class="trust-bar">
+                                <div class="trust-item"><i class="fas fa-lock"></i> Secure Pay</div>
+                                <div class="trust-item"><i class="fas fa-truck"></i> Free Shipping</div>
+                                <div class="trust-item"><i class="fas fa-undo"></i> 7-Day Return</div>
+                                <div class="trust-item"><i class="fas fa-shield-alt"></i> 6M Warranty</div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- What's in the Box -->
                     <div class="whats-included-box">
                         <h6>What&apos;s in the box</h6>
                         <div class="included-list">
@@ -659,86 +939,123 @@
                         </div>
                     </div>
 
+                </div><!-- /.pd-right -->
+            </div>
+        </div><!-- /.row -->
+
+        <!-- =============================================
+             PRODUCT SPECIFICATIONS TABS — REVAMPED
+             ============================================= -->
+        <div class="pd-tabs-section" id="specsSection" style="display:none;">
+            <div class="pd-tabs-container">
+                <div class="pd-tab-nav tab-buttons">
+                    <button class="tab-btn active" data-tab="specs-warranty">
+                        <i class="fas fa-shield-alt"></i> Warranty &amp; Returns
+                    </button>
+                    <button class="tab-btn" id="specsSecondaryTabBtn" data-tab="specs-secondary" style="display:none;">
+                        <i class="fas fa-list-ul"></i> More Details
+                    </button>
+                    <button class="tab-btn" data-tab="specs-condition">
+                        <i class="fas fa-star-half-alt"></i> Condition
+                    </button>
                 </div>
-            </div>
-        </div>
 
-        <!-- ── Product Specifications Tabs ───────────────────────────────────── -->
-        <div class="row mt-5" id="specsSection" style="display:none;">
-            <div class="col-12">
-                <section class="simple-tabs">
-                    <div class="tab-buttons">
-                        <button class="tab-btn active" data-tab="specs-warranty">Warranty &amp; Returns</button>
-                        <button class="tab-btn" id="specsSecondaryTabBtn" data-tab="specs-secondary" style="display:none;">More Details</button>
-                        <button class="tab-btn" data-tab="specs-condition">Condition</button>
+                <div class="tab-panels">
+
+                    <!-- ── Warranty & Returns ───────────────────── -->
+                    <div class="tab-panel active" id="specs-warranty">
+                        <div class="tab-panel-title">
+                            <i class="fas fa-shield-alt"></i> Warranty &amp; Returns
+                        </div>
+                        <div class="info-cards">
+                            <div class="info-card">
+                                <div class="card-icon"><i class="fas fa-shield-alt"></i></div>
+                                <h6>6-Month Warranty</h6>
+                                <p>Covers all hardware defects and functionality issues.</p>
+                            </div>
+                            <div class="info-card">
+                                <div class="card-icon"><i class="fas fa-undo"></i></div>
+                                <h6>7-Day Returns</h6>
+                                <p>Full refund if not satisfied — no questions asked.</p>
+                            </div>
+                            <div class="info-card">
+                                <div class="card-icon"><i class="fas fa-truck"></i></div>
+                                <h6>Free Shipping</h6>
+                                <p>Fast delivery in 4–7 business days across India.</p>
+                            </div>
+                            <!-- <div class="info-card">
+                                <div class="card-icon"><i class="fas fa-headset"></i></div>
+                                <h6>Customer Support</h6>
+                                <p>Available 7 days a week via chat and email.</p>
+                            </div> -->
+                        </div>
                     </div>
 
-                    <div class="tab-panels">
-
-                        <!-- Warranty & Returns -->
-                        <div class="tab-panel active" id="specs-warranty">
-                            <h5>Warranty &amp; Returns</h5>
-                            <div class="info-cards">
-                                <div class="info-card">
-                                    <div class="card-icon"><i class="fas fa-shield-alt"></i></div>
-                                    <h6>6-Month Warranty</h6>
-                                    <p>Covers hardware defects and functionality issues.</p>
-                                </div>
-                                <div class="info-card">
-                                    <div class="card-icon"><i class="fas fa-undo"></i></div>
-                                    <h6>7-Day Returns</h6>
-                                    <p>Full refund if you are not satisfied, no questions asked.</p>
-                                </div>
-                                <div class="info-card">
-                                    <div class="card-icon"><i class="fas fa-truck"></i></div>
-                                    <h6>Free Shipping</h6>
-                                    <p>Fast delivery in 4-7 business days, all across India.</p>
-                                </div>
-                                <div class="info-card">
-                                    <div class="card-icon"><i class="fas fa-headset"></i></div>
-                                    <h6>Customer Support</h6>
-                                    <p>Available 7 days a week via chat and email.</p>
-                                </div>
+                    <!-- ── More Details (Secondary Attributes) ─── -->
+                    <div class="tab-panel" id="specs-secondary">
+                        <!-- Product overview — shown only if description exists -->
+                        <div id="specsDescription" style="display:none;">
+                            <div class="pd-overview-block">
+                                <span class="overview-label">Product Overview</span>
+                                <p id="productDescription"></p>
                             </div>
                         </div>
 
-                        <!-- Secondary Attributes (More Details) -->
-                        <div class="tab-panel" id="specs-secondary">
-                            <div id="specsDescription" style="display:none;">
-                                <h5 style="margin-top:20px;">Product Overview</h5>
-                                <p id="productDescription" class="lead-text"></p>
-                            </div>
-                            <h5>More Details</h5>
-                            <div class="spec-grid" id="specsSecondaryGrid">
-                                <!-- Populated by renderSpecsSections() -->
-                            </div>
+                        <div class="tab-panel-title" style="margin-bottom:16px;">
+                            <i class="fas fa-list-ul"></i> Detailed Specifications
                         </div>
-
-                        <!-- Condition -->
-                        <div class="tab-panel" id="specs-condition">
-                            <h5>Condition Details</h5>
-                            <p class="lead-text">Every device is professionally refurbished and fully tested before listing.</p>
-                            <ul class="check-list">
-                                <li>Battery health 85% or higher</li>
-                                <li>Screen free from cracks or deep scratches</li>
-                                <li>All buttons, ports and functions tested and working</li>
-                                <li>Factory reset, cleaned and sanitized</li>
-                                <li>Cosmetic condition grade verified by refurbisher</li>
-                            </ul>
+                        <p style="font-size:0.82rem;color:#9ca3af;margin:-8px 0 18px;line-height:1.5;">
+                            Technical specs as listed by the manufacturer. Values shown cover all available variants of this model.
+                        </p>
+                        <div class="spec-grid" id="specsSecondaryGrid">
+                            <!-- Populated by renderSpecsSections() in JS -->
                         </div>
-
                     </div>
-                </section>
-            </div>
-        </div>
 
-    </div>
+                    <!-- ── Condition ────────────────────────────── -->
+                    <div class="tab-panel" id="specs-condition">
+                        <div class="tab-panel-title">
+                            <i class="fas fa-star-half-alt"></i> Condition Details
+                        </div>
+                        <p class="lead-text">Every device is professionally refurbished and fully tested before listing.</p>
+                        <ul class="check-list">
+                            <li>Battery health 85% or higher on every unit</li>
+                            <li>Screen free from cracks or deep scratches</li>
+                            <li>All buttons, ports and functions tested and working</li>
+                            <li>Factory reset, thoroughly cleaned and sanitized</li>
+                            <li>Cosmetic condition grade verified by the refurbisher</li>
+                        </ul>
 
-    <!-- You May Also Like It Section -->
+                        <div class="condition-grades">
+                            <div class="grade-card">
+                                <span class="grade-badge grade-excellent">Superb</span>
+                                <h6>Like New</h6>
+                                <p>No visible marks. Battery health 95%+. Flawless appearance.</p>
+                            </div>
+                            <div class="grade-card">
+                                <span class="grade-badge grade-good">Good</span>
+                                <h6>Light Micro-scratches</h6>
+                                <p>Barely visible from 20cm. Battery health 90%+. Great condition.</p>
+                            </div>
+                            <div class="grade-card">
+                                <span class="grade-badge grade-fair">Fair</span>
+                                <h6>Light Cosmetic Wear</h6>
+                                <p>Visible minor scratches or small dents. Battery health 85%+.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /.tab-panels -->
+            </div><!-- /.pd-tabs-container -->
+        </div><!-- /.pd-tabs-section -->
+
+    </div><!-- /.pd-page-wrapper -->
+
+    <!-- You May Also Like -->
     <section class="products-section bg-soft-green">
         <div class="container-fluid px-3 px-lg-5">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="fw-bold mb-0">You May Also Like It</h2>
+                <h2 class="fw-bold mb-0">You May Also Like</h2>
                 <a href="/shop/" class="btn btn-outline-dark rounded-pill px-4" style="font-weight: 600;">See all</a>
             </div>
             <div class="product-slider-wrapper">
@@ -762,12 +1079,9 @@
                             <div class="product-card">
                                 <div class="product-badge" style="background: #ef4444; color: #fff;">-40%</div>
                                 <div class="wishlist-btn"><i class="far fa-heart"></i></div>
-                                <img src="/static/images/homepage/iPhone 12 Pro.png" class="product-img">
+                                <img src="/static/images/homepage/iPhone 12 Pro.png" class="product-img" alt="iPhone 12 Pro">
                                 <h5 class="product-title">iPhone 12 Pro</h5>
-                                <div class="color-options mb-2">
-                                    <span class="color-dot" style="background: #5a5a5a;"></span>
-                                    <span class="more-colors">+2</span>
-                                </div>
+                                <div class="color-options mb-2"><span class="color-dot" style="background: #5a5a5a;"></span><span class="more-colors">+2</span></div>
                                 <p class="product-specs">128GB | 6GB RAM</p>
                                 <div class="product-pricing"><span class="price-original">₹1,49,900</span><span class="product-price">₹90,399</span></div>
                             </div>
@@ -778,7 +1092,7 @@
                             <div class="product-card">
                                 <div class="product-badge" style="background: #fbbf24; color: #000;">-35%</div>
                                 <div class="wishlist-btn"><i class="far fa-heart"></i></div>
-                                <img src="/static/images/homepage/screen-20protector-20for-20iphone-2012-20-2012-20pro.jpeg" class="product-img">
+                                <img src="/static/images/homepage/screen-20protector-20for-20iphone-2012-20-2012-20pro.jpeg" class="product-img" alt="Screen Protector">
                                 <h5 class="product-title">Screen Protector iPhone 12</h5>
                                 <div class="color-options mb-2"><span class="color-dot" style="background: #fff; border: 1px solid #ccc;"></span></div>
                                 <p class="product-specs">Accessory</p>
@@ -791,7 +1105,7 @@
                             <div class="product-card">
                                 <div class="product-badge" style="background: #ef4444; color: #fff;">-38%</div>
                                 <div class="wishlist-btn"><i class="far fa-heart"></i></div>
-                                <img src="/static/images/homepage/ipad-207th-20gen-202019-20wi-fi.png" class="product-img">
+                                <img src="/static/images/homepage/ipad-207th-20gen-202019-20wi-fi.png" class="product-img" alt="iPad 7th Gen">
                                 <h5 class="product-title">iPad 7th Gen 2019 Wi-Fi</h5>
                                 <div class="color-options mb-2"><span class="color-dot" style="background: #ccc;"></span></div>
                                 <p class="product-specs">32GB | 3GB RAM</p>
@@ -804,7 +1118,7 @@
                             <div class="product-card">
                                 <div class="product-badge" style="background: #ef4444; color: #fff;">-45%</div>
                                 <div class="wishlist-btn"><i class="far fa-heart"></i></div>
-                                <img src="/static/images/homepage/Lenovo ThinkPad-P50 Xeon 6th-Gen.jpg" class="product-img">
+                                <img src="/static/images/homepage/Lenovo ThinkPad-P50 Xeon 6th-Gen.jpg" class="product-img" alt="Lenovo ThinkPad P50">
                                 <h5 class="product-title">Lenovo ThinkPad P50</h5>
                                 <div class="color-options mb-2"><span class="color-dot" style="background: #333;"></span></div>
                                 <p class="product-specs">512GB SSD | 16GB RAM</p>
@@ -825,10 +1139,10 @@
                 <div>
                     <h2 class="fw-bold mb-2">Customer Reviews</h2>
                     <div class="d-flex align-items-center gap-2">
-                        <div style="color: #f59e0b; font-size: 1.1rem;">
+                        <div style="color: #f59e0b; font-size: 1.05rem;">
                             <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
                         </div>
-                        <span class="fw-bold text-dark" style="font-size: 1.1rem;">4.8 out of 5</span>
+                        <span class="fw-bold text-dark" style="font-size: 1.05rem;">4.8 out of 5</span>
                         <span class="text-muted small">Based on 1,245 reviews</span>
                     </div>
                 </div>
@@ -896,7 +1210,68 @@
         </div>
     </section>
 
-    <!-- ===== Sticky Buy Bar (all screen sizes) ===== -->
+    <!-- ===== Out of Stock Overlay ===== -->
+    <div id="outOfStockOverlay" style="
+        display: none; opacity: 0;
+        position: fixed; inset: 0; z-index: 1060;
+        background: rgba(17,24,39,0.72);
+        backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        align-items: center; justify-content: center;
+        transition: opacity 0.3s ease;
+    ">
+        <div style="
+            background: #fff; border-radius: 24px; padding: 44px 36px;
+            max-width: 440px; width: 90%; text-align: center;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+            animation: pdFadeUp 0.35s ease;
+        ">
+            <div style="
+                width: 72px; height: 72px; border-radius: 50%;
+                background: #fef2f2; margin: 0 auto 18px;
+                display: flex; align-items: center; justify-content: center;
+            ">
+                <i class="fas fa-ban" style="font-size: 1.8rem; color: #ef4444;"></i>
+            </div>
+            <span style="
+                display: inline-block; background: #fee2e2; color: #dc2626;
+                font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
+                letter-spacing: 1px; padding: 4px 14px; border-radius: 20px; margin-bottom: 14px;
+            ">Out of Stock</span>
+            <h4 style="font-size: 1.3rem; font-weight: 800; color: #111827; margin-bottom: 8px;">
+                Not Available Right Now
+            </h4>
+            <p style="font-size: 0.9rem; color: #6b7280; line-height: 1.6; margin-bottom: 24px;">
+                No sellers have this combination in stock. Try a different condition, storage or color — or browse similar devices.
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button onclick="hideOutOfStock()"
+                    style="
+                        width: 100%; padding: 13px; border-radius: 50px;
+                        border: 2px solid #e5e7eb; background: #fff;
+                        font-size: 0.9rem; font-weight: 700; color: #374151;
+                        cursor: pointer; transition: all 0.2s;
+                    "
+                    onmouseover="this.style.borderColor='#6fba2c';this.style.color='#2A8C3C'"
+                    onmouseout="this.style.borderColor='#e5e7eb';this.style.color='#374151'"
+                >
+                    <i class="fas fa-sliders-h me-2"></i> Try Different Options
+                </button>
+                <a href="/shop/"
+                    style="
+                        display: block; width: 100%; padding: 13px; border-radius: 50px;
+                        background: linear-gradient(135deg, #6fba2c, #5a9e22); color: #fff;
+                        font-size: 0.9rem; font-weight: 700; text-decoration: none;
+                        text-align: center; transition: all 0.2s;
+                        box-shadow: 0 6px 18px rgba(111,186,44,0.3);
+                    "
+                >
+                    <i class="fas fa-arrow-right me-2"></i> Browse All Products
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Sticky Buy Bar ===== -->
     <div class="sticky-buy-bar" id="stickyBuyBar">
         <div class="sticky-buy-inner">
             <img id="stickyProductImg" src="/static/images/iPhone 16 Pro.png" alt="Product" class="sticky-product-thumb">
@@ -914,14 +1289,11 @@
                 <button class="sticky-buynow-btn" onclick="document.getElementById('addToCartBtn').click();">
                     Buy Now <i class="fas fa-arrow-right"></i>
                 </button>
-                <!-- <button class="sticky-whatsapp" onclick="window.open('https://wa.me/918888888888','_blank')" aria-label="WhatsApp">
-                    <i class="fab fa-whatsapp"></i>
-                </button> -->
             </div>
         </div>
     </div>
 
-    <!-- ===== Conditions Comparison Side Panel (redesigned) ===== -->
+    <!-- ===== Conditions Comparison Side Panel ===== -->
     <div class="conditions-panel" id="conditionsPanel">
         <div class="panel-overlay" onclick="toggleConditionsPanel()"></div>
         <div class="panel-content">
@@ -931,22 +1303,16 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-
             <div class="panel-body">
-                <!-- Product image duo -->
                 <div class="cond-image-carousel">
                     <img id="condPanelImg1" src="/static/images/iPhone 16 Pro.png" alt="Product front">
                     <img id="condPanelImg2" src="/static/images/iPhone 16 Pro.png" alt="Product back">
                 </div>
-
-                <!-- Condition tabs -->
                 <div class="cond-tabs">
                     <button class="cond-tab-btn active" data-cond="excellent" onclick="selectConditionPanelTab('excellent')">Superb</button>
-                    <button class="cond-tab-btn" data-cond="good"      onclick="selectConditionPanelTab('good')">Good</button>
-                    <button class="cond-tab-btn" data-cond="fair"      onclick="selectConditionPanelTab('fair')">Fair</button>
+                    <button class="cond-tab-btn" data-cond="good" onclick="selectConditionPanelTab('good')">Good</button>
+                    <button class="cond-tab-btn" data-cond="fair" onclick="selectConditionPanelTab('fair')">Fair</button>
                 </div>
-
-                <!-- Description area — populated by JS -->
                 <div id="condPanelDesc">
                     <h6 class="cond-panel-desc-title">Condition Description</h6>
                     <ul class="cond-panel-bullets">
@@ -959,7 +1325,7 @@
         </div>
     </div>
 
-    <!-- Product Specifications Side Panel -->
+    <!-- ===== Product Specifications Side Panel ===== -->
     <div class="conditions-panel" id="specsPanel">
         <div class="panel-overlay" onclick="toggleSpecsPanel()"></div>
         <div class="panel-content">
@@ -972,21 +1338,20 @@
             <div class="panel-body">
                 <ul class="list-unstyled mb-4" id="dynamicSpecsGrid"></ul>
                 <div class="mt-4">
-                    <h6 class="mb-2 fw-bold text-dark" style="font-size: 0.95rem;">Overview</h6>
-                    <p id="sidePanelDescription" class="text-muted mb-0" style="font-size: 0.9rem; line-height: 1.6;">Loading product specifications...</p>
+                    <h6 class="mb-2 fw-bold text-dark" style="font-size: 0.9rem;">Overview</h6>
+                    <p id="sidePanelDescription" class="text-muted mb-0" style="font-size: 0.88rem; line-height: 1.6;">Loading product specifications...</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <a href="https://wa.me/9004297203?text=Hi"
-   class="whatsapp-fab"
-   target="_blank"
-   rel="noopener">
+    <!-- ===== Product Finder Modal (standalone, included here) ===== -->
+    {% include 'product-finder-modal.html' %}
 
-    <i class="fab fa-whatsapp"></i>
-
-</a>
+    <!-- WhatsApp FAB -->
+    <a href="https://wa.me/9004297203?text=Hi" class="whatsapp-fab" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
 
     <!-- Footer -->
     {% include 'footer.html' %}
@@ -995,8 +1360,18 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="{% static 'js/api_caller.js' %}"></script>
     <script src="{% static 'js/product-detail.js' %}"></script>
+    <script src="{% static 'js/product-finder.js' %}"></script>
 
     <script>
+        function openProductFinder() {
+            if (typeof window.initProductFinder === 'function') {
+                const cat = (typeof productData !== 'undefined' && productData) ? productData.category : null
+                window.initProductFinder({ category: cat })
+            } else {
+                console.warn('[v0] product-finder.js not loaded yet')
+            }
+        }
+
         window.onload = async function () {
             const urlParts = window.location.pathname.split('/');
             const productId = urlParts[urlParts.length - 2];
@@ -1010,18 +1385,15 @@
             );
         }
 
-        // Conditions panel toggle — opens and refreshes to currently selected condition
+        // ── Conditions panel ──────────────────────────────────────────
         function openConditionsPanel() {
             const panel = document.getElementById('conditionsPanel');
             if (panel) {
                 panel.classList.add('active');
-                // Sync panel tab to current selected condition
                 const currentCond = document.getElementById('selectedConditionLabel');
-                const condMap = { 'Excellent': 'excellent', 'Good': 'good', 'Fair': 'fair' };
+                const condMap = { 'Excellent': 'excellent', 'Superb': 'excellent', 'Good': 'good', 'Fair': 'fair' };
                 const key = currentCond ? (condMap[currentCond.textContent] || 'excellent') : 'excellent';
                 selectConditionPanelTab(key);
-
-                // Update images if product loaded
                 if (typeof productData !== 'undefined' && productData && productData.image) {
                     const img1 = document.getElementById('condPanelImg1');
                     const img2 = document.getElementById('condPanelImg2');
@@ -1041,7 +1413,7 @@
             if (panel) panel.classList.toggle('active');
         }
 
-        // Tab functionality
+        // ── Tab functionality ─────────────────────────────────────────
         document.querySelectorAll(".tab-btn").forEach(btn => {
             btn.addEventListener("click", () => {
                 document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));

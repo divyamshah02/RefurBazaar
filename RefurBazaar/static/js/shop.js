@@ -417,7 +417,16 @@ function renderProducts() {
     // Discount ribbon: calculate ~30% savings
     const originalPrice = Math.round(product.min_price * 1.3)
     const discountPct = Math.round(((originalPrice - product.min_price) / originalPrice) * 100)
-
+    let product_title = escapeHtml(product.name)
+    let extraSpecs = ""
+    if (product.category == 'laptop') {
+      product_title = `${escapeHtml(product.brand_name)} ${product_title} | Intel Core i6 13th Gen | 14" FHD Display | Windows 11 Pro`
+      chipsHtml = ''
+      extraSpecs = `<div class="card-chips">
+                    <span class="card-chip">32 GB RAM </span>
+                    <span class="card-chip">512GB SSD </span>
+                    </div>`
+    }
     return `
       <div class="product-grid-item">
         <div class="product-card" onclick="window.location.href='/product/${product.id}/'">
@@ -449,11 +458,12 @@ function renderProducts() {
                class="product-img">
 
           <h5 class="product-title mb-0">${escapeHtml(product.brand_name)}</h5>
-          <h3 class="product-title" style="font-size: 18px">${escapeHtml(product.name)}</h3>
+          <h3 class="product-title" style="font-size: 18px">${product_title}</h3>
 
           <div class="product-variants">
             ${colorDotsHtml}
             ${chipsHtml}
+            ${extraSpecs}
           </div>
 
           <div class="product-pricing">

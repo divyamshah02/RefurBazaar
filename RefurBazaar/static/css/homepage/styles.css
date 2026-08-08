@@ -794,7 +794,7 @@ a {
 }
 
 .section-header {
-  margin-bottom: 3rem;
+  margin-bottom: 1rem;
 }
 
 /* BENEFITS GRID: Responsive Layout */
@@ -5154,7 +5154,7 @@ footer .fas.fa-shield-alt {
 
 .ha-float-card.card-2 {
     bottom: 12%;
-    right: -8%;
+    right: -29%;
     animation-delay: -3s;
 }
 
@@ -5616,4 +5616,61 @@ footer .fas.fa-shield-alt {
 .custom-tooltip {
   --bs-tooltip-bg: var(--green-tint);
   --bs-tooltip-color: var(--dark);
+}
+
+.bottom-concierge{
+    position: fixed;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1050;
+
+    /* width: min(95%, 650px); */
+
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 50px;
+
+    padding: 12px 18px;
+
+    box-shadow: 0 6px 20px rgba(0,0,0,.12);
+
+    font-size: 14px;
+}
+
+.concierge-badge{
+    background:var(--primary-green);
+    color:#fff;
+    border-radius:50px;
+    padding:7px 14px;
+    font-size:11px;
+    letter-spacing:.5px;
+    font-weight:600;
+}
+
+.bottom-concierge strong{
+    font-weight:600;
+}
+
+.bottom-concierge .btn-close{
+    font-size:.75rem;
+}
+
+.bottom-concierge i{
+    font-size:13px;
+}
+
+@media (max-width:576px){
+
+    .bottom-concierge{
+        width: calc(100% - 20px);
+        padding:10px 14px;
+        font-size:13px;
+    }
+
+    .concierge-badge{
+        padding:6px 10px;
+        font-size:10px;
+    }
+
 }

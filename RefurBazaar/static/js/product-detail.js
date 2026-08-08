@@ -108,13 +108,16 @@ async function loadProductDetail() {
 
 // Render Product Info
 function renderProductInfo() {
-  document.getElementById("productTitle").textContent = productData.name
-  document.getElementById("productTitle").innerHTML = `${productData.name} <div class="d-flex align-items-center gap-2">
-                        <div style="color: #f59e0b; font-size: 1.1rem;">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                        </div>                        
-                    </div>`
+  document.getElementById("productTitle").textContent = `${productData.brand_name} ${productData.name}`
   document.getElementById("breadcrumbProduct").textContent = `${productData.brand_name} ${productData.name}`
+
+  // Update brand tag
+  const brandTag = document.getElementById("productBrandTag")
+  if (brandTag) brandTag.innerHTML = `<i class="fas fa-recycle" style="font-size:0.7rem;"></i> ${escapeHtml(productData.brand_name)}`
+
+  // Show gallery certified badge
+  const galBadge = document.getElementById("galleryConditionBadge")
+  if (galBadge) galBadge.style.display = ""
 
   // Set product image
   const mainImage = document.getElementById("mainImage")
@@ -162,7 +165,11 @@ function renderSpecsSections() {
   const secondaryAttrs = attributesData.filter((a) => a.section === "secondary")
 
   function buildCard(attr) {
-    const hint = attr.available_values.join(", ")
+    // Deduplicate and clean values — the API sometimes returns duplicates
+    const uniqueVals = [...new Set(
+      (attr.available_values || []).map(v => String(v).trim()).filter(Boolean)
+    )]
+    const hint = uniqueVals.join(" / ")
     const icon = getSpecIcon(attr.name)
     return `
       <div class="spec-card-item">
@@ -183,7 +190,7 @@ function renderSpecsSections() {
   if (secGrid) {
     if (secondaryAttrs.length > 0) {
       secGrid.innerHTML = secondaryAttrs.map(buildCard).join("")
-      if (secBtn) secBtn.style.display = ""
+      // if (secBtn) secBtn.style.display = ""
     } else {
       if (secBtn) secBtn.style.display = "none"
     }
@@ -312,16 +319,16 @@ function renderStorageFilter(attr) {
   return `
         <div class="selection-section">
             <div class="section-header">
-                <h6>Select ${attr.name}</h6>
+                <h6>${escapeHtml(attr.name)}</h6>
             </div>
             <div class="storage-options">
                 ${attr.available_values
                   .map(
                     (value) => `
-                    <div class="storage-card" data-attribute="${attr.id}" data-value="${value}" 
-                         onclick="selectAttribute(${attr.id}, '${value}')">
+                    <div class="storage-card" data-attribute="${attr.id}" data-value="${escapeHtml(value)}" 
+                         onclick="selectAttribute(${attr.id}, '${escapeHtml(value)}')">
                         <div class="storage-info">
-                            <h6>${value}</h6>
+                            <h6>${escapeHtml(value)}</h6>
                             <p class="storage-price"></p>
                         </div>
                     </div>
@@ -478,17 +485,21 @@ function renderSellers() {
 
   if (availableUnits.length === 0) {
     sellersContainer.innerHTML = `
-            <div class="text-center py-4">
-                <i class="fas fa-box-open" style="font-size: 48px; color: #dee2e6;"></i>
-                <p class="text-muted mt-3">No sellers available for the selected options.</p>
-                <p class="small text-muted">Try selecting different options.</p>
-            </div>
-        `
+      <div class="no-sellers-state">
+        <i class="fas fa-box-open"></i>
+        <p class="fw-semibold mb-1">Out Of Stock</p>
+        <p class="small">Try selecting different options above.</p>
+      </div>
+    `
     document.getElementById("addToCartBtn").disabled = true
     updatePrice(null)
     updateStickyBar(null)
+    showOutOfStock()
+    document.getElementById("custom-out-of-stock-label").style.display = ""
     return
   }
+  document.getElementById("custom-out-of-stock-label").style.display = "none"
+  hideOutOfStock()
 
   // Sort by price ascending — cheapest first / auto-selected
   const sorted = [...availableUnits].sort((a, b) => parseFloat(a.price) - parseFloat(b.price))
@@ -722,12 +733,33 @@ function renderSpecsPanel() {
   if (attributesData && attributesData.length > 0) {
       attributesData.forEach(attr => {
           if (attr.available_values && attr.available_values.length > 0) {
-              specsHTML += `<li class="minimal-spec-item"><span>${attr.name}</span><strong>${attr.available_values.join(', ')}</strong></li>`;
+              const uniqueVals = [...new Set(
+                  (attr.available_values).map(v => String(v).trim()).filter(Boolean)
+              )]
+              specsHTML += `<li class="minimal-spec-item"><span>${escapeHtml(attr.name)}</span><strong>${escapeHtml(uniqueVals.join(' / '))}</strong></li>`;
           }
       });
   }
 
   specsGrid.innerHTML = specsHTML;
+}
+
+// Out of Stock Overlay
+function showOutOfStock() {
+  let overlay = document.getElementById("outOfStockOverlay")
+  if (overlay) {
+    overlay.style.display = "flex"
+    overlay.style.opacity = "0"
+    requestAnimationFrame(() => { overlay.style.opacity = "1" })
+  }
+}
+
+function hideOutOfStock() {
+  const overlay = document.getElementById("outOfStockOverlay")
+  if (overlay) {
+    overlay.style.opacity = "0"
+    setTimeout(() => { overlay.style.display = "none" }, 300)
+  }
 }
 
 // Update conditions panel when condition tab is clicked
