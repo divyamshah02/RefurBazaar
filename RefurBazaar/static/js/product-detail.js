@@ -12,6 +12,21 @@ let availableUnits = []
 let selectedUnit = null
 let thumbnailSwiper = null
 
+// Extended warranty price per product category — mirrors Product/utils.py
+// WARRANTY_PRICES on the backend. This is display-only: the price actually
+// charged is always recomputed server-side from the listing's category.
+const WARRANTY_PRICES = {
+  mobile: 1499,
+  laptop: 2999,
+  tablet: 1999,
+  accessory: 799,
+}
+const DEFAULT_WARRANTY_PRICE = 999
+
+function getWarrantyPrice(category) {
+  return WARRANTY_PRICES[category] ?? DEFAULT_WARRANTY_PRICE
+}
+
 // Condition options
 const CONDITION_OPTIONS = [
   { value: "excellent", label: "Excellent", description: "Like new" },
@@ -49,21 +64,21 @@ const CONDITION_DETAILS = {
 
 // Icon map for spec attributes — keyed by lowercase keyword fragments
 const SPEC_ICON_MAP = [
-  { keys: ["processor", "cpu", "chipset", "chip"],           icon: "fas fa-microchip" },
-  { keys: ["ram", "memory"],                                  icon: "fas fa-memory" },
-  { keys: ["storage", "ssd", "hdd", "disk", "drive"],        icon: "fas fa-hdd" },
-  { keys: ["sim"],                                            icon: "fas fa-sim-card" },
+  { keys: ["processor", "cpu", "chipset", "chip"], icon: "fas fa-microchip" },
+  { keys: ["ram", "memory"], icon: "fas fa-memory" },
+  { keys: ["storage", "ssd", "hdd", "disk", "drive"], icon: "fas fa-hdd" },
+  { keys: ["sim"], icon: "fas fa-sim-card" },
   { keys: ["screen", "display", "monitor", "resolution", "refresh", "pixel", "ppi", "oled", "lcd", "amoled"], icon: "fas fa-desktop" },
   { keys: ["camera", "photo", "rear camera", "front camera", "video"], icon: "fas fa-camera" },
   { keys: ["battery", "capacity", "charging", "wireless charging", "fast charging"], icon: "fas fa-battery-full" },
   { keys: ["wi-fi", "wifi", "bluetooth", "nfc", "5g", "4g", "network", "connectivity", "usb"], icon: "fas fa-wifi" },
   { keys: ["os", "android", "ios", "windows", "launch os", "max os", "security update"], icon: "fas fa-code" },
   { keys: ["weight", "dimension", "body", "material", "water", "depth", "height", "width"], icon: "fas fa-ruler-combined" },
-  { keys: ["color", "colour"],                                icon: "fas fa-palette" },
-  { keys: ["fingerprint", "biometric", "face", "sensor"],    icon: "fas fa-fingerprint" },
+  { keys: ["color", "colour"], icon: "fas fa-palette" },
+  { keys: ["fingerprint", "biometric", "face", "sensor"], icon: "fas fa-fingerprint" },
   { keys: ["speaker", "audio", "sound", "mic", "headphone"], icon: "fas fa-volume-up" },
-  { keys: ["gps", "location", "navigation"],                  icon: "fas fa-map-marker-alt" },
-  { keys: ["brand", "model", "series", "generation"],        icon: "fas fa-tag" },
+  { keys: ["gps", "location", "navigation"], icon: "fas fa-map-marker-alt" },
+  { keys: ["brand", "model", "series", "generation"], icon: "fas fa-tag" },
 ]
 
 function getSpecIcon(attrName) {
@@ -146,6 +161,12 @@ function renderProductInfo() {
 
   renderSpecsSections()
   renderSpecsPanel()
+
+  // Extended warranty price depends on the product's category
+  const warrantyPriceLabel = document.getElementById("warrantyPriceLabel")
+  if (warrantyPriceLabel) {
+    warrantyPriceLabel.textContent = `+ ₹${formatPrice(getWarrantyPrice(productData.category))}`
+  }
 }
 
 function escapeHtml(str) {
@@ -161,7 +182,7 @@ function escapeHtml(str) {
  * Build spec grid with icons for each attribute card.
  */
 function renderSpecsSections() {
-  const mainAttrs      = attributesData.filter((a) => a.section === "main")
+  const mainAttrs = attributesData.filter((a) => a.section === "main")
   const secondaryAttrs = attributesData.filter((a) => a.section === "secondary")
 
   function buildCard(attr) {
@@ -183,9 +204,9 @@ function renderSpecsSections() {
       </div>`
   }
 
-  const secGrid  = document.getElementById("specsSecondaryGrid")
-  const secBtn   = document.getElementById("specsSecondaryTabBtn")
-  const section  = document.getElementById("specsSection")
+  const secGrid = document.getElementById("specsSecondaryGrid")
+  const secBtn = document.getElementById("specsSecondaryTabBtn")
+  const section = document.getElementById("specsSection")
 
   if (secGrid) {
     if (secondaryAttrs.length > 0) {
@@ -202,9 +223,9 @@ function renderSpecsSections() {
 }
 
 function initializeThumbnailGallery() {
-    const thumbnailWrapper = document.getElementById("thumbnailWrapper");
+  const thumbnailWrapper = document.getElementById("thumbnailWrapper");
 
-    let thumbnailsHTML = `
+  let thumbnailsHTML = `
         <div class="swiper-slide">
             <img src="${productData.image || "/static/images/iPhone 16 Pro.png"}" 
                  alt="Main view" 
@@ -212,46 +233,46 @@ function initializeThumbnailGallery() {
         </div>
     `;
 
-    if (Array.isArray(productData.images)) {
-        productData.images.forEach(img => {
-            if (img.image) {
-                thumbnailsHTML += `
+  if (Array.isArray(productData.images)) {
+    productData.images.forEach(img => {
+      if (img.image) {
+        thumbnailsHTML += `
                 <div class="swiper-slide">
                     <img src="${img.image}" 
                          alt="Product view" 
                          onclick="changeMainImage(this.src)">
                 </div>
             `;
-            }
-        });
+      }
+    });
+  }
+
+  thumbnailWrapper.innerHTML = thumbnailsHTML;
+
+  if (window.Swiper) {
+    if (thumbnailSwiper) {
+      thumbnailSwiper.destroy(true, true);
     }
 
-    thumbnailWrapper.innerHTML = thumbnailsHTML;
-
-    if (window.Swiper) {
-        if (thumbnailSwiper) {
-            thumbnailSwiper.destroy(true, true);
-        }
-
-        thumbnailSwiper = new window.Swiper(".thumbnailSwiper", {
-            spaceBetween: 10,
-            freeMode: true,
-            watchSlidesProgress: true,
-            mousewheel: {
-                releaseOnEdges: true,
-            },
-            breakpoints: {
-                320: {
-                    slidesPerView: "auto",
-                    direction: 'horizontal',
-                },
-                992: {
-                    slidesPerView: 5,
-                    direction: 'vertical',
-                },
-            },
-        });
-    }
+    thumbnailSwiper = new window.Swiper(".thumbnailSwiper", {
+      spaceBetween: 10,
+      freeMode: true,
+      watchSlidesProgress: true,
+      mousewheel: {
+        releaseOnEdges: true,
+      },
+      breakpoints: {
+        320: {
+          slidesPerView: "auto",
+          direction: 'horizontal',
+        },
+        992: {
+          slidesPerView: 5,
+          direction: 'vertical',
+        },
+      },
+    });
+  }
 }
 
 function changeMainImage(src) {
@@ -265,19 +286,19 @@ function renderFilters() {
 }
 
 function renderConditionFilter() {
-    const conditionGrid = document.getElementById("conditionGrid");
+  const conditionGrid = document.getElementById("conditionGrid");
 
-    const conditionHTML = CONDITION_OPTIONS.map(
-        (condition) => `
+  const conditionHTML = CONDITION_OPTIONS.map(
+    (condition) => `
         <div class="condition-card" data-condition="${condition.value}" onclick="selectCondition('${condition.value}')">
             <div class="condition-info d-flex align-items-center">
-                <h6>${condition.label==="Excellent" ? 'Superb' : `${condition.label}`}</h6>
+                <h6>${condition.label === "Excellent" ? 'Superb' : `${condition.label}`}</h6>
             </div>
         </div>
     `
-    ).join("");
+  ).join("");
 
-    conditionGrid.innerHTML = conditionHTML;
+  conditionGrid.innerHTML = conditionHTML;
 }
 
 function renderAttributeFilters() {
@@ -328,8 +349,8 @@ function renderStorageFilter(attr) {
             </div>
             <div class="storage-options">
                 ${attr.available_values
-                  .map(
-                    (value) => `
+      .map(
+        (value) => `
                     <div class="storage-card" data-attribute="${attr.id}" data-value="${escapeHtml(value)}" 
                          onclick="selectAttribute(${attr.id}, '${escapeHtml(value).replace(/'/g, "\\'")}')">
                         <div class="storage-info">
@@ -338,8 +359,8 @@ function renderStorageFilter(attr) {
                         </div>
                     </div>
                 `,
-                  )
-                  .join("")}
+      )
+      .join("")}
             </div>
         </div>
     `
@@ -353,12 +374,12 @@ function renderColorFilter(attr, colorHexAttr) {
       </div>
       <div class="color-options">
         ${attr.available_values
-          .map((value, index) => {
-            let colorValue = "#cccccc"
-            if (colorHexAttr && colorHexAttr.available_values[index]) {
-              colorValue = colorHexAttr.available_values[index]
-            }
-            return `
+      .map((value, index) => {
+        let colorValue = "#cccccc"
+        if (colorHexAttr && colorHexAttr.available_values[index]) {
+          colorValue = colorHexAttr.available_values[index]
+        }
+        return `
               <div class="color-card"
                    data-attribute="${attr.id}"
                    data-value="${escapeHtml(value)}"
@@ -371,8 +392,8 @@ function renderColorFilter(attr, colorHexAttr) {
                 </div>
               </div>
             `
-          })
-          .join("")}
+      })
+      .join("")}
       </div>
     </div>
   `
@@ -386,8 +407,8 @@ function renderGenericFilter(attr) {
             </div>
             <div class="storage-options">
                 ${attr.available_values
-                  .map(
-                    (value) => `
+      .map(
+        (value) => `
                     <div class="storage-card" data-attribute="${attr.id}" data-value="${escapeHtml(value)}" 
                          onclick="selectAttribute(${attr.id}, '${escapeHtml(value).replace(/'/g, "\\'")}')">
                         <div class="storage-info">
@@ -396,8 +417,8 @@ function renderGenericFilter(attr) {
                         </div>
                     </div>
                 `,
-                  )
-                  .join("")}
+      )
+      .join("")}
             </div>
         </div>
     `
@@ -423,28 +444,28 @@ function autoSelectFilters() {
 }
 
 function selectCondition(value) {
-    document.querySelectorAll(".condition-card").forEach((card) => {
-        card.classList.remove("active");
-    });
+  document.querySelectorAll(".condition-card").forEach((card) => {
+    card.classList.remove("active");
+  });
 
-    const selectedCard = document.querySelector(`.condition-card[data-condition="${value}"]`);
-    if (selectedCard) {
-        selectedCard.classList.add("active");
-    }
+  const selectedCard = document.querySelector(`.condition-card[data-condition="${value}"]`);
+  if (selectedCard) {
+    selectedCard.classList.add("active");
+  }
 
-    selectedFilters["condition"] = value;
+  selectedFilters["condition"] = value;
 
-    const conditionObj = CONDITION_OPTIONS.find(c => c.value === value);
-    if (conditionObj) {
-        const labelEl = document.getElementById("selectedConditionLabel");
-        // if(labelEl) labelEl.textContent = if conditionObj.label ==="Excellent" ? 'Superb' : `${conditionObj.label }`
-        if (labelEl) labelEl.textContent = conditionObj.label === "Excellent" ? "Superb" : conditionObj.label;
+  const conditionObj = CONDITION_OPTIONS.find(c => c.value === value);
+  if (conditionObj) {
+    const labelEl = document.getElementById("selectedConditionLabel");
+    // if(labelEl) labelEl.textContent = if conditionObj.label ==="Excellent" ? 'Superb' : `${conditionObj.label }`
+    if (labelEl) labelEl.textContent = conditionObj.label === "Excellent" ? "Superb" : conditionObj.label;
 
-        const descEl = document.getElementById("selectedConditionDesc");
-        if(descEl) descEl.textContent = `(${conditionObj.description})`;
-    }
+    const descEl = document.getElementById("selectedConditionDesc");
+    if (descEl) descEl.textContent = `(${conditionObj.description})`;
+  }
 
-    loadAvailableUnits();
+  loadAvailableUnits();
 }
 
 function selectAttribute(attrId, value) {
@@ -582,12 +603,12 @@ function updatePrice(price) {
   const priceElement = document.getElementById("displayPrice");
   const stickyPriceElement = document.getElementById("stickyMobilePrice");
   const warrantyToggle = document.getElementById("warrantyToggle");
-  const warrantyCost = 1999;
+  const warrantyCost = getWarrantyPrice(productData && productData.category);
 
   let finalPrice = price || 0;
 
   if (warrantyToggle && warrantyToggle.checked) {
-      finalPrice += warrantyCost;
+    finalPrice += warrantyCost;
   }
 
   if (finalPrice > 0) {
@@ -604,27 +625,27 @@ document.addEventListener("DOMContentLoaded", () => {
   // Listen for Warranty Toggle clicks
   const warrantyToggle = document.getElementById("warrantyToggle");
   if (warrantyToggle) {
-      warrantyToggle.addEventListener("change", () => {
-          if (selectedUnit) {
-              updatePrice(selectedUnit.price);
-          }
-      });
+    warrantyToggle.addEventListener("change", () => {
+      if (selectedUnit) {
+        updatePrice(selectedUnit.price);
+      }
+    });
   }
 
   // Initialize Reviews Swiper (Full Width)
   if (document.querySelector('.reviewsSwiper')) {
-      new Swiper('.reviewsSwiper', {
-          slidesPerView: 1.1,
-          spaceBetween: 16,
-          navigation: {
-              nextEl: '.review-next',
-              prevEl: '.review-prev',
-          },
-          breakpoints: {
-              768: { slidesPerView: 2.2, spaceBetween: 20 },
-              1024: { slidesPerView: 3.2, spaceBetween: 24 }
-          }
-      });
+    new Swiper('.reviewsSwiper', {
+      slidesPerView: 1.1,
+      spaceBetween: 16,
+      navigation: {
+        nextEl: '.review-next',
+        prevEl: '.review-prev',
+      },
+      breakpoints: {
+        768: { slidesPerView: 2.2, spaceBetween: 20 },
+        1024: { slidesPerView: 3.2, spaceBetween: 24 }
+      }
+    });
   }
 
   // Sticky buy bar — show when main add-to-cart is out of view
@@ -632,16 +653,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const stickyBar = document.querySelector('.sticky-buy-bar');
 
   if (mainBuyBtn && stickyBar) {
-      const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-              if (!entry.isIntersecting) {
-                  stickyBar.classList.add('visible');
-              } else {
-                  stickyBar.classList.remove('visible');
-              }
-          });
-      }, { threshold: 0 });
-      observer.observe(mainBuyBtn);
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) {
+          stickyBar.classList.add('visible');
+        } else {
+          stickyBar.classList.remove('visible');
+        }
+      });
+    }, { threshold: 0 });
+    observer.observe(mainBuyBtn);
   }
 })
 
@@ -655,14 +676,22 @@ document.addEventListener("DOMContentLoaded", () => {
         return
       }
 
+      const warrantyToggle = document.getElementById("warrantyToggle")
+
       const payload = {
         listing_unit_id: selectedUnit.id,
+        has_extended_warranty: !!(warrantyToggle && warrantyToggle.checked),
       }
 
       const [success, response] = await window.callApi("POST", cart_api_url, payload, csrf_token)
 
       if (success && response.success) {
-        showToast("Product added to cart!", "success")
+        showToast(
+          payload.has_extended_warranty
+            ? "Product added to cart with extended warranty!"
+            : "Product added to cart!",
+          "success"
+        )
         const cartCount = document.getElementById("cartCount")
         if (cartCount) {
           cartCount.textContent = Number.parseInt(cartCount.textContent) + 1
@@ -743,14 +772,14 @@ function renderSpecsPanel() {
   `;
 
   if (attributesData && attributesData.length > 0) {
-      attributesData.forEach(attr => {
-          if (attr.available_values && attr.available_values.length > 0) {
-              const uniqueVals = [...new Set(
-                  (attr.available_values).map(v => String(v).trim()).filter(Boolean)
-              )]
-              specsHTML += `<li class="minimal-spec-item"><span>${escapeHtml(attr.name)}</span><strong>${escapeHtml(uniqueVals.join(' / '))}</strong></li>`;
-          }
-      });
+    attributesData.forEach(attr => {
+      if (attr.available_values && attr.available_values.length > 0) {
+        const uniqueVals = [...new Set(
+          (attr.available_values).map(v => String(v).trim()).filter(Boolean)
+        )]
+        specsHTML += `<li class="minimal-spec-item"><span>${escapeHtml(attr.name)}</span><strong>${escapeHtml(uniqueVals.join(' / '))}</strong></li>`;
+      }
+    });
   }
 
   specsGrid.innerHTML = specsHTML;

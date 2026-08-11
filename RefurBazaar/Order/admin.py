@@ -17,12 +17,15 @@ class OrderAdmin(admin.ModelAdmin):
     ]
     list_filter = ['status', 'payment_method', 'payment_received', 'created_at']
     search_fields = ['order_id', 'order_number', 'email', 'first_name', 'last_name', 'phone']
-    readonly_fields = ['order_id', 'created_at', 'updated_at']
+    readonly_fields = ['order_id', 'created_at', 'updated_at', 'delivered_at']
     inlines = [OrderItemInline]
     
     fieldsets = (
         ('Order Information', {
-            'fields': ('order_id', 'order_number', 'user', 'session_id', 'status', 'order_note')
+            'fields': ('order_id', 'order_number', 'user', 'session_id', 'status', 'order_note', 'delivered_at')
+        }),
+        ('Tracking', {
+            'fields': ('tracking_number', 'courier_name', 'tracking_url')
         }),
         ('Customer Details', {
             'fields': ('first_name', 'last_name', 'email', 'phone', 'alternate_phone')
@@ -39,7 +42,7 @@ class OrderAdmin(admin.ModelAdmin):
             'fields': ('delivery_date', 'timeslot_id', 'special_instructions')
         }),
         ('Order Amounts', {
-            'fields': ('subtotal_amount', 'tax_amount', 'delivery_charge', 'discount_amount', 
+            'fields': ('subtotal_amount', 'tax_amount', 'delivery_charge', 'warranty_amount', 'discount_amount', 
                       'coupon_code', 'coupon_discount', 'total_amount')
         }),
         ('Payment Details', {
@@ -58,8 +61,11 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    list_display = ['id', 'order', 'get_product_name', 'price_at_purchase', 'condition_at_purchase', 'refurbisher_name', 'created_at']
-    list_filter = ['condition_at_purchase', 'created_at']
+    list_display = [
+        'id', 'order', 'get_product_name', 'price_at_purchase', 'condition_at_purchase',
+        'refurbisher_name', 'has_extended_warranty', 'return_status', 'created_at'
+    ]
+    list_filter = ['condition_at_purchase', 'return_status', 'has_extended_warranty', 'created_at']
     search_fields = ['order__order_id', 'listing_unit__listing__model__name', 'refurbisher_name']
     readonly_fields = ['order', 'listing_unit', 'price_at_purchase', 'condition_at_purchase', 'refurbisher', 'created_at']
     

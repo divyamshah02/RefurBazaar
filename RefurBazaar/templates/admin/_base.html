@@ -1,5 +1,4 @@
 {% load static %}
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -405,7 +404,7 @@
     .empty-state h4 { font-size: 15px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
     .empty-state p  { font-size: 13px; color: var(--text-muted); }
 
-    /* ─── Loading skeleton ──────────────────────────────────────── */
+    /* ─── Loading skeleton ──────────────────────���───────────────── */
     .skeleton {
       background: linear-gradient(90deg, var(--border-light) 25%, var(--border) 50%, var(--border-light) 75%);
       background-size: 200% 100%;
@@ -638,6 +637,11 @@
       <a href="/admin-catalog-attributes/" class="sb-link {% block nav_attributes %}{% endblock %}">
         <i class="fa-solid fa-sliders"></i> Attributes
       </a>
+
+      <div class="sb-section-label">Settings</div>
+      <a href="/admin-team/" class="sb-link {% block nav_team %}{% endblock %}">
+        <i class="fa-solid fa-user-shield"></i> Admin Team
+      </a>
     </div>
 
     <div class="sb-footer">
@@ -723,7 +727,7 @@
         container.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         container.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
         btn.classList.add('active');
-        const target = btn.dataset.tab;        
+        const target = btn.dataset.tab;
         const pane = container.querySelector(`.tab-pane[data-tab="${target}"]`);
         if (pane) pane.classList.add('active');
       });

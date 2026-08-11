@@ -8,10 +8,12 @@ import uuid
 from .models import ShoppingCart, ShoppingCartItem
 from .serializers import CartSerializer, CartItemSerializer
 from Product.models import ListingUnit
+from Product.utils import get_warranty_price
 
 from .models import Wishlist, WishlistItem
 from .serializers import WishlistSerializer, WishlistItemSerializer
 from utils.decorators import handle_exceptions, check_authentication
+
 
 def generate_unique_cart_id():
     """Generate a unique 10-digit cart ID"""
@@ -85,7 +87,7 @@ class CartViewSet(viewsets.ViewSet):
     def create(self, request):
         """
         Add item to cart.
-        Body: { "listing_unit_id": <id> }
+        Body: { "listing_unit_id": <id>, "has_extended_warranty": <bool> (optional) }
         """
         user = request.user if request.user.is_authenticated else None
 
@@ -93,6 +95,9 @@ class CartViewSet(viewsets.ViewSet):
         session_id = get_or_create_session_token(request)
         
         listing_unit_id = request.data.get('listing_unit_id')
+        # Accept a raw truthy value from the client (e.g. checkbox state),
+        # but the actual price is always computed server-side below.
+        wants_warranty = bool(request.data.get('has_extended_warranty'))
 
         if not listing_unit_id:
             return Response({
@@ -158,10 +163,17 @@ class CartViewSet(viewsets.ViewSet):
                     "error": "This item is already in your cart"
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-            # Create cart item
+            # Create cart item. Warranty price is always derived server-side
+            # from the listing's category — never trust a client-sent price.
+            warranty_price = (
+                get_warranty_price(listing_unit.listing.model.category)
+                if wants_warranty else 0
+            )
             cart_item = ShoppingCartItem.objects.create(
                 cart=cart,
-                listing_unit=listing_unit
+                listing_unit=listing_unit,
+                has_extended_warranty=wants_warranty,
+                warranty_price=warranty_price,
             )
 
         serializer = CartItemSerializer(cart_item)
@@ -207,6 +219,42 @@ class CartViewSet(viewsets.ViewSet):
             "success": True,
             "user_not_logged_in": False,
             "data": {"message": "Item removed from cart"},
+            "error": None
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['patch'], url_path='warranty')
+    @handle_exceptions
+    def warranty(self, request, pk=None):
+        """
+        Toggle extended warranty for a single cart item.
+        Body: { "has_extended_warranty": true|false }
+        The price is always (re)computed server-side from the item's
+        category — the client only controls on/off.
+        """
+        try:
+            cart_item = ShoppingCartItem.objects.get(id=pk)
+        except ShoppingCartItem.DoesNotExist:
+            return Response({
+                "success": False,
+                "user_not_logged_in": False,
+                "data": None,
+                "error": "Cart item not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        wants_warranty = bool(request.data.get('has_extended_warranty'))
+
+        cart_item.has_extended_warranty = wants_warranty
+        cart_item.warranty_price = (
+            get_warranty_price(cart_item.listing_unit.listing.model.category)
+            if wants_warranty else 0
+        )
+        cart_item.save(update_fields=['has_extended_warranty', 'warranty_price'])
+
+        serializer = CartItemSerializer(cart_item)
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "data": {"item": serializer.data},
             "error": None
         }, status=status.HTTP_200_OK)
 
@@ -386,6 +434,7 @@ class CartTransferViewSet(viewsets.ViewSet):
 # ----------
 # Wishlist
 # ----------
+
 class WishlistAPIViewSet(viewsets.ViewSet):
     """API for managing user wishlists"""
 
@@ -438,7 +487,4 @@ class WishlistAPIViewSet(viewsets.ViewSet):
             "user_not_logged_in": False, 
             "data": {"action": action_status}, 
             "error": None
-
         }, status=status.HTTP_200_OK)
-
-

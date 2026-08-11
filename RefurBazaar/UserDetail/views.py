@@ -2,7 +2,7 @@ from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.utils import timezone
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 from datetime import timedelta
 import random
 
@@ -72,6 +72,50 @@ class OtpAuthViewSet(viewsets.ViewSet):
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": {"otp_verified": True, "user_id": user.user_id, "new_user": created},
+            "error": None
+        }, status=status.HTTP_200_OK)
+
+
+class AdminPasswordLoginViewSet(viewsets.ViewSet):
+    @handle_exceptions
+    def create(self, request):
+        """Authenticate an admin user with contact number + password."""
+        contact_number = (request.data.get('contact_number') or '').strip()
+        password = request.data.get('password') or ''
+
+        if not contact_number or not password:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Contact number and password are required."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        user = authenticate(request, username=contact_number, password=password)
+
+        if user is None:
+            return Response({
+                "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": {"login_success": False, "message": "Invalid contact number or password."},
+                "error": None
+            }, status=status.HTTP_200_OK)
+
+        if user.role != 'admin':
+            return Response({
+                "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": {"login_success": False, "message": "This account does not have admin access."},
+                "error": None
+            }, status=status.HTTP_200_OK)
+
+        if not user.active_user:
+            return Response({
+                "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": {"login_success": False, "message": "This admin account has been deactivated."},
+                "error": None
+            }, status=status.HTTP_200_OK)
+
+        login(request, user)
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": {"login_success": True, "user_id": user.user_id},
             "error": None
         }, status=status.HTTP_200_OK)
 

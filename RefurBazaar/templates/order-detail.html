@@ -55,6 +55,39 @@
         <div class="row g-4">
             <!-- Order Items -->
             <div class="col-lg-8">
+                <!-- Tracking Timeline -->
+                <div class="card border-0 shadow-sm mb-4" style="border-radius: 20px;">
+                    <div class="card-header bg-white border-bottom-0 p-4">
+                        <h5 class="mb-0"><i class="fas fa-truck me-2" style="color: var(--primary-color);"></i>Tracking</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div id="tracking-timeline-container">
+                            <!-- Timeline populated by JS -->
+                        </div>
+                        <div id="tracking-info-box" class="tracking-info-box mt-4" style="display: none;">
+                            <div class="d-flex align-items-center gap-3 flex-wrap">
+                                <div>
+                                    <span class="text-muted d-block" style="font-size: 0.78rem;">Courier</span>
+                                    <strong id="tracking-courier-name">-</strong>
+                                </div>
+                                <div>
+                                    <span class="text-muted d-block" style="font-size: 0.78rem;">Tracking Number</span>
+                                    <strong id="tracking-number-value">-</strong>
+                                </div>
+                                <a href="#" target="_blank" rel="noopener" id="tracking-url-link" class="btn btn-outline-primary btn-sm ms-auto" style="display: none;">
+                                    <i class="fas fa-external-link-alt me-1"></i>Track Shipment
+                                </a>
+                            </div>
+                        </div>
+                        <p id="tracking-empty-message" class="text-muted mb-0" style="display: none;">
+                            Tracking details will appear here once your order ships.
+                        </p>
+                        <p id="tracking-cancelled-message" class="text-muted mb-0" style="display: none;">
+                            This order was cancelled.
+                        </p>
+                    </div>
+                </div>
+
                 <div class="card border-0 shadow-sm mb-4" style="border-radius: 20px;">
                     <div class="card-header bg-white border-bottom-0 p-4">
                         <h5 class="mb-0"><i class="fas fa-box me-2" style="color: var(--primary-color);"></i>Order Items</h5>
@@ -141,6 +174,30 @@
         </div>
     </div>
 
+    <!-- Return Request Modal -->
+    <div class="modal fade" id="returnRequestModal" tabindex="-1" aria-labelledby="returnRequestModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" style="border-radius: 16px; border: none;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="returnRequestModalLabel"><i class="fas fa-undo me-2" style="color: var(--primary-color);"></i>Request a Return</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="returnRequestForm">
+                    <div class="modal-body">
+                        <p class="text-muted mb-3" id="returnRequestItemName" style="font-size: 0.9rem;"></p>
+                        <label for="returnReasonInput" class="form-label fw-semibold">Reason for return</label>
+                        <textarea class="form-control" id="returnReasonInput" rows="4" placeholder="Tell us what went wrong with this item..." required minlength="10" maxlength="2000"></textarea>
+                        <div class="invalid-feedback" id="returnReasonError"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="submitReturnRequestBtn">Submit Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/static/js/api_caller.js"></script>
     <script src="/static/js/order-detail.js"></script>
@@ -153,7 +210,8 @@
         InitializeOrderDetail(
             csrfToken,
             orderId,
-            "/order-api/" + orderId + "/detail/"
+            "/order-api/" + orderId + "/detail/",
+            "/order-api/"
         );
     </script>
 
@@ -172,6 +230,119 @@
             height: 80px;
             object-fit: cover;
             border-radius: 12px;
+        }
+
+        /* Tracking Timeline */
+        .tracking-timeline {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 4px;
+        }
+
+        .tracking-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+            position: relative;
+        }
+
+        .tracking-step-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            background: #e2e8f0;
+            color: #94a3b8;
+            border: 2px solid #e2e8f0;
+            z-index: 1;
+            flex-shrink: 0;
+        }
+
+        .tracking-step.completed .tracking-step-dot {
+            background: var(--primary-color);
+            color: #fff;
+            border-color: var(--primary-color);
+        }
+
+        .tracking-step.current .tracking-step-dot {
+            background: #fff;
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(111, 186, 44, 0.18);
+        }
+
+        .tracking-step.cancelled .tracking-step-dot {
+            background: #dc3545;
+            color: #fff;
+            border-color: #dc3545;
+        }
+
+        .tracking-step-line {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            width: 100%;
+            height: 3px;
+            background: #e2e8f0;
+            z-index: 0;
+        }
+
+        .tracking-step.completed .tracking-step-line {
+            background: var(--primary-color);
+        }
+
+        .tracking-step:last-child .tracking-step-line {
+            display: none;
+        }
+
+        .tracking-step-label {
+            margin-top: 10px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .tracking-step.completed .tracking-step-label,
+        .tracking-step.current .tracking-step-label {
+            color: #1e293b;
+        }
+
+        .tracking-step-date {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        .tracking-info-box {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+
+        .order-item-actions {
+            margin-top: 0.75rem;
+        }
+
+        .return-status-badge {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 999px;
+        }
+
+        @media (max-width: 576px) {
+            .tracking-step-label {
+                font-size: 0.68rem;
+            }
+            .tracking-step-date {
+                display: none;
+            }
         }
     </style>
 

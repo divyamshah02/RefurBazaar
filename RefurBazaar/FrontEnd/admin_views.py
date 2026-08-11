@@ -3,6 +3,14 @@ from rest_framework import viewsets
 from utils.decorators import handle_exceptions, check_authentication
 
 
+class AdminLoginPageViewSet(viewsets.ViewSet):
+    @handle_exceptions
+    def list(self, request):
+        if request.user.is_authenticated and getattr(request.user, 'role', None) == 'admin':
+            return redirect('admin-dashboard-list')
+        return render(request, 'admin/login.html')
+
+
 class AdminDashboardPageViewSet(viewsets.ViewSet):
     @handle_exceptions
     @check_authentication(required_role='admin')
@@ -111,3 +119,10 @@ class AdminAttributesPageViewSet(viewsets.ViewSet):
     @check_authentication(required_role='admin')
     def list(self, request):
         return render(request, 'admin/attributes.html')
+
+
+class AdminTeamPageViewSet(viewsets.ViewSet):
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def list(self, request):
+        return render(request, 'admin/team.html')

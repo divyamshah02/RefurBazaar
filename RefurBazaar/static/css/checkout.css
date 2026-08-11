@@ -316,6 +316,17 @@
     color: #6fba2c;
 }
 
+.badge-warranty-included {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #2A8C3C;
+    background: rgba(111, 186, 44, 0.12);
+    border-radius: 6px;
+    padding: 2px 8px;
+}
+
 /* Summary Breakdown */
 .summary-breakdown {
     background: linear-gradient(135deg, rgba(111, 186, 44, 0.05), rgba(111, 186, 44, 0.02));
@@ -605,6 +616,30 @@
     }
 }
 
+
+/* =========================================
+   READ-ONLY WARRANTY SUMMARY (Checkout)
+   ========================================= */
+.warranty-summary-note {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: linear-gradient(135deg, #ffffff 0%, #F0FDF4 100%);
+    border: 1.5px solid rgba(111, 186, 44, 0.4);
+    border-radius: 12px;
+}
+
+.warranty-summary-note .edit-warranty-link {
+    color: #2A8C3C;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.warranty-summary-note .edit-warranty-link:hover {
+    text-decoration: underline;
+}
 
 /* =========================================
    WARRANTY ADD-ON BOX (Cart & Checkout)

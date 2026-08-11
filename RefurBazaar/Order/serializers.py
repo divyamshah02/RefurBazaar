@@ -28,16 +28,25 @@ class OrderItemSerializer(serializers.ModelSerializer):
     product_image = serializers.SerializerMethodField()
     fulfillment_status_display = serializers.CharField(source='get_fulfillment_status_display', read_only=True)
     device_photos = DevicePhotoSerializer(many=True, read_only=True)
+    return_status_display = serializers.CharField(source='get_return_status_display', read_only=True)
+    is_return_eligible = serializers.SerializerMethodField()
     
     class Meta:
         model = OrderItem
         fields = [
             'id', 'listing_unit', 'price_at_purchase', 'condition_at_purchase',
+            'has_extended_warranty', 'warranty_price',
             'refurbisher', 'refurbisher_name', 'brand_name', 'model_name',
             'product_image', 'device_imei', 'device_photos', 'verification_notes',
             'verified_at', 'fulfillment_status', 'fulfillment_status_display',
-            'packed_at', 'rejection_reason', 'rejected_at', 'created_at', 'updated_at'
+            'packed_at', 'rejection_reason', 'rejected_at',
+            'return_status', 'return_status_display', 'return_reason',
+            'return_requested_at', 'is_return_eligible',
+            'created_at', 'updated_at'
         ]
+
+    def get_is_return_eligible(self, obj):
+        return obj.is_return_eligible()
     
     def get_brand_name(self, obj):
         return obj.listing_unit.listing.model.brand.name
@@ -67,14 +76,15 @@ class OrderSerializer(serializers.ModelSerializer):
             'billing_address', 'billing_city', 'billing_state', 'billing_pincode',
             'billing_phone', 'billing_alternate_phone',
             'delivery_date', 'timeslot_id', 'special_instructions',
-            'subtotal_amount', 'tax_amount', 'delivery_charge', 'discount_amount',
+            'subtotal_amount', 'tax_amount', 'delivery_charge', 'warranty_amount', 'discount_amount',
             'coupon_code', 'coupon_discount', 'total_amount',
             'payment_method', 'payment_method_display', 'razorpay_order_id', 
             'razorpay_payment_id', 'razorpay_signature', 'razorpay_link', 'payment_received',
-            'status', 'status_display', 'order_note', 'items',
+            'status', 'status_display', 'order_note', 'delivered_at',
+            'tracking_number', 'courier_name', 'tracking_url', 'items',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['order_id', 'order_number', 'created_at', 'updated_at']
+        read_only_fields = ['order_id', 'order_number', 'created_at', 'updated_at', 'delivered_at']
 
 
 class OrderCreateSerializer(serializers.Serializer):
@@ -129,6 +139,11 @@ class OrderItemVerificationSerializer(serializers.Serializer):
     """Serializer for refurbisher to verify device and upload details"""
     device_imei = serializers.CharField(max_length=50, required=True)
     verification_notes = serializers.CharField(required=False, allow_blank=True)
+
+
+class ReturnRequestSerializer(serializers.Serializer):
+    """Serializer for a customer's self-service return request on an OrderItem"""
+    reason = serializers.CharField(required=True, allow_blank=False, max_length=2000)
 
 
 class OrderItemActionSerializer(serializers.Serializer):

@@ -130,31 +130,10 @@
                     <div class="order-summary-card" id="cartSummary" style="display: none;">
                         <h5 class="fw-bold mb-4">Price Summary</h5>
 
-                        <!-- Extended Warranty add-on -->
-                        <div class="warranty-addon-box mb-4 p-3 shadow-sm">
-                            <i class="fas fa-shield-alt watermark"></i>
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="icon-circle">
-                                        <i class="fas fa-shield-alt"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.95rem;">Extended Warranty</h6>
-                                    </div>
-                                </div>
-                                <label class="theme-switch mt-1">
-                                    <input type="checkbox" id="warrantyToggle">
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            <p class="text-muted mb-2 ps-1" style="font-size: 0.8rem; line-height: 1.4; max-width: 85%;">
-                                Extend your coverage for 24 months — covers hardware defects, battery issues, and internal malfunctions.
-                            </p>
-                            <div class="d-flex align-items-center gap-2 ps-1">
-                                <span class="fw-bold" style="color: #2A8C3C; font-size: 0.95rem;">+ &#8377;1,499</span>
-                                <span class="text-muted" style="font-size: 0.75rem;">(Billed once)</span>
-                            </div>
-                        </div>
+                        <p class="text-muted mb-3" style="font-size: 0.8rem; line-height: 1.4;">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Toggle Extended Warranty on individual items in your cart below — coverage and pricing are tailored per product.
+                        </p>
 
                         <!-- Dynamic price breakdown rows — injected by renderPriceSummary() -->
                         <div id="priceSummaryBody"></div>

@@ -46,6 +46,7 @@ router.register(r'refurbisher-orders', RefurbisherOrdersViewSet, basename='refur
 router.register(r'refurbisher-order-detail', RefurbisherOrderDetailViewSet, basename='refurbisher-order-detail')
 
 ### Admin Views ###
+router.register(r'admin-login', AdminLoginPageViewSet, basename='admin-login')
 router.register(r'admin-dashboard', AdminDashboardPageViewSet, basename='admin-dashboard')
 router.register(r'admin-homepage', AdminHomePageViewSet, basename='admin-homepage')
 router.register(r'admin-orders', AdminOrdersPageViewSet, basename='admin-orders')
@@ -60,6 +61,7 @@ router.register(r'admin-add-products', AdminAddProductPageViewSet, basename='adm
 router.register(r'admin-catalog-brands', AdminBrandsPageViewSet, basename='admin-catalog-brands')
 router.register(r'admin-catalog-products', AdminProductsPageViewSet, basename='admin-catalog-products')
 router.register(r'admin-catalog-attributes', AdminAttributesPageViewSet, basename='admin-catalog-attributes')
+router.register(r'admin-team', AdminTeamPageViewSet, basename='admin-team')
 
 
 

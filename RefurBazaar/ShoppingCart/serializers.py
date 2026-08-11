@@ -9,7 +9,6 @@ class CartItemListingUnitSerializer(serializers.ModelSerializer):
     """Nested serializer for ListingUnit with product details"""
     listing_id = serializers.CharField(source='listing.listing_id', read_only=True)
     model_name = serializers.CharField(source='listing.model.name', read_only=True)
-    model_id = serializers.CharField(source='listing.model.id', read_only=True)
     brand_name = serializers.CharField(source='listing.model.brand.name', read_only=True)
     category = serializers.CharField(source='listing.model.category', read_only=True)
     refurbisher_first_name = serializers.CharField(source='listing.refurbisher.first_name', read_only=True)
@@ -20,7 +19,7 @@ class CartItemListingUnitSerializer(serializers.ModelSerializer):
         model = ListingUnit
         fields = [
             'id', 'listing_id', 'unit_number', 'price', 'condition',
-            'model_name', 'model_id', 'brand_name', 'category',
+            'model_name', 'brand_name', 'category',
             'refurbisher_first_name', 'refurbisher_last_name',
             'attributes', 'is_available', 'is_sold'
         ]
@@ -47,8 +46,13 @@ class CartItemSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ShoppingCartItem
-        fields = ['id', 'cart', 'listing_unit', 'listing_unit_id', 'added_at']
-        read_only_fields = ['cart', 'added_at']
+        fields = [
+            'id', 'cart', 'listing_unit', 'listing_unit_id',
+            'has_extended_warranty', 'warranty_price', 'added_at',
+        ]
+        # warranty_price is always server-computed (never client-writable);
+        # has_extended_warranty is toggled via the dedicated warranty action.
+        read_only_fields = ['cart', 'added_at', 'has_extended_warranty', 'warranty_price']
     
     def validate_listing_unit_id(self, value):
         """Validate that listing unit is available and not sold"""
@@ -71,13 +75,19 @@ class CartSerializer(serializers.ModelSerializer):
         decimal_places=2, 
         read_only=True
     )
+    total_warranty = serializers.DecimalField(
+        source='get_total_warranty',
+        max_digits=10,
+        decimal_places=2,
+        read_only=True
+    )
     user_email = serializers.CharField(source='user.email', read_only=True, allow_null=True)
     
     class Meta:
         model = ShoppingCart
         fields = [
             'id', 'cart_id', 'session_id', 'user', 'user_email',
-            'active_cart', 'items', 'total_items', 'total_price',
+            'active_cart', 'items', 'total_items', 'total_price', 'total_warranty',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['cart_id', 'created_at', 'updated_at']

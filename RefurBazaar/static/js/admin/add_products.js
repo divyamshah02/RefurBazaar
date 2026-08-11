@@ -132,45 +132,80 @@ async function loadAttributesForCategory() {
 function renderAttributes(attributes) {
     const container = document.getElementById('attributesContainer');
     container.innerHTML = '';
-    
+
     attributes.forEach(attr => {
         const attrDiv = document.createElement('div');
-        attrDiv.className = 'attribute-card d-flex align-items-center';
-        
+        attrDiv.className = 'attribute-card';
+        attrDiv.dataset.dataType = attr.data_type || 'text';
+        attrDiv.dataset.possibleValues = JSON.stringify(attr.possible_values || []);
+
+        const topRow = document.createElement('div');
+        topRow.className = 'd-flex align-items-center';
+
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.className = 'form-check-input';
         checkbox.id = `attr_${attr.id}`;
         checkbox.value = attr.id;
         checkbox.dataset.attrName = attr.name;
-        checkbox.addEventListener('change', updateSummary);
-        
+
         const label = document.createElement('label');
         label.className = 'form-check-label ms-2';
         label.htmlFor = `attr_${attr.id}`;
-        
-        // Create label text with attribute type info
         let labelText = attr.name;
         if (attr.data_type) {
             labelText += ` <span class="small text-muted">(${attr.data_type})</span>`;
         }
-        
         label.innerHTML = labelText;
-        
-        // If attribute has possible values, show them
-        if (attr.possible_values && attr.possible_values.length > 0) {
-            const valuesSpan = document.createElement('div');
-            valuesSpan.className = 'small text-muted mt-2';
-            valuesSpan.innerHTML = `Options: ${attr.possible_values.join(', ')}`;
-            
-            attrDiv.appendChild(checkbox);
-            attrDiv.appendChild(label);
-            attrDiv.appendChild(valuesSpan);
+
+        topRow.appendChild(checkbox);
+        topRow.appendChild(label);
+        attrDiv.appendChild(topRow);
+
+        // Value input — shown once the attribute is selected, admin fills it in directly
+        const valueWrap = document.createElement('div');
+        valueWrap.className = 'mt-2';
+        valueWrap.id = `attr_value_wrap_${attr.id}`;
+        valueWrap.style.display = 'none';
+
+        let valueInput;
+        if (attr.data_type === 'select' && attr.possible_values && attr.possible_values.length > 0) {
+            valueInput = document.createElement('select');
+            valueInput.className = 'form-select form-select-sm';
+            const blankOpt = document.createElement('option');
+            blankOpt.value = '';
+            blankOpt.textContent = 'Select value...';
+            valueInput.appendChild(blankOpt);
+            attr.possible_values.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v;
+                opt.textContent = v;
+                valueInput.appendChild(opt);
+            });
         } else {
-            attrDiv.appendChild(checkbox);
-            attrDiv.appendChild(label);
+            valueInput = document.createElement('input');
+            valueInput.type = attr.data_type === 'number' ? 'number' : 'text';
+            valueInput.className = 'form-control form-control-sm';
+            valueInput.placeholder = `Enter ${attr.name.toLowerCase()} value`;
         }
-        
+        valueInput.id = `attr_value_${attr.id}`;
+        valueInput.dataset.attrId = attr.id;
+        if (attr.default_value) valueInput.value = attr.default_value;
+
+        valueWrap.appendChild(valueInput);
+        attrDiv.appendChild(valueWrap);
+
+        checkbox.addEventListener('change', function() {
+            valueWrap.style.display = this.checked ? 'block' : 'none';
+            updateSummary();
+        });
+
+        // Restore checked/visible state when editing an already-selected attribute
+        if (attr.default_value) {
+            checkbox.checked = true;
+            valueWrap.style.display = 'block';
+        }
+
         container.appendChild(attrDiv);
     });
 }
@@ -239,12 +274,21 @@ async function handleSubmit(event) {
     const submitBtn = document.getElementById('submitBtn');
     const originalText = submitBtn.innerHTML;
     
-    // Get selected attributes
-    const selectedAttrCheckboxes = document.querySelectorAll('input[type="checkbox"]:checked');
-    const attributes = Array.from(selectedAttrCheckboxes).map(checkbox => ({
-        attribute_id: parseInt(checkbox.value),
-        is_required: true
-    }));
+    // Get selected attributes, along with the value the admin entered directly
+    const selectedAttrCheckboxes = document.querySelectorAll('#attributesContainer input[type="checkbox"]:checked');
+    const attributes = Array.from(selectedAttrCheckboxes).map(checkbox => {
+        const attrId = checkbox.value;
+        const card = checkbox.closest('.attribute-card');
+        const valueInput = document.getElementById(`attr_value_${attrId}`);
+        const value = valueInput ? valueInput.value.trim() : '';
+        return {
+            attribute_id: parseInt(attrId),
+            is_required: false,
+            data_type: card ? card.dataset.dataType : 'text',
+            possible_values: card ? JSON.parse(card.dataset.possibleValues || '[]') : [],
+            default_value: value || null
+        };
+    });
     
     console.log('[v0] Form Data:', {
         category,

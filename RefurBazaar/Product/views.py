@@ -1221,7 +1221,18 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
             price_min = request.data.get('price_min') or None
             price_max = request.data.get('price_max') or None
             image = request.FILES.get('image') if hasattr(request, 'FILES') else None
-            attributes = request.data.getlist('attributes') if isinstance(request.data.get('attributes'), list) else []
+
+            import json
+            raw_attributes = request.data.get('attributes')
+            if isinstance(raw_attributes, str):
+                try:
+                    attributes = json.loads(raw_attributes)
+                except Exception:
+                    attributes = []
+            elif isinstance(raw_attributes, list):
+                attributes = raw_attributes
+            else:
+                attributes = []
 
             # Validation
             if not brand_id or not name or not category:
@@ -1264,20 +1275,6 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                 image=image,
                 is_active=True
             )
-
-            # Parse and add attributes
-            # Handle both JSON array strings and dict objects
-            import json
-            if attributes:
-                # If attributes is a list of strings (from form data), parse them
-                if isinstance(attributes, list) and len(attributes) > 0 and isinstance(attributes[0], str):
-                    try:
-                        # Try to parse as JSON
-                        parsed_attrs = json.loads(attributes[0])
-                        attributes = parsed_attrs if isinstance(parsed_attrs, list) else [parsed_attrs]
-                    except:
-                        # If it fails, treat as single attribute dict string
-                        attributes = []
 
             for attr_data in attributes:
                 attr_id        = attr_data.get('attribute_id')
@@ -1599,6 +1596,9 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                 'id': attr.id,
                 'name': attr.name,
                 'display_order': attr.display_order,
+                'data_type': attr.data_type,
+                'possible_values': attr.possible_values,
+                'default_value': attr.default_value,
             }
             for attr in attributes
         ]

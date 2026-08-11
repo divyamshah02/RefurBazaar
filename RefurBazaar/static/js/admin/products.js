@@ -194,6 +194,7 @@ async function loadAttrsForModal(category, selectedAttrs = []) {
       section:         ma.section         || 'main',
       data_type:       ma.data_type       || 'text',
       possible_values: ma.possible_values || [],
+      default_value:   ma.default_value   || '',
     };
   }
 
@@ -217,12 +218,15 @@ async function loadAttrsForModal(category, selectedAttrs = []) {
     const section = sel?.section    || 'main';
     const dtype   = sel?.data_type  || 'text';
     const pvals   = (sel?.possible_values || []).join(', ');
+    const dval    = sel?.default_value || '';
+    const choiceOpts = (sel?.possible_values || [])
+      .map(v => `<option value="${v}" ${v === dval ? 'selected' : ''}>${v}</option>`).join('');
 
     const mainBg  = section === 'main'      ? 'var(--accent)' : 'transparent';
     const mainClr = section === 'main'      ? '#fff'          : 'var(--text-muted)';
     const secBg   = section === 'secondary' ? 'var(--accent)' : 'transparent';
     const secClr  = section === 'secondary' ? '#fff'          : 'var(--text-muted)';
-
+/* <option value="number" ${dtype==='number' ? 'selected':''}>Number</option> */
     return `
     <div class="attr-row" style="display:flex;flex-direction:column;border:1px solid var(--border-light);border-radius:8px;background:var(--surface)">
       <!-- Row 1: checkbox + name -->
@@ -240,16 +244,16 @@ async function loadAttrsForModal(category, selectedAttrs = []) {
           <select name="dtype_${a.id}" data-aid="${a.id}"
                   style="font-size:12px;padding:3px 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text);height:28px;cursor:pointer"
                   onchange="toggleChoiceValues(this, this.dataset.aid)">
-            <option value="text"   ${dtype==='text'   ? 'selected':''}>Text</option>
-            <option value="number" ${dtype==='number' ? 'selected':''}>Number</option>
-            <option value="choice" ${dtype==='choice' ? 'selected':''}>Choice</option>
+            <option value="text"   ${dtype==='text'   ? 'selected':''}>Single</option>
+            
+            <option value="choice" ${dtype==='choice' ? 'selected':''}>Multiple</option>
           </select>
         </div>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;white-space:nowrap;color:var(--text-muted)">
+        <label style="display:none;align-items:center;gap:5px;font-size:12px;cursor:pointer;white-space:nowrap;color:var(--text-muted)">
           <input type="checkbox" name="req" value="${a.id}" ${reqChk}
                  style="width:13px;height:13px;accent-color:var(--accent)" /> Required
         </label>
-        <div style="display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;font-size:11px;font-weight:600;flex-shrink:0">
+        <div style="display:none;border:1px solid var(--border);border-radius:6px;overflow:hidden;font-size:11px;font-weight:600;flex-shrink:0">
           <label style="display:flex;align-items:center;padding:4px 10px;cursor:pointer;background:${mainBg};color:${mainClr};transition:background .12s,color .12s">
             <input type="radio" name="sec_${a.id}" value="main" ${section==='main' ? 'checked':''}
                    style="display:none" onchange="updateSectionStyle(this)" /> Main
@@ -264,9 +268,23 @@ async function loadAttrsForModal(category, selectedAttrs = []) {
       <div id="vals_${a.id}"
            style="display:${show === 'flex' && dtype === 'choice' ? 'flex' : 'none'};align-items:center;gap:8px;padding:0 12px 10px 37px">
         <span style="font-size:11px;color:var(--text-muted);white-space:nowrap">Options (comma-sep):</span>
-        <input type="text" name="pvals_${a.id}" value="${pvals}"
+        <input type="text" name="pvals_${a.id}" value="${pvals}" data-aid="${a.id}"
                placeholder="e.g. 128GB, 256GB, 512GB"
+               oninput="syncChoiceValueOptions(this, this.dataset.aid)"
                style="flex:1;font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text)" />
+      </div>
+      <!-- Row 4: value — the actual value for this product; shown whenever the attribute is ticked -->
+      <div id="value_${a.id}"
+           style="display:${show};align-items:center;gap:8px;padding:0 12px 10px 37px">
+        <span style="font-size:11px;color:var(--text-muted);white-space:nowrap">Value:</span>
+        ${dtype === 'choice'
+          ? `<select name="val_${a.id}" data-aid="${a.id}"
+                     style="flex:1;font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text)">
+               <option value="">Select value…</option>${choiceOpts}
+             </select>`
+          : `<input type="${dtype === 'number' ? 'number' : 'text'}" name="val_${a.id}" data-aid="${a.id}" value="${dval}"
+                    placeholder="Enter ${a.name.toLowerCase()} value"
+                    style="flex:1;font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text)" />`}
       </div>
     </div>`;
   }).join('');
@@ -278,15 +296,18 @@ function toggleAttrControls(cb) {
   const aid    = cb.value;
   const ctrlBar = row.querySelector('.attr-ctrl-bar');
   const valsRow = document.getElementById('vals_' + aid);
+  const valueRow = document.getElementById('value_' + aid);
 
   if (cb.checked) {
     if (ctrlBar) ctrlBar.style.display = 'flex';
     // Show the choice-values row only if type is already 'choice'
     const dtypeSel = row.querySelector('select[name="dtype_' + aid + '"]');
     if (valsRow) valsRow.style.display = (dtypeSel && dtypeSel.value === 'choice') ? 'flex' : 'none';
+    if (valueRow) valueRow.style.display = 'flex';
   } else {
     if (ctrlBar) ctrlBar.style.display = 'none';
     if (valsRow) valsRow.style.display = 'none';
+    if (valueRow) valueRow.style.display = 'none';
   }
 
   // Live-update the selected count badge
@@ -306,11 +327,46 @@ function _updateAttrCount(selected, total) {
   badge.style.fontSize = '11px';
 }
 
-/* Show/hide the choice-values input based on the type selector */
+/* Show/hide the choice-values input based on the type selector, and rebuild
+   the value field so it matches the newly selected type (text/number/choice) */
 function toggleChoiceValues(select, aid) {
+  const dtype   = select.value;
   const valsRow = document.getElementById('vals_' + aid);
-  if (!valsRow) return;
-  valsRow.style.display = select.value === 'choice' ? 'flex' : 'none';
+  if (valsRow) valsRow.style.display = dtype === 'choice' ? 'flex' : 'none';
+
+  let is_req_ele = document.querySelector(`input[type="checkbox"][value="${aid}"][name="req"]`)
+  is_req_ele.checked = false;
+  if (dtype === 'choice' && is_req_ele) {
+    is_req_ele.checked = true;
+  }  
+
+  const valueRow = document.getElementById('value_' + aid);
+  if (!valueRow) return;
+  const pvalsEl = document.querySelector(`input[name="pvals_${aid}"]`);
+  const pvals   = pvalsEl ? pvalsEl.value.split(',').map(v => v.trim()).filter(Boolean) : [];
+
+  const label = valueRow.querySelector('span');
+  const html  = dtype === 'choice'
+    ? `<select name="val_${aid}" data-aid="${aid}"
+               style="flex:1;font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text)">
+         <option value="">Select value…</option>${pvals.map(v => `<option value="${v}">${v}</option>`).join('')}
+       </select>`
+    : `<input type="${dtype === 'number' ? 'number' : 'text'}" name="val_${aid}" data-aid="${aid}"
+              placeholder="Enter value"
+              style="flex:1;font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text)" />`;
+  valueRow.innerHTML = label.outerHTML + html;
+}
+
+/* Keep the choice value dropdown's options in sync with the comma-separated Options input */
+function syncChoiceValueOptions(input, aid) {
+  const valueRow = document.getElementById('value_' + aid);
+  if (!valueRow) return;
+  const select = valueRow.querySelector('select[name="val_' + aid + '"]');
+  if (!select) return;
+  const current = select.value;
+  const pvals = input.value.split(',').map(v => v.trim()).filter(Boolean);
+  select.innerHTML = `<option value="">Select value…</option>` +
+    pvals.map(v => `<option value="${v}" ${v === current ? 'selected' : ''}>${v}</option>`).join('');
 }
 
 /* Keep section pill colours in sync after a radio click */
@@ -490,17 +546,20 @@ async function saveProduct() {
     const secRadio = row ? row.querySelector('input[name="sec_' + aid + '"]:checked') : null;
     const dtypeSel = row ? row.querySelector('select[name="dtype_' + aid + '"]') : null;
     const pvalsEl  = row ? row.querySelector('input[name="pvals_' + aid + '"]') : null;
+    const valEl    = row ? row.querySelector('[name="val_' + aid + '"]') : null;
     const dtype    = dtypeSel ? dtypeSel.value : 'text';
     const pvalsRaw = pvalsEl  ? pvalsEl.value  : '';
     const possible_values = dtype === 'choice'
       ? pvalsRaw.split(',').map(v => v.trim()).filter(Boolean)
       : [];
+    const defaultValue = valEl ? valEl.value.trim() : '';
     return {
       attribute_id:    Number(aid),
       is_required:     requiredIds.has(aid),
       section:         secRadio ? secRadio.value : 'main',
       data_type:       dtype,
       possible_values: possible_values,
+      default_value:   defaultValue || null,
     };
   });
 

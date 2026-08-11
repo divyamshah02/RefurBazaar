@@ -194,7 +194,9 @@
     }
 
     if (_stepIndex < _questions.length - 1) {
-      _stepIndex++
+      if (stepId != 'category'){
+        _stepIndex++
+      }
       renderStep()
     } else {
       fetchResults()

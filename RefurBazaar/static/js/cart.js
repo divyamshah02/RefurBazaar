@@ -7,7 +7,23 @@ let cartData = null
 const PROCESSING_FEE_ORIGINAL = 449
 const PROCESSING_FEE_DISCOUNTED = 199
 const DELIVERY_ORIGINAL = 100
-const WARRANTY_COST = 1499
+
+// Extended warranty price per product category — mirrors Product/utils.py
+// WARRANTY_PRICES on the backend. This is display-only: the actual price
+// charged is always (re)computed server-side from the listing's category.
+const WARRANTY_PRICES = {
+  mobile: 1499,
+  laptop: 2999,
+  tablet: 1999,
+  accessory: 799,
+}
+const DEFAULT_WARRANTY_PRICE = 999
+
+function getWarrantyPriceForUnit(unit) {
+  const cat = (unit.category || "").toLowerCase()
+  const key = Object.keys(WARRANTY_PRICES).find((k) => cat.includes(k))
+  return key ? WARRANTY_PRICES[key] : DEFAULT_WARRANTY_PRICE
+}
 
 function init(csrf, listUrl, clearUrl) {
   csrfToken = csrf
@@ -68,6 +84,14 @@ function renderCart(data) {
       const price = parseFloat(unit.price)
       const formattedPrice = price.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 
+      const hasWarranty = !!item.has_extended_warranty
+      const warrantyPrice = hasWarranty
+        ? parseFloat(item.warranty_price)
+        : getWarrantyPriceForUnit(unit)
+      const itemTotal = price + (hasWarranty ? parseFloat(item.warranty_price) : 0)
+      const formattedItemTotal = itemTotal.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+      const formattedWarrantyPrice = warrantyPrice.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+
       return `
         <tr class="cart-item-row" data-item-id="${item.id}" data-unit-id="${unit.id}">
           <td class="product-cell">
@@ -101,12 +125,39 @@ function renderCart(data) {
             </div>
           </td>
           <td class="total-cell">
-            <span class="item-total">₹${formattedPrice}</span>
+            <span class="item-total">₹${formattedItemTotal}</span>
           </td>
           <td class="remove-cell">
             <button class="remove-btn" onclick="removeFromCart(${item.id})" title="Remove item">
               <i class="fas fa-times"></i>
             </button>
+          </td>
+        </tr>
+        <tr class="cart-item-warranty-row" data-item-id="${item.id}">
+          <td colspan="5" class="warranty-addon-cell">
+            <div class="item-warranty-toggle">
+              <div class="d-flex align-items-center gap-2">
+                <div class="icon-circle icon-circle-sm">
+                  <i class="fas fa-shield-alt"></i>
+                </div>
+                <div>
+                  <span class="fw-semibold" style="font-size: 0.85rem;">Extended Warranty</span>
+                  <span class="text-muted ms-1" style="font-size: 0.78rem;">— +24 months coverage</span>
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-3">
+                <span class="fw-bold" style="color: #2A8C3C; font-size: 0.85rem;">+ ₹${formattedWarrantyPrice}</span>
+                <label class="theme-switch mb-0">
+                  <input
+                    type="checkbox"
+                    class="item-warranty-checkbox"
+                    ${hasWarranty ? "checked" : ""}
+                    onchange="toggleItemWarranty(${item.id}, this.checked)"
+                  >
+                  <span class="slider round"></span>
+                </label>
+              </div>
+            </div>
           </td>
         </tr>
       `
@@ -139,12 +190,17 @@ function updateCartSummary(data) {
   // --- Price breakdown ---
   const itemCount = data.items.length
   const baseTotal = data.items.reduce((sum, item) => sum + parseFloat(item.listing_unit.price), 0)
+  const warrantyTotal = data.items.reduce(
+    (sum, item) => sum + (item.has_extended_warranty ? parseFloat(item.warranty_price) : 0),
+    0
+  )
+  const warrantyItemCount = data.items.filter((item) => item.has_extended_warranty).length
 
   // Synthetic MRP: assume ~18% avg discount on refurbished goods for display
   const mrpTotal = Math.round(baseTotal * 1.18)
   const discount = mrpTotal - baseTotal
 
-  renderPriceSummary(itemCount, mrpTotal, discount, baseTotal)
+  renderPriceSummary(itemCount, mrpTotal, discount, baseTotal, warrantyTotal, warrantyItemCount)
 
   // --- E-waste ---
   const eWasteByCategory = {
@@ -199,12 +255,10 @@ function calculateGST(mrpTotal) {
     };
 }
 
-function renderPriceSummary(itemCount, mrpTotal, discount, baseTotal) {
-  const warrantyToggle = document.getElementById("warrantyToggle")
-  const warrantyChecked = warrantyToggle ? warrantyToggle.checked : false
-  const warrantyAmt = warrantyChecked ? WARRANTY_COST : 0
+function renderPriceSummary(itemCount, mrpTotal, discount, baseTotal, warrantyTotal = 0, warrantyItemCount = 0) {
+  const warrantyChecked = warrantyTotal > 0
 
-  const totalAmount = baseTotal + warrantyAmt + PROCESSING_FEE_DISCOUNTED
+  const totalAmount = baseTotal + warrantyTotal + PROCESSING_FEE_DISCOUNTED
   // Delivery is free
   const totalSaved = discount + (DELIVERY_ORIGINAL) + (PROCESSING_FEE_ORIGINAL - PROCESSING_FEE_DISCOUNTED)
 
@@ -248,10 +302,10 @@ function renderPriceSummary(itemCount, mrpTotal, discount, baseTotal) {
       ${warrantyChecked ? `
       <div class="price-row">
         <span class="price-label">
-          Additional Warranty
-          <span class="label-badge">6 Months</span>
+          Extended Warranty
+          <span class="label-badge">${warrantyItemCount} item${warrantyItemCount !== 1 ? 's' : ''}</span>
         </span>
-        <span class="price-value">₹${fmt(WARRANTY_COST)}</span>
+        <span class="price-value">₹${fmt(warrantyTotal)}</span>
       </div>` : ''}
      
       <div class="price-row">
@@ -269,51 +323,12 @@ function renderPriceSummary(itemCount, mrpTotal, discount, baseTotal) {
 
       <div class="price-divider"></div>      
     </div>
-    <div class="text-start">
-    <div class="savings-pill">
+    <div class="text-center">
+    <div class="savings-pill w-100">
       You&apos;ve saved ₹${fmt(totalSaved)}
     </div>
     </div>  
   `;
-
-
-  // el.innerHTML = `
-  //   <div class="price-row">
-  //     <span class="price-label">Price (${itemCount} Item${itemCount !== 1 ? 's' : ''})</span>
-  //     <span class="price-value">₹${fmt(mrpTotal)}</span>
-  //   </div>
-  //   <div class="price-row discount-row">
-  //     <span class="price-label">Discount</span>
-  //     <span class="price-value discount-value">-₹${fmt(discount)}</span>
-  //   </div>
-  //   ${warrantyChecked ? `
-  //   <div class="price-row">
-  //     <span class="price-label">Additional Warranty <span class="label-badge">6 Months</span></span>
-  //     <span class="price-value">₹${fmt(WARRANTY_COST)}</span>
-  //   </div>` : ''}
-  //   <div class="price-row">
-  //     <span class="price-label">Processing Fee</span>
-  //     <span class="price-value">
-  //       <span class="old-price">₹${fmt(PROCESSING_FEE_ORIGINAL)}</span>
-  //       <span class="ms-1">₹${fmt(PROCESSING_FEE_DISCOUNTED)}</span>
-  //     </span>
-  //   </div>
-  //   <div class="price-row">
-  //     <span class="price-label">Delivery Charges</span>
-  //     <span class="price-value">
-  //       <span class="free-tag">Free</span>
-  //       <span class="old-price ms-1">₹${fmt(DELIVERY_ORIGINAL)}</span>
-  //     </span>
-  //   </div>
-  //   <div class="price-divider"></div>
-  //   <div class="price-row total-row">
-  //     <span class="price-label">Total Amount</span>
-  //     <span class="price-value total-value">₹${fmt(totalAmount)}</span>
-  //   </div>
-  //   <div class="savings-pill">
-  //     You&apos;ve saved ₹${fmt(totalSaved)}
-  //   </div>
-  // `
 
   const btn = el.querySelector(".show-price-details");
   const details = el.querySelector(".price-details");
@@ -328,25 +343,39 @@ function renderPriceSummary(itemCount, mrpTotal, discount, baseTotal) {
   });
 }
 
-// Re-render summary when warranty toggle changes
-document.addEventListener("DOMContentLoaded", () => {
-  const warrantyToggle = document.getElementById("warrantyToggle")
-  if (warrantyToggle) {
-    warrantyToggle.addEventListener("change", () => {
-      if (cartData && cartData.items && cartData.items.length > 0) {
-        const itemCount = cartData.items.length
-        const baseTotal = cartData.items.reduce((sum, item) => sum + parseFloat(item.listing_unit.price), 0)
-        const mrpTotal = Math.round(baseTotal * 1.18)
-        const discount = mrpTotal - baseTotal
-        renderPriceSummary(itemCount, mrpTotal, discount, baseTotal)
-      }
-    })
-  }
-})
-
 // =========================================
 // CART ACTIONS
 // =========================================
+
+async function toggleItemWarranty(cartItemId, checked) {
+  // Optimistically reflect the toggle immediately, then confirm with the server
+  const checkbox = document.querySelector(
+    `.cart-item-warranty-row[data-item-id="${cartItemId}"] .item-warranty-checkbox`
+  )
+
+  try {
+    const [success, response] = await window.callApi(
+      "PATCH",
+      `${cartListUrl}${cartItemId}/warranty/`,
+      { has_extended_warranty: checked },
+      csrfToken
+    )
+
+    if (success && response.success) {
+      showToast(
+        checked ? "Extended warranty added" : "Extended warranty removed",
+        checked ? "success" : "info"
+      )
+      loadCart()
+    } else {
+      if (checkbox) checkbox.checked = !checked
+      showToast(response.error || "Failed to update warranty", "error")
+    }
+  } catch (error) {
+    if (checkbox) checkbox.checked = !checked
+    showToast("Failed to update warranty", "error")
+  }
+}
 
 async function removeFromCart(cartItemId) {
   if (!confirm("Are you sure you want to remove this item from your cart?")) return

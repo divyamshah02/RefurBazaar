@@ -15,7 +15,8 @@ from .models import Order, OrderItem
 from .serializers import (
     OrderSerializer, OrderCreateSerializer, 
     PaymentVerificationSerializer, OrderItemSerializer,
-    OrderItemVerificationSerializer, OrderItemActionSerializer
+    OrderItemVerificationSerializer, OrderItemActionSerializer,
+    ReturnRequestSerializer
 )
 from ShoppingCart.models import ShoppingCart, ShoppingCartItem
 from Product.models import ListingUnit
@@ -80,9 +81,17 @@ class OrderViewSet(viewsets.ViewSet):
         subtotal_amount = sum(item.listing_unit.price for item in cart_items)
         tax_amount = Decimal('0.00')
         delivery_charge = Decimal('50.00')
+        # Warranty amount is derived entirely from the cart items' server-set
+        # has_extended_warranty/warranty_price — never trust anything from the request body.
+        warranty_amount = sum(
+            item.warranty_price for item in cart_items if item.has_extended_warranty
+        ) or Decimal('0.00')
         discount_amount = Decimal('0.00')
         coupon_discount = Decimal('0.00')
-        total_amount = subtotal_amount + tax_amount + delivery_charge - discount_amount - coupon_discount
+        total_amount = (
+            subtotal_amount + tax_amount + delivery_charge + warranty_amount
+            - discount_amount - coupon_discount
+        )
         
         with transaction.atomic():
             order = Order.objects.create(
@@ -113,6 +122,7 @@ class OrderViewSet(viewsets.ViewSet):
                 subtotal_amount=subtotal_amount,
                 tax_amount=tax_amount,
                 delivery_charge=delivery_charge,
+                warranty_amount=warranty_amount,
                 discount_amount=discount_amount,
                 coupon_code=data.get('coupon_code', ''),
                 coupon_discount=coupon_discount,
@@ -130,7 +140,9 @@ class OrderViewSet(viewsets.ViewSet):
                     price_at_purchase=cart_item.listing_unit.price,
                     condition_at_purchase=cart_item.listing_unit.condition,
                     refurbisher=cart_item.listing_unit.listing.refurbisher,
-                    refurbisher_name=cart_item.listing_unit.listing.refurbisher.first_name
+                    refurbisher_name=cart_item.listing_unit.listing.refurbisher.first_name,
+                    has_extended_warranty=cart_item.has_extended_warranty,
+                    warranty_price=cart_item.warranty_price if cart_item.has_extended_warranty else 0,
                 )
                 
                 # Mark as half_sold (for Razorpay) or sold (for COD)
@@ -473,6 +485,50 @@ class OrderViewSet(viewsets.ViewSet):
             listing_unit.is_available = True
             listing_unit.save()
         
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": OrderItemSerializer(order_item).data, "error": None
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='request-return')
+    @handle_exceptions
+    @check_authentication()
+    def request_return(self, request, pk=None):
+        """
+        Customer self-service return request for a single order item.
+        URL param (pk): OrderItem id.
+        Body: { "reason": "<text>" }
+        """
+        order_item = get_object_or_404(OrderItem, id=pk)
+
+        # Only the order's own customer may request a return on their item.
+        if order_item.order.user != request.user:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": True,
+                "data": None, "error": "Unauthorized access"
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = ReturnRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Re-validate eligibility server-side — never trust a disabled button on the client.
+        if not order_item.is_return_eligible():
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None,
+                "error": "This item is not eligible for a return request "
+                         "(must be delivered within the last 7 days and not already actioned)."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        order_item.return_status = 'requested'
+        order_item.return_reason = serializer.validated_data['reason']
+        order_item.return_requested_at = timezone.now()
+        order_item.save(update_fields=['return_status', 'return_reason', 'return_requested_at'])
+
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": OrderItemSerializer(order_item).data, "error": None

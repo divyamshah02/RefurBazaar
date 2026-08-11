@@ -63,6 +63,10 @@ class Order(models.Model):
     subtotal_amount = models.DecimalField(max_digits=10, decimal_places=2)
     tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     delivery_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    warranty_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        help_text="Sum of extended warranty prices for order items that opted in"
+    )
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     coupon_code = models.CharField(max_length=50, null=True, blank=True)
     coupon_discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -79,6 +83,15 @@ class Order(models.Model):
     # Order status
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     order_note = models.TextField(null=True, blank=True)
+    delivered_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text="Auto-stamped the first time status becomes 'delivered'; drives the return-eligibility window"
+    )
+
+    # Tracking (manual entry for now; real courier API integration deferred)
+    tracking_number = models.CharField(max_length=100, null=True, blank=True)
+    courier_name = models.CharField(max_length=100, null=True, blank=True)
+    tracking_url = models.URLField(null=True, blank=True)
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -95,6 +108,12 @@ class Order(models.Model):
         if self.status == 'confirmed' and not self.order_number:
             last_order = Order.objects.filter(order_number__isnull=False).order_by('-order_number').first()
             self.order_number = (last_order.order_number + 1) if last_order else 1000
+
+        # Auto-stamp delivered_at the first time status becomes 'delivered'.
+        # This drives the 7-day return-eligibility window and works no matter
+        # which code path (Django admin or Admin API) flips the status.
+        if self.status == 'delivered' and not self.delivered_at:
+            self.delivered_at = timezone.now()
         
         super().save(*args, **kwargs)
     
@@ -113,6 +132,14 @@ class OrderItem(models.Model):
         ('delivered', 'Delivered'),
         ('rejected', 'Rejected'),
     ]
+
+    RETURN_STATUS_CHOICES = [
+        ('none', 'No Return'),
+        ('requested', 'Return Requested'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('completed', 'Completed'),
+    ]
     
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     listing_unit = models.OneToOneField(ListingUnit, on_delete=models.PROTECT)
@@ -120,6 +147,15 @@ class OrderItem(models.Model):
     # Snapshot data (price at time of purchase)
     price_at_purchase = models.DecimalField(max_digits=10, decimal_places=2)
     condition_at_purchase = models.CharField(max_length=20)
+
+    # Extended warranty snapshot, copied from the cart item at checkout time
+    has_extended_warranty = models.BooleanField(default=False)
+    warranty_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    # Self-service return request (approval workflow deferred)
+    return_status = models.CharField(max_length=20, choices=RETURN_STATUS_CHOICES, default='none')
+    return_reason = models.TextField(null=True, blank=True)
+    return_requested_at = models.DateTimeField(null=True, blank=True)
     
     # Refurbisher info
     refurbisher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sold_items')
@@ -144,6 +180,18 @@ class OrderItem(models.Model):
     
     def __str__(self):
         return f"OrderItem {self.id} - {self.order.order_id}"
+
+    def is_return_eligible(self):
+        """
+        True if this item can still have a return requested: the order has
+        been delivered, no return has already been requested/actioned, and
+        we're within 7 days of the delivered_at timestamp.
+        """
+        if self.order.status != 'delivered' or not self.order.delivered_at:
+            return False
+        if self.return_status != 'none':
+            return False
+        return (timezone.now() - self.order.delivered_at) <= timedelta(days=7)
 
 
 class DevicePhoto(models.Model):

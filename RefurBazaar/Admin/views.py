@@ -483,6 +483,155 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             "data": None, "error": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
 
+    # ── Admin Users (Team) ──────────────────────────────────────────
+    @action(detail=False, methods=['get', 'post'], url_path='admin-users')
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def admin_users(self, request):
+        """List all admin users, or create a new admin account."""
+        if request.method == 'GET':
+            admins = User.objects.filter(role='admin').order_by('-created_at')
+
+            search = request.query_params.get('search')
+            if search:
+                admins = admins.filter(
+                    Q(first_name__icontains=search) |
+                    Q(last_name__icontains=search) |
+                    Q(contact_number__icontains=search) |
+                    Q(email__icontains=search)
+                )
+
+            data = UserSerializer(admins, many=True).data
+            return Response({
+                "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": data, "error": None
+            }, status=status.HTTP_200_OK)
+
+        # POST — create a new admin account
+        first_name = (request.data.get('first_name') or '').strip()
+        last_name = (request.data.get('last_name') or '').strip()
+        contact_number = (request.data.get('contact_number') or '').strip()
+        email = (request.data.get('email') or '').strip()
+        password = request.data.get('password') or ''
+
+        if not first_name or not contact_number:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "First name and contact number are required."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if not password or len(password) < 8:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Password must be at least 8 characters long."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(contact_number=contact_number).exists():
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "A user with this contact number already exists."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        admin_user = User(
+            role='admin',
+            first_name=first_name,
+            last_name=last_name,
+            contact_number=contact_number,
+            email=email or None,
+        )
+        admin_user.set_password(password)
+        admin_user.save()
+
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": UserSerializer(admin_user).data, "error": None
+        }, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['patch', 'delete'], url_path='admin-users')
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def admin_user_detail(self, request, pk=None):
+        """Update or delete a single admin account."""
+        try:
+            target = User.objects.get(pk=pk, role='admin')
+        except User.DoesNotExist:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Admin user not found."
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == 'DELETE':
+            if target.pk == request.user.pk:
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None, "error": "You cannot delete your own account."
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            if User.objects.filter(role='admin').count() <= 1:
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None, "error": "Cannot delete the last remaining admin account."
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            target.delete()
+            return Response({
+                "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": None
+            }, status=status.HTTP_200_OK)
+
+        # PATCH — update
+        contact_number = request.data.get('contact_number')
+        if contact_number and User.objects.filter(contact_number=contact_number).exclude(pk=target.pk).exists():
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "A user with this contact number already exists."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        for field in ['first_name', 'last_name', 'email', 'contact_number']:
+            if field in request.data:
+                setattr(target, field, request.data.get(field))
+
+        if 'active_user' in request.data:
+            if target.pk == request.user.pk and not request.data.get('active_user'):
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None, "error": "You cannot deactivate your own account."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            target.active_user = bool(request.data.get('active_user'))
+
+        target.save()
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": UserSerializer(target).data, "error": None
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='admin-users-password')
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def admin_user_reset_password(self, request, pk=None):
+        """Set a new password for an admin account."""
+        try:
+            target = User.objects.get(pk=pk, role='admin')
+        except User.DoesNotExist:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Admin user not found."
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        password = request.data.get('password') or ''
+        if not password or len(password) < 8:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Password must be at least 8 characters long."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        target.set_password(password)
+        target.save()
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": {"message": "Password updated successfully."}, "error": None
+        }, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=['patch', 'delete'], url_path='attributes')
     @handle_exceptions
     @check_authentication(required_role='admin')

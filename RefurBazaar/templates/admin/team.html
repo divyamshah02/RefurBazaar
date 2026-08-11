@@ -1,0 +1,164 @@
+{% extends 'admin/_base.html' %}
+{% load static %}
+{% block title %}Admin Team{% endblock %}
+{% block nav_team %}active{% endblock %}
+{% block page_title %}Admin Team{% endblock %}
+{% block page_subtitle %}Manage administrator accounts and access{% endblock %}
+
+{% block content %}
+<div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+  <div class="stat-card"><div class="stat-card-icon blue"><i class="fa-solid fa-user-shield"></i></div><div class="stat-card-value" id="s-total">—</div><div class="stat-card-label">Total Admins</div></div>
+  <div class="stat-card"><div class="stat-card-icon green"><i class="fa-solid fa-circle-check"></i></div><div class="stat-card-value" id="s-active">—</div><div class="stat-card-label">Active</div></div>
+  <div class="stat-card"><div class="stat-card-icon red"><i class="fa-solid fa-user-slash"></i></div><div class="stat-card-value" id="s-inactive">—</div><div class="stat-card-label">Inactive</div></div>
+</div>
+
+<div class="panel">
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" class="input-search" id="q" placeholder="Search name, email, phone…" autocomplete="off" />
+    </div>
+    <select class="select-filter" id="f-active">
+      <option value="">All Status</option>
+      <option value="true">Active</option>
+      <option value="false">Inactive</option>
+    </select>
+    <button class="btn btn-primary" onclick="openCreateAdmin()">
+      <i class="fa-solid fa-plus"></i> Add Admin
+    </button>
+  </div>
+
+  <div class="rb-table-wrap">
+    <table class="rb-table">
+      <thead>
+        <tr>
+          <th>Admin</th>
+          <th>Phone</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th>Joined</th>
+          <th style="text-align:right">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tbl-body">
+        <tr><td colspan="6" style="padding:48px;text-align:center">
+          <div class="skeleton" style="height:13px;width:50%;margin:0 auto 10px"></div>
+          <div class="skeleton" style="height:13px;width:35%;margin:0 auto"></div>
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Create / Edit Admin Modal -->
+<div class="rb-overlay" id="modal-admin">
+  <div class="rb-modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-header-icon blue"><i class="fa-solid fa-user-shield"></i></div>
+      <div>
+        <div class="modal-title" id="madmin-title">Add Admin</div>
+        <div class="modal-subtitle" id="madmin-subtitle">Create a new administrator account</div>
+      </div>
+      <button class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="madmin-id" value="" />
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First Name <span style="color:var(--red)">*</span></label>
+          <input type="text" class="form-input" id="madmin-first-name" placeholder="e.g. Priya" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name</label>
+          <input type="text" class="form-input" id="madmin-last-name" placeholder="e.g. Sharma" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mobile Number <span style="color:var(--red)">*</span></label>
+        <input type="tel" class="form-input" id="madmin-contact" placeholder="10-digit mobile number" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="madmin-email" placeholder="name@refurbazaar.com" />
+      </div>
+      <div class="form-group" id="madmin-password-group">
+        <label class="form-label">Password <span style="color:var(--red)">*</span></label>
+        <input type="password" class="form-input" id="madmin-password" placeholder="Minimum 8 characters" autocomplete="new-password" />
+        <div class="text-muted fs-12 mt-4">Used for admin panel sign-in.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-admin')">Cancel</button>
+      <button class="btn btn-primary" id="madmin-save-btn" onclick="saveAdmin()">Save Admin</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div class="rb-overlay" id="modal-password">
+  <div class="rb-modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-header-icon yellow"><i class="fa-solid fa-key"></i></div>
+      <div>
+        <div class="modal-title">Change Password</div>
+        <div class="modal-subtitle" id="mpass-sub"></div>
+      </div>
+      <button class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="mpass-id" value="" />
+      <div class="form-group">
+        <label class="form-label">New Password <span style="color:var(--red)">*</span></label>
+        <input type="password" class="form-input" id="mpass-new" placeholder="Minimum 8 characters" autocomplete="new-password" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm Password <span style="color:var(--red)">*</span></label>
+        <input type="password" class="form-input" id="mpass-confirm" placeholder="Re-enter new password" autocomplete="new-password" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-password')">Cancel</button>
+      <button class="btn btn-primary" id="mpass-save-btn" onclick="savePassword()">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirmation modal -->
+<div class="rb-overlay" id="modal-delete">
+  <div class="rb-modal" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-header-icon red"><i class="fa-solid fa-trash"></i></div>
+      <div>
+        <div class="modal-title">Remove Admin</div>
+        <div class="modal-subtitle" id="mdel-sub"></div>
+      </div>
+      <button class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text-secondary);line-height:1.6">
+        This will permanently remove their admin access. This action cannot be undone.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-delete')">Cancel</button>
+      <button class="btn btn-danger" id="mdel-confirm-btn">Remove</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/admin/team.js' %}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    InitTeam(csrf, {
+      listUrl:     '/admin-api/dashboard/admin-users/',
+      createUrl:   '/admin-api/dashboard/admin-users/',
+      updateUrl:   '/admin-api/dashboard/admin-users/',
+      deleteUrl:   '/admin-api/dashboard/admin-users/',
+      passwordUrl: '/admin-api/dashboard/admin-users-password/'
+    }, '{{ request.user.user_id }}');
+  });
+</script>
+{% endblock %}
