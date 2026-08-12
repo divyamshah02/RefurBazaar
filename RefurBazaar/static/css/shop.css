@@ -941,3 +941,41 @@
 .form-check .form-check-input {
   margin-left: 0 !important;
 }
+
+
+.product-card.out-of-stock {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.product-card.out-of-stock:hover {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-color: var(--gray-200);
+}
+
+.product-card.out-of-stock > *:not(.out-of-stock-overlay) {
+  filter: blur(.5px) grayscale(40%);
+  opacity: 0.6;
+}
+
+.out-of-stock-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.out-of-stock-label {
+  background: rgba(20, 20, 20, 0.85);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 8px 18px;
+  border-radius: 999px;
+}

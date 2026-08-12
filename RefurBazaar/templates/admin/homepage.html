@@ -9,14 +9,8 @@
 
 <!-- Section Tabs -->
 <div class="panel" style="padding:0;margin-bottom:20px;">
-    <div style="display:flex;overflow-x:auto;border-bottom:1px solid var(--border-light);scrollbar-width:none;">
-        {% for tab_id, tab_label in tabs %}
-        <button class="hp-tab-btn {% if forloop.first %}active{% endif %}"
-            data-tab="{{ tab_id }}" onclick="switchTab('{{ tab_id }}')">
-            {{ tab_label }}
-        </button>
-        {% endfor %}
-        <!-- fallback if template tags not available — tabs injected by JS -->
+    <div id="hp-tab-bar" style="display:flex;overflow-x:auto;border-bottom:1px solid var(--border-light);scrollbar-width:none;">
+        <!-- Tab buttons are injected by HP.init() in homepage_admin.js -->
     </div>
 </div>
 

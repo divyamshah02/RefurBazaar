@@ -50,15 +50,13 @@ const HP = (() => {
     }
 
     function buildTabBar() {
-        // Inject tab buttons if the Django template left them empty
-        const bar = document.querySelector('.hp-tab-btn')?.parentElement;
+        // The template only provides an empty #hp-tab-bar container;
+        // all tab buttons are always injected here by JS.
+        const bar = $('hp-tab-bar');
         if (!bar) return;
-        if (!document.querySelector('.hp-tab-btn')) {
-            bar.innerHTML = TABS.map(t =>
-                `<button class="hp-tab-btn" data-tab="${t.id}" onclick="HP.switchTab('${t.id}')">${t.label}</button>`
-            ).join('');
-        }
-        // Inject pane containers if missing (Django may handle this already)
+        bar.innerHTML = TABS.map((t, i) =>
+            `<button class="hp-tab-btn${i === 0 ? ' active' : ''}" data-tab="${t.id}" onclick="HP.switchTab('${t.id}')">${t.label}</button>`
+        ).join('');
     }
 
     function switchTab(tabId) {

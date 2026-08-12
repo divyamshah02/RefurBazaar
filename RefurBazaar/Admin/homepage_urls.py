@@ -1,21 +1,20 @@
 """
-Homepage/urls.py
+Admin/homepage_urls.py
 
-Include this in your root urls.py:
+Included in the root urls.py as:
 
-    path('api/homepage/', include('Homepage.urls')),
-    path('admin-homepage/', include('Homepage.urls')),   # for the admin page
+    path('admin-homepage-api/', include('Admin.homepage_urls')),
 
 Public:
-    GET  /api/homepage/config/
+    GET  /admin-homepage-api/config/
 
-Admin CRUD (staff only, JSON API):
-    /api/homepage/hero-slides/           GET list / POST create
-    /api/homepage/hero-slides/<pk>/      GET / PUT / DELETE
+Admin CRUD (staff only, JSON API — matches static/js/admin/homepage_admin.js):
+    /admin-homepage-api/hero-slides/           GET list / POST create
+    /admin-homepage-api/hero-slides/<pk>/      GET / PUT / DELETE
     (same pattern for all resources below)
 
-Admin page (HTML):
-    GET  /admin-homepage/
+The admin page itself (HTML) is served separately at /admin-homepage/ by
+FrontEnd's AdminHomePageViewSet.
 """
 
 from django.urls import path
@@ -105,11 +104,8 @@ admin_api_patterns = [
     ]],
 ]
 
-# ── Admin HTML page ─────────────────────────────────────────────────
-from django.views.generic import TemplateView
-
-urlpatterns = public_patterns + admin_api_patterns + [
-    # Served at /admin-homepage/
-    path('homepage/', TemplateView.as_view(template_name='admin/homepage_admin.html'),
-         name='admin-homepage'),
-]
+# NOTE: the admin HTML page itself is served by FrontEnd's
+# AdminHomePageViewSet (registered as 'admin-homepage' in FrontEnd/urls.py),
+# which renders templates/admin/homepage.html. This module only exposes the
+# JSON API the page's JS (static/js/admin/homepage_admin.js) talks to.
+urlpatterns = public_patterns + admin_api_patterns

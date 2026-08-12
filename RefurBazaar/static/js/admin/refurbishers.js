@@ -1,16 +1,16 @@
 'use strict';
 /* refurbishers.js — list page */
 
-let _rfCsrf, _rfUrls, _rfData = { results:[], count:0 }, _rfPage = 1, _rfPageSize = 20;
+let _rfCsrf, _rfUrls, _rfData = { results: [], count: 0 }, _rfPage = 1, _rfPageSize = 20;
 
 const APPROVAL_STATUS = {
-  approved:   { label:'Approved',   cls:'badge-green'  },
-  pending:    { label:'Pending',    cls:'badge-yellow' },
-  rejected:   { label:'Rejected',  cls:'badge-red'    },
-  incomplete: { label:'Incomplete', cls:'badge-gray'   },
+  approved: { label: 'Approved', cls: 'badge-green' },
+  pending: { label: 'Pending', cls: 'badge-yellow' },
+  rejected: { label: 'Rejected', cls: 'badge-red' },
+  incomplete: { label: 'Incomplete', cls: 'badge-gray' },
 };
 function approvalBadge(s) {
-  const m = APPROVAL_STATUS[s] || { label: s||'—', cls:'badge-gray' };
+  const m = APPROVAL_STATUS[s] || { label: s || '—', cls: 'badge-gray' };
   return `<span class="badge ${m.cls}">${m.label}</span>`;
 }
 
@@ -35,9 +35,9 @@ async function loadStats() {
   if (!ok || !res.success) return;
   const d = res.data;
   console.log('Refurbisher stats:', d);
-  set('s-total',    d.total_refurbishers);
+  set('s-total', d.total_refurbishers);
   set('s-approved', d.approved_refurbishers);
-  set('s-pending',  d.pending_refurbishers);
+  set('s-pending', d.pending_refurbishers);
   set('s-rejected', d.rejected_refurbishers);
 }
 
@@ -49,11 +49,11 @@ async function loadList() {
     <div class="skeleton" style="height:13px;width:35%;margin:0 auto"></div>
   </td></tr>`;
 
-  const q       = document.getElementById('q').value.trim();
-  const status  = document.getElementById('f-status').value;
-  const active  = document.getElementById('f-active').value;
-  const params  = new URLSearchParams({ page: _rfPage, page_size: _rfPageSize });
-  if (q)      params.set('search', q);
+  const q = document.getElementById('q').value.trim();
+  const status = document.getElementById('f-status').value;
+  const active = document.getElementById('f-active').value;
+  const params = new URLSearchParams({ page: _rfPage, page_size: _rfPageSize });
+  if (q) params.set('search', q);
   if (status) params.set('status', status);
   if (active) params.set('is_active', active);
 
@@ -73,21 +73,22 @@ async function loadList() {
   }
 
   body.innerHTML = rows.map(r => {
-    const name     = `${r.first_name||''} ${r.last_name||''}`.trim() || '—';
-    const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const color    = avatarColor(name);
-    const cp       = r.company_profile;
-    const company  = cp?.company_name || '—';
-    const phone    = r.contact_number || r.phone || '—';
-    const email    = r.email || '';
+    const name = `${r.first_name || ''} ${r.last_name || ''}`.trim() || '—';
+    const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    const color = avatarColor(name);
+    const cp = r.company_profile;
+    const company = cp?.company_name || '—';
+    const phone = r.contact_number || r.phone || '—';
+    const email = r.email || '';
     const listings = r.stats?.total_listings ?? '—';
-    const uid      = r.user_id || r.id;
+    const uid = r.user_id || r.id;
 
     // Derive approval status from company_profile flags
     let approvalStatus;
     if (!cp || !cp.is_profile_complete) approvalStatus = 'incomplete';
-    else if (cp.is_approved)            approvalStatus = 'approved';
-    else                                approvalStatus = 'pending';
+    else if (cp.is_approved) approvalStatus = 'approved';
+    else if (cp.is_rejected) approvalStatus = 'rejected';
+    else approvalStatus = 'pending';
 
     return `<tr>
       <td>
@@ -111,6 +112,9 @@ async function loadList() {
             <button class="btn btn-success btn-sm" onclick="promptAction('approve','${uid}','${name}')"><i class="fa-solid fa-check"></i> Approve</button>
             <button class="btn btn-danger btn-sm" onclick="promptAction('reject','${uid}','${name}')"><i class="fa-solid fa-xmark"></i> Reject</button>
           ` : ''}
+          ${approvalStatus === 'rejected' ? `
+            <button class="btn btn-success btn-sm" onclick="promptAction('approve','${uid}','${name}')"><i class="fa-solid fa-check"></i> Approve</button>
+          ` : ''}
           ${approvalStatus === 'approved' ? `
             <button class="btn btn-warning btn-sm" onclick="promptAction('reject','${uid}','${name}')"><i class="fa-solid fa-ban"></i> Revoke</button>
           ` : ''}
@@ -125,16 +129,16 @@ async function loadList() {
 /* ─── Pagination ────────────────────────────────────────────────── */
 function renderPagination(total) {
   const pages = Math.ceil(total / _rfPageSize);
-  const info  = document.getElementById('pag-info');
-  const btns  = document.getElementById('pag-btns');
+  const info = document.getElementById('pag-info');
+  const btns = document.getElementById('pag-btns');
   const start = (_rfPage - 1) * _rfPageSize + 1;
-  const end   = Math.min(_rfPage * _rfPageSize, total);
+  const end = Math.min(_rfPage * _rfPageSize, total);
   info.textContent = total ? `Showing ${start}–${end} of ${total}` : '';
   if (pages <= 1) { btns.innerHTML = ''; return; }
   btns.innerHTML = `
-    <button class="btn btn-ghost btn-sm" ${_rfPage===1?'disabled':''} onclick="_rfPage--;loadList()"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="btn btn-ghost btn-sm" ${_rfPage === 1 ? 'disabled' : ''} onclick="_rfPage--;loadList()"><i class="fa-solid fa-chevron-left"></i></button>
     <span class="text-muted fs-12" style="padding:0 6px;line-height:30px">Page ${_rfPage} of ${pages}</span>
-    <button class="btn btn-ghost btn-sm" ${_rfPage>=pages?'disabled':''} onclick="_rfPage++;loadList()"><i class="fa-solid fa-chevron-right"></i></button>`;
+    <button class="btn btn-ghost btn-sm" ${_rfPage >= pages ? 'disabled' : ''} onclick="_rfPage++;loadList()"><i class="fa-solid fa-chevron-right"></i></button>`;
 }
 
 /* ─── Approve / Reject ──────────────────────────────────────────── */
@@ -142,7 +146,7 @@ let _pendingAction = null;
 function promptAction(action, userId, name) {
   _pendingAction = { action, userId };
   const isApprove = action === 'approve';
-  const icon  = document.getElementById('mact-icon');
+  const icon = document.getElementById('mact-icon');
   icon.className = `modal-header-icon ${isApprove ? 'green' : 'red'}`;
   icon.innerHTML = `<i class="fa-solid ${isApprove ? 'fa-circle-check' : 'fa-ban'}"></i>`;
   set('mact-title', isApprove ? 'Approve Refurbisher' : 'Reject / Revoke Refurbisher');
@@ -152,6 +156,7 @@ function promptAction(action, userId, name) {
     : `This will revoke ${name}'s ability to list products. You can re-approve later.`);
   document.getElementById('mact-reason-wrap').style.display = isApprove ? 'none' : 'block';
   document.getElementById('mact-reason').value = '';
+  document.getElementById('mact-reason').placeholder = isApprove ? '' : 'Explain why this refurbisher is being rejected…';
   const confirmBtn = document.getElementById('mact-confirm-btn');
   confirmBtn.className = `btn ${isApprove ? 'btn-success' : 'btn-danger'}`;
   confirmBtn.textContent = isApprove ? 'Approve' : 'Reject';
@@ -163,6 +168,13 @@ async function submitAction() {
   if (!_pendingAction) return;
   const { action, userId } = _pendingAction;
   const reason = document.getElementById('mact-reason').value.trim();
+
+  if (action === 'reject' && !reason) {
+    showToast('Please provide a reason for rejection', 'error');
+    document.getElementById('mact-reason').focus();
+    return;
+  }
+
   const btn = document.getElementById('mact-confirm-btn');
   btn.disabled = true; btn.textContent = 'Processing…';
 

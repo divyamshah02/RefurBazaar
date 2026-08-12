@@ -96,6 +96,13 @@ class CompanyProfile(models.Model):
     approved_at = models.DateTimeField(null=True, blank=True)
     approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_profiles')
 
+    # Rejection / resubmission tracking
+    is_rejected = models.BooleanField(default=False, help_text="Whether the profile is currently in a rejected state")
+    rejection_reason = models.TextField(null=True, blank=True, help_text="Latest reason provided by admin for rejection")
+    rejected_at = models.DateTimeField(null=True, blank=True)
+    rejected_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='rejected_profiles')
+    resubmitted_at = models.DateTimeField(null=True, blank=True, help_text="When the refurbisher last requested a re-review")
+
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -117,6 +124,31 @@ class CompanyProfile(models.Model):
         self.is_profile_complete = is_complete
         self.save(update_fields=['is_profile_complete'])
         return is_complete
+
+
+class ApprovalReviewLog(models.Model):
+    """
+    Full audit trail of a refurbisher's approval journey — every rejection
+    (with admin's reason), every resubmission (with refurbisher's reply),
+    and every approval is recorded here so admins can see the complete history.
+    """
+    ACTION_CHOICES = [
+        ('rejected', 'Rejected'),
+        ('approved', 'Approved'),
+        ('resubmitted', 'Resubmitted'),
+    ]
+
+    company_profile = models.ForeignKey(CompanyProfile, on_delete=models.CASCADE, related_name='review_logs')
+    action = models.CharField(max_length=15, choices=ACTION_CHOICES)
+    reason = models.TextField(null=True, blank=True, help_text="Admin's rejection reason, or refurbisher's reply message")
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='review_logs_created')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.get_action_display()} - {self.company_profile} @ {self.created_at}"
 
 
 class OTPVerification(models.Model):

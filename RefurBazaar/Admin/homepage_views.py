@@ -55,9 +55,12 @@ def err(msg, status=400):
 
 
 def staff_required(fn):
-    """Decorator: return 403 if user is not staff."""
+    """Decorator: return 403 unless the logged-in user has the admin role.
+    This project uses a custom User.role field ('admin'/'customer'/'refurbisher')
+    rather than Django's built-in is_staff flag."""
     def wrapper(self, request, *args, **kwargs):
-        if not request.user.is_authenticated or not request.user.is_staff:
+        user = request.user
+        if not user.is_authenticated or getattr(user, 'role', None) != 'admin':
             return err('Forbidden', 403)
         return fn(self, request, *args, **kwargs)
     return wrapper

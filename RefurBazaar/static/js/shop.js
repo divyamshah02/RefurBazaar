@@ -292,10 +292,10 @@ async function loadShopData() {
     renderConditionCounts()
     renderProducts()
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
-        bootstrap.Tooltip.getOrCreateInstance(el, {
-            html: true,
-            container: 'body'
-        });
+      bootstrap.Tooltip.getOrCreateInstance(el, {
+        html: true,
+        container: 'body'
+      });
     });
     updateResultsCount()
   } else {
@@ -427,9 +427,14 @@ function renderProducts() {
                     <span class="card-chip">512GB SSD </span>
                     </div>`
     }
+    const isAvailable = product.is_available !== false
+    const cardOnClick = isAvailable ? `onclick="window.location.href='/product/${product.id}/'"` : ""
+    const outOfStockClass = isAvailable ? "" : " out-of-stock"
+
     return `
       <div class="product-grid-item">
-        <div class="product-card" onclick="window.location.href='/product/${product.id}/'">
+        <div class="product-card${outOfStockClass}" ${cardOnClick}>
+          ${!isAvailable ? '<div class="out-of-stock-overlay"><span class="out-of-stock-label">Out of Stock</span></div>' : ""}
           <div class="product-badge" data-bs-toggle="tooltip" data-bs-placement="right"
               data-bs-custom-class="custom-tooltip"
               data-bs-html="true"

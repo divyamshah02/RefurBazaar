@@ -167,15 +167,14 @@ class ProductModelViewSet(viewsets.ViewSet):
         conditions = request.query_params.get('conditions', '')
         sort_by = request.query_params.get('sort_by', 'featured')
         
-        # Base queryset - get product models with active listings
+        # Base queryset - get product models with active, unsold listings
+        # (units may be available or out-of-stock; sold units are excluded entirely)
         queryset = ProductModel.objects.filter(
             is_active=True,
             category=category,
             listings__status='active',
-            listings__units__is_available=True,
             listings__units__is_sold=False
         ).distinct()
-        print("Base Queryset:", queryset)
         
         # Apply brand filter
         if brand_ids:
@@ -186,7 +185,6 @@ class ProductModelViewSet(viewsets.ViewSet):
         # Build filter for listing units with proper relationship path
         units_filter = Q(
             listings__status='active',
-            listings__units__is_available=True,
             listings__units__is_sold=False
         )
         
@@ -205,30 +203,44 @@ class ProductModelViewSet(viewsets.ViewSet):
         # Filter models that match the criteria
         queryset = queryset.filter(units_filter).distinct()
         
-        # Annotate with min price for each model
+        # Annotate with min price among in-stock units, and a fallback min price
+        # among any unsold unit (used to still show a price for out-of-stock items)
         queryset = queryset.annotate(
             min_price=Min('listings__units__price', filter=Q(
                 listings__status='active',
                 listings__units__is_available=True,
                 listings__units__is_sold=False
-            ))
+            )),
+            fallback_min_price=Min('listings__units__price', filter=Q(
+                listings__status='active',
+                listings__units__is_sold=False
+            )),
+            available_units_count=Count('listings__units', filter=Q(
+                listings__status='active',
+                listings__units__is_available=True,
+                listings__units__is_sold=False
+            ), distinct=True)
         )
         
-        # Apply sorting
+        # Apply sorting — out-of-stock items should sort after in-stock ones,
+        # using the fallback price for ordering when they have no in-stock units
         if sort_by == 'price_low':
-            queryset = queryset.order_by('min_price')
+            queryset = queryset.order_by('-available_units_count', 'min_price', 'fallback_min_price')
         elif sort_by == 'price_high':
-            queryset = queryset.order_by('-min_price')
+            queryset = queryset.order_by('-available_units_count', '-min_price', '-fallback_min_price')
         elif sort_by == 'newest':
-            queryset = queryset.order_by('-created_at')
+            queryset = queryset.order_by('-available_units_count', '-created_at')
         else:  # featured
-            queryset = queryset.order_by('brand__name', 'name')
+            queryset = queryset.order_by('-available_units_count', 'brand__name', 'name')
         
-        # Serialize products with min_price
+        # Serialize products with min_price and in-stock status
         products = []
         for model in queryset:
             data = ProductModelSerializer(model).data
-            data['min_price'] = float(model.min_price) if model.min_price else 0
+            is_in_stock = model.available_units_count > 0
+            display_price = model.min_price if is_in_stock else model.fallback_min_price
+            data['min_price'] = float(display_price) if display_price else 0
+            data['is_available'] = is_in_stock
             products.append(data)
         
         # Get available brands for this category with counts

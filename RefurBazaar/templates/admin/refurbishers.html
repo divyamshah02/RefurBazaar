@@ -7,17 +7,34 @@
 
 {% block content %}
 <div class="stats-grid">
-  <div class="stat-card"><div class="stat-card-icon blue"><i class="fa-solid fa-store"></i></div><div class="stat-card-value" id="s-total">—</div><div class="stat-card-label">Total Refurbishers</div></div>
-  <div class="stat-card"><div class="stat-card-icon green"><i class="fa-solid fa-circle-check"></i></div><div class="stat-card-value" id="s-approved">—</div><div class="stat-card-label">Approved</div></div>
-  <div class="stat-card"><div class="stat-card-icon yellow"><i class="fa-solid fa-hourglass-half"></i></div><div class="stat-card-value" id="s-pending">—</div><div class="stat-card-label">Pending Approval</div></div>
-  <div class="stat-card"><div class="stat-card-icon red"><i class="fa-solid fa-ban"></i></div><div class="stat-card-value" id="s-rejected">—</div><div class="stat-card-label">Rejected</div></div>
+  <div class="stat-card">
+    <div class="stat-card-icon blue"><i class="fa-solid fa-store"></i></div>
+    <div class="stat-card-value" id="s-total">—</div>
+    <div class="stat-card-label">Total Refurbishers</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-icon green"><i class="fa-solid fa-circle-check"></i></div>
+    <div class="stat-card-value" id="s-approved">—</div>
+    <div class="stat-card-label">Approved</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-icon yellow"><i class="fa-solid fa-hourglass-half"></i></div>
+    <div class="stat-card-value" id="s-pending">—</div>
+    <div class="stat-card-label">Pending Approval</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-icon red"><i class="fa-solid fa-ban"></i></div>
+    <div class="stat-card-value" id="s-rejected">—</div>
+    <div class="stat-card-label">Rejected</div>
+  </div>
 </div>
 
 <div class="panel">
   <div class="filter-bar">
     <div class="search-wrap">
       <i class="fa-solid fa-magnifying-glass"></i>
-      <input type="text" class="input-search" id="q" placeholder="Search name, business, email, phone…" autocomplete="off" />
+      <input type="text" class="input-search" id="q" placeholder="Search name, business, email, phone…"
+        autocomplete="off" />
     </div>
     <select class="select-filter" id="f-status">
       <option value="">All Status</option>
@@ -46,15 +63,18 @@
         </tr>
       </thead>
       <tbody id="tbl-body">
-        <tr><td colspan="7" style="padding:48px;text-align:center">
-          <div class="skeleton" style="height:13px;width:50%;margin:0 auto 10px"></div>
-          <div class="skeleton" style="height:13px;width:35%;margin:0 auto"></div>
-        </td></tr>
+        <tr>
+          <td colspan="7" style="padding:48px;text-align:center">
+            <div class="skeleton" style="height:13px;width:50%;margin:0 auto 10px"></div>
+            <div class="skeleton" style="height:13px;width:35%;margin:0 auto"></div>
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
 
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--border-light);flex-wrap:wrap;gap:8px">
+  <div
+    style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--border-light);flex-wrap:wrap;gap:8px">
     <span class="text-muted fs-12" id="pag-info"></span>
     <div style="display:flex;gap:6px" id="pag-btns"></div>
   </div>
@@ -74,8 +94,9 @@
     <div class="modal-body">
       <p id="mact-body" style="font-size:13px;color:var(--text-secondary);line-height:1.6"></p>
       <div class="form-group mt-16" id="mact-reason-wrap" style="display:none">
-        <label class="form-label">Reason (optional)</label>
-        <textarea id="mact-reason" class="form-textarea" placeholder="Provide a reason for rejection…" rows="3"></textarea>
+        <label class="form-label">Reason for rejection *</label>
+        <textarea id="mact-reason" class="form-textarea" placeholder="Explain why this refurbisher is being rejected…"
+          rows="3"></textarea>
       </div>
     </div>
     <div class="modal-footer">
@@ -92,9 +113,9 @@
   document.addEventListener('DOMContentLoaded', async () => {
     const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
     await InitRefurbishers(csrf, {
-      listUrl:    '/admin-api/dashboard/refurbishers/',
+      listUrl: '/admin-api/dashboard/refurbishers/',
       approveUrl: '/admin-api/dashboard/uid/approve-refurbisher/',
-      statsUrl:   '/admin-api/dashboard/stats/'
+      statsUrl: '/admin-api/dashboard/stats/'
     });
   });
 </script>

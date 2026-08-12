@@ -24,10 +24,11 @@ async function loadDetail() {
   const cp = _rdData.company_profile || {};
   const listings = _rdData.listings || [];
   const orders   = _rdData.orders   || [];
-  renderProfile(u, cp, listings, orders);
+  const reviewHistory = _rdData.review_history || [];
+  renderProfile(u, cp, listings, orders, reviewHistory);
 }
 
-function renderProfile(u, cp, listings, orders) {
+function renderProfile(u, cp, listings, orders, reviewHistory) {
   const name    = `${u.first_name||''} ${u.last_name||''}`.trim() || 'Unknown';
   const initials= name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   const color   = avatarColor(name);
@@ -36,6 +37,7 @@ function renderProfile(u, cp, listings, orders) {
   let status;
   if (!cp || !cp.is_profile_complete) status = 'incomplete';
   else if (cp.is_approved)            status = 'approved';
+  else if (cp.is_rejected)            status = 'rejected';
   else                                status = 'pending';
 
   // Hero
@@ -100,9 +102,13 @@ function renderProfile(u, cp, listings, orders) {
   // Approve/Reject buttons
   const btnA = document.getElementById('btn-approve');
   const btnR = document.getElementById('btn-reject');
+  btnR.innerHTML = '<i class="fa-solid fa-ban"></i> Reject';
   if (status === 'pending') {
     btnA.style.display = 'inline-flex';
     btnR.style.display = 'inline-flex';
+  } else if (status === 'rejected') {
+    btnA.style.display = 'inline-flex';
+    btnR.style.display = 'none';
   } else if (status === 'approved') {
     btnR.style.display = 'inline-flex';
     btnR.innerHTML = '<i class="fa-solid fa-ban"></i> Revoke';
@@ -113,6 +119,40 @@ function renderProfile(u, cp, listings, orders) {
   // Render sub-tabs with embedded data
   renderListings(listings);
   renderOrders(orders);
+  renderReviewHistory(reviewHistory);
+}
+
+/* ─── Review history sub-tab ────────────────────────────────────── */
+function renderReviewHistory(rows) {
+  const wrap = document.getElementById('rd-review-history');
+  if (!wrap) return;
+  if (!rows.length) {
+    wrap.innerHTML = `<div class="empty-state"><i class="fa-solid fa-clock-rotate-left"></i><h4>No review history yet</h4></div>`;
+    return;
+  }
+  const ACTION_MAP = {
+    rejected:    { label: 'Rejected',    icon: 'fa-ban',          cls: 'badge-red' },
+    approved:    { label: 'Approved',    icon: 'fa-circle-check', cls: 'badge-green' },
+    resubmitted: { label: 'Resubmitted', icon: 'fa-arrow-rotate-right', cls: 'badge-blue' },
+  };
+  wrap.innerHTML = rows.map(r => {
+    const m = ACTION_MAP[r.action] || { label: cap(r.action), icon: 'fa-circle', cls: 'badge-gray' };
+    const by = r.created_by_name
+      ? `${r.created_by_name}${r.created_by_role ? ` (${cap(r.created_by_role)})` : ''}`
+      : 'System';
+    return `
+      <div style="display:flex;gap:14px;padding:16px;background:var(--bg);border:1px solid var(--border-light);border-radius:var(--radius-md)">
+        <div class="modal-header-icon ${m.cls.replace('badge-', '')}" style="flex-shrink:0"><i class="fa-solid ${m.icon}"></i></div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+            <span class="badge ${m.cls}">${m.label}</span>
+            <span class="text-muted fs-12">by ${by}</span>
+            <span class="text-muted fs-12">· ${fmtDateTime(r.created_at)}</span>
+          </div>
+          ${r.reason ? `<p style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin:0;white-space:pre-wrap">${r.reason}</p>` : `<p class="text-muted fs-12" style="margin:0">No message provided</p>`}
+        </div>
+      </div>`;
+  }).join('');
 }
 
 /* ─── Listings sub-tab ──────────────────────────────────────────── */
@@ -166,7 +206,8 @@ function renderOrders(rows) {
 let _action = null;
 function promptAction(action) {
   _action = action;
-  const name = _rdData ? `${_rdData.first_name||''} ${_rdData.last_name||''}`.trim() : '';
+  const u = _rdData ? (_rdData.user || _rdData) : {};
+  const name = `${u.first_name||''} ${u.last_name||''}`.trim();
   const isA  = action === 'approve';
   const icon = document.getElementById('mc-icon');
   icon.className = `modal-header-icon ${isA ? 'green' : 'red'}`;
@@ -175,7 +216,7 @@ function promptAction(action) {
   set('mc-sub', name);
   set('mc-body', isA
     ? `This will grant ${name} access to list products on RefurBazaar.`
-    : `This will revoke ${name}'s listing access. You can re-approve them later.`);
+    : `This will revoke ${name}'s listing access and notify them with your reason. They can update their profile and request another review.`);
   document.getElementById('mc-reason-wrap').style.display = isA ? 'none' : 'block';
   document.getElementById('mc-reason').value = '';
   const btn = document.getElementById('mc-confirm-btn');
@@ -188,6 +229,13 @@ function promptAction(action) {
 async function submitAction() {
   const btn    = document.getElementById('mc-confirm-btn');
   const reason = document.getElementById('mc-reason').value.trim();
+
+  if (_action === 'reject' && !reason) {
+    showToast('Please provide a reason for rejection', 'error');
+    document.getElementById('mc-reason').focus();
+    return;
+  }
+
   btn.disabled = true; btn.textContent = 'Processing…';
 
   const payload = { user_id: _rdId, action: _action };
@@ -200,7 +248,7 @@ async function submitAction() {
     showToast(`Refurbisher ${_action === 'approve' ? 'approved' : 'rejected'} successfully`, 'success');
     loadDetail();
   } else {
-    showToast(res?.message || 'Action failed. Please try again.', 'error');
+    showToast(res?.message || res?.error || 'Action failed. Please try again.', 'error');
   }
 }
 
@@ -212,4 +260,25 @@ function set(id, v) {
   else el.textContent = v;
 }
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : '—'; }
+function fmtDateTime(s) {
+  if (!s) return '—';
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return '—';
+  return d.toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+if (typeof fmtDate !== 'function') {
+  var fmtDate = function(s) {
+    if (!s) return '—';
+    const d = new Date(s);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+}
+if (typeof fmtCurrency !== 'function') {
+  var fmtCurrency = function(v) {
+    const n = parseFloat(v);
+    if (isNaN(n)) return '—';
+    return '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+  };
+}
 

@@ -4,21 +4,21 @@
 {% block nav_refurbishers %}active{% endblock %}
 
 {% block page_title %}
-  <div style="display:flex;align-items:center;gap:8px;font-size:14px">
-    <a href="/admin-refurbishers/" style="color:var(--text-muted);font-weight:500">Refurbishers</a>
-    <i class="fa-solid fa-chevron-right" style="font-size:10px;color:var(--border)"></i>
-    <span id="rd-name-crumb" style="color:var(--text-primary);font-weight:600">Loading…</span>
-  </div>
+<div style="display:flex;align-items:center;gap:8px;font-size:14px">
+  <a href="/admin-refurbishers/" style="color:var(--text-muted);font-weight:500">Refurbishers</a>
+  <i class="fa-solid fa-chevron-right" style="font-size:10px;color:var(--border)"></i>
+  <span id="rd-name-crumb" style="color:var(--text-primary);font-weight:600">Loading…</span>
+</div>
 {% endblock %}
 {% block page_subtitle %}<span id="rd-sub">Profile, listings and orders</span>{% endblock %}
 
 {% block topbar_actions %}
-  <button class="btn btn-success" id="btn-approve" style="display:none">
-    <i class="fa-solid fa-circle-check"></i> Approve
-  </button>
-  <button class="btn btn-danger" id="btn-reject" style="display:none">
-    <i class="fa-solid fa-ban"></i> Reject / Revoke
-  </button>
+<button class="btn btn-success" id="btn-approve" style="display:none">
+  <i class="fa-solid fa-circle-check"></i> Approve
+</button>
+<button class="btn btn-danger" id="btn-reject" style="display:none">
+  <i class="fa-solid fa-ban"></i> Reject / Revoke
+</button>
 {% endblock %}
 
 {% block content %}
@@ -26,7 +26,8 @@
 <!-- Hero card -->
 <div class="panel" style="margin-bottom:20px">
   <div style="padding:22px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-    <div class="avatar" id="rd-avatar" style="width:54px;height:54px;font-size:18px;border-radius:12px;flex-shrink:0">—</div>
+    <div class="avatar" id="rd-avatar" style="width:54px;height:54px;font-size:18px;border-radius:12px;flex-shrink:0">—
+    </div>
     <div style="flex:1;min-width:180px">
       <div style="font-size:17px;font-weight:700;margin-bottom:4px" id="rd-fullname">Loading…</div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -37,15 +38,18 @@
       </div>
     </div>
     <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <div style="text-align:center;padding:12px 20px;background:var(--bg);border-radius:var(--radius-md);border:1px solid var(--border-light)">
+      <div
+        style="text-align:center;padding:12px 20px;background:var(--bg);border-radius:var(--radius-md);border:1px solid var(--border-light)">
         <div style="font-size:20px;font-weight:700;color:var(--accent)" id="rd-stat-listings">—</div>
         <div class="text-muted fs-12">Listings</div>
       </div>
-      <div style="text-align:center;padding:12px 20px;background:var(--bg);border-radius:var(--radius-md);border:1px solid var(--border-light)">
+      <div
+        style="text-align:center;padding:12px 20px;background:var(--bg);border-radius:var(--radius-md);border:1px solid var(--border-light)">
         <div style="font-size:20px;font-weight:700;color:var(--green)" id="rd-stat-orders">—</div>
         <div class="text-muted fs-12">Orders</div>
       </div>
-      <div style="text-align:center;padding:12px 20px;background:var(--bg);border-radius:var(--radius-md);border:1px solid var(--border-light)">
+      <div
+        style="text-align:center;padding:12px 20px;background:var(--bg);border-radius:var(--radius-md);border:1px solid var(--border-light)">
         <div style="font-size:20px;font-weight:700;color:var(--text-primary)" id="rd-stat-revenue">—</div>
         <div class="text-muted fs-12">Revenue</div>
       </div>
@@ -63,6 +67,7 @@
       <button class="tab-btn" data-tab="documents">Documents</button>
       <button class="tab-btn" data-tab="listings">Listings</button>
       <button class="tab-btn" data-tab="orders">Orders</button>
+      <button class="tab-btn" data-tab="review-history">Review History</button>
     </div>
   </div>
 
@@ -72,21 +77,57 @@
     <div class="tab-pane active" data-tab="profile">
       <div class="section-label">Personal Information</div>
       <div class="detail-grid" style="margin-bottom:24px">
-        <div class="detail-item"><div class="detail-key">First Name</div><div class="detail-val" id="rd-first-name">—</div></div>
-        <div class="detail-item"><div class="detail-key">Last Name</div><div class="detail-val" id="rd-last-name">—</div></div>
-        <div class="detail-item"><div class="detail-key">Email</div><div class="detail-val" id="rd-p-email">—</div></div>
-        <div class="detail-item"><div class="detail-key">Phone</div><div class="detail-val mono" id="rd-p-phone">—</div></div>
-        <div class="detail-item"><div class="detail-key">Date Joined</div><div class="detail-val" id="rd-joined">—</div></div>
-        <div class="detail-item"><div class="detail-key">Account Active</div><div class="detail-val" id="rd-active">—</div></div>
+        <div class="detail-item">
+          <div class="detail-key">First Name</div>
+          <div class="detail-val" id="rd-first-name">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">Last Name</div>
+          <div class="detail-val" id="rd-last-name">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">Email</div>
+          <div class="detail-val" id="rd-p-email">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">Phone</div>
+          <div class="detail-val mono" id="rd-p-phone">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">Date Joined</div>
+          <div class="detail-val" id="rd-joined">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">Account Active</div>
+          <div class="detail-val" id="rd-active">—</div>
+        </div>
       </div>
       <div class="section-label">Business Information</div>
       <div class="detail-grid">
-        <div class="detail-item"><div class="detail-key">Business Name</div><div class="detail-val" id="rd-biz-name">—</div></div>
-        <div class="detail-item"><div class="detail-key">GST Number</div><div class="detail-val mono" id="rd-gst">—</div></div>
-        <div class="detail-item"><div class="detail-key">PAN Number</div><div class="detail-val mono" id="rd-pan">—</div></div>
-        <div class="detail-item"><div class="detail-key">Approval Status</div><div class="detail-val" id="rd-approval">—</div></div>
-        <div class="detail-item"><div class="detail-key">Account Number</div><div class="detail-val mono" id="rd-acc-no">—</div></div>
-        <div class="detail-item"><div class="detail-key">IFSC Code</div><div class="detail-val mono" id="rd-ifsc">—</div></div>
+        <div class="detail-item">
+          <div class="detail-key">Business Name</div>
+          <div class="detail-val" id="rd-biz-name">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">GST Number</div>
+          <div class="detail-val mono" id="rd-gst">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">PAN Number</div>
+          <div class="detail-val mono" id="rd-pan">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">Approval Status</div>
+          <div class="detail-val" id="rd-approval">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">Account Number</div>
+          <div class="detail-val mono" id="rd-acc-no">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">IFSC Code</div>
+          <div class="detail-val mono" id="rd-ifsc">—</div>
+        </div>
       </div>
     </div>
 
@@ -94,11 +135,26 @@
     <div class="tab-pane" data-tab="address">
       <div class="section-label">Registered Address</div>
       <div class="detail-grid" id="rd-addr-grid">
-        <div class="detail-item"><div class="detail-key">Street</div><div class="detail-val" id="rd-addr-street">—</div></div>
-        <div class="detail-item"><div class="detail-key">City</div><div class="detail-val" id="rd-addr-city">—</div></div>
-        <div class="detail-item"><div class="detail-key">State</div><div class="detail-val" id="rd-addr-state">—</div></div>
-        <div class="detail-item"><div class="detail-key">PIN Code</div><div class="detail-val mono" id="rd-addr-pin">—</div></div>
-        <div class="detail-item"><div class="detail-key">Country</div><div class="detail-val" id="rd-addr-country">—</div></div>
+        <div class="detail-item">
+          <div class="detail-key">Street</div>
+          <div class="detail-val" id="rd-addr-street">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">City</div>
+          <div class="detail-val" id="rd-addr-city">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">State</div>
+          <div class="detail-val" id="rd-addr-state">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">PIN Code</div>
+          <div class="detail-val mono" id="rd-addr-pin">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">Country</div>
+          <div class="detail-val" id="rd-addr-country">—</div>
+        </div>
       </div>
     </div>
 
@@ -125,9 +181,25 @@
             </tr>
           </thead>
           <tbody id="rd-listings-body">
-            <tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-layer-group"></i><h4>No listings yet</h4></div></td></tr>
+            <tr>
+              <td colspan="6">
+                <div class="empty-state"><i class="fa-solid fa-layer-group"></i>
+                  <h4>No listings yet</h4>
+                </div>
+              </td>
+            </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Review History tab -->
+    <div class="tab-pane" data-tab="review-history">
+      <div class="section-label">Approval Review Timeline</div>
+      <div id="rd-review-history" style="display:flex;flex-direction:column;gap:12px">
+        <div class="empty-state"><i class="fa-solid fa-clock-rotate-left"></i>
+          <h4>No review history yet</h4>
+        </div>
       </div>
     </div>
 
@@ -147,7 +219,13 @@
             </tr>
           </thead>
           <tbody id="rd-orders-body">
-            <tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-box-open"></i><h4>No orders yet</h4></div></td></tr>
+            <tr>
+              <td colspan="7">
+                <div class="empty-state"><i class="fa-solid fa-box-open"></i>
+                  <h4>No orders yet</h4>
+                </div>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -161,14 +239,17 @@
   <div class="rb-modal">
     <div class="modal-header">
       <div class="modal-header-icon" id="mc-icon"></div>
-      <div><div class="modal-title" id="mc-title">Confirm</div><div class="modal-subtitle" id="mc-sub"></div></div>
+      <div>
+        <div class="modal-title" id="mc-title">Confirm</div>
+        <div class="modal-subtitle" id="mc-sub"></div>
+      </div>
       <button class="modal-close"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
       <p id="mc-body" style="font-size:13px;color:var(--text-secondary);line-height:1.6"></p>
       <div class="form-group mt-16" id="mc-reason-wrap" style="display:none">
-        <label class="form-label">Reason (optional)</label>
-        <textarea id="mc-reason" class="form-textarea" placeholder="Provide a reason…" rows="3"></textarea>
+        <label class="form-label">Reason for rejection *</label>
+        <textarea id="mc-reason" class="form-textarea" placeholder="Explain why this refurbisher is being rejected…" rows="3"></textarea>
       </div>
     </div>
     <div class="modal-footer">
@@ -185,11 +266,11 @@
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const uid  = window.location.pathname.split('/').filter(Boolean).pop();
+    const uid = window.location.pathname.split('/').filter(Boolean).pop();
     InitRefurbisherDetail(csrf, uid, {
-      detailUrl:  `/admin-api/dashboard/${uid}/refurbisher-detail/`,
-      listingsUrl:`/admin-api/dashboard/listings/?refurbisher_id=${uid}`,
-      ordersUrl:  `/admin-api/dashboard/orders/?refurbisher_id=${uid}`,
+      detailUrl: `/admin-api/dashboard/${uid}/refurbisher-detail/`,
+      listingsUrl: `/admin-api/dashboard/listings/?refurbisher_id=${uid}`,
+      ordersUrl: `/admin-api/dashboard/orders/?refurbisher_id=${uid}`,
       approveUrl: `/admin-api/dashboard/${uid}/approve-refurbisher/`
     });
   });

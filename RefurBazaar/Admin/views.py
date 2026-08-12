@@ -4,11 +4,11 @@ from rest_framework.response import Response
 from django.utils import timezone
 from django.utils.timezone import now
 from django.db.models import Q, Count, Sum
-from UserDetail.models import User, CompanyProfile
+from UserDetail.models import User, CompanyProfile, ApprovalReviewLog
 from Order.models import Order, OrderItem
 from Product.models import Listing, ListingUnit, AttributeMaster
 from Product.serializers import AttributeMasterSerializer
-from UserDetail.serializers import UserSerializer, CompanyProfileSerializer
+from UserDetail.serializers import UserSerializer, CompanyProfileSerializer, ApprovalReviewLogSerializer
 from Order.serializers import OrderSerializer
 from Product.serializers import ListingSerializer
 from utils.decorators import handle_exceptions, check_authentication
@@ -36,9 +36,11 @@ class AdminDashboardViewSet(viewsets.ViewSet):
         total_refurbishers    = User.objects.filter(role='refurbisher').count()
         approved_refurbishers = CompanyProfile.objects.filter(is_approved=True).count()
         pending_refurbishers  = CompanyProfile.objects.filter(
-            is_profile_complete=True, is_approved=False
+            is_profile_complete=True, is_approved=False, is_rejected=False
         ).count()
-        rejected_refurbishers = total_refurbishers - approved_refurbishers - pending_refurbishers
+        rejected_refurbishers = CompanyProfile.objects.filter(
+            is_approved=False, is_rejected=True
+        ).count()
 
         # Listings
         total_listings    = Listing.objects.count()
@@ -198,7 +200,13 @@ class AdminDashboardViewSet(viewsets.ViewSet):
         if status_filter == 'pending':
             refurbishers = refurbishers.filter(
                 company_profile__is_profile_complete=True,
-                company_profile__is_approved=False
+                company_profile__is_approved=False,
+                company_profile__is_rejected=False
+            )
+        elif status_filter == 'rejected':
+            refurbishers = refurbishers.filter(
+                company_profile__is_approved=False,
+                company_profile__is_rejected=True
             )
         elif status_filter == 'approved':
             refurbishers = refurbishers.filter(company_profile__is_approved=True)
@@ -274,6 +282,14 @@ class AdminDashboardViewSet(viewsets.ViewSet):
         ).prefetch_related('items__device_photos').distinct()
         orders_data = OrderSerializer(orders, many=True).data
 
+        # Full approval review history (rejections, resubmissions, approvals)
+        review_history_data = []
+        if hasattr(refurbisher, 'company_profile'):
+            review_logs = ApprovalReviewLog.objects.filter(
+                company_profile=refurbisher.company_profile
+            ).select_related('created_by').order_by('-created_at')
+            review_history_data = ApprovalReviewLogSerializer(review_logs, many=True).data
+
         return Response({
             "success": True,
             "user_not_logged_in": False,
@@ -282,7 +298,8 @@ class AdminDashboardViewSet(viewsets.ViewSet):
                 'user': user_data,
                 'company_profile': company_data,
                 'listings': listings_data,
-                'orders': orders_data
+                'orders': orders_data,
+                'review_history': review_history_data
             },
             "error": None
         }, status=status.HTTP_200_OK)
@@ -313,13 +330,22 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             }, status=status.HTTP_404_NOT_FOUND)
 
         action_type = request.data.get('action')  # 'approve' or 'reject'
+        reason = (request.data.get('reason') or '').strip()
         company_profile = refurbisher.company_profile
 
         if action_type == 'approve':
             company_profile.is_approved = True
+            company_profile.is_rejected = False
             company_profile.approved_at = timezone.now()
             company_profile.approved_by = request.user
             company_profile.save()
+
+            ApprovalReviewLog.objects.create(
+                company_profile=company_profile,
+                action='approved',
+                reason=reason or None,
+                created_by=request.user
+            )
 
             return Response({
                 "success": True,
@@ -330,10 +356,30 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             }, status=status.HTTP_200_OK)
 
         elif action_type == 'reject':
+            if not reason:
+                return Response({
+                    "success": False,
+                    "user_not_logged_in": False,
+                    "user_unauthorized": False,
+                    "data": None,
+                    "error": "A reason is required when rejecting a refurbisher"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
             company_profile.is_approved = False
+            company_profile.is_rejected = True
+            company_profile.rejection_reason = reason
+            company_profile.rejected_at = timezone.now()
+            company_profile.rejected_by = request.user
             company_profile.approved_at = None
             company_profile.approved_by = None
             company_profile.save()
+
+            ApprovalReviewLog.objects.create(
+                company_profile=company_profile,
+                action='rejected',
+                reason=reason,
+                created_by=request.user
+            )
 
             return Response({
                 "success": True,

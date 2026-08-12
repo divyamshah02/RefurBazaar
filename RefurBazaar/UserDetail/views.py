@@ -218,6 +218,68 @@ class UserDetailViewSet(viewsets.ViewSet):
             "error": None
         }, status=status.HTTP_200_OK)
 
+    @action(detail=False, methods=['post'], url_path='resubmit-approval')
+    @handle_exceptions
+    @check_authentication()
+    def resubmit_approval(self, request):
+        """
+        Refurbisher asks the admin to re-review a rejected profile.
+        Optionally includes a reply message addressing the rejection reason.
+        Clears the rejected state so the profile moves back to 'pending'.
+        """
+        user = request.user
+        if user.role != 'refurbisher':
+            return Response({
+                "success": False,
+                "user_not_logged_in": False,
+                "user_unauthorized": True,
+                "data": None,
+                "error": "Only refurbishers can request re-review."
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        company_profile = getattr(user, 'company_profile', None)
+        if not company_profile:
+            return Response({
+                "success": False,
+                "user_not_logged_in": False,
+                "user_unauthorized": False,
+                "data": None,
+                "error": "Company profile not found."
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        if not company_profile.is_rejected:
+            return Response({
+                "success": False,
+                "user_not_logged_in": False,
+                "user_unauthorized": False,
+                "data": None,
+                "error": "This profile is not currently rejected."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        reply = (request.data.get('reply') or '').strip()
+
+        company_profile.is_rejected = False
+        company_profile.resubmitted_at = timezone.now()
+        company_profile.save()
+
+        ApprovalReviewLog.objects.create(
+            company_profile=company_profile,
+            action='resubmitted',
+            reason=reply or None,
+            created_by=user
+        )
+
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "user_unauthorized": False,
+            "data": {
+                "message": "Your profile has been resubmitted for review.",
+                "company_profile": CompanyProfileSerializer(company_profile).data
+            },
+            "error": None
+        }, status=status.HTTP_200_OK)
+
 
 class AddressViewSet(viewsets.ViewSet):
     """
