@@ -9,11 +9,11 @@ IS_PAYMENT_TEST_MODE = False
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-%k3^obid8rb5d&z4-7@vm@og#0@x2p%*%3d(h2e_k1gr)^9e(+'
+SECRET_KEY = 'django-insecure-%k3^obid8rb5d&z4-7@vm@og#0@x2p%*%3d(h2e_k1gr)^9e(+' # to be kept in env during prod
 
 DEBUG = IS_LOCAL
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["*"] # to be updated during prod
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 # X_FRAME_OPTIONS = 'ALLOWALL'
@@ -86,7 +86,7 @@ if IS_LOCAL:
     else:
         DATABASES = {
             "default": dj_database_url.config(
-                default="postgresql://bakershub_db_user:75cwuW3lVEn0K4G31l0vZxES96HtVKku@dpg-d5mj8nogjchc738ov0sg-a.singapore-postgres.render.com/bakershub_db",
+                default="", # DB ecternal link
                 conn_max_age=600,
                 ssl_require=True,
             )
@@ -154,6 +154,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 def base64_to_text(b64_text):
     # Decode the Base64 string back to bytes, then to text
     return base64.b64decode(b64_text.encode()).decode()
+
+
+# To be kept in env during prod
+
 
 # RAZORPAY_KEY_ID = base64_to_text("cnpwX3Rlc3RfUzV6OXlXcFh0d0VkVVg=")
 # RAZORPAY_KEY_SECRET = base64_to_text("NTAyaldFeDBWUFE1b2RuSkJQVzNJblNS")
