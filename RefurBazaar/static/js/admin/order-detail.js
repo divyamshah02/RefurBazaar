@@ -20,7 +20,7 @@ async function loadStats() {
     try {
         const [success, response] = await window.callApi('GET', statsApiUrl, null, csrfToken);
         
-        console.log('[v0] Stats API Response:', response);
+        console.log('Stats API Response:', response);
         
         if (success && response.success && response.data) {
             const stats = response.data;
@@ -31,7 +31,7 @@ async function loadStats() {
             document.getElementById('totalRevenue').textContent = `₹${Number(stats.total_revenue || 0).toLocaleString('en-IN')}`;
         }
     } catch (error) {
-        console.error('[v0] Error loading stats:', error);
+        console.error('Error loading stats:', error);
     }
 }
 
@@ -39,7 +39,7 @@ async function loadRecentOrders() {
     try {
         const [success, response] = await window.callApi('GET', ordersApiUrl, null, csrfToken);
         
-        console.log('[v0] Recent Orders API Response:', response);
+        console.log('Recent Orders API Response:', response);
         
         if (success && response.success && response.data) {
             const orders = response.data.slice(0, 5); // Show only 5 recent orders
@@ -74,7 +74,7 @@ async function loadRecentOrders() {
             `).join('');
         }
     } catch (error) {
-        console.error('[v0] Error loading recent orders:', error);
+        console.error('Error loading recent orders:', error);
         document.getElementById('recentOrdersTable').innerHTML = `
             <tr>
                 <td colspan="6" class="text-center text-danger">Failed to load orders</td>
@@ -88,7 +88,7 @@ async function loadPendingRefurbishers() {
         const url = `${refurbishersApiUrl}?status=pending`;
         const [success, response] = await window.callApi('GET', url, null, csrfToken);
         
-        console.log('[v0] Pending Refurbishers API Response:', response);
+        console.log('Pending Refurbishers API Response:', response);
         
         if (success && response.success && response.data) {
             const refurbishers = response.data.slice(0, 5); // Show only 5 pending
@@ -118,7 +118,7 @@ async function loadPendingRefurbishers() {
             `).join('');
         }
     } catch (error) {
-        console.error('[v0] Error loading pending refurbishers:', error);
+        console.error('Error loading pending refurbishers:', error);
         document.getElementById('pendingRefurbishersTable').innerHTML = `
             <tr>
                 <td colspan="5" class="text-center text-danger">Failed to load pending approvals</td>

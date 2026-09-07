@@ -35,7 +35,7 @@ async function checkUserAuth() {
       isUserLoggedIn = false
     }
   } catch (error) {
-    console.log("[v0] User not logged in")
+    console.log("User not logged in")
     isUserLoggedIn = false
   }
 }
@@ -53,7 +53,7 @@ async function loadCart() {
       showEmptyCart()
     }
   } catch (error) {
-    console.error("[v0] Error loading cart:", error)
+    console.error("Error loading cart:", error)
     showEmptyCart()
   }
 }
@@ -184,7 +184,7 @@ async function loadAddresses() {
       renderSavedAddresses()
     }
   } catch (error) {
-    console.error("[v0] Error loading addresses:", error)
+    console.error("Error loading addresses:", error)
   }
 }
 
@@ -317,7 +317,7 @@ async function sendOtpForCheckout(mobile) {
       currentOtpId = response.data.otp_id
 
       if (response.data.otp) {
-        console.log("[v0] OTP for testing:", response.data.otp)
+        console.log("OTP for testing:", response.data.otp)
         setTimeout(() => {
           fillOtpForTesting(response.data.otp)
         }, 500)
@@ -330,7 +330,7 @@ async function sendOtpForCheckout(mobile) {
       showToast(response.error || "Failed to send OTP. Please try again.", "error")
     }
   } catch (error) {
-    console.error("[v0] Error sending OTP:", error)
+    console.error("Error sending OTP:", error)
     showToast("Failed to send OTP. Please try again.", "error")
   }
 }
@@ -394,7 +394,7 @@ async function verifyOtpAndPlaceOrder() {
     }
   } catch (error) {
     setButtonLoading(verifyBtn, false)
-    console.error("[v0] Error verifying OTP:", error)
+    console.error("Error verifying OTP:", error)
     showOtpError("Failed to verify OTP. Please try again.")
     clearOtpInputs()
     document.querySelector(".otp-input").focus()
@@ -448,7 +448,7 @@ async function proceedWithOrder() {
       hideLoading()
     }
   } catch (error) {
-    console.error("[v0] Error placing order:", error)
+    console.error("Error placing order:", error)
     showToast("Failed to place order. Please try again.", "error")
     hideLoading()
   }
@@ -684,7 +684,7 @@ async function verifyPayment(paymentData) {
       hideLoading()
     }
   } catch (error) {
-    console.error("[v0] Error verifying payment:", error)
+    console.error("Error verifying payment:", error)
     showToast("Payment verification failed. Please contact support.", "error")
     hideLoading()
   }

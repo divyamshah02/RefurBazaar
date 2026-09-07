@@ -27,7 +27,7 @@ async function loadOrders() {
     try {
         const [success, response] = await window.callApi('GET', window.ordersApiUrl, null, window.csrfToken);
         
-        console.log('[v0] Orders API Response:', response);
+        console.log('Orders API Response:', response);
         
         if (success && response.success && response.data) {
             ordersData = response.data;
@@ -42,7 +42,7 @@ async function loadOrders() {
             showEmptyState();
         }
     } catch (error) {
-        console.error('[v0] Error loading orders:', error);
+        console.error('Error loading orders:', error);
         showError('Failed to load orders. Please try again.');
     }
 }

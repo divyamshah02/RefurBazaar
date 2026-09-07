@@ -85,7 +85,7 @@ async function loadOrderDetail() {
     try {
         const [success, response] = await callApi('GET', window.orderDetailUrl, null, window.csrfToken);
         
-        console.log('[v0] Order Detail API Response:', response);
+        console.log('Order Detail API Response:', response);
         
         if (success && response.success && response.data) {
             orderData = response.data;
@@ -94,7 +94,7 @@ async function loadOrderDetail() {
             showError('Failed to load order details.');
         }
     } catch (error) {
-        console.error('[v0] Error loading order detail:', error);
+        console.error('Error loading order detail:', error);
         showError('Failed to load order details. Please try again.');
     }
 }
@@ -302,7 +302,7 @@ async function submitVerification() {
         
         const data = await response.json();
         
-        console.log('[v0] Verify Device API Response:', data);
+        console.log('Verify Device API Response:', data);
         
         if (response.ok && data.success) {
             verifyModal.hide();
@@ -312,7 +312,7 @@ async function submitVerification() {
             alert('Failed to verify device: ' + JSON.stringify(data.error));
         }
     } catch (error) {
-        console.error('[v0] Error verifying device:', error);
+        console.error('Error verifying device:', error);
         alert('Failed to verify device. Please try again.');
     }
 }
@@ -326,7 +326,7 @@ async function packItem(itemId) {
         const url = window.itemActionUrl.replace('{item_id}', itemId);
         const [success, response] = await callApi('POST', url, { action: 'pack' }, window.csrfToken);
         
-        console.log('[v0] Pack Item API Response:', response);
+        console.log('Pack Item API Response:', response);
         
         if (success && response.success) {
             showSuccess('Item marked as packed!');
@@ -335,7 +335,7 @@ async function packItem(itemId) {
             alert('Failed to pack item: ' + JSON.stringify(response.error));
         }
     } catch (error) {
-        console.error('[v0] Error packing item:', error);
+        console.error('Error packing item:', error);
         alert('Failed to pack item. Please try again.');
     }
 }
@@ -362,7 +362,7 @@ async function submitRejection() {
             rejection_reason: rejectionReason
         }, window.csrfToken);
         
-        console.log('[v0] Reject Item API Response:', response);
+        console.log('Reject Item API Response:', response);
         
         if (success && response.success) {
             rejectModal.hide();
@@ -372,7 +372,7 @@ async function submitRejection() {
             alert('Failed to reject item: ' + JSON.stringify(response.error));
         }
     } catch (error) {
-        console.error('[v0] Error rejecting item:', error);
+        console.error('Error rejecting item:', error);
         alert('Failed to reject item. Please try again.');
     }
 }

@@ -12,9 +12,9 @@ function InitializeAddProductForm(csrf, brands_url, products_url, attributes_url
     productsApiUrl = products_url;
     attributesApiUrl = attributes_url;
     
-    console.log('[v0] Initializing Add Product Form');
-    console.log('[v0] CSRF Token:', csrfToken);
-    console.log('[v0] Products API URL:', productsApiUrl);
+    console.log('Initializing Add Product Form');
+    console.log('CSRF Token:', csrfToken);
+    console.log('Products API URL:', productsApiUrl);
     
     loadBrands();
     setupEventListeners();
@@ -42,10 +42,10 @@ function setupEventListeners() {
 
 async function loadBrands() {
     try {
-        console.log('[v0] Loading brands from:', brandsApiUrl);
+        console.log('Loading brands from:', brandsApiUrl);
         const [success, response] = await window.callApi('GET', brandsApiUrl, null, csrfToken);
         
-        console.log('[v0] Brands API Response:', response);
+        console.log('Brands API Response:', response);
         
         if (success && response.success && response.data) {
             allBrands = response.data;
@@ -54,7 +54,7 @@ async function loadBrands() {
             showError('Failed to load brands');
         }
     } catch (error) {
-        console.error('[v0] Error loading brands:', error);
+        console.error('Error loading brands:', error);
         showError('Failed to load brands');
     }
 }
@@ -91,7 +91,7 @@ async function loadAttributesForCategory() {
         return;
     }
     
-    console.log('[v0] Loading attributes for category:', category);
+    console.log('Loading attributes for category:', category);
     
     // Show loading spinner
     document.getElementById('loadingAttributes').classList.add('active');
@@ -100,11 +100,11 @@ async function loadAttributesForCategory() {
     
     try {
         const url = `${attributesApiUrl}?category=${category}`;
-        console.log('[v0] Attributes URL:', url);
+        console.log('Attributes URL:', url);
         
         const [success, response] = await window.callApi('GET', url, null, csrfToken);
         
-        console.log('[v0] Attributes API Response:', response);
+        console.log('Attributes API Response:', response);
         
         if (success && response.success && response.data) {
             const attributes = response.data;
@@ -123,7 +123,7 @@ async function loadAttributesForCategory() {
             document.getElementById('loadingAttributes').classList.remove('active');
         }
     } catch (error) {
-        console.error('[v0] Error loading attributes:', error);
+        console.error('Error loading attributes:', error);
         showError('Failed to load attributes');
         document.getElementById('loadingAttributes').classList.remove('active');
     }
@@ -262,7 +262,7 @@ function previewImage() {
 async function handleSubmit(event) {
     event.preventDefault();
     
-    console.log('[v0] Form submission started');
+    console.log('Form submission started');
     
     // Gather form data
     const category = document.getElementById('category').value;
@@ -290,7 +290,7 @@ async function handleSubmit(event) {
         };
     });
     
-    console.log('[v0] Form Data:', {
+    console.log('Form Data:', {
         category,
         brandId,
         productName,
@@ -331,7 +331,7 @@ async function handleSubmit(event) {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"><span class="visually-hidden">Loading...</span></span>Creating...';
         
-        console.log('[v0] Sending API request to:', productsApiUrl);
+        console.log('Sending API request to:', productsApiUrl);
         
         // Use custom fetch for FormData
         const response = await fetch(productsApiUrl, {
@@ -344,7 +344,7 @@ async function handleSubmit(event) {
         
         const data = await response.json();
         
-        console.log('[v0] API Response:', data);
+        console.log('API Response:', data);
         
         if (data.success) {
             // Show success message
@@ -363,7 +363,7 @@ async function handleSubmit(event) {
             submitBtn.innerHTML = originalText;
         }
     } catch (error) {
-        console.error('[v0] Error creating product:', error);
+        console.error('Error creating product:', error);
         showError('Failed to create product: ' + error.message);
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
@@ -376,7 +376,7 @@ function resetForm() {
     document.getElementById('successAlert').classList.remove('show');
     selectedAttributes.clear();
     updateSummary();
-    console.log('[v0] Form reset');
+    console.log('Form reset');
 }
 
 function showError(message) {
@@ -385,7 +385,7 @@ function showError(message) {
     errorMessage.textContent = message;
     errorAlert.style.display = 'block';
     
-    console.error('[v0] Error:', message);
+    console.error('Error:', message);
     
     // Auto hide after 5 seconds
     setTimeout(() => {
