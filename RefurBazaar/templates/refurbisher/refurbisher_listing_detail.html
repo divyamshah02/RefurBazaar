@@ -13,6 +13,36 @@
         rel="stylesheet">
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
     <link href="{% static 'css/refurbisher/refurbisher_dash.css' %}" rel="stylesheet">
+    <style>
+        .attribute-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            max-width: 280px;
+        }
+
+        .attribute-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #f4f1ea;
+            border: 1px solid #e5e0d5;
+            border-radius: 999px;
+            padding: 3px 10px;
+            font-size: 0.75rem;
+            line-height: 1.4;
+            white-space: nowrap;
+        }
+
+        .attribute-pill-label {
+            color: #8b6f47;
+            font-weight: 600;
+        }
+
+        .attribute-pill-value {
+            color: #33302a;
+        }
+    </style>
 </head>
 
 <body>

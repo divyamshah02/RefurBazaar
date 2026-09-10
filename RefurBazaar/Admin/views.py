@@ -333,6 +333,15 @@ class AdminDashboardViewSet(viewsets.ViewSet):
         reason = (request.data.get('reason') or '').strip()
         company_profile = refurbisher.company_profile
 
+        if action_type == 'approve' and not company_profile.is_profile_complete:
+            return Response({
+                "success": False,
+                "user_not_logged_in": False,
+                "user_unauthorized": False,
+                "data": None,
+                "error": "Cannot approve an incomplete vendor profile. Personal Info, Business Details, Documents, and Payment Information must all be filled in first."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         if action_type == 'approve':
             company_profile.is_approved = True
             company_profile.is_rejected = False

@@ -8,6 +8,7 @@ let modelAttributes = []
 let unitCounter = 0 // Track unit count for unique IDs
 const units = []
 let new_return_id = null
+let handle_mul_units = 0
 /**
  * Initialize the add listing page
  */
@@ -269,16 +270,17 @@ function addNewUnit() {
       `
     } else {
       if (attr.name == "Refurb Price Range") {
-        new_return_id = `refurb_price_range_${attr.id}`
+        new_return_id = `refurb_price_range_${attr.id}_${handle_mul_units}`
         attributesHtml += `
-          <div class="col-md-6" style="display: none;">
-            <div class="form-group">
-              <label class="form-label">${attr.name}${isRequired ? " *" : ""}</label>
-              <input type="text" class="form-control" data-attr-id="${attr.id}" id="refurb_price_range_${attr.id}"
-                    placeholder="Enter ${attr.name}" ${isRequired ? "required" : ""}>
-            </div>
-          </div>
+        <div class="col-md-6" style="display: none;">
+        <div class="form-group">
+        <label class="form-label">${attr.name}${isRequired ? " *" : ""}</label>
+        <input type="text" class="form-control" data-attr-id="${attr.id}" id="refurb_price_range_${attr.id}_${handle_mul_units}"
+        placeholder="Enter ${attr.name}" ${isRequired ? "required" : ""}>
+        </div>
+        </div>
         `  
+        handle_mul_units = handle_mul_units + 1
       } else {
         attributesHtml += `
           <div class="col-md-6">
@@ -370,6 +372,7 @@ function addNewUnit() {
     quantityContainer.style.display = this.checked ? "block" : "none"
   })
 
+  renumberUnits()
 }
 
 /**
@@ -385,7 +388,26 @@ function removeUnit(unitId) {
     if (remainingUnits.length === 0) {
       document.getElementById("emptyUnitsState").style.display = "block"
     }
+
+    renumberUnits()
   }
+}
+
+/**
+ * Re-label the visible "Unit #N" headings based on the units' current
+ * position in the DOM. `unitCounter` keeps generating unique internal IDs
+ * (unit_${unitCounter}, moreUnits_${unitCounter}, ...) so it is never reset —
+ * only the displayed number is recalculated here after an add/remove so it
+ * always matches how many units are actually left.
+ */
+function renumberUnits() {
+  const unitCards = document.querySelectorAll("#unitsContainer .unit-card")
+  unitCards.forEach((card, index) => {
+    const label = card.querySelector("h6.mb-0")
+    if (label) {
+      label.innerHTML = `<i class="fas fa-mobile-alt me-2"></i>Unit #${index + 1}`
+    }
+  })
 }
 
 /**

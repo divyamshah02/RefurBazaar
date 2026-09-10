@@ -519,7 +519,12 @@ class ListingViewSet(viewsets.ViewSet):
                 "data": None, "error": "At least one unit is required."
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        model = get_object_or_404(ProductModel, id=model_id)
+        model = ProductModel.objects.filter(id=model_id, is_active=True).first()
+        if not model:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Selected product is not available."
+            }, status=status.HTTP_400_BAD_REQUEST)
         refurbisher = request.user
 
         # Validate all units before writing to DB
@@ -602,12 +607,14 @@ class ListingViewSet(viewsets.ViewSet):
         }, status=status.HTTP_200_OK)
 
     @handle_exceptions
+    @check_authentication(required_role='refurbisher')
     def retrieve(self, request, pk=None):
-        """Get single listing details with all units"""
+        """Get single listing details with all units. Only the owning refurbisher may view it."""
         listing = get_object_or_404(
             Listing.objects.select_related('model', 'model__brand', 'refurbisher')
             .prefetch_related('units', 'units__attributes', 'units__attributes__attribute'),
-            pk=pk
+            pk=pk,
+            refurbisher=request.user
         )
         serializer = ListingSerializer(listing)
         return Response({

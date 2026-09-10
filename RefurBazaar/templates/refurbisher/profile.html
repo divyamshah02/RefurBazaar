@@ -35,6 +35,37 @@
         .skeleton-input {
             height: 38px;
         }
+
+        .form-section {
+            position: relative;
+        }
+
+        .form-section.locked form {
+            filter: blur(3px);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .section-lock-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 8px;
+            font-weight: 600;
+            color: #6c757d;
+            text-align: center;
+            padding: 1rem;
+            z-index: 5;
+        }
+
+        .section-lock-overlay i {
+            font-size: 1.1rem;
+        }
     </style>
 </head>
 
