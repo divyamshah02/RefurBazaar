@@ -103,6 +103,18 @@ class CompanyProfile(models.Model):
     rejected_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='rejected_profiles')
     resubmitted_at = models.DateTimeField(null=True, blank=True, help_text="When the refurbisher last requested a re-review")
 
+    # ShipRocket warehouse (pickup location) — created by admin, once, after approval.
+    # Kept as its own set of fields (rather than a separate model) so the create/retry
+    # call is a simple, idempotent action against this profile.
+    shiprocket_pickup_code = models.CharField(
+        max_length=36, null=True, blank=True,
+        help_text="ShipRocket 'pickup_location' nickname used as this refurbisher's warehouse"
+    )
+    shiprocket_warehouse_created = models.BooleanField(default=False)
+    shiprocket_warehouse_created_at = models.DateTimeField(null=True, blank=True)
+    shiprocket_warehouse_response = models.JSONField(default=dict, blank=True)
+    shiprocket_warehouse_error = models.TextField(null=True, blank=True)
+
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -116,6 +116,26 @@ function renderProfile(u, cp, listings, orders, reviewHistory) {
   btnA.onclick = () => promptAction('approve');
   btnR.onclick = () => promptAction('reject');
 
+  // Warehouse setup — only relevant once approved. Button label reflects
+  // whether it's a first-time create or a retry after a previous failure.
+  const btnW = document.getElementById('btn-warehouse');
+  if (status === 'approved') {
+    btnW.style.display = 'inline-flex';
+    if (cp.shiprocket_warehouse_created) {
+      btnW.innerHTML = '<i class="fa-solid fa-circle-check"></i> Warehouse Set Up';
+      btnW.classList.add('btn-ghost');
+      btnW.disabled = false; // still allow re-sync if address changes
+    } else {
+      btnW.innerHTML = cp.shiprocket_warehouse_error
+        ? '<i class="fa-solid fa-rotate-right"></i> Retry Warehouse Setup'
+        : '<i class="fa-solid fa-warehouse"></i> Setup Warehouse';
+      btnW.classList.remove('btn-ghost');
+    }
+    btnW.onclick = createWarehouse;
+  } else {
+    btnW.style.display = 'none';
+  }
+
   // Render sub-tabs with embedded data
   renderListings(listings);
   renderOrders(orders);
@@ -249,6 +269,25 @@ async function submitAction() {
     loadDetail();
   } else {
     showToast(res?.message || res?.error || 'Action failed. Please try again.', 'error');
+  }
+}
+
+/* ─── Warehouse (ShipRocket pickup location) setup ─────────────── */
+async function createWarehouse() {
+  const btn = document.getElementById('btn-warehouse');
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Setting up…';
+
+  const [ok, res] = await callApi('POST', _rdUrls.warehouseUrl, {}, _rdCsrf);
+
+  btn.disabled = false;
+  if (ok && res.success) {
+    showToast('Warehouse created on ShipRocket successfully', 'success');
+    loadDetail();
+  } else {
+    btn.innerHTML = original;
+    showToast(res?.error || 'Failed to create warehouse. Please try again.', 'error');
   }
 }
 

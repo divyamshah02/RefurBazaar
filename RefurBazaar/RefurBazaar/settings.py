@@ -171,3 +171,67 @@ if IS_PAYMENT_TEST_MODE:
 else:
     RAZORPAY_KEY_ID = base64_to_text("cnpwX3Rlc3RfUzV6OXlXcFh0d0VkVVg=")
     RAZORPAY_KEY_SECRET = base64_to_text("NTAyaldFeDBWUFE1b2RuSkJQVzNJblNS")
+
+
+
+shiprocket_api_email = base64_to_text("aW5mbythcGlAcmVjYXJ2aXQuY29t")
+shiprocket_api_pass = base64_to_text("NTBmN2VmMmM5MDU2MmU2NzdkZjgzMmU0MjYwMDRlNmE=")
+
+prod_shiprocket_api_email = base64_to_text("ZGl2eWFtQG1pcmFja2xlLmNvbQ==")
+prod_shiprocket_api_pass = base64_to_text("WWhAcUVFaCpNVzd2YjRtYzdtT1lZQVQ5MF5iWCNzRG8=")
+
+
+# ---------------------------------------------------------------------------
+# ShipRocket configuration
+# ---------------------------------------------------------------------------
+# ShipRocket has a single production API host — there is no separate "sandbox"
+# hostname. To test safely, sign up for a second (test) ShipRocket account and
+# point SHIPROCKET_MODE=sandbox at its credentials; flip to SHIPROCKET_MODE=
+# production (with real credentials) when you're ready to create live pickups.
+
+# SHIPROCKET_MODE = os.environ.get('SHIPROCKET_MODE', 'sandbox')  # 'sandbox' | 'production'
+SHIPROCKET_MODE = 'sandbox'  # 'sandbox' | 'production'
+
+# SHIPROCKET_BASE_URL = 'https://apiv2.shiprocket.in/v1/external'
+# SHIPROCKET_BASE_URL = 'https://api-sandbox.shiprocket.in/v1/external'
+
+# SHIPROCKET_CREDENTIALS = {
+#     'sandbox': {
+#         'email': os.environ.get('SHIPROCKET_SANDBOX_EMAIL', ''),
+#         'password': os.environ.get('SHIPROCKET_SANDBOX_PASSWORD', ''),
+#     },
+#     'production': {
+#         'email': os.environ.get('SHIPROCKET_EMAIL', ''),
+#         'password': os.environ.get('SHIPROCKET_PASSWORD', ''),
+#     },
+# }
+
+
+SHIPROCKET_CREDENTIALS = {
+    'sandbox': {
+        'email': shiprocket_api_email,
+        'password': shiprocket_api_pass,
+        'url': 'https://api-sandbox.shiprocket.in/v1/external'
+    },
+    'production': {
+        'email': prod_shiprocket_api_email,
+        'password': prod_shiprocket_api_pass,
+        'url': 'https://apiv2.shiprocket.in/v1/external'
+    },
+}
+
+SHIPROCKET_EMAIL = SHIPROCKET_CREDENTIALS.get(SHIPROCKET_MODE, {}).get('email', '')
+SHIPROCKET_PASSWORD = SHIPROCKET_CREDENTIALS.get(SHIPROCKET_MODE, {}).get('password', '')
+SHIPROCKET_BASE_URL = SHIPROCKET_CREDENTIALS.get(SHIPROCKET_MODE, {}).get('url', '')
+
+# Fixed default box size per product category (cm / kg). The refurbisher can
+# still override these at the "check shipping rates" step for confirmation.
+SHIPROCKET_BOX_DEFAULTS_BY_CATEGORY = {
+    'mobile': {'length': 20, 'breadth': 15, 'height': 8, 'weight': 0.5},
+    'tablet': {'length': 32, 'breadth': 24, 'height': 8, 'weight': 1.0},
+    'laptop': {'length': 40, 'breadth': 30, 'height': 10, 'weight': 2.5},
+    'accessory': {'length': 20, 'breadth': 15, 'height': 8, 'weight': 0.3},
+}
+SHIPROCKET_DEFAULT_BOX = {'length': 20, 'breadth': 15, 'height': 8, 'weight': 0.5}
+
+

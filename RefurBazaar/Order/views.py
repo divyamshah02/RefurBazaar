@@ -18,9 +18,11 @@ from .serializers import (
     OrderItemVerificationSerializer, OrderItemActionSerializer,
     ReturnRequestSerializer
 )
+from .shiprocket_service import create_shiprocket_shipment, refresh_tracking
 from ShoppingCart.models import ShoppingCart, ShoppingCartItem
 from Product.models import ListingUnit
 from utils.decorators import handle_exceptions, check_authentication, check_refurbisher_profile
+from utils.shiprocket_api import ShiprocketClient, ShiprocketAPIException
 
 
 class OrderViewSet(viewsets.ViewSet):
@@ -391,6 +393,160 @@ class OrderViewSet(viewsets.ViewSet):
             "data": order_data, "error": None
         }, status=status.HTTP_200_OK)
     
+    @action(detail=True, methods=['post'], url_path='shipping-rates')
+    @handle_exceptions
+    @check_refurbisher_profile()
+    def shipping_rates(self, request, pk=None):
+        """
+        Step 1 of accepting an order: refurbisher gives a pickup date (+ optional
+        box size override) and gets back ShipRocket's available couriers + rates
+        for their address -> the customer's address.
+        """
+        order_item = get_object_or_404(OrderItem, id=pk)
+
+        if order_item.refurbisher != request.user:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": True,
+                "data": None, "error": "Unauthorized access"
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        profile = getattr(request.user, 'company_profile', None)
+        if not profile or not profile.shiprocket_warehouse_created or not profile.shiprocket_pickup_code:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None,
+                "error": "Your warehouse/pickup point hasn't been set up yet. Please contact admin."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        pickup_date = request.data.get('pickup_date')
+        if not pickup_date:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "pickup_date is required"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        defaults = order_item.get_default_box_dims()
+        box = {
+            "length": float(request.data.get('box_length') or defaults['length']),
+            "breadth": float(request.data.get('box_breadth') or defaults['breadth']),
+            "height": float(request.data.get('box_height') or defaults['height']),
+            "weight": float(request.data.get('box_weight') or defaults['weight']),
+        }
+
+        try:
+            client = ShiprocketClient()
+            response = client.check_serviceability(
+                pickup_postcode=profile.pincode,
+                delivery_postcode=order_item.order.shipping_pincode,
+                weight=box['weight'],
+                cod=1 if order_item.order.payment_method == 'cod' else 0,
+                declared_value=float(order_item.price_at_purchase),
+            )
+        except ShiprocketAPIException as e:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": f"Could not fetch shipping rates: {e}"
+            }, status=status.HTTP_502_BAD_GATEWAY)
+
+        couriers_raw = (
+            response.get("data", {}).get("available_courier_companies", [])
+            if isinstance(response, dict) else []
+        )
+        couriers = sorted([
+            {
+                "courier_id": c.get("courier_company_id"),
+                "courier_name": c.get("courier_name"),
+                "rate": c.get("rate"),
+                "etd": c.get("etd"),
+                "rating": c.get("rating"),
+            }
+            for c in couriers_raw
+        ], key=lambda c: c["rate"] or float('inf'))
+
+        # Save the box + pickup date now (shipment not created yet — just staged).
+        order_item.box_length, order_item.box_breadth = box['length'], box['breadth']
+        order_item.box_height, order_item.box_weight = box['height'], box['weight']
+        order_item.pickup_scheduled_date = pickup_date
+        order_item.save(update_fields=['box_length', 'box_breadth', 'box_height', 'box_weight', 'pickup_scheduled_date'])
+
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": {
+                "couriers": couriers,
+                "recommended_courier_id": couriers[0]["courier_id"] if couriers else None,
+                "box": box,
+                "pickup_date": pickup_date,
+            },
+            "error": None
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='confirm-shipping')
+    @handle_exceptions
+    @check_refurbisher_profile()
+    def confirm_shipping(self, request, pk=None):
+        """
+        Step 2: refurbisher confirms (or accepts the default/cheapest) courier
+        from the shipping-rates results. This is the "accept order" action —
+        the actual ShipRocket shipment is only created later, once IMEI/photos
+        are submitted via verify-item.
+        """
+        order_item = get_object_or_404(OrderItem, id=pk)
+
+        if order_item.refurbisher != request.user:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": True,
+                "data": None, "error": "Unauthorized access"
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        if not order_item.pickup_scheduled_date:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Call shipping-rates first to set a pickup date"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        courier_id = request.data.get('courier_id')
+        courier_name = request.data.get('courier_name', '')
+        rate = request.data.get('rate')
+        if not courier_id:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "courier_id is required"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        order_item.shiprocket_courier_id = str(courier_id)
+        order_item.shiprocket_courier_name = courier_name
+        order_item.shiprocket_shipping_rate = rate
+        order_item.shipping_selected_at = timezone.now()
+        order_item.save(update_fields=[
+            'shiprocket_courier_id', 'shiprocket_courier_name',
+            'shiprocket_shipping_rate', 'shipping_selected_at'
+        ])
+
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": OrderItemSerializer(order_item, context={'request': request}).data, "error": None
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='track-shipment')
+    @handle_exceptions
+    @check_refurbisher_profile()
+    def track_shipment(self, request, pk=None):
+        """Manually refresh ShipRocket tracking status for this item. Safe to call anytime."""
+        order_item = get_object_or_404(OrderItem, id=pk)
+
+        if order_item.refurbisher != request.user:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": True,
+                "data": None, "error": "Unauthorized access"
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        ok, error = refresh_tracking(order_item)
+        return Response({
+            "success": ok, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": OrderItemSerializer(order_item, context={'request': request}).data,
+            "error": error
+        }, status=status.HTTP_200_OK if ok else status.HTTP_502_BAD_GATEWAY)
+
     @action(detail=True, methods=['post'], url_path='verify-item')
     @handle_exceptions
     @check_refurbisher_profile()
@@ -430,7 +586,16 @@ class OrderViewSet(viewsets.ViewSet):
                 order_item=order_item,
                 photo=photo
             )
-        
+
+        # Shipping was already accepted (pickup date + courier chosen) — now that
+        # IMEI/photos are in, actually create the ShipRocket shipment + AWB and
+        # schedule pickup. Failures here don't block device verification; they're
+        # recorded on shiprocket_last_error and can be retried via track-shipment
+        # or by re-submitting confirm-shipping.
+        if order_item.shiprocket_courier_id and order_item.pickup_scheduled_date:
+            create_shiprocket_shipment(order_item)
+            order_item.refresh_from_db()
+
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": OrderItemSerializer(order_item, context={'request': request}).data, "error": None

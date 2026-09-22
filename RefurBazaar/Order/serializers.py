@@ -42,6 +42,11 @@ class OrderItemSerializer(serializers.ModelSerializer):
             'packed_at', 'rejection_reason', 'rejected_at',
             'return_status', 'return_status_display', 'return_reason',
             'return_requested_at', 'is_return_eligible',
+            'box_length', 'box_breadth', 'box_height', 'box_weight', 'pickup_scheduled_date',
+            'shiprocket_courier_id', 'shiprocket_courier_name', 'shiprocket_shipping_rate',
+            'shipping_selected_at', 'shiprocket_order_id', 'shiprocket_shipment_id',
+            'shiprocket_awb_code', 'shiprocket_status', 'shiprocket_tracking_url',
+            'shiprocket_last_synced_at', 'shiprocket_last_error',
             'created_at', 'updated_at'
         ]
 

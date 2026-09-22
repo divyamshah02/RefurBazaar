@@ -171,7 +171,29 @@ class OrderItem(models.Model):
     packed_at = models.DateTimeField(null=True, blank=True)
     rejection_reason = models.TextField(null=True, blank=True)
     rejected_at = models.DateTimeField(null=True, blank=True)
-    
+
+    # --- ShipRocket shipping: box + pickup, set when refurbisher accepts the order ---
+    box_length = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True, help_text="cm")
+    box_breadth = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True, help_text="cm")
+    box_height = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True, help_text="cm")
+    box_weight = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True, help_text="kg")
+    pickup_scheduled_date = models.DateField(null=True, blank=True, help_text="Date refurbisher wants ShipRocket to pick up this item")
+
+    # --- Courier selected by the refurbisher from the rate-check results ---
+    shiprocket_courier_id = models.CharField(max_length=20, null=True, blank=True)
+    shiprocket_courier_name = models.CharField(max_length=150, null=True, blank=True)
+    shiprocket_shipping_rate = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    shipping_selected_at = models.DateTimeField(null=True, blank=True, help_text="When the refurbisher confirmed pickup time + courier")
+
+    # --- Populated once the ShipRocket shipment is actually created (after IMEI/photos submitted) ---
+    shiprocket_order_id = models.CharField(max_length=50, null=True, blank=True)
+    shiprocket_shipment_id = models.CharField(max_length=50, null=True, blank=True)
+    shiprocket_awb_code = models.CharField(max_length=50, null=True, blank=True)
+    shiprocket_status = models.CharField(max_length=100, null=True, blank=True, help_text="Latest raw status text from ShipRocket")
+    shiprocket_tracking_url = models.URLField(null=True, blank=True)
+    shiprocket_last_synced_at = models.DateTimeField(null=True, blank=True)
+    shiprocket_last_error = models.TextField(null=True, blank=True, help_text="Last error encountered while talking to ShipRocket, if any")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -180,6 +202,12 @@ class OrderItem(models.Model):
     
     def __str__(self):
         return f"OrderItem {self.id} - {self.order.order_id}"
+
+    def get_default_box_dims(self):
+        """Fixed box size for this item's product category, used as a pre-filled default."""
+        from django.conf import settings
+        category = self.listing_unit.listing.model.category
+        return settings.SHIPROCKET_BOX_DEFAULTS_BY_CATEGORY.get(category, settings.SHIPROCKET_DEFAULT_BOX)
 
     def is_return_eligible(self):
         """

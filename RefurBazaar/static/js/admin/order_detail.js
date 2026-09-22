@@ -191,6 +191,21 @@ function renderItem(it) {
     delivered: 'badge-green', rejected: 'badge-red'
   }[it.fulfillment_status] || 'badge-gray';
 
+  /* ShipRocket shipment info */
+  const shipInfo = it.shiprocket_awb_code
+    ? `<div style="margin-top:8px;font-size:12px;color:var(--text-secondary);display:flex;gap:14px;flex-wrap:wrap">
+        <span>AWB: <span class="mono" style="color:var(--text-primary)">${escStr(it.shiprocket_awb_code)}</span></span>
+        <span>Courier: <strong style="color:var(--text-primary)">${escStr(it.shiprocket_courier_name || '—')}</strong></span>
+        <span>Status: <strong style="color:var(--text-primary)">${escStr(it.shiprocket_status || '—')}</strong></span>
+        ${it.shiprocket_tracking_url ? `<a href="${it.shiprocket_tracking_url}" target="_blank">Track shipment</a>` : ''}
+      </div>`
+    : (it.pickup_scheduled_date
+        ? `<div style="margin-top:8px;font-size:12px;color:var(--text-muted)">Pickup scheduled: ${escStr(it.pickup_scheduled_date)} via ${escStr(it.shiprocket_courier_name || 'courier')}</div>`
+        : '');
+  const shipError = it.shiprocket_last_error
+    ? `<div style="margin-top:6px;font-size:12px;color:var(--red)"><i class="fa-solid fa-triangle-exclamation" style="margin-right:4px"></i>${escStr(it.shiprocket_last_error)}</div>`
+    : '';
+
   return `
   <div style="padding:16px 20px;border-bottom:1px solid var(--border-light)">
     <div style="display:flex;gap:14px;align-items:flex-start">
@@ -208,6 +223,8 @@ function renderItem(it) {
         ${attrChips ? `<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">${attrChips}</div>` : ''}
         ${notes ? `<div style="font-size:12px;color:var(--text-muted);margin-top:4px"><i class="fa-solid fa-note-sticky" style="margin-right:4px"></i>${escStr(notes)}</div>` : ''}
         ${photoStrip}
+        ${shipInfo}
+        ${shipError}
       </div>
       <div class="fw-600 fs-13" style="white-space:nowrap;margin-left:8px">${price}</div>
     </div>

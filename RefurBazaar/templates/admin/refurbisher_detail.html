@@ -13,6 +13,9 @@
 {% block page_subtitle %}<span id="rd-sub">Profile, listings and orders</span>{% endblock %}
 
 {% block topbar_actions %}
+<button class="btn btn-secondary" id="btn-warehouse" style="display:none">
+  <i class="fa-solid fa-warehouse"></i> Setup Warehouse
+</button>
 <button class="btn btn-success" id="btn-approve" style="display:none">
   <i class="fa-solid fa-circle-check"></i> Approve
 </button>
@@ -271,7 +274,8 @@
       detailUrl: `/admin-api/dashboard/${uid}/refurbisher-detail/`,
       listingsUrl: `/admin-api/dashboard/listings/?refurbisher_id=${uid}`,
       ordersUrl: `/admin-api/dashboard/orders/?refurbisher_id=${uid}`,
-      approveUrl: `/admin-api/dashboard/${uid}/approve-refurbisher/`
+      approveUrl: `/admin-api/dashboard/${uid}/approve-refurbisher/`,
+      warehouseUrl: `/admin-api/warehouse/${uid}/create-warehouse/`
     });
   });
 </script>

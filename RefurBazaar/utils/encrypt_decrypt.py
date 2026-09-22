@@ -1,5 +1,5 @@
 import base64
-
+import pyperclip
 # Function to encode text to Base64
 def text_to_base64(text):
     # Encode the text to bytes, then convert to Base64
@@ -12,11 +12,14 @@ def base64_to_text(b64_text):
 
 if __name__ == "__main__":
     # Example usage
-    original_text = "Hello world"
+    original_text = "Yh@qEEh*MW7vb4mc7mOYYAT90^bX#sDo"
     encoded_text = text_to_base64(original_text)
     decoded_text = base64_to_text(encoded_text)
 
     print(f"Original Text: {original_text}")
     print(f"Encoded Text: {encoded_text}")
     print(f"Decoded Text: {decoded_text}")
+
+    print(f'base64_to_text("{encoded_text}")')
+    pyperclip.copy(f'base64_to_text("{encoded_text}")')  # Copy the encoded text to clipboard
     
