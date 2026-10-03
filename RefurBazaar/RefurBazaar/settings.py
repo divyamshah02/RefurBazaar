@@ -39,6 +39,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -86,26 +87,26 @@ if IS_LOCAL:
     else:
         DATABASES = {
             "default": dj_database_url.config(
-                default="", # DB ecternal link
+                default="postgresql://refurbazaar_db_user:m7MPW6TxqBQ0KzqekniD6cXqIGtbjN9L@dpg-db0ad6gu01pc739hc7t0-a.singapore-postgres.render.com/refurbazaar_db", # DB ecternal link
                 conn_max_age=600,
                 ssl_require=True,
             )
         }
 
 else:
-    DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': BASE_DIR / 'db.sqlite3',
-            }
-        }
     # DATABASES = {
-    #     "default": dj_database_url.config(
-    #         default=os.environ.get("DATABASE_URL"),
-    #         conn_max_age=600,
-    #         ssl_require=True,
-    #     )
-    # }
+    #         'default': {
+    #             'ENGINE': 'django.db.backends.sqlite3',
+    #             'NAME': BASE_DIR / 'db.sqlite3',
+    #         }
+    #     }
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=os.environ.get("DATABASE_URL"),
+            conn_max_age=600,
+            ssl_require=True,
+        )
+    }
 
 
 AUTH_PASSWORD_VALIDATORS = [
