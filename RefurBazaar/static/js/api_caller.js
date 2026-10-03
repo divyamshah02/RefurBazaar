@@ -45,6 +45,18 @@ async function callApi(method, url, bodyData = null, csrfToken = '', media_uploa
         //     throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
         // }
 
+        // No-content responses (e.g. 204 from a DELETE) have an empty body and
+        // cannot be JSON-parsed. Treat them as a successful, bodyless result
+        // instead of falling through to the JSON parse error below.
+        if (response.status === 204 || response.status === 205) {
+            return [response.ok, {
+                success: response.ok,
+                user_not_logged_in: false,
+                user_unauthorized: false,
+                data: null,
+                error: response.ok ? null : `HTTP Error: ${response.status}`
+            }];
+        }
 
         try {
             const data = await response.json();
@@ -53,7 +65,14 @@ async function callApi(method, url, bodyData = null, csrfToken = '', media_uploa
         }
         catch (error) {
             console.log('Error in parsing JSON:', error);
-            // window.location.href=`/login/`;            
+            // window.location.href=`/login/`;
+            return [false, {
+                success: false,
+                user_not_logged_in: false,
+                user_unauthorized: false,
+                data: null,
+                error: "Invalid response from server"
+            }];
         }
 
         // Parse the JSON response

@@ -1,0 +1,122 @@
+{% comment %}<!--
+  ============================================================
+  PRODUCT FINDER MODAL — Standalone Include
+  ============================================================
+  Usage:
+    1. Include this file anywhere with:
+         {% include 'product-finder-modal.html' %}
+    2. Include product-finder.js AFTER bootstrap.bundle.min.js:
+         <script src="{% static 'js/product-finder.js' %}"></script>
+    3. Trigger the modal from anywhere:
+         <button onclick="window.initProductFinder({ category: 'mobile' })">
+           Find My Device
+         </button>
+       category is optional — omit it to let the user pick from all categories.
+  ============================================================
+-->{% endcomment %}
+<!-- align-items: flex-end; -->
+<!-- ===== Product Finder Modal Overlay ===== -->
+<div id="productFinderModal" style="
+    display: none; opacity: 0;
+    position: fixed; inset: 0; z-index: 2000;
+    background: rgba(17,24,39,0.65);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    align-items: flex-center; justify-content: center;
+    transition: opacity 0.3s ease;
+" aria-modal="true" role="dialog" aria-labelledby="finderModalTitle">
+
+    <!-- Dismiss on backdrop click -->
+    <div onclick="window.closeProductFinder()" style="position:absolute;inset:0;z-index:0;"></div>
+
+    <!-- Modal Card -->
+    <div id="finderModalCard" style="
+        position: relative; z-index: 1;
+        width: 100%; max-width: 520px;
+        max-height: 92vh;
+        border-radius: 24px;
+        overflow: hidden;
+        display: flex; flex-direction: column;
+        box-shadow: 0 -20px 60px rgba(0,0,0,0.3);
+        transform: translateY(40px);
+        transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+    ">
+
+        <!-- ── Dark Header ── -->
+        <div style="
+            background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+            padding: 22px 24px 20px;
+            flex-shrink: 0;
+        ">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+                <div>
+                    <p id="finderCategoryLabel" style="
+                        margin: 0 0 4px; font-size: 0.7rem; font-weight: 800;
+                        text-transform: uppercase; letter-spacing: 1px; color: #6fba2c;
+                    ">PRODUCT CONCIERGE</p>
+                    <h2 id="finderModalTitle" style="
+                        margin: 0 0 4px; font-size: 1.35rem; font-weight: 800; color: #fff;
+                        line-height: 1.2;
+                    ">Find your perfect device</h2>
+                    <p style="margin:0; font-size: 0.82rem; color: rgba(255,255,255,0.55);">
+                        A short guided flow to match you with the right device.
+                    </p>
+                </div>
+                <button onclick="window.closeProductFinder()" style="
+                    flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%;
+                    background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.6);
+                    display: flex; align-items: center; justify-content: center;
+                    font-size: 0.95rem; cursor: pointer; transition: background 0.2s;
+                    margin-top: 2px;
+                " onmouseover="this.style.background='rgba(255,255,255,0.2)'"
+                   onmouseout="this.style.background='rgba(255,255,255,0.1)'"
+                   aria-label="Close finder">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ── White Body ── -->
+        <div style="background:#fff; flex:1; overflow-y:auto; display:flex; flex-direction:column;">
+
+            <!-- Progress + Back/Close row -->
+            <div id="finderProgressWrap" style="
+                padding: 18px 24px 0; flex-shrink: 0;
+            ">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 10px;">
+                    <span style="font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.8px; color:#9ca3af;">
+                        GUIDED MATCH
+                    </span>
+                    <span id="finderStepLabel" style="font-size:0.78rem; font-weight:700; color:#6b7280;"></span>
+                </div>
+                <!-- Progress bar -->
+                <div style="height:4px; background:#e5e7eb; border-radius:4px; overflow:hidden; margin-bottom:12px;">
+                    <div id="finderProgressBar" style="height:100%; background:#111827; border-radius:4px; width:0%; transition: width 0.4s ease;"></div>
+                </div>
+                <!-- Back / Close -->
+                <button id="finderBackBtn" onclick="window.finderBack()" style="
+                    background:none; border:none; padding: 0; cursor:pointer;
+                    font-size: 0.82rem; color: #6b7280; font-weight: 700;
+                    display: flex; align-items: center; gap: 4px;
+                    margin-bottom: 4px;
+                " onmouseover="this.style.color='#111827'"
+                   onmouseout="this.style.color='#6b7280'">
+                    <i class="fas fa-chevron-left" style="font-size:0.72rem;"></i>
+                    <span id="finderBackLabel">Back</span>
+                </button>
+            </div>
+
+            <!-- Question / Results Area -->
+            <div id="finderBody" style="padding: 16px 24px 28px; flex:1;"></div>
+
+            <!-- Compare footer (optional) -->
+            <div id="finderCompareFooter" style="
+                padding: 14px 24px; border-top: 1px solid #f3f4f6;
+                text-align: center; display: none; flex-shrink: 0;
+            ">
+                <span style="font-size:0.8rem; color:#9ca3af; font-weight:600;" id="finderCompareText">
+                    Add 2 models to compare
+                </span>
+            </div>
+        </div>
+    </div>
+</div>

@@ -11,33 +11,44 @@
   </div>
 {% endblock %}
 {% block page_subtitle %}<span id="od-sub"></span>{% endblock %}
-{% block topbar_actions %}<span id="od-status-badge"></span>{% endblock %}
+{% block topbar_actions %}
+  <div style="display:flex;align-items:center;gap:10px">
+    <span id="od-status-badge"></span>
+    <button class="btn btn-sm btn-primary" id="od-update-btn" style="display:none" onclick="openStatusModal()">
+      <i class="fa-solid fa-pen-to-square" style="margin-right:5px"></i>Update Status
+    </button>
+  </div>
+{% endblock %}
 
 {% block content %}
 
-<div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
+<div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
 
-  <!-- Left col -->
+  <!-- ── LEFT COLUMN ───────────────────────────────────────────── -->
   <div style="display:flex;flex-direction:column;gap:20px">
 
-    <!-- Order items -->
+    <!-- Order Items -->
     <div class="panel">
       <div class="panel-header">
-        <div><div class="panel-title">Order Items</div><div class="panel-subtitle" id="od-item-count">—</div></div>
+        <div>
+          <div class="panel-title">Order Items</div>
+          <div class="panel-subtitle" id="od-item-count">—</div>
+        </div>
       </div>
       <div id="od-items-list" style="padding:4px 0">
-        <div style="padding:16px 20px"><div class="skeleton" style="height:72px;border-radius:8px"></div></div>
+        <div style="padding:16px 20px"><div class="skeleton" style="height:80px;border-radius:8px"></div></div>
       </div>
     </div>
 
-    <!-- Shipping address -->
+    <!-- Shipping Address -->
     <div class="panel">
       <div class="panel-header"><div class="panel-title">Shipping Address</div></div>
       <div class="panel-body">
         <div class="detail-grid">
           <div class="detail-item"><div class="detail-key">Full Name</div><div class="detail-val" id="od-addr-name">—</div></div>
           <div class="detail-item"><div class="detail-key">Phone</div><div class="detail-val mono" id="od-addr-phone">—</div></div>
-          <div class="detail-item"><div class="detail-key">Street</div><div class="detail-val" id="od-addr-street">—</div></div>
+          <div class="detail-item"><div class="detail-key">Alternate Phone</div><div class="detail-val mono" id="od-addr-altphone">—</div></div>
+          <div class="detail-item"><div class="detail-key">Address</div><div class="detail-val" id="od-addr-street">—</div></div>
           <div class="detail-item"><div class="detail-key">City</div><div class="detail-val" id="od-addr-city">—</div></div>
           <div class="detail-item"><div class="detail-key">State</div><div class="detail-val" id="od-addr-state">—</div></div>
           <div class="detail-item"><div class="detail-key">PIN Code</div><div class="detail-val mono" id="od-addr-pin">—</div></div>
@@ -45,35 +56,100 @@
       </div>
     </div>
 
+    <!-- Billing Address (shown only if different) -->
+    <div class="panel" id="od-billing-panel" style="display:none">
+      <div class="panel-header"><div class="panel-title">Billing Address</div><div class="panel-subtitle">Different from shipping</div></div>
+      <div class="panel-body">
+        <div class="detail-grid">
+          <div class="detail-item"><div class="detail-key">Full Name</div><div class="detail-val" id="od-bill-name">—</div></div>
+          <div class="detail-item"><div class="detail-key">Phone</div><div class="detail-val mono" id="od-bill-phone">—</div></div>
+          <div class="detail-item"><div class="detail-key">Address</div><div class="detail-val" id="od-bill-street">—</div></div>
+          <div class="detail-item"><div class="detail-key">City</div><div class="detail-val" id="od-bill-city">—</div></div>
+          <div class="detail-item"><div class="detail-key">State</div><div class="detail-val" id="od-bill-state">—</div></div>
+          <div class="detail-item"><div class="detail-key">PIN Code</div><div class="detail-val mono" id="od-bill-pin">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delivery & Notes -->
+    <div class="panel" id="od-notes-panel">
+      <div class="panel-header"><div class="panel-title">Delivery &amp; Notes</div></div>
+      <div class="panel-body">
+        <div class="detail-grid">
+          <div class="detail-item"><div class="detail-key">Delivery Date</div><div class="detail-val" id="od-delivery-date">—</div></div>
+          <div class="detail-item"><div class="detail-key">Time Slot</div><div class="detail-val" id="od-timeslot">—</div></div>
+        </div>
+        <div style="margin-top:12px" id="od-special-wrap">
+          <div class="detail-key" style="margin-bottom:6px">Special Instructions</div>
+          <div class="detail-val" id="od-special" style="background:var(--bg);border:1px solid var(--border-light);border-radius:8px;padding:10px 12px;font-size:13px;white-space:pre-wrap">—</div>
+        </div>
+        <div style="margin-top:12px" id="od-note-wrap">
+          <div class="detail-key" style="margin-bottom:6px">Order Note</div>
+          <div class="detail-val" id="od-order-note" style="background:var(--bg);border:1px solid var(--border-light);border-radius:8px;padding:10px 12px;font-size:13px;white-space:pre-wrap">—</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <!-- Right col -->
+  <!-- ── RIGHT COLUMN ──────────────────────────────────────────── -->
   <div style="display:flex;flex-direction:column;gap:16px">
 
-    <!-- Order summary -->
+    <!-- Order Summary -->
     <div class="panel">
       <div class="panel-header"><div class="panel-title">Order Summary</div></div>
-      <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px">
-        <div class="detail-item"><div class="detail-key">Order ID</div><div class="detail-val mono fs-12" id="od-id">—</div></div>
-        <div class="detail-item"><div class="detail-key">Status</div><div id="od-meta-status">—</div></div>
-        <div class="detail-item"><div class="detail-key">Payment</div><div id="od-payment-status">—</div></div>
-        <div class="detail-item"><div class="detail-key">Payment Method</div><div class="detail-val" id="od-payment-method">—</div></div>
-        <div style="border-top:1px solid var(--border-light);padding-top:12px">
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+      <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px">
+        <div class="detail-item">
+          <div class="detail-key">Order ID</div>
+          <div class="detail-val mono fs-12" id="od-id" style="user-select:all">—</div>
+        </div>
+        <div class="detail-item"><div class="detail-key">Order Number</div><div class="detail-val mono fs-12" id="od-number">—</div></div>
+        <div class="detail-item"><div class="detail-key">Order Status</div><div id="od-meta-status">—</div></div>
+        <div class="detail-item"><div class="detail-key">Placed On</div><div class="detail-val fs-12" id="od-date">—</div></div>
+        <div class="detail-item"><div class="detail-key">Last Updated</div><div class="detail-val fs-12" id="od-updated">—</div></div>
+      </div>
+    </div>
+
+    <!-- Payment Info -->
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">Payment</div></div>
+      <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px">
+        <div class="detail-item"><div class="detail-key">Method</div><div class="detail-val" id="od-payment-method">—</div></div>
+        <div class="detail-item"><div class="detail-key">Status</div><div id="od-payment-status">—</div></div>
+        <div class="detail-item" id="od-rpid-row" style="display:none">
+          <div class="detail-key">Razorpay Order ID</div>
+          <div class="detail-val mono fs-12" id="od-rp-order-id" style="word-break:break-all;user-select:all">—</div>
+        </div>
+        <div class="detail-item" id="od-rppid-row" style="display:none">
+          <div class="detail-key">Razorpay Payment ID</div>
+          <div class="detail-val mono fs-12" id="od-rp-payment-id" style="word-break:break-all;user-select:all">—</div>
+        </div>
+        <div style="border-top:1px solid var(--border-light);padding-top:10px;display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;justify-content:space-between">
             <span class="text-muted fs-12">Subtotal</span>
             <span class="fw-600 fs-13" id="od-subtotal">—</span>
           </div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-            <span class="text-muted fs-12">Shipping</span>
+          <div style="display:flex;justify-content:space-between">
+            <span class="text-muted fs-12">Delivery Charge</span>
             <span class="fw-600 fs-13" id="od-shipping">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between" id="od-tax-row">
+            <span class="text-muted fs-12">Tax</span>
+            <span class="fw-600 fs-13" id="od-tax">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between" id="od-discount-row">
+            <span class="text-muted fs-12">Discount</span>
+            <span class="fw-600 fs-13" id="od-discount" style="color:var(--green)">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between" id="od-coupon-row">
+            <span class="text-muted fs-12">Coupon (<span id="od-coupon-code">—</span>)</span>
+            <span class="fw-600 fs-13" id="od-coupon-discount" style="color:var(--green)">—</span>
           </div>
           <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border-light)">
             <span class="fw-600">Total</span>
             <span style="font-size:16px;font-weight:700;color:var(--accent)" id="od-total">—</span>
           </div>
         </div>
-        <div class="detail-item"><div class="detail-key">Placed On</div><div class="detail-val fs-12" id="od-date">—</div></div>
-        <div class="detail-item"><div class="detail-key">Last Updated</div><div class="detail-val fs-12" id="od-updated">—</div></div>
       </div>
     </div>
 
@@ -83,19 +159,59 @@
       <div style="padding:16px 20px">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
           <div class="avatar" id="od-cust-avatar" style="flex-shrink:0">—</div>
-          <div>
-            <div class="fw-600 fs-13" id="od-cust-name">—</div>
-            <div class="text-muted fs-12" id="od-cust-email">—</div>
+          <div style="min-width:0">
+            <div class="fw-600 fs-13 truncate" id="od-cust-name">—</div>
+            <div class="text-muted fs-12 truncate" id="od-cust-email">—</div>
           </div>
         </div>
-        <div class="detail-item"><div class="detail-key">Phone</div><div class="detail-val mono fs-12" id="od-cust-phone">—</div></div>
+        <div class="detail-grid" style="gap:10px">
+          <div class="detail-item"><div class="detail-key">Phone</div><div class="detail-val mono fs-12" id="od-cust-phone">—</div></div>
+          <div class="detail-item"><div class="detail-key">Alt. Phone</div><div class="detail-val mono fs-12" id="od-cust-altphone">—</div></div>
+        </div>
       </div>
     </div>
 
   </div>
 </div>
 
-<!-- Image lightbox -->
+<!-- ── STATUS UPDATE MODAL ───────────────────────────────────────── -->
+<div class="rb-overlay" id="status-modal">
+  <div class="modal-box" style="width:420px;max-width:95vw">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Update Order Status</div>
+        <div class="modal-subtitle" id="sm-order-id-label">—</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('status-modal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+      <div>
+        <label class="detail-key" style="margin-bottom:6px;display:block">Order Status</label>
+        <select id="sm-status" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text-primary);font-size:13px">
+          <option value="pending">Pending Payment</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="processing">Processing</option>
+          <option value="shipped">Shipped</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div>
+        <label class="detail-key" style="margin-bottom:6px;display:block">Payment Received</label>
+        <select id="sm-payment" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text-primary);font-size:13px">
+          <option value="1">Yes — Payment Received</option>
+          <option value="0">No — Not Yet Paid</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('status-modal')">Cancel</button>
+      <button class="btn btn-primary" id="sm-save-btn" onclick="saveOrderStatus()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── IMAGE LIGHTBOX ────────────────────────────────────────────── -->
 <div class="rb-overlay" id="lightbox">
   <div style="max-width:90vw;max-height:90vh;position:relative">
     <button class="modal-close" style="position:absolute;top:-12px;right:-12px;z-index:10;background:rgba(0,0,0,.5);color:#fff;border-color:transparent" onclick="closeModal('lightbox')">
@@ -114,7 +230,8 @@
     const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
     const oid  = window.location.pathname.split('/').filter(Boolean).pop();
     InitOrderDetail(csrf, oid, {
-      detailUrl: `/admin-api/dashboard/${oid}/order-detail/`
+      detailUrl:    `/admin-api/dashboard/${oid}/order-detail/`,
+      updateUrl:    `/admin-api/dashboard/${oid}/update-order-status/`,
     });
   });
 </script>

@@ -1,7 +1,7 @@
 // Handle API errors with profile validation redirects
 
 function handleApiError(response) {
-    console.log('[v0] Handling API error:', response);
+    console.log('Handling API error:', response);
     
     // Check for profile-related errors
     if (response && response.profile_incomplete) {

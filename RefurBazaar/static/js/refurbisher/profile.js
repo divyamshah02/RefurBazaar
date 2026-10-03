@@ -26,13 +26,98 @@ async function loadProfileData() {
     renderProfileData()
     populateForms()
     calculateProfileCompletion()
-    
+    updateSectionLocks()
+
     // Show profile status alert if validation function exists
     if (window.checkProfileStatus) {
       window.checkProfileStatus(companyProfileData)
     }
   } else {
     showErrorMessage(response.error || "Failed to load profile data")
+  }
+}
+
+// Ordered list of profile sections. Each section stays locked until the
+// section(s) before it are complete, so the refurbisher fills the profile
+// section-by-section instead of seeing every form unlocked at once.
+const PROFILE_SECTION_ORDER = [
+  { formId: "personalInfoForm", check: checkPersonalInfoComplete },
+  { formId: "businessDetailsForm", check: checkBusinessOnlyComplete },
+  { formId: "addressForm", check: checkAddressOnlyComplete },
+  { formId: "documentForm", check: checkDocumentsComplete },
+  { formId: "paymentInfoForm", check: checkPaymentInfoComplete },
+]
+
+// Check if business-only fields are complete (excludes address, which is its own section)
+function checkBusinessOnlyComplete() {
+  if (!companyProfileData) return false
+  return !!(
+    companyProfileData.business_type &&
+    companyProfileData.company_name &&
+    companyProfileData.gst_registration_no
+  )
+}
+
+// Check if the address section fields are complete
+function checkAddressOnlyComplete() {
+  if (!companyProfileData) return false
+  return !!(
+    companyProfileData.address_line_1 &&
+    companyProfileData.city &&
+    companyProfileData.state &&
+    companyProfileData.pincode &&
+    companyProfileData.return_address_line_1
+  )
+}
+
+// Lock/unlock each profile section based on whether the section(s) before it
+// are complete. The first section is always unlocked.
+function updateSectionLocks() {
+  let previousUnlockedAndComplete = true
+
+  PROFILE_SECTION_ORDER.forEach((section, index) => {
+    const formEl = document.getElementById(section.formId)
+    if (!formEl) return
+
+    const sectionEl = formEl.closest(".form-section")
+    if (!sectionEl) return
+
+    const shouldUnlock = index === 0 || previousUnlockedAndComplete
+
+    setSectionLocked(sectionEl, !shouldUnlock)
+
+    previousUnlockedAndComplete = shouldUnlock && section.check()
+  })
+}
+
+// Lock or unlock a single profile section: disables its fields/buttons and
+// shows/hides a lock overlay explaining why it's inaccessible.
+function setSectionLocked(sectionEl, locked) {
+  sectionEl.classList.toggle("locked", locked)
+
+  const fields = sectionEl.querySelectorAll("input, select, textarea, button")
+  fields.forEach((field) => {
+    if (locked) {
+      if (!field.hasAttribute("data-was-disabled")) {
+        field.setAttribute("data-was-disabled", field.disabled ? "true" : "false")
+      }
+      field.disabled = true
+    } else if (field.hasAttribute("data-was-disabled")) {
+      field.disabled = field.getAttribute("data-was-disabled") === "true"
+      field.removeAttribute("data-was-disabled")
+    }
+  })
+
+  let overlay = sectionEl.querySelector(".section-lock-overlay")
+  if (locked) {
+    if (!overlay) {
+      overlay = document.createElement("div")
+      overlay.className = "section-lock-overlay"
+      overlay.innerHTML = '<i class="fas fa-lock"></i><span>Complete the previous section to unlock this one</span>'
+      sectionEl.appendChild(overlay)
+    }
+  } else if (overlay) {
+    overlay.remove()
   }
 }
 

@@ -19,7 +19,7 @@ class ProductModelImageInline(admin.TabularInline):
 
 @admin.register(ProductModel)
 class ProductModelAdmin(admin.ModelAdmin):
-    list_display = ['name', 'brand', 'category', 'is_active', 'created_at']
+    list_display = ['name', 'brand', 'category', 'price_min', 'price_max', 'is_active', 'created_at']
     list_filter = ['category', 'brand', 'is_active']
     search_fields = ['name', 'brand__name']
 
@@ -39,8 +39,8 @@ class AttributeMasterAdmin(admin.ModelAdmin):
 
 @admin.register(ProductModelAttribute)
 class ProductModelAttributeAdmin(admin.ModelAdmin):
-    list_display = ['product_model', 'attribute', 'is_required']
-    list_filter = ['is_required', 'product_model__category']
+    list_display = ['product_model', 'attribute', 'is_required', 'data_type', 'default_value']
+    list_filter = ['is_required', 'data_type', 'product_model__category']
     search_fields = ['product_model__name', 'attribute__name']
 
 

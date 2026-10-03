@@ -142,6 +142,57 @@
         </div>
     </div>
 
+    <!-- Accept Order / Schedule Pickup & Shipping Modal -->
+    <div class="modal fade" id="shippingModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Accept Order &mdash; Schedule Pickup</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="shippingItemId">
+                    <div class="mb-3">
+                        <label class="form-label">Pickup Date *</label>
+                        <input type="date" class="form-control" id="pickupDate" required>
+                        <small class="text-muted">Date you want ShipRocket to pick up this item from your warehouse</small>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Length (cm)</label>
+                            <input type="number" class="form-control" id="boxLength" step="0.1">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Breadth (cm)</label>
+                            <input type="number" class="form-control" id="boxBreadth" step="0.1">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Height (cm)</label>
+                            <input type="number" class="form-control" id="boxHeight" step="0.1">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Weight (kg)</label>
+                            <input type="number" class="form-control" id="boxWeight" step="0.1">
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mb-3">Box size is pre-filled based on the product category. Adjust only if this item's actual packed size is different.</small>
+
+                    <button type="button" class="btn btn-outline-primary w-100 mb-3" id="fetchRatesBtn">
+                        <i class="fas fa-truck me-2"></i>Check Delivery Charges
+                    </button>
+
+                    <div id="courierListContainer"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitShipping" disabled>
+                        <i class="fas fa-check me-2"></i>Confirm & Accept Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Device Verification Modal -->
     <div class="modal fade" id="verifyDeviceModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -226,8 +277,10 @@
             const orderDetailUrl = `/order-api/${orderId}/refurbisher-order-detail/`;
             const verifyItemUrl = '/order-api/{item_id}/verify-item/';
             const itemActionUrl = '/order-api/{item_id}/item-action/';
-            
-            InitializeRefurbisherOrderDetail(csrfToken, orderId, orderDetailUrl, verifyItemUrl, itemActionUrl);
+            const shippingRatesUrl = '/order-api/{item_id}/shipping-rates/';
+            const confirmShippingUrl = '/order-api/{item_id}/confirm-shipping/';
+
+            InitializeRefurbisherOrderDetail(csrfToken, orderId, orderDetailUrl, verifyItemUrl, itemActionUrl, shippingRatesUrl, confirmShippingUrl);
         });
     </script>
 </body>

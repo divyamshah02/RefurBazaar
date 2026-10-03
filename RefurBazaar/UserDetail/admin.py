@@ -41,6 +41,9 @@ class CompanyProfileAdmin(admin.ModelAdmin):
             "fields": ("address_line_1", "address_line_2", "pincode", "city", "state", "country", 
                       "return_address_line_1", "return_address_line_2")
         }),
+        ("Shiprocket Information", {
+                    "fields": ("shiprocket_pickup_code", "shiprocket_warehouse_created", "shiprocket_warehouse_created_at", "shiprocket_warehouse_response", "shiprocket_warehouse_error")
+                }),
         ("Documents", {
             "fields": ("gst_certificate", "business_license_file", "identity_proof", "address_proof")
         }),

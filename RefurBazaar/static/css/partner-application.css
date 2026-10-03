@@ -3,7 +3,7 @@
    ========================================= */
 .seller-hero-section {
     background-color: var(--black, #1A1A1A);
-    padding: 80px 0 60px; /* Decreased height drastically */
+    padding: 30px 0; /* Decreased height drastically */
     position: relative;
     overflow: hidden;
     z-index: 1;

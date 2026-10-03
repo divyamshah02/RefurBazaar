@@ -12,9 +12,9 @@ function InitializeAddProductForm(csrf, brands_url, products_url, attributes_url
     productsApiUrl = products_url;
     attributesApiUrl = attributes_url;
     
-    console.log('[v0] Initializing Add Product Form');
-    console.log('[v0] CSRF Token:', csrfToken);
-    console.log('[v0] Products API URL:', productsApiUrl);
+    console.log('Initializing Add Product Form');
+    console.log('CSRF Token:', csrfToken);
+    console.log('Products API URL:', productsApiUrl);
     
     loadBrands();
     setupEventListeners();
@@ -42,10 +42,10 @@ function setupEventListeners() {
 
 async function loadBrands() {
     try {
-        console.log('[v0] Loading brands from:', brandsApiUrl);
+        console.log('Loading brands from:', brandsApiUrl);
         const [success, response] = await window.callApi('GET', brandsApiUrl, null, csrfToken);
         
-        console.log('[v0] Brands API Response:', response);
+        console.log('Brands API Response:', response);
         
         if (success && response.success && response.data) {
             allBrands = response.data;
@@ -54,7 +54,7 @@ async function loadBrands() {
             showError('Failed to load brands');
         }
     } catch (error) {
-        console.error('[v0] Error loading brands:', error);
+        console.error('Error loading brands:', error);
         showError('Failed to load brands');
     }
 }
@@ -91,7 +91,7 @@ async function loadAttributesForCategory() {
         return;
     }
     
-    console.log('[v0] Loading attributes for category:', category);
+    console.log('Loading attributes for category:', category);
     
     // Show loading spinner
     document.getElementById('loadingAttributes').classList.add('active');
@@ -100,11 +100,11 @@ async function loadAttributesForCategory() {
     
     try {
         const url = `${attributesApiUrl}?category=${category}`;
-        console.log('[v0] Attributes URL:', url);
+        console.log('Attributes URL:', url);
         
         const [success, response] = await window.callApi('GET', url, null, csrfToken);
         
-        console.log('[v0] Attributes API Response:', response);
+        console.log('Attributes API Response:', response);
         
         if (success && response.success && response.data) {
             const attributes = response.data;
@@ -123,7 +123,7 @@ async function loadAttributesForCategory() {
             document.getElementById('loadingAttributes').classList.remove('active');
         }
     } catch (error) {
-        console.error('[v0] Error loading attributes:', error);
+        console.error('Error loading attributes:', error);
         showError('Failed to load attributes');
         document.getElementById('loadingAttributes').classList.remove('active');
     }
@@ -132,45 +132,80 @@ async function loadAttributesForCategory() {
 function renderAttributes(attributes) {
     const container = document.getElementById('attributesContainer');
     container.innerHTML = '';
-    
+
     attributes.forEach(attr => {
         const attrDiv = document.createElement('div');
-        attrDiv.className = 'attribute-card d-flex align-items-center';
-        
+        attrDiv.className = 'attribute-card';
+        attrDiv.dataset.dataType = attr.data_type || 'text';
+        attrDiv.dataset.possibleValues = JSON.stringify(attr.possible_values || []);
+
+        const topRow = document.createElement('div');
+        topRow.className = 'd-flex align-items-center';
+
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.className = 'form-check-input';
         checkbox.id = `attr_${attr.id}`;
         checkbox.value = attr.id;
         checkbox.dataset.attrName = attr.name;
-        checkbox.addEventListener('change', updateSummary);
-        
+
         const label = document.createElement('label');
         label.className = 'form-check-label ms-2';
         label.htmlFor = `attr_${attr.id}`;
-        
-        // Create label text with attribute type info
         let labelText = attr.name;
         if (attr.data_type) {
             labelText += ` <span class="small text-muted">(${attr.data_type})</span>`;
         }
-        
         label.innerHTML = labelText;
-        
-        // If attribute has possible values, show them
-        if (attr.possible_values && attr.possible_values.length > 0) {
-            const valuesSpan = document.createElement('div');
-            valuesSpan.className = 'small text-muted mt-2';
-            valuesSpan.innerHTML = `Options: ${attr.possible_values.join(', ')}`;
-            
-            attrDiv.appendChild(checkbox);
-            attrDiv.appendChild(label);
-            attrDiv.appendChild(valuesSpan);
+
+        topRow.appendChild(checkbox);
+        topRow.appendChild(label);
+        attrDiv.appendChild(topRow);
+
+        // Value input — shown once the attribute is selected, admin fills it in directly
+        const valueWrap = document.createElement('div');
+        valueWrap.className = 'mt-2';
+        valueWrap.id = `attr_value_wrap_${attr.id}`;
+        valueWrap.style.display = 'none';
+
+        let valueInput;
+        if (attr.data_type === 'select' && attr.possible_values && attr.possible_values.length > 0) {
+            valueInput = document.createElement('select');
+            valueInput.className = 'form-select form-select-sm';
+            const blankOpt = document.createElement('option');
+            blankOpt.value = '';
+            blankOpt.textContent = 'Select value...';
+            valueInput.appendChild(blankOpt);
+            attr.possible_values.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v;
+                opt.textContent = v;
+                valueInput.appendChild(opt);
+            });
         } else {
-            attrDiv.appendChild(checkbox);
-            attrDiv.appendChild(label);
+            valueInput = document.createElement('input');
+            valueInput.type = attr.data_type === 'number' ? 'number' : 'text';
+            valueInput.className = 'form-control form-control-sm';
+            valueInput.placeholder = `Enter ${attr.name.toLowerCase()} value`;
         }
-        
+        valueInput.id = `attr_value_${attr.id}`;
+        valueInput.dataset.attrId = attr.id;
+        if (attr.default_value) valueInput.value = attr.default_value;
+
+        valueWrap.appendChild(valueInput);
+        attrDiv.appendChild(valueWrap);
+
+        checkbox.addEventListener('change', function() {
+            valueWrap.style.display = this.checked ? 'block' : 'none';
+            updateSummary();
+        });
+
+        // Restore checked/visible state when editing an already-selected attribute
+        if (attr.default_value) {
+            checkbox.checked = true;
+            valueWrap.style.display = 'block';
+        }
+
         container.appendChild(attrDiv);
     });
 }
@@ -227,7 +262,7 @@ function previewImage() {
 async function handleSubmit(event) {
     event.preventDefault();
     
-    console.log('[v0] Form submission started');
+    console.log('Form submission started');
     
     // Gather form data
     const category = document.getElementById('category').value;
@@ -239,14 +274,23 @@ async function handleSubmit(event) {
     const submitBtn = document.getElementById('submitBtn');
     const originalText = submitBtn.innerHTML;
     
-    // Get selected attributes
-    const selectedAttrCheckboxes = document.querySelectorAll('input[type="checkbox"]:checked');
-    const attributes = Array.from(selectedAttrCheckboxes).map(checkbox => ({
-        attribute_id: parseInt(checkbox.value),
-        is_required: true
-    }));
+    // Get selected attributes, along with the value the admin entered directly
+    const selectedAttrCheckboxes = document.querySelectorAll('#attributesContainer input[type="checkbox"]:checked');
+    const attributes = Array.from(selectedAttrCheckboxes).map(checkbox => {
+        const attrId = checkbox.value;
+        const card = checkbox.closest('.attribute-card');
+        const valueInput = document.getElementById(`attr_value_${attrId}`);
+        const value = valueInput ? valueInput.value.trim() : '';
+        return {
+            attribute_id: parseInt(attrId),
+            is_required: false,
+            data_type: card ? card.dataset.dataType : 'text',
+            possible_values: card ? JSON.parse(card.dataset.possibleValues || '[]') : [],
+            default_value: value || null
+        };
+    });
     
-    console.log('[v0] Form Data:', {
+    console.log('Form Data:', {
         category,
         brandId,
         productName,
@@ -287,7 +331,7 @@ async function handleSubmit(event) {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"><span class="visually-hidden">Loading...</span></span>Creating...';
         
-        console.log('[v0] Sending API request to:', productsApiUrl);
+        console.log('Sending API request to:', productsApiUrl);
         
         // Use custom fetch for FormData
         const response = await fetch(productsApiUrl, {
@@ -300,7 +344,7 @@ async function handleSubmit(event) {
         
         const data = await response.json();
         
-        console.log('[v0] API Response:', data);
+        console.log('API Response:', data);
         
         if (data.success) {
             // Show success message
@@ -319,7 +363,7 @@ async function handleSubmit(event) {
             submitBtn.innerHTML = originalText;
         }
     } catch (error) {
-        console.error('[v0] Error creating product:', error);
+        console.error('Error creating product:', error);
         showError('Failed to create product: ' + error.message);
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
@@ -332,7 +376,7 @@ function resetForm() {
     document.getElementById('successAlert').classList.remove('show');
     selectedAttributes.clear();
     updateSummary();
-    console.log('[v0] Form reset');
+    console.log('Form reset');
 }
 
 function showError(message) {
@@ -341,7 +385,7 @@ function showError(message) {
     errorMessage.textContent = message;
     errorAlert.style.display = 'block';
     
-    console.error('[v0] Error:', message);
+    console.error('Error:', message);
     
     // Auto hide after 5 seconds
     setTimeout(() => {

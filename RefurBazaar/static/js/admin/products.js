@@ -144,6 +144,7 @@ function openCreateProduct() {
   document.getElementById('mprod-active').checked = true;
   document.getElementById('mprod-attrs-list').innerHTML = '<div class="text-muted fs-12" style="padding:12px 0">Select a category to see available attributes</div>';
   _updateAttrCount(0, 0);
+  _resetImageUI(null, []);
   openModal('modal-product');
 }
 
@@ -160,6 +161,8 @@ function editProduct(id) {
   document.getElementById('mprod-active').checked = p.is_active;
   // model_attributes is now included in the list response — use it for pre-selection
   if (p.category) loadAttrsForModal(p.category, p.model_attributes || []);
+  // Populate cover image + gallery images
+  _resetImageUI(p.image || null, p.images || []);
   openModal('modal-product');
 }
 
@@ -191,6 +194,7 @@ async function loadAttrsForModal(category, selectedAttrs = []) {
       section:         ma.section         || 'main',
       data_type:       ma.data_type       || 'text',
       possible_values: ma.possible_values || [],
+      default_value:   ma.default_value   || '',
     };
   }
 
@@ -214,12 +218,15 @@ async function loadAttrsForModal(category, selectedAttrs = []) {
     const section = sel?.section    || 'main';
     const dtype   = sel?.data_type  || 'text';
     const pvals   = (sel?.possible_values || []).join(', ');
+    const dval    = sel?.default_value || '';
+    const choiceOpts = (sel?.possible_values || [])
+      .map(v => `<option value="${v}" ${v === dval ? 'selected' : ''}>${v}</option>`).join('');
 
     const mainBg  = section === 'main'      ? 'var(--accent)' : 'transparent';
     const mainClr = section === 'main'      ? '#fff'          : 'var(--text-muted)';
     const secBg   = section === 'secondary' ? 'var(--accent)' : 'transparent';
     const secClr  = section === 'secondary' ? '#fff'          : 'var(--text-muted)';
-
+/* <option value="number" ${dtype==='number' ? 'selected':''}>Number</option> */
     return `
     <div class="attr-row" style="display:flex;flex-direction:column;border:1px solid var(--border-light);border-radius:8px;background:var(--surface)">
       <!-- Row 1: checkbox + name -->
@@ -237,16 +244,16 @@ async function loadAttrsForModal(category, selectedAttrs = []) {
           <select name="dtype_${a.id}" data-aid="${a.id}"
                   style="font-size:12px;padding:3px 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text);height:28px;cursor:pointer"
                   onchange="toggleChoiceValues(this, this.dataset.aid)">
-            <option value="text"   ${dtype==='text'   ? 'selected':''}>Text</option>
-            <option value="number" ${dtype==='number' ? 'selected':''}>Number</option>
-            <option value="choice" ${dtype==='choice' ? 'selected':''}>Choice</option>
+            <option value="text"   ${dtype==='text'   ? 'selected':''}>Single</option>
+            
+            <option value="choice" ${dtype==='choice' ? 'selected':''}>Multiple</option>
           </select>
         </div>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;white-space:nowrap;color:var(--text-muted)">
+        <label style="display:none;align-items:center;gap:5px;font-size:12px;cursor:pointer;white-space:nowrap;color:var(--text-muted)">
           <input type="checkbox" name="req" value="${a.id}" ${reqChk}
                  style="width:13px;height:13px;accent-color:var(--accent)" /> Required
         </label>
-        <div style="display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;font-size:11px;font-weight:600;flex-shrink:0">
+        <div style="display:none;border:1px solid var(--border);border-radius:6px;overflow:hidden;font-size:11px;font-weight:600;flex-shrink:0">
           <label style="display:flex;align-items:center;padding:4px 10px;cursor:pointer;background:${mainBg};color:${mainClr};transition:background .12s,color .12s">
             <input type="radio" name="sec_${a.id}" value="main" ${section==='main' ? 'checked':''}
                    style="display:none" onchange="updateSectionStyle(this)" /> Main
@@ -261,9 +268,23 @@ async function loadAttrsForModal(category, selectedAttrs = []) {
       <div id="vals_${a.id}"
            style="display:${show === 'flex' && dtype === 'choice' ? 'flex' : 'none'};align-items:center;gap:8px;padding:0 12px 10px 37px">
         <span style="font-size:11px;color:var(--text-muted);white-space:nowrap">Options (comma-sep):</span>
-        <input type="text" name="pvals_${a.id}" value="${pvals}"
+        <input type="text" name="pvals_${a.id}" value="${pvals}" data-aid="${a.id}"
                placeholder="e.g. 128GB, 256GB, 512GB"
+               oninput="syncChoiceValueOptions(this, this.dataset.aid)"
                style="flex:1;font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text)" />
+      </div>
+      <!-- Row 4: value — the actual value for this product; shown whenever the attribute is ticked -->
+      <div id="value_${a.id}"
+           style="display:${show};align-items:center;gap:8px;padding:0 12px 10px 37px">
+        <span style="font-size:11px;color:var(--text-muted);white-space:nowrap">Value:</span>
+        ${dtype === 'choice'
+          ? `<select name="val_${a.id}" data-aid="${a.id}"
+                     style="flex:1;font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text)">
+               <option value="">Select value…</option>${choiceOpts}
+             </select>`
+          : `<input type="${dtype === 'number' ? 'number' : 'text'}" name="val_${a.id}" data-aid="${a.id}" value="${dval}"
+                    placeholder="Enter ${a.name.toLowerCase()} value"
+                    style="flex:1;font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text)" />`}
       </div>
     </div>`;
   }).join('');
@@ -275,15 +296,18 @@ function toggleAttrControls(cb) {
   const aid    = cb.value;
   const ctrlBar = row.querySelector('.attr-ctrl-bar');
   const valsRow = document.getElementById('vals_' + aid);
+  const valueRow = document.getElementById('value_' + aid);
 
   if (cb.checked) {
     if (ctrlBar) ctrlBar.style.display = 'flex';
     // Show the choice-values row only if type is already 'choice'
     const dtypeSel = row.querySelector('select[name="dtype_' + aid + '"]');
     if (valsRow) valsRow.style.display = (dtypeSel && dtypeSel.value === 'choice') ? 'flex' : 'none';
+    if (valueRow) valueRow.style.display = 'flex';
   } else {
     if (ctrlBar) ctrlBar.style.display = 'none';
     if (valsRow) valsRow.style.display = 'none';
+    if (valueRow) valueRow.style.display = 'none';
   }
 
   // Live-update the selected count badge
@@ -303,11 +327,46 @@ function _updateAttrCount(selected, total) {
   badge.style.fontSize = '11px';
 }
 
-/* Show/hide the choice-values input based on the type selector */
+/* Show/hide the choice-values input based on the type selector, and rebuild
+   the value field so it matches the newly selected type (text/number/choice) */
 function toggleChoiceValues(select, aid) {
+  const dtype   = select.value;
   const valsRow = document.getElementById('vals_' + aid);
-  if (!valsRow) return;
-  valsRow.style.display = select.value === 'choice' ? 'flex' : 'none';
+  if (valsRow) valsRow.style.display = dtype === 'choice' ? 'flex' : 'none';
+
+  let is_req_ele = document.querySelector(`input[type="checkbox"][value="${aid}"][name="req"]`)
+  is_req_ele.checked = false;
+  if (dtype === 'choice' && is_req_ele) {
+    is_req_ele.checked = true;
+  }  
+
+  const valueRow = document.getElementById('value_' + aid);
+  if (!valueRow) return;
+  const pvalsEl = document.querySelector(`input[name="pvals_${aid}"]`);
+  const pvals   = pvalsEl ? pvalsEl.value.split(',').map(v => v.trim()).filter(Boolean) : [];
+
+  const label = valueRow.querySelector('span');
+  const html  = dtype === 'choice'
+    ? `<select name="val_${aid}" data-aid="${aid}"
+               style="flex:1;font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text)">
+         <option value="">Select value…</option>${pvals.map(v => `<option value="${v}">${v}</option>`).join('')}
+       </select>`
+    : `<input type="${dtype === 'number' ? 'number' : 'text'}" name="val_${aid}" data-aid="${aid}"
+              placeholder="Enter value"
+              style="flex:1;font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text)" />`;
+  valueRow.innerHTML = label.outerHTML + html;
+}
+
+/* Keep the choice value dropdown's options in sync with the comma-separated Options input */
+function syncChoiceValueOptions(input, aid) {
+  const valueRow = document.getElementById('value_' + aid);
+  if (!valueRow) return;
+  const select = valueRow.querySelector('select[name="val_' + aid + '"]');
+  if (!select) return;
+  const current = select.value;
+  const pvals = input.value.split(',').map(v => v.trim()).filter(Boolean);
+  select.innerHTML = `<option value="">Select value…</option>` +
+    pvals.map(v => `<option value="${v}" ${v === current ? 'selected' : ''}>${v}</option>`).join('');
 }
 
 /* Keep section pill colours in sync after a radio click */
@@ -320,21 +379,164 @@ function updateSectionStyle(radio) {
   });
 }
 
-/* ─── Save product ──────────────────────────────────────────────── */
+/* ─── Image state ───────────────────────────────────────────────── */
+// Staged gallery files the user has picked but not yet uploaded
+let _stagedGalleryFiles = [];
+
+/* ─── Main cover image helpers ──────────────────────────────────── */
+
+/**
+ * Reset both the cover image preview and the gallery list.
+ * @param {string|null} coverUrl   - existing main image URL (or null)
+ * @param {Array}       galleryItems - existing gallery [{id, image}]
+ */
+function _resetImageUI(coverUrl, galleryItems) {
+  _stagedGalleryFiles = [];
+
+  // Cover image
+  const fileInput = document.getElementById('mprod-image-file');
+  const preview   = document.getElementById('mprod-img-preview');
+  const label     = document.getElementById('mprod-img-label');
+  if (fileInput) fileInput.value = '';
+  if (preview) {
+    preview.innerHTML = coverUrl
+      ? `<img src="${coverUrl}" alt="Cover" style="width:100%;height:100%;object-fit:contain;">`
+      : '<i class="fa-regular fa-image" style="font-size:22px;color:var(--text-muted)"></i>';
+  }
+  if (label) label.textContent = coverUrl ? 'Change cover image…' : 'Choose cover image…';
+
+  // Gallery
+  _renderGallery(galleryItems || []);
+
+  // Clear file input
+  const galleryInput = document.getElementById('mprod-gallery-files');
+  if (galleryInput) galleryInput.value = '';
+}
+
+/** Live-preview the selected cover image */
+function previewProductImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Image must be under 5 MB', 'error');
+    input.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const preview = document.getElementById('mprod-img-preview');
+    const label   = document.getElementById('mprod-img-label');
+    if (preview) preview.innerHTML = `<img src="${e.target.result}" alt="Preview" style="width:100%;height:100%;object-fit:contain;">`;
+    if (label)   label.textContent = file.name;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ─── Gallery helpers ───────────────────────────────────────────── */
+
+/**
+ * Render the gallery list — both saved items (with delete ×) and
+ * staged (local preview) items (with remove × before upload).
+ */
+function _renderGallery(savedItems) {
+  const list = document.getElementById('mprod-gallery-list');
+  if (!list) return;
+
+  const thumbStyle = `
+    position:relative;width:72px;height:72px;border-radius:8px;
+    border:1px solid var(--border);overflow:hidden;background:var(--surface);flex-shrink:0;
+  `;
+  const imgStyle = `width:100%;height:100%;object-fit:contain;display:block;`;
+  const xStyle = `
+    position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;
+    background:rgba(0,0,0,.55);color:#fff;border:none;cursor:pointer;
+    font-size:10px;line-height:18px;text-align:center;padding:0;
+  `;
+
+  // Saved images from the server
+  const savedHtml = savedItems.map(img => `
+    <div style="${thumbStyle}" id="gallery-item-${img.id}">
+      <img src="${img.image}" alt="Gallery" style="${imgStyle}">
+      <button type="button" style="${xStyle}" title="Delete image"
+              onclick="deleteProductImage(${img.id})">×</button>
+    </div>`).join('');
+
+  // Staged (local) preview images
+  const stagedHtml = _stagedGalleryFiles.map((f, idx) => {
+    const url = URL.createObjectURL(f);
+    return `
+      <div style="${thumbStyle}" id="staged-gallery-${idx}">
+        <img src="${url}" alt="Staged" style="${imgStyle}">
+        <button type="button" style="${xStyle}" title="Remove"
+                onclick="removeStagedGalleryImage(${idx})">×</button>
+      </div>`;
+  }).join('');
+
+  list.innerHTML = savedHtml + stagedHtml;
+}
+
+/** User picks new gallery files — stage them locally */
+function stageGalleryImages(input) {
+  const files = Array.from(input.files);
+  const oversized = files.filter(f => f.size > 5 * 1024 * 1024);
+  if (oversized.length) {
+    showToast(`${oversized.length} file(s) exceed 5 MB and were skipped`, 'warning');
+  }
+  _stagedGalleryFiles = _stagedGalleryFiles.concat(files.filter(f => f.size <= 5 * 1024 * 1024));
+  input.value = '';
+
+  // Re-read existing saved items from the current product data
+  const id = document.getElementById('mprod-id').value;
+  const p  = id ? _prAll.find(x => String(x.id) === String(id)) : null;
+  _renderGallery(p?.images || []);
+}
+
+/** Remove a not-yet-uploaded staged file */
+function removeStagedGalleryImage(idx) {
+  _stagedGalleryFiles.splice(idx, 1);
+  const id = document.getElementById('mprod-id').value;
+  const p  = id ? _prAll.find(x => String(x.id) === String(id)) : null;
+  _renderGallery(p?.images || []);
+}
+
+/** DELETE an already-saved gallery image via the API */
+async function deleteProductImage(imageId) {
+  const productId = document.getElementById('mprod-id').value;
+  if (!productId) return;
+
+  const [ok, res] = await callApi(
+    'DELETE',
+    `${_prUrls.imagesBaseUrl}${productId}/delete-image/${imageId}/`,
+    null, _prCsrf
+  );
+
+  if (ok && res.success) {
+    // Remove from the in-memory product record so _renderGallery stays consistent
+    const p = _prAll.find(x => String(x.id) === String(productId));
+    if (p && p.images) p.images = p.images.filter(i => i.id !== imageId);
+    _renderGallery(p?.images || []);
+    showToast('Image deleted', 'success');
+  } else {
+    showToast(res?.error || 'Failed to delete image', 'error');
+  }
+}
+
+/* ─── Save product (FormData for multipart / image support) ─────── */
 async function saveProduct() {
-  const id       = document.getElementById('mprod-id').value;
-  const brand_id = document.getElementById('mprod-brand').value;
-  const category = document.getElementById('mprod-category').value;
-  const name     = document.getElementById('mprod-name').value.trim();
-  const year     = document.getElementById('mprod-year').value;
-  const desc     = document.getElementById('mprod-desc').value.trim();
-  const active   = document.getElementById('mprod-active').checked;
+  const id        = document.getElementById('mprod-id').value;
+  const brand_id  = document.getElementById('mprod-brand').value;
+  const category  = document.getElementById('mprod-category').value;
+  const name      = document.getElementById('mprod-name').value.trim();
+  const year      = document.getElementById('mprod-year').value;
+  const desc      = document.getElementById('mprod-desc').value.trim();
+  const active    = document.getElementById('mprod-active').checked;
+  const coverFile = document.getElementById('mprod-image-file')?.files[0] || null;
 
   if (!brand_id || !category || !name) {
     showToast('Brand, category, and name are required', 'error'); return;
   }
 
-  // Gather selected attributes: required, section, data_type, possible_values
+  // Gather selected attributes
   const checkedAttrs = [...document.querySelectorAll('input[name="attr"]:checked')];
   const requiredIds  = new Set([...document.querySelectorAll('input[name="req"]:checked')].map(i => i.value));
 
@@ -344,43 +546,65 @@ async function saveProduct() {
     const secRadio = row ? row.querySelector('input[name="sec_' + aid + '"]:checked') : null;
     const dtypeSel = row ? row.querySelector('select[name="dtype_' + aid + '"]') : null;
     const pvalsEl  = row ? row.querySelector('input[name="pvals_' + aid + '"]') : null;
+    const valEl    = row ? row.querySelector('[name="val_' + aid + '"]') : null;
     const dtype    = dtypeSel ? dtypeSel.value : 'text';
     const pvalsRaw = pvalsEl  ? pvalsEl.value  : '';
     const possible_values = dtype === 'choice'
       ? pvalsRaw.split(',').map(v => v.trim()).filter(Boolean)
       : [];
+    const defaultValue = valEl ? valEl.value.trim() : '';
     return {
       attribute_id:    Number(aid),
       is_required:     requiredIds.has(aid),
       section:         secRadio ? secRadio.value : 'main',
       data_type:       dtype,
       possible_values: possible_values,
+      default_value:   defaultValue || null,
     };
   });
 
-  const payload = { brand_id: Number(brand_id), category, name, is_active: active, attributes };
-  if (year) payload.release_year = Number(year);
-  if (desc) payload.description  = desc;
+  // ── Step 1: Save product (cover image + all fields) ──────────────
+  const fd = new FormData();
+  fd.append('brand_id',   brand_id);
+  fd.append('category',   category);
+  fd.append('name',       name);
+  fd.append('is_active',  active);
+  fd.append('attributes', JSON.stringify(attributes));
+  if (year)      fd.append('release_year', year);
+  if (desc)      fd.append('description',  desc);
+  if (coverFile) fd.append('image',        coverFile);
 
   const btn = document.getElementById('mprod-save-btn');
   btn.disabled = true; btn.textContent = 'Saving…';
 
-  let ok, res;
+  let ok, res, savedId;
   if (id) {
-    [ok, res] = await callApi('PATCH', `${_prUrls.createUrl}${id}/`, payload, _prCsrf);
+    [ok, res] = await callApi('PATCH', `${_prUrls.createUrl}${id}/`, fd, _prCsrf, true);
+    savedId = id;
   } else {
-    [ok, res] = await callApi('POST', _prUrls.createUrl, payload, _prCsrf);
+    [ok, res] = await callApi('POST', _prUrls.createUrl, fd, _prCsrf, true);
+    savedId = res?.data?.id;
+  }
+
+  if (!ok || !res?.success) {
+    btn.disabled = false; btn.textContent = 'Save Product';
+    showToast(res?.message || res?.error || 'Failed to save product', 'error');
+    return;
+  }
+
+  // ── Step 2: Upload staged gallery images (if any) ────────────────
+  if (_stagedGalleryFiles.length > 0 && savedId) {
+    btn.textContent = `Uploading ${_stagedGalleryFiles.length} image(s)…`;
+    const gfd = new FormData();
+    _stagedGalleryFiles.forEach(f => gfd.append('images', f));
+    await callApi('POST', `${_prUrls.imagesBaseUrl}${savedId}/add-image/`, gfd, _prCsrf, true);
+    _stagedGalleryFiles = [];
   }
 
   btn.disabled = false; btn.textContent = 'Save Product';
-
-  if (ok && res.success) {
-    closeModal('modal-product');
-    showToast(id ? 'Product updated' : 'Product created', 'success');
-    loadProducts();
-  } else {
-    showToast(res?.message || res?.error || 'Failed to save product', 'error');
-  }
+  closeModal('modal-product');
+  showToast(id ? 'Product updated' : 'Product created', 'success');
+  loadProducts();
 }
 
 function set(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }

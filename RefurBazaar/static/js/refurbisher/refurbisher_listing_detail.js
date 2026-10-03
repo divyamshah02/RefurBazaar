@@ -198,7 +198,15 @@ function renderUnitsTable() {
 
   tbody.innerHTML = listingData.units
     .map((unit) => {
-      const attributes = unit.attributes.map((attr) => `${attr.attribute_name}: ${attr.value}`).join(", ")
+      const attributes =
+        unit.attributes && unit.attributes.length > 0
+          ? `<div class="attribute-pills">${unit.attributes
+              .map(
+                (attr) =>
+                  `<span class="attribute-pill"><span class="attribute-pill-label">${attr.attribute_name}</span><span class="attribute-pill-value">${attr.value}</span></span>`,
+              )
+              .join("")}</div>`
+          : '<span class="text-muted">No attributes</span>'
 
       const conditionBadge = getConditionBadge(unit.condition)
 

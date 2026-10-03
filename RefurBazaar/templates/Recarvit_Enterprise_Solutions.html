@@ -1,0 +1,570 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Solutions — Recarvit | Business IT Procurement & Asset Disposal</title>
+    <meta name="description" content="Certified refurbished technology and responsible IT asset disposal for businesses, institutions and organisations across India. Bulk procurement, data erasure, GST invoicing.">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Global brand styles (same as partner-application page) -->
+    <link rel="stylesheet" href="{% static 'css/homepage/styles.css' %}">
+    <!-- Page-specific styles -->
+    <link rel="stylesheet" href="{% static 'css/enterprise-solutions.css' %}">
+</head>
+
+<body>
+
+    <!-- ========================= NAVBAR ========================= -->
+    {% include 'navbar.html' %}
+
+
+    <!-- ========================= HERO ========================= -->
+    <section class="enterprise-hero-section">
+        <div class="container-fluid px-3 px-lg-5 enterprise-hero-inner">
+            <div class="row align-items-center g-5">
+
+                <!-- Left: Copy -->
+                <div class="col-lg-6">
+                    <span class="enterprise-hero-badge">
+                        <i class="fas fa-building me-2"></i>Enterprise Solutions
+                    </span>
+                    <h1 class="enterprise-hero-title">
+                        Buy. Upgrade.<br><span>Dispose. Responsibly.</span>
+                    </h1>
+                    <p class="enterprise-hero-subtitle">
+                        Certified refurbished technology and secure IT asset disposal for businesses, institutions and organisations across India.
+                    </p>
+
+                    <ul class="enterprise-check-list">
+                        <li><i class="fas fa-check-circle"></i> Need certified refurbished devices for your growing team?</li>
+                        <li><i class="fas fa-check-circle"></i> Planning a bulk technology purchase for your organisation?</li>
+                        <li><i class="fas fa-check-circle"></i> Looking to securely dispose of retired IT assets?</li>
+                        <li><i class="fas fa-check-circle"></i> End-to-end support — from procurement to responsible redeployment.</li>
+                    </ul>
+
+                    <div class="d-flex flex-column flex-sm-row gap-3">
+                        <a href="#enquiry" class="enterprise-hero-btn-primary">
+                            Request a Quote &rarr;
+                        </a>
+                        <a href="#solutions" class="enterprise-hero-btn-outline">
+                            Explore Solutions ↓
+                        </a>
+                    </div>
+
+                    <div class="hero-stats-bar">
+                        <div class="hero-stat-item">
+                            <span class="hero-stat-number">500+</span>
+                            <span class="hero-stat-label">Devices Deployed</span>
+                        </div>
+                        <div class="hero-stat-item">
+                            <span class="hero-stat-number">100%</span>
+                            <span class="hero-stat-label">Data Erasure Certified</span>
+                        </div>
+                        <div class="hero-stat-item">
+                            <span class="hero-stat-number">PAN India</span>
+                            <span class="hero-stat-label">Delivery</span>
+                        </div>
+                        <div class="hero-stat-item">
+                            <span class="hero-stat-number">GST</span>
+                            <span class="hero-stat-label">Invoice Provided</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Visual Cards -->
+                <div class="col-lg-6">
+                    <div class="enterprise-hero-visual">
+                        <div class="hero-visual-card">
+                            <div class="hero-visual-icon">
+                                <i class="fas fa-laptop"></i>
+                            </div>
+                            <div>
+                                <div class="hero-visual-title">Bulk Device Procurement</div>
+                                <p class="hero-visual-desc">Certified refurbished laptops, desktops & accessories with warranty and GST invoice.</p>
+                            </div>
+                        </div>
+                        <div class="hero-visual-card">
+                            <div class="hero-visual-icon">
+                                <i class="fas fa-recycle"></i>
+                            </div>
+                            <div>
+                                <div class="hero-visual-title">IT Asset Disposal (ITAD)</div>
+                                <p class="hero-visual-desc">Secure data erasure, compliant recycling and full documentation for retired equipment.</p>
+                            </div>
+                        </div>
+                        <div class="hero-visual-card">
+                            <div class="hero-visual-icon">
+                                <i class="fas fa-shield-halved"></i>
+                            </div>
+                            <div>
+                                <div class="hero-visual-title">Compliance & Documentation</div>
+                                <p class="hero-visual-desc">Audit-ready reports, certificates of destruction and end-of-life compliance records.</p>
+                            </div>
+                        </div>
+                        <div class="hero-visual-card">
+                            <div class="hero-visual-icon">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <div>
+                                <div class="hero-visual-title">Dedicated Account Manager</div>
+                                <p class="hero-visual-desc">A single point of contact for all your enterprise IT requirements and ongoing support.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ========================= SOLUTIONS ========================= -->
+    <section id="solutions" class="enterprise-solutions-section">
+        <div class="container-fluid px-3 px-lg-5">
+
+            <div class="text-center mb-5">
+                <span class="ent-section-overline">Choose Your Requirement</span>
+                <h2 class="ent-section-title">How Can We Help?</h2>
+                <p class="ent-section-desc">Select the solution that best matches your business needs and we'll take care of the rest.</p>
+            </div>
+
+            <div class="row g-4">
+
+                <!-- Card 1: Procurement -->
+                <div class="col-lg-6">
+                    <div class="ent-solution-card">
+                        <div class="ent-sol-icon">
+                            <i class="fas fa-laptop"></i>
+                        </div>
+                        <h3 class="ent-sol-title">Procure Refurbished Devices</h3>
+                        <p class="ent-sol-desc">Equip your workforce with certified refurbished laptops, desktops and accessories at significant cost savings — without compromising on quality or reliability.</p>
+                        <ul class="ent-sol-list">
+                            <li><i class="fas fa-check-circle"></i> Bulk Orders — from 5 units to 500+</li>
+                            <li><i class="fas fa-check-circle"></i> Warranty Included on All Devices</li>
+                            <li><i class="fas fa-check-circle"></i> GST Invoice for Easy Accounting</li>
+                            <li><i class="fas fa-check-circle"></i> PAN India Delivery & Logistics</li>
+                            <li><i class="fas fa-check-circle"></i> Dedicated Account Support</li>
+                            <li><i class="fas fa-check-circle"></i> Custom Configuration Available</li>
+                        </ul>
+                        <a href="#enquiry" class="ent-sol-btn">Request Pricing &rarr;</a>
+                    </div>
+                </div>
+
+                <!-- Card 2: Disposal -->
+                <div class="col-lg-6">
+                    <div class="ent-solution-card">
+                        <div class="ent-sol-icon">
+                            <i class="fas fa-recycle"></i>
+                        </div>
+                        <h3 class="ent-sol-title">Dispose of IT Assets</h3>
+                        <p class="ent-sol-desc">Retire outdated IT equipment through secure data sanitisation, professional refurbishment, responsible redeployment and environmentally compliant recycling.</p>
+                        <ul class="ent-sol-list">
+                            <li><i class="fas fa-check-circle"></i> Collection Assistance Across India</li>
+                            <li><i class="fas fa-check-circle"></i> Certified Data Erasure (DoD/NIST Standard)</li>
+                            <li><i class="fas fa-check-circle"></i> Full Asset Evaluation & Reporting</li>
+                            <li><i class="fas fa-check-circle"></i> Refurbishment & Responsible Recycling</li>
+                            <li><i class="fas fa-check-circle"></i> Compliance Documentation Provided</li>
+                            <li><i class="fas fa-check-circle"></i> Residual Value Recovery</li>
+                        </ul>
+                        <a href="#enquiry" class="ent-sol-btn">Schedule Assessment &rarr;</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ========================= PROCESS ========================= -->
+    <section class="enterprise-process-section">
+        <div class="container-fluid px-3 px-lg-5">
+
+            <div class="text-center mb-5">
+                <span class="ent-section-overline">Our Process</span>
+                <h2 class="ent-section-title">One Asset. Multiple Possibilities.</h2>
+                <p class="ent-section-desc">Every retired device is carefully evaluated to maximise its value while supporting a sustainable circular economy.</p>
+            </div>
+
+            <div class="row g-4">
+
+                <div class="col-sm-6 col-lg-4 col-xl">
+                    <div class="ent-process-card">
+                        <div class="ent-process-num">1</div>
+                        <div class="ent-process-icon"><i class="fas fa-truck-ramp-box"></i></div>
+                        <h4 class="ent-process-title">Collection & Evaluation</h4>
+                        <p class="ent-process-desc">Your devices are collected and assessed to determine suitability for refurbishment or responsible recycling.</p>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-lg-4 col-xl">
+                    <div class="ent-process-card">
+                        <div class="ent-process-num">2</div>
+                        <div class="ent-process-icon"><i class="fas fa-lock"></i></div>
+                        <h4 class="ent-process-title">Secure Data Erasure</h4>
+                        <p class="ent-process-desc">Professional data sanitisation permanently removes all confidential business information before further processing.</p>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-lg-4 col-xl">
+                    <div class="ent-process-card">
+                        <div class="ent-process-num">3</div>
+                        <div class="ent-process-icon"><i class="fas fa-screwdriver-wrench"></i></div>
+                        <h4 class="ent-process-title">Refurbishment</h4>
+                        <p class="ent-process-desc">Eligible devices are cleaned, repaired and upgraded where needed, restoring them to dependable working condition.</p>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-lg-4 col-xl">
+                    <div class="ent-process-card">
+                        <div class="ent-process-num">4</div>
+                        <div class="ent-process-icon"><i class="fas fa-circle-check"></i></div>
+                        <h4 class="ent-process-title">Quality Certification</h4>
+                        <p class="ent-process-desc">Every refurbished device undergoes rigorous functional testing and quality inspection before resale approval.</p>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-lg-4 col-xl">
+                    <div class="ent-process-card">
+                        <div class="ent-process-num">5</div>
+                        <div class="ent-process-icon"><i class="fas fa-leaf"></i></div>
+                        <h4 class="ent-process-title">Redeployment or Recycling</h4>
+                        <p class="ent-process-desc">Certified devices get a second life through Recarvit; non-repairable assets are responsibly recycled to compliance standards.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ========================= WHY RECARVIT ========================= -->
+    <section class="enterprise-why-section">
+        <div class="container-fluid px-3 px-lg-5">
+
+            <div class="text-center mb-5">
+                <span class="ent-section-overline">Why Recarvit</span>
+                <h2 class="ent-section-title">Why Businesses Choose Recarvit</h2>
+                <p class="ent-section-desc">Trusted by startups, corporates, schools and NGOs across India for reliable, responsible IT lifecycle management.</p>
+            </div>
+
+            <div class="row g-4">
+
+                <div class="col-md-6 col-xl-4">
+                    <div class="ent-why-card">
+                        <div class="ent-why-icon"><i class="fas fa-wallet"></i></div>
+                        <div>
+                            <h5 class="ent-why-title">Save on IT Costs</h5>
+                            <p class="ent-why-desc">Reduce procurement costs by up to 50% without compromising on device reliability or performance.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-xl-4">
+                    <div class="ent-why-card">
+                        <div class="ent-why-icon"><i class="fas fa-circle-check"></i></div>
+                        <div>
+                            <h5 class="ent-why-title">Certified Quality</h5>
+                            <p class="ent-why-desc">Professionally tested and inspected devices — every unit meets Recarvit's multi-point quality standard.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-xl-4">
+                    <div class="ent-why-card">
+                        <div class="ent-why-icon"><i class="fas fa-shield-halved"></i></div>
+                        <div>
+                            <h5 class="ent-why-title">Warranty Protection</h5>
+                            <p class="ent-why-desc">Warranty-backed purchases give your procurement team complete peace of mind for every order.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-xl-4">
+                    <div class="ent-why-card">
+                        <div class="ent-why-icon"><i class="fas fa-lock"></i></div>
+                        <div>
+                            <h5 class="ent-why-title">Secure Data Handling</h5>
+                            <p class="ent-why-desc">Enterprise-grade data sanitisation processes that comply with DoD and NIST data erasure standards.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-xl-4">
+                    <div class="ent-why-card">
+                        <div class="ent-why-icon"><i class="fas fa-leaf"></i></div>
+                        <div>
+                            <h5 class="ent-why-title">Sustainable Procurement</h5>
+                            <p class="ent-why-desc">Support India's circular economy, demonstrate ESG responsibility and reduce e-waste in a meaningful way.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-xl-4">
+                    <div class="ent-why-card">
+                        <div class="ent-why-icon"><i class="fas fa-headset"></i></div>
+                        <div>
+                            <h5 class="ent-why-title">Dedicated Support</h5>
+                            <p class="ent-why-desc">A single named account manager handles your procurement, disposal and after-sales needs end-to-end.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ========================= INDUSTRIES ========================= -->
+    <section class="enterprise-industries-section">
+        <div class="container-fluid px-3 px-lg-5">
+
+            <div class="text-center mb-5">
+                <span class="ent-section-overline">Industries</span>
+                <h2 class="ent-section-title">Who We Work With</h2>
+                <p class="ent-section-desc">Recarvit serves organisations of all sizes and sectors — from early-stage startups to large government institutions.</p>
+            </div>
+
+            <div class="row g-3 justify-content-center">
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                    <div class="ent-industry-chip"><i class="fas fa-rocket"></i> Startups</div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                    <div class="ent-industry-chip"><i class="fas fa-store"></i> SMEs</div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                    <div class="ent-industry-chip"><i class="fas fa-building"></i> Corporates</div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                    <div class="ent-industry-chip"><i class="fas fa-school"></i> Schools</div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                    <div class="ent-industry-chip"><i class="fas fa-graduation-cap"></i> Colleges</div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                    <div class="ent-industry-chip"><i class="fas fa-hands-helping"></i> NGOs</div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                    <div class="ent-industry-chip"><i class="fas fa-landmark"></i> Government</div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                    <div class="ent-industry-chip"><i class="fas fa-chalkboard-teacher"></i> Training Institutes</div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                    <div class="ent-industry-chip"><i class="fas fa-hospital"></i> Healthcare</div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                    <div class="ent-industry-chip"><i class="fas fa-industry"></i> Manufacturing</div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- ========================= ENQUIRY FORM ========================= -->
+    <section id="enquiry" class="enterprise-enquiry-section">
+        <div class="container-fluid px-3 px-lg-5">
+            <div class="row g-5 align-items-start">
+
+                <!-- Left: Info -->
+                <div class="col-lg-4">
+                    <span class="ent-section-overline">Get in Touch</span>
+                    <div class="ent-enquiry-info">
+                        <h2>Tell Us What You Need</h2>
+                        <p>Whether you're looking to purchase certified refurbished devices or dispose of retired IT assets, fill in the form and our enterprise team will respond within 1 business day with the most suitable solution for your organisation.</p>
+                    </div>
+
+                    <div class="d-flex flex-column gap-3 mt-4">
+                        <div class="ent-contact-card">
+                            <div class="ent-contact-icon"><i class="fas fa-envelope"></i></div>
+                            <div>
+                                <div class="ent-contact-label">Email Us</div>
+                                <p class="ent-contact-value">enterprise@recarvit.com</p>
+                            </div>
+                        </div>
+                        <div class="ent-contact-card">
+                            <div class="ent-contact-icon"><i class="fas fa-phone"></i></div>
+                            <div>
+                                <div class="ent-contact-label">Call Us</div>
+                                <p class="ent-contact-value">+91 XXXXX XXXXX</p>
+                            </div>
+                        </div>
+                        <div class="ent-contact-card">
+                            <div class="ent-contact-icon"><i class="fas fa-clock"></i></div>
+                            <div>
+                                <div class="ent-contact-label">Response Time</div>
+                                <p class="ent-contact-value">Within 1 Business Day</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Form -->
+                <div class="col-lg-8">
+                    <div class="ent-form-wrapper">
+                        <h4 class="ent-form-title">Enterprise Enquiry Form</h4>
+
+                        <form id="enterpriseForm">
+                            <div class="row g-4">
+
+                                <div class="col-md-6">
+                                    <label class="ent-form-label">Company Name <span>*</span></label>
+                                    <input type="text" class="ent-input" placeholder="e.g. Infosys Limited" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="ent-form-label">Contact Person <span>*</span></label>
+                                    <input type="text" class="ent-input" placeholder="e.g. Rajesh Kumar" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="ent-form-label">Email Address <span>*</span></label>
+                                    <input type="email" class="ent-input" placeholder="rajesh@company.com" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="ent-form-label">Phone Number <span>*</span></label>
+                                    <input type="tel" class="ent-input" placeholder="+91 XXXXX XXXXX" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="ent-form-label">I'm Interested In <span>*</span></label>
+                                    <select class="ent-input" required>
+                                        <option value="" disabled selected>Select an option</option>
+                                        <option>Bulk Device Procurement</option>
+                                        <option>IT Asset Disposal</option>
+                                        <option>Both — Procurement & Disposal</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="ent-form-label">Estimated Quantity</label>
+                                    <input type="text" class="ent-input" placeholder="e.g. 50 laptops">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="ent-form-label">City / Location</label>
+                                    <input type="text" class="ent-input" placeholder="e.g. Bengaluru">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="ent-form-label">Industry</label>
+                                    <select class="ent-input">
+                                        <option value="" disabled selected>Select industry</option>
+                                        <option>Startup</option>
+                                        <option>SME</option>
+                                        <option>Corporate</option>
+                                        <option>School / College</option>
+                                        <option>NGO</option>
+                                        <option>Government</option>
+                                        <option>Healthcare</option>
+                                        <option>Manufacturing</option>
+                                        <option>Other</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="ent-form-label">Tell Us About Your Requirement</label>
+                                    <textarea class="ent-input" rows="4" placeholder="Describe your requirement — device types, specifications, timeline, or any specific questions..."></textarea>
+                                </div>
+
+                                <div class="col-12">
+                                    <button type="submit" class="ent-submit-btn">
+                                        Submit Enquiry &rarr;
+                                    </button>
+                                    <div class="text-center mt-3">
+                                        <small class="text-muted">
+                                            <i class="fas fa-shield-alt me-1 text-success"></i>
+                                            Your information is strictly confidential. Our enterprise team responds within 1 business day.
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- Success message (hidden by default) -->
+                                <div id="enterpriseSuccessMsg" class="col-12 d-none">
+                                    <div class="alert alert-success rounded-4 text-center fw-bold" role="alert">
+                                        <i class="fas fa-check-circle me-2"></i> Enquiry received! Our enterprise team will contact you within 1 business day.
+                                    </div>
+                                </div>
+
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ========================= CTA BANNER ========================= -->
+    <section class="enterprise-cta-section">
+        <div class="container-fluid px-3 px-lg-5">
+            <div class="ent-cta-inner d-flex flex-column flex-md-row align-items-center justify-content-between gap-4">
+                <div>
+                    <h3 class="ent-cta-title">
+                        <i class="fas fa-handshake me-2" style="color: #fef08a;"></i>
+                        Looking to sell refurbished devices on Recarvit?
+                    </h3>
+                    <p class="ent-cta-sub">Join 30+ verified sellers already growing their business with us.</p>
+                </div>
+                <a href="/partner-application" class="ent-cta-btn">
+                    Become a Seller Partner &rarr;
+                </a>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ========================= FOOTER ========================= -->
+    {% include 'footer.html' %}
+
+    <!-- Back to Top -->
+    <a href="#" id="backToTop" class="back-to-top">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/homepage/script.js' %}"></script>
+
+    <script>
+        // Form submission handler
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('enterpriseForm');
+            const successMsg = document.getElementById('enterpriseSuccessMsg');
+            const submitBtn = form.querySelector('button[type="submit"]');
+
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Submitting...';
+
+                    setTimeout(() => {
+                        submitBtn.style.display = 'none';
+                        successMsg.classList.remove('d-none');
+                    }, 1000);
+                });
+            }
+
+            // Back to top visibility
+            const backToTopBtn = document.getElementById('backToTop');
+            if (backToTopBtn) {
+                window.addEventListener('scroll', function () {
+                    if (window.scrollY > 400) {
+                        backToTopBtn.classList.add('visible');
+                    } else {
+                        backToTopBtn.classList.remove('visible');
+                    }
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>

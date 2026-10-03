@@ -161,10 +161,16 @@
 
                     <!-- Billing Address -->
                     <div class="checkout-section">
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="billingSameAsShipping" checked>
+                        <div class="form-check mb-1">
+                            <input class="form-check-input mb-1" type="checkbox" id="billingSameAsShipping" checked>
                             <label class="form-check-label" for="billingSameAsShipping">
                                 Billing address same as shipping
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input mb-1" type="checkbox" id="setasprimaryaddress" checked>
+                            <label class="form-check-label" for="setasprimaryaddress">
+                                Set this as primary address
                             </label>
                         </div>
 
@@ -192,7 +198,7 @@
                     </div>
 
                     <!-- Payment Method -->
-                    <div class="checkout-section">
+                    <div class="checkout-section" style="display: none;">
                         <h4>Payment Method</h4>
                         <div class="payment-options">
                             <div class="payment-option">
@@ -204,7 +210,7 @@
                                     </div>
                                 </label>
                             </div>
-                            <div class="payment-option" style="display: none;">
+                            <div class="payment-option">
                                 <input type="radio" name="paymentMethod" id="cod" value="cod">
                                 <label for="cod" class="payment-card">
                                     <div class="payment-info">
@@ -217,7 +223,7 @@
                     </div>
 
                     <!-- Order Notes -->
-                    <div class="checkout-section">
+                    <div class="checkout-section" style="display: none;">
                         <h4>Order Notes (Optional)</h4>
                         <textarea class="form-control" id="orderNotes" rows="3"
                             placeholder="Any special instructions for delivery..."></textarea>
@@ -232,35 +238,18 @@
                         <!-- Order items will be dynamically loaded here -->
                     </div>
 
-                    <!-- Warranty -->
-                    <div class="warranty-addon-box mb-3 p-3 shadow-sm">
-                        <i class="fas fa-shield-alt watermark"></i>
-                    
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="icon-circle">
-                                    <i class="fas fa-shield-alt"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.95rem;">Extended Warranty</h6>
-                                </div>
+                    <!-- Warranty (read-only — reflects the per-item selections made in the cart) -->
+                    <div class="warranty-summary-note mb-3 p-3 shadow-sm" id="warrantySummaryNote" style="display: none;">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="icon-circle">
+                                <i class="fas fa-shield-alt"></i>
                             </div>
-                    
-                            <label class="theme-switch mt-1">
-                                <input type="checkbox" id="warrantyToggle">
-                                <span class="slider round"></span>
-                            </label>
+                            <div>
+                                <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.9rem;">Extended Warranty</h6>
+                                <p class="text-muted mb-0" style="font-size: 0.78rem;" id="warrantySummaryText"></p>
+                            </div>
                         </div>
-                    
-                        <p class="text-muted mb-2 ps-1" style="font-size: 0.8rem; line-height: 1.4; max-width: 85%;">
-                            Upgrade your protection. Extend your coverage for 24 months to cover all hardware defects, battery issues, and
-                            internal malfunctions.
-                        </p>
-                    
-                        <div class="d-flex align-items-center gap-2 ps-1">
-                            <span class="fw-bold" style="color: #2A8C3C; font-size: 0.95rem;">+ ₹1,999</span>
-                            <span class="text-muted" style="font-size: 0.75rem;">(Billed once)</span>
-                        </div>
+                        <a href="/cart/" class="edit-warranty-link" style="font-size: 0.78rem;">Edit in Cart</a>
                     </div>
 
                     <div class="summary-breakdown" style="display: none;">
@@ -309,6 +298,36 @@
                             <span class="breakdown-label">Total Amount</span>
                             <span class="breakdown-value" id="breakdownTotal">₹0</span>
                         </div>
+                    </div>
+
+                    <div class="warranty-addon-box mb-3 p-3 shadow-sm">
+                        <i class="fas fa-shield-alt watermark"></i>
+                    
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="icon-circle">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.95rem;">GST Registered?</h6>
+                                </div>
+                            </div>
+                    
+                            <label class="theme-switch mt-1">
+                                <input type="checkbox" id="gstToggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="mb-3" id="enterGST" style="display: none;">
+                            <label for="enterGST" class="form-label">GST Number *</label>
+                            <input type="text" class="form-control w-100" id="enterGSTInput" placeholder="Enter your GST number">
+                        </div>                                
+                        
+                        <!-- <div class="d-flex align-items-center gap-2 ps-1">
+                            <span class="fw-bold" style="color: #2A8C3C; font-size: 0.95rem;">+ ₹1,999</span>
+                            <span class="text-muted" style="font-size: 0.75rem;">(Billed once)</span>
+                        </div> -->
                     </div>
 
                     <button class="btn btn-checkout btn-lg w-100 mt-4" onclick="placeOrder()">

@@ -35,7 +35,7 @@ async function checkUserAuth() {
       isUserLoggedIn = false
     }
   } catch (error) {
-    console.log("[v0] User not logged in")
+    console.log("User not logged in")
     isUserLoggedIn = false
   }
 }
@@ -53,7 +53,7 @@ async function loadCart() {
       showEmptyCart()
     }
   } catch (error) {
-    console.error("[v0] Error loading cart:", error)
+    console.error("Error loading cart:", error)
     showEmptyCart()
   }
 }
@@ -69,8 +69,26 @@ function renderOrderItems(data) {
   container.innerHTML = data.items
     .map((item) => {
       const unit = item.listing_unit
-      const attributes = unit.attributes.map((attr) => `${attr.value}`).join(" • ")
+
+      // const attributes = unit.attributes.map((attr) => `${attr.value}`).join(" • ")
+
+
+      const primaryAttrs = (unit.attributes || [])
+        .filter(attr => attr.section === 'main' || !attr.section)
+        .slice(0, 4)
+        .map(attr => attr.value)
+      const condition = unit.condition
+        ? unit.condition.charAt(0).toUpperCase() + unit.condition.slice(1)
+        : ''
+      const attributes = [...primaryAttrs, condition].filter(Boolean).join(' • ')
+
+
       const imageUrl = unit.image || "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=60&h=60&fit=crop"
+
+      const hasWarranty = !!item.has_extended_warranty
+      const warrantyBadge = hasWarranty
+        ? `<div class="mt-1"><span class="badge-warranty-included"><i class="fas fa-shield-alt me-1"></i>Extended Warranty · ₹${Number.parseFloat(item.warranty_price).toLocaleString("en-IN")}</span></div>`
+        : ""
 
       return `
         <div class="order-item mb-3">
@@ -78,6 +96,7 @@ function renderOrderItems(data) {
           <div class="flex-grow-1">
             <h6 class="mb-1">${unit.brand_name} ${unit.model_name}</h6>
             <small class="text-muted">${attributes} • ${unit.condition}</small>
+            ${warrantyBadge}
           </div>
           <div class="text-end">
             <strong>₹${Number.parseFloat(unit.price).toLocaleString("en-IN")}</strong>
@@ -91,19 +110,14 @@ function renderOrderItems(data) {
 function updateOrderSummary(data) {
   if (!data.items || data.items.length === 0) return
 
-  let subtotal = Number.parseFloat(data.total_price)
-  const shipping = 0
-  
-  // ADDED: Check for warranty and add to subtotal
-  const warrantyToggle = document.getElementById("warrantyToggle")
-  const warrantyCost = 1999
-  
-  if (warrantyToggle && warrantyToggle.checked) {
-      subtotal += warrantyCost
-  }
+  // Extended warranty is opted-in per item back in the cart. Checkout only
+  // reads and displays the total that resulted from those selections.
+  const warrantyTotal = Number.parseFloat(data.total_warranty || 0)
+  const warrantyItemCount = data.items.filter((item) => item.has_extended_warranty).length
 
-  // const subtotal = Number.parseFloat(data.total_price)
-  // const shipping = 0
+  let subtotal = Number.parseFloat(data.total_price) + warrantyTotal
+  const shipping = 0
+
   const total_before_tax = Math.round((subtotal * 100) / 118)
   const tax = Math.round(subtotal - total_before_tax)
   const total = total_before_tax + shipping + tax
@@ -119,15 +133,27 @@ function updateOrderSummary(data) {
   document.getElementById("breakdownShipping").textContent = `₹${shipping.toLocaleString("en-IN")}`
   document.getElementById("breakdownTax").textContent = `₹${tax.toLocaleString("en-IN")}`
   document.getElementById("breakdownTotal").textContent = `₹${total.toLocaleString("en-IN")}`
+
+  // Read-only warranty summary note (reflects cart selections; edited from the cart page)
+  const warrantyNote = document.getElementById("warrantySummaryNote")
+  const warrantyText = document.getElementById("warrantySummaryText")
+  if (warrantyNote && warrantyText) {
+    if (warrantyItemCount > 0) {
+      warrantyNote.style.display = "flex"
+      warrantyText.textContent = `${warrantyItemCount} item${warrantyItemCount !== 1 ? "s" : ""} covered · +₹${warrantyTotal.toLocaleString("en-IN")}`
+    } else {
+      warrantyNote.style.display = "none"
+    }
+  }
 }
 
 // Setup breakdown toggle functionality
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const toggleBtn = document.getElementById('toggleBreakdown')
   const breakdownDetails = document.getElementById('breakdownDetails')
 
   if (toggleBtn && breakdownDetails) {
-    toggleBtn.addEventListener('click', function(e) {
+    toggleBtn.addEventListener('click', function (e) {
       e.preventDefault()
       if (breakdownDetails.style.display === 'none') {
         breakdownDetails.style.display = 'block'
@@ -158,7 +184,7 @@ async function loadAddresses() {
       renderSavedAddresses()
     }
   } catch (error) {
-    console.error("[v0] Error loading addresses:", error)
+    console.error("Error loading addresses:", error)
   }
 }
 
@@ -172,8 +198,8 @@ function renderSavedAddresses() {
       <h4>Saved Addresses</h4>
       <div class="row g-3">
         ${userAddresses
-          .map(
-            (address, index) => `
+      .map(
+        (address, index) => `
           <div class="col-md-6">
             <div class="card h-100 address-card ${index === 0 ? "border-primary" : ""}" onclick="selectAddress(${index})">
               <div class="card-body">
@@ -189,8 +215,8 @@ function renderSavedAddresses() {
             </div>
           </div>
         `,
-          )
-          .join("")}
+      )
+      .join("")}
         <div class="col-md-6">
           <div class="card h-100 address-card border-dashed" onclick="selectNewAddress()">
             <div class="card-body d-flex flex-column align-items-center justify-content-center text-center">
@@ -250,12 +276,15 @@ function setupEventListeners() {
     })
   }
 
-  // ADDED: Listen for warranty toggle
-  const warrantyToggle = document.getElementById("warrantyToggle")
-  if (warrantyToggle) {
-    warrantyToggle.addEventListener("change", function () {
-      if (cartData) {
-        updateOrderSummary(cartData) // Recalculate totals on click
+  const gstToggle = document.getElementById("gstToggle")
+  if (gstToggle) {
+    gstToggle.addEventListener("change", function () {
+
+      if (gstToggle && gstToggle.checked) {
+        document.getElementById("enterGST").style.display = '';
+      }
+      else {
+        document.getElementById("enterGST").style.display = 'none';
       }
     })
   }
@@ -288,7 +317,7 @@ async function sendOtpForCheckout(mobile) {
       currentOtpId = response.data.otp_id
 
       if (response.data.otp) {
-        console.log("[v0] OTP for testing:", response.data.otp)
+        console.log("OTP for testing:", response.data.otp)
         setTimeout(() => {
           fillOtpForTesting(response.data.otp)
         }, 500)
@@ -301,7 +330,7 @@ async function sendOtpForCheckout(mobile) {
       showToast(response.error || "Failed to send OTP. Please try again.", "error")
     }
   } catch (error) {
-    console.error("[v0] Error sending OTP:", error)
+    console.error("Error sending OTP:", error)
     showToast("Failed to send OTP. Please try again.", "error")
   }
 }
@@ -365,7 +394,7 @@ async function verifyOtpAndPlaceOrder() {
     }
   } catch (error) {
     setButtonLoading(verifyBtn, false)
-    console.error("[v0] Error verifying OTP:", error)
+    console.error("Error verifying OTP:", error)
     showOtpError("Failed to verify OTP. Please try again.")
     clearOtpInputs()
     document.querySelector(".otp-input").focus()
@@ -394,9 +423,8 @@ async function proceedWithOrder() {
     billing_pincode: billingSame ? "" : document.getElementById("billingPincode").value.trim(),
     payment_method: paymentMethod,
     order_notes: document.getElementById("orderNotes").value.trim(),
-
-    // ADDED: Send warranty status to your backend API
-    extended_warranty: document.getElementById("warrantyToggle") ? document.getElementById("warrantyToggle").checked : false
+    // Extended warranty is derived server-side from each cart item's
+    // has_extended_warranty flag — nothing to send here.
   }
 
   try {
@@ -420,7 +448,7 @@ async function proceedWithOrder() {
       hideLoading()
     }
   } catch (error) {
-    console.error("[v0] Error placing order:", error)
+    console.error("Error placing order:", error)
     showToast("Failed to place order. Please try again.", "error")
     hideLoading()
   }
@@ -656,7 +684,7 @@ async function verifyPayment(paymentData) {
       hideLoading()
     }
   } catch (error) {
-    console.error("[v0] Error verifying payment:", error)
+    console.error("Error verifying payment:", error)
     showToast("Payment verification failed. Please contact support.", "error")
     hideLoading()
   }

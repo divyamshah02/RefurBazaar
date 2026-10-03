@@ -9,10 +9,20 @@ Usage:
 What it does (in order):
   1. Reads  data/seed_data.json  (produced by parse_catalog.mjs)
   2. Creates Brand rows                 — skips if name already exists
-  3. Creates ProductModel rows          — skips if (brand, name, category) already exists
+  3. Creates ProductModel rows          — skips if (brand, name, category) already exists;
+                                          also stores price_min/price_max (guide refurb price
+                                          range extracted from the catalog's "Refurb Price
+                                          Range" column) on the ProductModel itself.
   4. Creates AttributeMaster rows       — name+category label only, skips if already exists
   5. Creates ProductModelAttribute rows — stores data_type + possible_values PER PRODUCT;
-                                          skips if (product_model, attribute) already exists
+                                          skips if (product_model, attribute) already exists.
+                                          Attributes with multiple options (data_type="choice")
+                                          stay is_required=True so the refurbisher must pick one
+                                          per unit. Attributes with a single fixed value
+                                          (data_type="text"/"number") become is_required=False
+                                          with default_value set — the refurbisher form no
+                                          longer asks for these; they are auto-copied onto every
+                                          ListingUnit created for the model.
 
 The script NEVER deletes existing rows.  Running it multiple times is safe.
 """
@@ -247,6 +257,8 @@ class Command(BaseCommand):
             brand_name  = m["brand"]
             db_cat      = CATEGORY_MAP[m["category"]]
             launch_year = m.get("launch_year")
+            price_min   = m.get("price_min")
+            price_max   = m.get("price_max")
             brand_obj   = brand_cache.get(brand_name)
 
             if brand_obj is None:
@@ -273,7 +285,12 @@ class Command(BaseCommand):
                     brand=brand_obj,
                     name=m["name"],
                     category=db_cat,
-                    defaults={"release_year": launch_year, "is_active": True},
+                    defaults={
+                        "release_year": launch_year,
+                        "is_active": True,
+                        "price_min": price_min,
+                        "price_max": price_max,
+                    },
                 )
 
                 if pm_created:
@@ -281,6 +298,12 @@ class Command(BaseCommand):
                     self.stdout.write(f"  + Model: {brand_name} {m['name']} [{db_cat}]")
                 else:
                     stats["models_skipped"] += 1
+                    # Keep the guide price range fresh if it changed upstream (e.g. after
+                    # re-running parse_catalog.mjs with updated Excel data).
+                    if price_min is not None or price_max is not None:
+                        pm.price_min = price_min
+                        pm.price_max = price_max
+                        pm.save(update_fields=["price_min", "price_max"])
 
                 # For each attribute on this model, create/update the PMA row
                 # with the type and allowed values derived from THIS model's value.
@@ -304,14 +327,22 @@ class Command(BaseCommand):
 
                     data_type, possible_values = _derive_type_and_values(val_str)
 
+                    # Only real choice attributes (multiple possible_values) are asked
+                    # of the refurbisher per unit. A fixed single value (text/number) is
+                    # stored as default_value and auto-copied onto every unit instead —
+                    # the refurbisher form no longer prompts for it.
+                    is_choice = data_type == "choice"
+                    default_value = None if is_choice else val_str
+
                     pma, pma_created = ProductModelAttribute.objects.get_or_create(
                         product_model=pm,
                         attribute=am,
                         defaults={
-                            "is_required":     True,
+                            "is_required":     is_choice,
                             "is_filter":       attr_name in FILTER_ATTRS,
                             "data_type":       data_type,
                             "possible_values": possible_values,
+                            "default_value":   default_value,
                         },
                     )
 
@@ -319,11 +350,15 @@ class Command(BaseCommand):
                         stats["pma_created"] += 1
                     else:
                         stats["pma_skipped"] += 1
-                        # Optionally refresh type/values if --reset-attrs passed
+                        # Optionally refresh type/values/required/default if --reset-attrs passed
                         if reset_attrs:
                             pma.data_type = data_type
                             pma.possible_values = possible_values
-                            pma.save(update_fields=["data_type", "possible_values"])
+                            pma.is_required = is_choice
+                            pma.default_value = default_value
+                            pma.save(update_fields=[
+                                "data_type", "possible_values", "is_required", "default_value",
+                            ])
                             stats["pma_updated"] += 1
 
         self.stdout.write(

@@ -31,7 +31,7 @@ async function loadCart() {
       showEmptyCart()
     }
   } catch (error) {
-    console.error("[v0] Error loading cart:", error)
+    console.error("Error loading cart:", error)
     showEmptyCart()
   }
 }
@@ -96,7 +96,7 @@ async function loadAddresses() {
       renderSavedAddresses()
     }
   } catch (error) {
-    console.error("[v0] Error loading addresses:", error)
+    console.error("Error loading addresses:", error)
   }
 }
 
@@ -246,7 +246,7 @@ async function placeOrder() {
       hideLoading()
     }
   } catch (error) {
-    console.error("[v0] Error placing order:", error)
+    console.error("Error placing order:", error)
     showToast("Failed to place order. Please try again.", "error")
     hideLoading()
   }
@@ -302,7 +302,7 @@ async function verifyPayment(paymentData) {
       hideLoading()
     }
   } catch (error) {
-    console.error("[v0] Error verifying payment:", error)
+    console.error("Error verifying payment:", error)
     showToast("Payment verification failed. Please contact support.", "error")
     hideLoading()
   }

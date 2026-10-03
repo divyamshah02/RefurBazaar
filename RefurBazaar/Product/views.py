@@ -5,9 +5,32 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Min, Max, Count, Q
 from .models import *
 from .serializers import *
+from UserDetail.models import *
 from utils.decorators import *
 import pandas as pd
 from django.db import transaction
+
+
+def _copy_fixed_attributes_to_unit(unit, product_model):
+    """
+    Auto-copy fixed-spec attributes (Processor, Screen Size, OS, etc. — anything
+    with is_required=False and a stored default_value) from the ProductModel onto
+    a ListingUnit. The refurbisher is never asked for these; they're carried over
+    automatically so filtering/product-detail (which read from ListingUnitAttribute)
+    keep working unchanged. Existing values for the same attribute on this unit
+    are left untouched (e.g. a real choice attribute the refurbisher already set).
+    """
+    fixed_attrs = ProductModelAttribute.objects.filter(
+        product_model=product_model,
+        is_required=False,
+    ).exclude(default_value__isnull=True).exclude(default_value='').select_related('attribute')
+
+    for pma in fixed_attrs:
+        ListingUnitAttribute.objects.get_or_create(
+            listing_unit=unit,
+            attribute=pma.attribute,
+            defaults={'value': pma.default_value},
+        )
 
 
 class BrandViewSet(viewsets.ViewSet):
@@ -144,15 +167,14 @@ class ProductModelViewSet(viewsets.ViewSet):
         conditions = request.query_params.get('conditions', '')
         sort_by = request.query_params.get('sort_by', 'featured')
         
-        # Base queryset - get product models with active listings
+        # Base queryset - get product models with active, unsold listings
+        # (units may be available or out-of-stock; sold units are excluded entirely)
         queryset = ProductModel.objects.filter(
             is_active=True,
             category=category,
             listings__status='active',
-            listings__units__is_available=True,
             listings__units__is_sold=False
         ).distinct()
-        print("Base Queryset:", queryset)
         
         # Apply brand filter
         if brand_ids:
@@ -163,7 +185,6 @@ class ProductModelViewSet(viewsets.ViewSet):
         # Build filter for listing units with proper relationship path
         units_filter = Q(
             listings__status='active',
-            listings__units__is_available=True,
             listings__units__is_sold=False
         )
         
@@ -182,30 +203,44 @@ class ProductModelViewSet(viewsets.ViewSet):
         # Filter models that match the criteria
         queryset = queryset.filter(units_filter).distinct()
         
-        # Annotate with min price for each model
+        # Annotate with min price among in-stock units, and a fallback min price
+        # among any unsold unit (used to still show a price for out-of-stock items)
         queryset = queryset.annotate(
             min_price=Min('listings__units__price', filter=Q(
                 listings__status='active',
                 listings__units__is_available=True,
                 listings__units__is_sold=False
-            ))
+            )),
+            fallback_min_price=Min('listings__units__price', filter=Q(
+                listings__status='active',
+                listings__units__is_sold=False
+            )),
+            available_units_count=Count('listings__units', filter=Q(
+                listings__status='active',
+                listings__units__is_available=True,
+                listings__units__is_sold=False
+            ), distinct=True)
         )
         
-        # Apply sorting
+        # Apply sorting — out-of-stock items should sort after in-stock ones,
+        # using the fallback price for ordering when they have no in-stock units
         if sort_by == 'price_low':
-            queryset = queryset.order_by('min_price')
+            queryset = queryset.order_by('-available_units_count', 'min_price', 'fallback_min_price')
         elif sort_by == 'price_high':
-            queryset = queryset.order_by('-min_price')
+            queryset = queryset.order_by('-available_units_count', '-min_price', '-fallback_min_price')
         elif sort_by == 'newest':
-            queryset = queryset.order_by('-created_at')
+            queryset = queryset.order_by('-available_units_count', '-created_at')
         else:  # featured
-            queryset = queryset.order_by('brand__name', 'name')
+            queryset = queryset.order_by('-available_units_count', 'brand__name', 'name')
         
-        # Serialize products with min_price
+        # Serialize products with min_price and in-stock status
         products = []
         for model in queryset:
             data = ProductModelSerializer(model).data
-            data['min_price'] = float(model.min_price) if model.min_price else 0
+            is_in_stock = model.available_units_count > 0
+            display_price = model.min_price if is_in_stock else model.fallback_min_price
+            data['min_price'] = float(display_price) if display_price else 0
+            data['is_available'] = is_in_stock
             products.append(data)
         
         # Get available brands for this category with counts
@@ -303,6 +338,7 @@ class ProductModelViewSet(viewsets.ViewSet):
                 'is_required': pm_attr.is_required,
                 'is_filter': pm_attr.is_filter,
                 'section': pm_attr.section,
+                'default_value': pm_attr.default_value,
                 'available_values': list(available_values)
             })
         
@@ -385,6 +421,7 @@ class ProductModelViewSet(viewsets.ViewSet):
         # Serialize with refurbisher details
         units_data = []
         for unit in queryset:
+            company_profile = CompanyProfile.objects.filter(user=unit.listing.refurbisher).first()
             unit_data = {
                 'id': unit.id,
                 'unit_number': unit.unit_number,
@@ -393,7 +430,8 @@ class ProductModelViewSet(viewsets.ViewSet):
                 'condition_display': unit.get_condition_display(),
                 'refurbisher': {
                     'id': unit.listing.refurbisher.user_id,
-                    'name': unit.listing.refurbisher.first_name,
+                    'name': company_profile.company_name,
+                    # 'name': unit.listing.refurbisher.first_name,
                     'email': unit.listing.refurbisher.email
                 },
                 'attributes': [
@@ -481,7 +519,12 @@ class ListingViewSet(viewsets.ViewSet):
                 "data": None, "error": "At least one unit is required."
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        model = get_object_or_404(ProductModel, id=model_id)
+        model = ProductModel.objects.filter(id=model_id, is_active=True).first()
+        if not model:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Selected product is not available."
+            }, status=status.HTTP_400_BAD_REQUEST)
         refurbisher = request.user
 
         # Validate all units before writing to DB
@@ -532,6 +575,10 @@ class ListingViewSet(viewsets.ViewSet):
                         value=attr.get('value')
                     )
 
+                # Auto-copy fixed specs (Processor, Screen Size, OS, ...) that the
+                # refurbisher was never asked for.
+                _copy_fixed_attributes_to_unit(unit, model)
+
         serializer = ListingSerializer(listing)
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
@@ -560,12 +607,14 @@ class ListingViewSet(viewsets.ViewSet):
         }, status=status.HTTP_200_OK)
 
     @handle_exceptions
+    @check_authentication(required_role='refurbisher')
     def retrieve(self, request, pk=None):
-        """Get single listing details with all units"""
+        """Get single listing details with all units. Only the owning refurbisher may view it."""
         listing = get_object_or_404(
             Listing.objects.select_related('model', 'model__brand', 'refurbisher')
             .prefetch_related('units', 'units__attributes', 'units__attributes__attribute'),
-            pk=pk
+            pk=pk,
+            refurbisher=request.user
         )
         serializer = ListingSerializer(listing)
         return Response({
@@ -642,7 +691,11 @@ class ListingViewSet(viewsets.ViewSet):
                 attribute=attr_obj,
                 value=attr.get('value')
             )
-        
+
+        # Auto-copy fixed specs (Processor, Screen Size, OS, ...) that the
+        # refurbisher was never asked for.
+        _copy_fixed_attributes_to_unit(unit, listing.model)
+
         # Update listing total quantity
         listing.total_quantity = listing.units.count()
         listing.save()
@@ -687,7 +740,10 @@ class ListingViewSet(viewsets.ViewSet):
                     attribute=attr_obj,
                     value=attr.get('value')
                 )
-        
+
+            # Re-copy fixed specs since we just wiped all attributes for this unit.
+            _copy_fixed_attributes_to_unit(unit, listing.model)
+
         unit.save()
         
         serializer = ListingUnitSerializer(unit)
@@ -760,6 +816,10 @@ class ListingUnitViewSet(viewsets.ViewSet):
                 attribute=attr_obj,
                 value=attr.get('value')
             )
+
+        # Auto-copy fixed specs (Processor, Screen Size, OS, ...) that the
+        # refurbisher was never asked for.
+        _copy_fixed_attributes_to_unit(unit, listing.model)
 
         serializer = ListingUnitSerializer(unit)
         return Response({
@@ -1177,8 +1237,21 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
             category = request.data.get('category')
             description = request.data.get('description', '')
             release_year = request.data.get('release_year')
+            price_min = request.data.get('price_min') or None
+            price_max = request.data.get('price_max') or None
             image = request.FILES.get('image') if hasattr(request, 'FILES') else None
-            attributes = request.data.getlist('attributes') if isinstance(request.data.get('attributes'), list) else []
+
+            import json
+            raw_attributes = request.data.get('attributes')
+            if isinstance(raw_attributes, str):
+                try:
+                    attributes = json.loads(raw_attributes)
+                except Exception:
+                    attributes = []
+            elif isinstance(raw_attributes, list):
+                attributes = raw_attributes
+            else:
+                attributes = []
 
             # Validation
             if not brand_id or not name or not category:
@@ -1216,23 +1289,11 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                 category=category,
                 description=description,
                 release_year=release_year if release_year else None,
+                price_min=price_min,
+                price_max=price_max,
                 image=image,
                 is_active=True
             )
-
-            # Parse and add attributes
-            # Handle both JSON array strings and dict objects
-            import json
-            if attributes:
-                # If attributes is a list of strings (from form data), parse them
-                if isinstance(attributes, list) and len(attributes) > 0 and isinstance(attributes[0], str):
-                    try:
-                        # Try to parse as JSON
-                        parsed_attrs = json.loads(attributes[0])
-                        attributes = parsed_attrs if isinstance(parsed_attrs, list) else [parsed_attrs]
-                    except:
-                        # If it fails, treat as single attribute dict string
-                        attributes = []
 
             for attr_data in attributes:
                 attr_id        = attr_data.get('attribute_id')
@@ -1240,6 +1301,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                 section        = attr_data.get('section', 'main')
                 data_type      = attr_data.get('data_type', 'text')
                 possible_values = attr_data.get('possible_values', [])
+                default_value  = attr_data.get('default_value') or None
                 if isinstance(possible_values, str):
                     import json as _json
                     try: possible_values = _json.loads(possible_values)
@@ -1258,6 +1320,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                     defaults={
                         'is_required': is_required, 'section': section,
                         'data_type': data_type, 'possible_values': possible_values,
+                        'default_value': default_value,
                     }
                 )
                 if not created:
@@ -1265,6 +1328,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                     pma.section = section
                     pma.data_type = data_type
                     pma.possible_values = possible_values
+                    pma.default_value = default_value
                     pma.save()
 
             serializer = ProductModelSerializer(product_model)
@@ -1287,7 +1351,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
 
     @handle_exceptions
     @check_authentication(required_role='admin')
-    def patch(self, request, pk=None):
+    def update(self, request, pk=None):
         """
         Update an existing ProductModel and its attributes.
         Partial updates are supported.
@@ -1301,8 +1365,12 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
             product_model.description = request.data['description']
         if 'release_year' in request.data:
             product_model.release_year = request.data['release_year']
+        if 'price_min' in request.data:
+            product_model.price_min = request.data.get('price_min') or None
+        if 'price_max' in request.data:
+            product_model.price_max = request.data.get('price_max') or None
         if 'is_active' in request.data:
-            product_model.is_active = request.data['is_active']
+            product_model.is_active = True if request.data['is_active'] == 'true' else False
 
         # Handle image upload
         if 'image' in request.FILES:
@@ -1332,6 +1400,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                 section         = attr_data.get('section', 'main')
                 data_type       = attr_data.get('data_type', 'text')
                 possible_values = attr_data.get('possible_values', [])
+                default_value   = attr_data.get('default_value') or None
                 if isinstance(possible_values, str):
                     import json as _json
                     try: possible_values = _json.loads(possible_values)
@@ -1348,6 +1417,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                     section=section,
                     data_type=data_type,
                     possible_values=possible_values,
+                    default_value=default_value,
                 )
 
         serializer = ProductModelSerializer(product_model)
@@ -1358,6 +1428,88 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
             "data": serializer.data,
             "error": None
         }, status=status.HTTP_200_OK)
+
+
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def patch(self, request, pk=None):
+        """
+        Update an existing ProductModel and its attributes.
+        Partial updates are supported.
+        """
+        product_model = get_object_or_404(ProductModel, id=pk)
+
+        # Update basic fields
+        if 'name' in request.data:
+            product_model.name = request.data['name']
+        if 'description' in request.data:
+            product_model.description = request.data['description']
+        if 'release_year' in request.data:
+            product_model.release_year = request.data['release_year']
+        if 'price_min' in request.data:
+            product_model.price_min = request.data.get('price_min') or None
+        if 'price_max' in request.data:
+            product_model.price_max = request.data.get('price_max') or None
+        if 'is_active' in request.data:
+            product_model.is_active = True if request.data['is_active'] == 'true' else False
+
+        # Handle image upload
+        if 'image' in request.FILES:
+            product_model.image = request.FILES['image']
+
+        product_model.save()
+
+        # Handle attributes update if provided
+        if 'attributes' in request.data:
+            attributes = request.data.get('attributes')
+
+            # Parse if needed
+            import json
+            if isinstance(attributes, str):
+                try:
+                    attributes = json.loads(attributes)
+                except:
+                    attributes = []
+
+            # Remove existing attributes
+            ProductModelAttribute.objects.filter(product_model=product_model).delete()
+
+            # Add new attributes
+            for attr_data in attributes:
+                attr_id         = attr_data.get('attribute_id')
+                is_required     = attr_data.get('is_required', False)
+                section         = attr_data.get('section', 'main')
+                data_type       = attr_data.get('data_type', 'text')
+                possible_values = attr_data.get('possible_values', [])
+                default_value   = attr_data.get('default_value') or None
+                if isinstance(possible_values, str):
+                    import json as _json
+                    try: possible_values = _json.loads(possible_values)
+                    except: possible_values = []
+
+                if not attr_id:
+                    continue
+
+                attribute = get_object_or_404(AttributeMaster, id=attr_id)
+                ProductModelAttribute.objects.create(
+                    product_model=product_model,
+                    attribute=attribute,
+                    is_required=is_required,
+                    section=section,
+                    data_type=data_type,
+                    possible_values=possible_values,
+                    default_value=default_value,
+                )
+
+        serializer = ProductModelSerializer(product_model)
+        return Response({
+            "success": True,
+            "user_not_logged_in": False,
+            "user_unauthorized": False,
+            "data": serializer.data,
+            "error": None
+        }, status=status.HTTP_200_OK)
+
 
     @handle_exceptions
     @check_authentication(required_role='admin')
@@ -1375,6 +1527,36 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
             "data": None,
             "error": None
         }, status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['post'], url_path='add-image')
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def add_image(self, request, pk=None):
+        """Upload one or more gallery images for a product model.
+        Files must be sent as multipart/form-data under the key 'images' (multiple allowed).
+        """
+        product_model = get_object_or_404(ProductModel, id=pk)
+        files = request.FILES.getlist('images')
+        if not files:
+            return Response({"success": False, "error": "No images provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        created = []
+        for f in files:
+            img = ProductModelImage.objects.create(product_model=product_model, image=f)
+            created.append({'id': img.id, 'image': request.build_absolute_uri(img.image.url)})
+
+        return Response({"success": True, "data": created, "error": None}, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['delete'], url_path='delete-image/(?P<image_id>[0-9]+)')
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def delete_image(self, request, pk=None, image_id=None):
+        """Delete a single gallery image by its id."""
+        product_model = get_object_or_404(ProductModel, id=pk)
+        img = get_object_or_404(ProductModelImage, id=image_id, product_model=product_model)
+        img.image.delete(save=False)
+        img.delete()
+        return Response({"success": True, "data": None, "error": None}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'])
     @handle_exceptions
@@ -1433,6 +1615,9 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                 'id': attr.id,
                 'name': attr.name,
                 'display_order': attr.display_order,
+                'data_type': attr.data_type,
+                'possible_values': attr.possible_values,
+                'default_value': attr.default_value,
             }
             for attr in attributes
         ]

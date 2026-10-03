@@ -93,10 +93,17 @@
                             <!-- Step 2: Add Units -->
                             <div class="wizard-content" id="content2" style="display: none;">
                                 <!-- Selected Device Info -->
-                                <div id="selectedDeviceInfo" class="alert alert-info mb-4">
+                                <div id="selectedDeviceInfo" class="alert alert-info mb-3">
                                     <h6 class="mb-2"><i class="fas fa-info-circle me-2"></i>Selected Device</h6>
                                     <p class="mb-0" id="deviceInfoText"></p>
                                 </div>
+
+                                <!-- Model's fixed specs (Processor, Screen Size, OS, ...) — read-only,
+                                     auto-copied onto every unit, never asked from the refurbisher -->
+                                <div id="fixedSpecsContainer" class="mb-3" style="display: none;"></div>
+
+                                <!-- Guide refurb price range extracted from the catalog — reference only -->
+                                <div id="priceGuideContainer" class="alert alert-light border mb-4 py-2 small" style="display: none;"></div>
 
                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                     <h4 class="mb-0">Step 2: Add Units</h4>

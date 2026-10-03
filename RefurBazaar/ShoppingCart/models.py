@@ -5,7 +5,6 @@ from UserDetail.models import User
 from Product.models import ListingUnit
 
 
-
 class ShoppingCart(models.Model):
     """
     Shopping cart for both guest and authenticated users.
@@ -50,8 +49,14 @@ class ShoppingCart(models.Model):
         return self.items.count()
 
     def get_total_price(self):
-        """Calculate total price of all items in cart"""
+        """Calculate total price of all items in cart (units only, no warranty)"""
         return sum(item.listing_unit.price for item in self.items.all())
+
+    def get_total_warranty(self):
+        """Sum of extended warranty prices for items that opted in"""
+        return sum(
+            item.warranty_price for item in self.items.all() if item.has_extended_warranty
+        )
 
 
 class ShoppingCartItem(models.Model):
@@ -68,6 +73,16 @@ class ShoppingCartItem(models.Model):
         ListingUnit, 
         on_delete=models.CASCADE,
         related_name='cart_items'
+    )
+    has_extended_warranty = models.BooleanField(
+        default=False,
+        help_text="Whether the customer opted into extended warranty for this unit"
+    )
+    warranty_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        help_text="Server-computed warranty price snapshot, based on the listing's category"
     )
     added_at = models.DateTimeField(auto_now_add=True)
 

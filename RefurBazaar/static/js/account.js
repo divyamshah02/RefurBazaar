@@ -91,6 +91,8 @@ async function sendOTP() {
       document.getElementById("displayMobile").textContent = mobileNumber;
       document.getElementById("mobile-input-section").style.display = "none";
       document.getElementById("otp-input-section").style.display = "block";
+      console.log(result.data.otp)
+      document.getElementById("otpCode").value = result.data.otp
       alert("OTP sent successfully!");
     } else {
       throw new Error(result.error || "Failed to send OTP");

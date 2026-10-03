@@ -120,7 +120,7 @@ async function saveBrand() {
     showToast(id ? 'Brand updated' : 'Brand created', 'success');
     loadBrands();
   } else {
-    showToast(res?.message || res?.error || 'Failed to save brand', 'error');
+    showToast(res?.message || res?.error.name || 'Failed to save brand', 'error');
   }
 }
 

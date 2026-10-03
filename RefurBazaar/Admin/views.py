@@ -4,11 +4,11 @@ from rest_framework.response import Response
 from django.utils import timezone
 from django.utils.timezone import now
 from django.db.models import Q, Count, Sum
-from UserDetail.models import User, CompanyProfile
+from UserDetail.models import User, CompanyProfile, ApprovalReviewLog
 from Order.models import Order, OrderItem
 from Product.models import Listing, ListingUnit, AttributeMaster
 from Product.serializers import AttributeMasterSerializer
-from UserDetail.serializers import UserSerializer, CompanyProfileSerializer
+from UserDetail.serializers import UserSerializer, CompanyProfileSerializer, ApprovalReviewLogSerializer
 from Order.serializers import OrderSerializer
 from Product.serializers import ListingSerializer
 from utils.decorators import handle_exceptions, check_authentication
@@ -36,9 +36,11 @@ class AdminDashboardViewSet(viewsets.ViewSet):
         total_refurbishers    = User.objects.filter(role='refurbisher').count()
         approved_refurbishers = CompanyProfile.objects.filter(is_approved=True).count()
         pending_refurbishers  = CompanyProfile.objects.filter(
-            is_profile_complete=True, is_approved=False
+            is_profile_complete=True, is_approved=False, is_rejected=False
         ).count()
-        rejected_refurbishers = total_refurbishers - approved_refurbishers - pending_refurbishers
+        rejected_refurbishers = CompanyProfile.objects.filter(
+            is_approved=False, is_rejected=True
+        ).count()
 
         # Listings
         total_listings    = Listing.objects.count()
@@ -161,6 +163,31 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             "error": None
         }, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['patch'], url_path='update-order-status')
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def update_order_status(self, request, pk=None):
+        """Update order status and/or payment_received flag"""
+        order = Order.objects.filter(order_id=pk).first()
+        if not order:
+            return Response({"success": False, "error": "Order not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        new_status = request.data.get('status')
+        payment_received = request.data.get('payment_received')
+
+        VALID_STATUSES = [s[0] for s in Order.STATUS_CHOICES]
+        if new_status and new_status not in VALID_STATUSES:
+            return Response({"success": False, "error": f"Invalid status '{new_status}'"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if new_status:
+            order.status = new_status
+        if payment_received is not None:
+            order.payment_received = bool(payment_received)
+        order.save()
+
+        serializer = OrderSerializer(order)
+        return Response({"success": True, "data": serializer.data, "error": None}, status=status.HTTP_200_OK)
+
     @action(detail=False, methods=['get'], url_path='refurbishers')
     @handle_exceptions
     @check_authentication(required_role='admin')
@@ -173,7 +200,13 @@ class AdminDashboardViewSet(viewsets.ViewSet):
         if status_filter == 'pending':
             refurbishers = refurbishers.filter(
                 company_profile__is_profile_complete=True,
-                company_profile__is_approved=False
+                company_profile__is_approved=False,
+                company_profile__is_rejected=False
+            )
+        elif status_filter == 'rejected':
+            refurbishers = refurbishers.filter(
+                company_profile__is_approved=False,
+                company_profile__is_rejected=True
             )
         elif status_filter == 'approved':
             refurbishers = refurbishers.filter(company_profile__is_approved=True)
@@ -249,6 +282,14 @@ class AdminDashboardViewSet(viewsets.ViewSet):
         ).prefetch_related('items__device_photos').distinct()
         orders_data = OrderSerializer(orders, many=True).data
 
+        # Full approval review history (rejections, resubmissions, approvals)
+        review_history_data = []
+        if hasattr(refurbisher, 'company_profile'):
+            review_logs = ApprovalReviewLog.objects.filter(
+                company_profile=refurbisher.company_profile
+            ).select_related('created_by').order_by('-created_at')
+            review_history_data = ApprovalReviewLogSerializer(review_logs, many=True).data
+
         return Response({
             "success": True,
             "user_not_logged_in": False,
@@ -257,7 +298,8 @@ class AdminDashboardViewSet(viewsets.ViewSet):
                 'user': user_data,
                 'company_profile': company_data,
                 'listings': listings_data,
-                'orders': orders_data
+                'orders': orders_data,
+                'review_history': review_history_data
             },
             "error": None
         }, status=status.HTTP_200_OK)
@@ -288,13 +330,31 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             }, status=status.HTTP_404_NOT_FOUND)
 
         action_type = request.data.get('action')  # 'approve' or 'reject'
+        reason = (request.data.get('reason') or '').strip()
         company_profile = refurbisher.company_profile
+
+        if action_type == 'approve' and not company_profile.is_profile_complete:
+            return Response({
+                "success": False,
+                "user_not_logged_in": False,
+                "user_unauthorized": False,
+                "data": None,
+                "error": "Cannot approve an incomplete vendor profile. Personal Info, Business Details, Documents, and Payment Information must all be filled in first."
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         if action_type == 'approve':
             company_profile.is_approved = True
+            company_profile.is_rejected = False
             company_profile.approved_at = timezone.now()
             company_profile.approved_by = request.user
             company_profile.save()
+
+            ApprovalReviewLog.objects.create(
+                company_profile=company_profile,
+                action='approved',
+                reason=reason or None,
+                created_by=request.user
+            )
 
             return Response({
                 "success": True,
@@ -305,10 +365,30 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             }, status=status.HTTP_200_OK)
 
         elif action_type == 'reject':
+            if not reason:
+                return Response({
+                    "success": False,
+                    "user_not_logged_in": False,
+                    "user_unauthorized": False,
+                    "data": None,
+                    "error": "A reason is required when rejecting a refurbisher"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
             company_profile.is_approved = False
+            company_profile.is_rejected = True
+            company_profile.rejection_reason = reason
+            company_profile.rejected_at = timezone.now()
+            company_profile.rejected_by = request.user
             company_profile.approved_at = None
             company_profile.approved_by = None
             company_profile.save()
+
+            ApprovalReviewLog.objects.create(
+                company_profile=company_profile,
+                action='rejected',
+                reason=reason,
+                created_by=request.user
+            )
 
             return Response({
                 "success": True,
@@ -457,6 +537,155 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             "success": False, "user_not_logged_in": False, "user_unauthorized": False,
             "data": None, "error": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+
+    # ── Admin Users (Team) ──────────────────────────────────────────
+    @action(detail=False, methods=['get', 'post'], url_path='admin-users')
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def admin_users(self, request):
+        """List all admin users, or create a new admin account."""
+        if request.method == 'GET':
+            admins = User.objects.filter(role='admin').order_by('-created_at')
+
+            search = request.query_params.get('search')
+            if search:
+                admins = admins.filter(
+                    Q(first_name__icontains=search) |
+                    Q(last_name__icontains=search) |
+                    Q(contact_number__icontains=search) |
+                    Q(email__icontains=search)
+                )
+
+            data = UserSerializer(admins, many=True).data
+            return Response({
+                "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": data, "error": None
+            }, status=status.HTTP_200_OK)
+
+        # POST — create a new admin account
+        first_name = (request.data.get('first_name') or '').strip()
+        last_name = (request.data.get('last_name') or '').strip()
+        contact_number = (request.data.get('contact_number') or '').strip()
+        email = (request.data.get('email') or '').strip()
+        password = request.data.get('password') or ''
+
+        if not first_name or not contact_number:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "First name and contact number are required."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if not password or len(password) < 8:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Password must be at least 8 characters long."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(contact_number=contact_number).exists():
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "A user with this contact number already exists."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        admin_user = User(
+            role='admin',
+            first_name=first_name,
+            last_name=last_name,
+            contact_number=contact_number,
+            email=email or None,
+        )
+        admin_user.set_password(password)
+        admin_user.save()
+
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": UserSerializer(admin_user).data, "error": None
+        }, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['patch', 'delete'], url_path='admin-users')
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def admin_user_detail(self, request, pk=None):
+        """Update or delete a single admin account."""
+        try:
+            target = User.objects.get(pk=pk, role='admin')
+        except User.DoesNotExist:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Admin user not found."
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == 'DELETE':
+            if target.pk == request.user.pk:
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None, "error": "You cannot delete your own account."
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            if User.objects.filter(role='admin').count() <= 1:
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None, "error": "Cannot delete the last remaining admin account."
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            target.delete()
+            return Response({
+                "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": None
+            }, status=status.HTTP_200_OK)
+
+        # PATCH — update
+        contact_number = request.data.get('contact_number')
+        if contact_number and User.objects.filter(contact_number=contact_number).exclude(pk=target.pk).exists():
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "A user with this contact number already exists."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        for field in ['first_name', 'last_name', 'email', 'contact_number']:
+            if field in request.data:
+                setattr(target, field, request.data.get(field))
+
+        if 'active_user' in request.data:
+            if target.pk == request.user.pk and not request.data.get('active_user'):
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None, "error": "You cannot deactivate your own account."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            target.active_user = bool(request.data.get('active_user'))
+
+        target.save()
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": UserSerializer(target).data, "error": None
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='admin-users-password')
+    @handle_exceptions
+    @check_authentication(required_role='admin')
+    def admin_user_reset_password(self, request, pk=None):
+        """Set a new password for an admin account."""
+        try:
+            target = User.objects.get(pk=pk, role='admin')
+        except User.DoesNotExist:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Admin user not found."
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        password = request.data.get('password') or ''
+        if not password or len(password) < 8:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Password must be at least 8 characters long."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        target.set_password(password)
+        target.save()
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": {"message": "Password updated successfully."}, "error": None
+        }, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['patch', 'delete'], url_path='attributes')
     @handle_exceptions

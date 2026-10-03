@@ -417,7 +417,7 @@ document.addEventListener("DOMContentLoaded", () => {
         message: document.getElementById('contactMessage').value
       };
 
-      console.log('[v0] Contact form submitted:', formData);
+      console.log('Contact form submitted:', formData);
 
       // Show success message
       const submitBtn = contactForm.querySelector('button[type="submit"]');
@@ -459,7 +459,7 @@ document.addEventListener("DOMContentLoaded", () => {
         message: document.getElementById('inquiryMessage').value
       };
 
-      console.log('[v0] Inquiry form submitted:', formData);
+      console.log('Inquiry form submitted:', formData);
 
       // Show success message
       const submitBtn = inquiryForm.querySelector('button[type="submit"]');

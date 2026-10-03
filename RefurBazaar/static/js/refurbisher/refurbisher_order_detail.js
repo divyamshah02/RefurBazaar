@@ -2,18 +2,23 @@
 let orderData = null;
 let verifyModal = null;
 let rejectModal = null;
+let shippingModal = null;
+let selectedCourier = null; // { courier_id, courier_name, rate }
 
 
-function InitializeRefurbisherOrderDetail(csrfToken, orderId, orderDetailUrl, verifyItemUrl, itemActionUrl) {
+function InitializeRefurbisherOrderDetail(csrfToken, orderId, orderDetailUrl, verifyItemUrl, itemActionUrl, shippingRatesUrl, confirmShippingUrl) {
     window.csrfToken = csrfToken;
     window.orderId = orderId;
     window.orderDetailUrl = orderDetailUrl;
     window.verifyItemUrl = verifyItemUrl;
     window.itemActionUrl = itemActionUrl;
+    window.shippingRatesUrl = shippingRatesUrl;
+    window.confirmShippingUrl = confirmShippingUrl;
     
     // Initialize modals
     verifyModal = new bootstrap.Modal(document.getElementById('verifyDeviceModal'));
     rejectModal = new bootstrap.Modal(document.getElementById('rejectItemModal'));
+    shippingModal = new bootstrap.Modal(document.getElementById('shippingModal'));
     
     loadOrderDetail();
     setupEventListeners();
@@ -28,6 +33,10 @@ function setupEventListeners() {
     
     // Submit rejection
     document.getElementById('submitRejection').addEventListener('click', submitRejection);
+
+    // Shipping: check rates, then confirm
+    document.getElementById('fetchRatesBtn').addEventListener('click', fetchShippingRates);
+    document.getElementById('submitShipping').addEventListener('click', submitShipping);
 }
 
 function handlePhotoSelection(e) {
@@ -85,7 +94,7 @@ async function loadOrderDetail() {
     try {
         const [success, response] = await callApi('GET', window.orderDetailUrl, null, window.csrfToken);
         
-        console.log('[v0] Order Detail API Response:', response);
+        console.log('Order Detail API Response:', response);
         
         if (success && response.success && response.data) {
             orderData = response.data;
@@ -94,7 +103,7 @@ async function loadOrderDetail() {
             showError('Failed to load order details.');
         }
     } catch (error) {
-        console.error('[v0] Error loading order detail:', error);
+        console.error('Error loading order detail:', error);
         showError('Failed to load order details. Please try again.');
     }
 }
@@ -173,6 +182,20 @@ function displayOrderItems() {
                                 <strong>Rejection Reason:</strong> ${item.rejection_reason}
                             </div>
                         ` : ''}
+
+                        ${item.shiprocket_awb_code ? `
+                            <div class="mt-2 small">
+                                <strong>AWB:</strong> ${item.shiprocket_awb_code}
+                                &nbsp;|&nbsp; <strong>Courier:</strong> ${item.shiprocket_courier_name || '—'}
+                                &nbsp;|&nbsp; <strong>Status:</strong> ${item.shiprocket_status || '—'}
+                                ${item.shiprocket_tracking_url ? `<a href="${item.shiprocket_tracking_url}" target="_blank" class="ms-1">Track</a>` : ''}
+                            </div>
+                        ` : ''}
+                        ${item.shiprocket_last_error ? `
+                            <div class="alert alert-warning mt-2 mb-0 py-1 px-2 small">
+                                <i class="fas fa-exclamation-triangle me-1"></i>Shipping issue: ${item.shiprocket_last_error}
+                            </div>
+                        ` : ''}
                     </div>
                     <div class="col-md-4 text-end">
                         ${getItemActions(item)}
@@ -201,8 +224,19 @@ function getItemActions(item) {
     
     let actions = '';
     
-    if (item.fulfillment_status === 'pending') {
+    if (item.fulfillment_status === 'pending' && !item.shipping_selected_at) {
         actions += `
+            <button class="btn btn-primary btn-sm mb-2 w-100 accept-order-btn" data-item-id="${item.id}">
+                <i class="fas fa-truck me-2"></i>Accept Order & Schedule Pickup
+            </button>
+        `;
+    }
+
+    if (item.fulfillment_status === 'pending' && item.shipping_selected_at) {
+        actions += `
+            <div class="alert alert-success py-2 px-3 mb-2" style="font-size: 0.85rem;">
+                <i class="fas fa-truck me-1"></i>Pickup scheduled ${item.pickup_scheduled_date || ''} via ${item.shiprocket_courier_name || 'courier'}
+            </div>
             <button class="btn btn-primary btn-sm mb-2 w-100 verify-device-btn" data-item-id="${item.id}">
                 <i class="fas fa-check-circle me-2"></i>Verify Device
             </button>
@@ -229,6 +263,14 @@ function getItemActions(item) {
 }
 
 function setupItemActionListeners() {
+    // Accept order & schedule pickup buttons
+    document.querySelectorAll('.accept-order-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-item-id');
+            openShippingModal(itemId);
+        });
+    });
+
     // Verify device buttons
     document.querySelectorAll('.verify-device-btn').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -252,6 +294,156 @@ function setupItemActionListeners() {
             openRejectModal(itemId);
         });
     });
+}
+
+function openShippingModal(itemId) {
+    selectedCourier = null;
+    document.getElementById('shippingItemId').value = itemId;
+    document.getElementById('pickupDate').value = '';
+    document.getElementById('boxLength').value = '';
+    document.getElementById('boxBreadth').value = '';
+    document.getElementById('boxHeight').value = '';
+    document.getElementById('boxWeight').value = '';
+    document.getElementById('courierListContainer').innerHTML = '';
+    document.getElementById('submitShipping').disabled = true;
+
+    // Minimum pickup date is tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('pickupDate').min = tomorrow.toISOString().split('T')[0];
+
+    shippingModal.show();
+}
+
+async function fetchShippingRates() {
+    const itemId = document.getElementById('shippingItemId').value;
+    const pickupDate = document.getElementById('pickupDate').value;
+
+    if (!pickupDate) {
+        alert('Please select a pickup date');
+        return;
+    }
+
+    const btn = document.getElementById('fetchRatesBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Checking...';
+
+    const payload = { pickup_date: pickupDate };
+    ['boxLength', 'boxBreadth', 'boxHeight', 'boxWeight'].forEach((id, i) => {
+        const keys = ['box_length', 'box_breadth', 'box_height', 'box_weight'];
+        const val = document.getElementById(id).value;
+        if (val) payload[keys[i]] = val;
+    });
+
+    try {
+        const url = window.shippingRatesUrl.replace('{item_id}', itemId);
+        const [success, response] = await callApi('POST', url, payload, window.csrfToken);
+
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-truck me-2"></i>Check Delivery Charges';
+
+        if (success && response.success) {
+            // Pre-fill box fields with what the server used (defaults or overrides)
+            const box = response.data.box || {};
+            document.getElementById('boxLength').value = box.length || '';
+            document.getElementById('boxBreadth').value = box.breadth || '';
+            document.getElementById('boxHeight').value = box.height || '';
+            document.getElementById('boxWeight').value = box.weight || '';
+
+            renderCourierOptions(response.data.couriers || [], response.data.recommended_courier_id);
+        } else {
+            alert('Failed to fetch delivery charges: ' + JSON.stringify(response.error));
+        }
+    } catch (error) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-truck me-2"></i>Check Delivery Charges';
+        console.error('Error fetching shipping rates:', error);
+        alert('Failed to fetch delivery charges. Please try again.');
+    }
+}
+
+function renderCourierOptions(couriers, recommendedId) {
+    const container = document.getElementById('courierListContainer');
+
+    if (!couriers.length) {
+        container.innerHTML = '<div class="alert alert-warning">No couriers available for this route. Please try a different pickup date.</div>';
+        document.getElementById('submitShipping').disabled = true;
+        return;
+    }
+
+    container.innerHTML = `
+        <label class="form-label">Select Courier *</label>
+        <div class="list-group">
+            ${couriers.map(c => `
+                <label class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>
+                        <input type="radio" name="courierChoice" class="form-check-input me-2"
+                               value="${c.courier_id}" data-name="${c.courier_name}" data-rate="${c.rate}"
+                               ${String(c.courier_id) === String(recommendedId) ? 'checked' : ''}>
+                        ${c.courier_name} ${String(c.courier_id) === String(recommendedId) ? '<span class="badge bg-success ms-1">Recommended</span>' : ''}
+                        <br><small class="text-muted">ETD: ${c.etd || 'N/A'}</small>
+                    </span>
+                    <strong>₹${parseFloat(c.rate || 0).toFixed(2)}</strong>
+                </label>
+            `).join('')}
+        </div>
+    `;
+
+    container.querySelectorAll('input[name="courierChoice"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            selectedCourier = {
+                courier_id: this.value,
+                courier_name: this.getAttribute('data-name'),
+                rate: this.getAttribute('data-rate')
+            };
+            document.getElementById('submitShipping').disabled = false;
+        });
+    });
+
+    // Auto-select the recommended (cheapest) courier
+    const checked = container.querySelector('input[name="courierChoice"]:checked');
+    if (checked) {
+        selectedCourier = {
+            courier_id: checked.value,
+            courier_name: checked.getAttribute('data-name'),
+            rate: checked.getAttribute('data-rate')
+        };
+        document.getElementById('submitShipping').disabled = false;
+    }
+}
+
+async function submitShipping() {
+    const itemId = document.getElementById('shippingItemId').value;
+
+    if (!selectedCourier) {
+        alert('Please select a courier');
+        return;
+    }
+
+    const btn = document.getElementById('submitShipping');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Confirming...';
+
+    try {
+        const url = window.confirmShippingUrl.replace('{item_id}', itemId);
+        const [success, response] = await callApi('POST', url, selectedCourier, window.csrfToken);
+
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check me-2"></i>Confirm & Accept Order';
+
+        if (success && response.success) {
+            shippingModal.hide();
+            showSuccess('Order accepted! Pickup scheduled.');
+            loadOrderDetail();
+        } else {
+            alert('Failed to confirm shipping: ' + JSON.stringify(response.error));
+        }
+    } catch (error) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check me-2"></i>Confirm & Accept Order';
+        console.error('Error confirming shipping:', error);
+        alert('Failed to confirm shipping. Please try again.');
+    }
 }
 
 function openVerifyModal(itemId) {
@@ -302,7 +494,7 @@ async function submitVerification() {
         
         const data = await response.json();
         
-        console.log('[v0] Verify Device API Response:', data);
+        console.log('Verify Device API Response:', data);
         
         if (response.ok && data.success) {
             verifyModal.hide();
@@ -312,7 +504,7 @@ async function submitVerification() {
             alert('Failed to verify device: ' + JSON.stringify(data.error));
         }
     } catch (error) {
-        console.error('[v0] Error verifying device:', error);
+        console.error('Error verifying device:', error);
         alert('Failed to verify device. Please try again.');
     }
 }
@@ -326,7 +518,7 @@ async function packItem(itemId) {
         const url = window.itemActionUrl.replace('{item_id}', itemId);
         const [success, response] = await callApi('POST', url, { action: 'pack' }, window.csrfToken);
         
-        console.log('[v0] Pack Item API Response:', response);
+        console.log('Pack Item API Response:', response);
         
         if (success && response.success) {
             showSuccess('Item marked as packed!');
@@ -335,7 +527,7 @@ async function packItem(itemId) {
             alert('Failed to pack item: ' + JSON.stringify(response.error));
         }
     } catch (error) {
-        console.error('[v0] Error packing item:', error);
+        console.error('Error packing item:', error);
         alert('Failed to pack item. Please try again.');
     }
 }
@@ -362,7 +554,7 @@ async function submitRejection() {
             rejection_reason: rejectionReason
         }, window.csrfToken);
         
-        console.log('[v0] Reject Item API Response:', response);
+        console.log('Reject Item API Response:', response);
         
         if (success && response.success) {
             rejectModal.hide();
@@ -372,7 +564,7 @@ async function submitRejection() {
             alert('Failed to reject item: ' + JSON.stringify(response.error));
         }
     } catch (error) {
-        console.error('[v0] Error rejecting item:', error);
+        console.error('Error rejecting item:', error);
         alert('Failed to reject item. Please try again.');
     }
 }
