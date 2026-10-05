@@ -164,7 +164,8 @@ class ApprovalReviewLog(models.Model):
 
 
 class OTPVerification(models.Model):
-    mobile = models.CharField(max_length=15)
+    mobile = models.CharField(max_length=15, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
     otp = models.CharField(max_length=6)
     is_verified = models.BooleanField(default=False)
     attempt_count = models.PositiveSmallIntegerField(default=0)

@@ -63,12 +63,71 @@ function showOTPLoginModal() {
   modal.show();
 }
 
-async function sendOTP() {
-  const mobileNumber = document.getElementById("mobileNumber").value.trim();
+let currentOtpEmail = null;
+let resendOtpIntervalId = null;
 
-  if (!mobileNumber || mobileNumber.length !== 10 || !/^\d+$/.test(mobileNumber)) {
+function emailOtpDigits() {
+  return Array.from(document.querySelectorAll("#otp-input-section .otp-digit"));
+}
+
+function wireOtpDigitInputs() {
+  const digits = emailOtpDigits();
+  digits.forEach((input, index) => {
+    input.addEventListener("input", () => {
+      input.value = input.value.replace(/\D/g, "").slice(0, 1);
+      input.classList.remove("is-invalid");
+      if (input.value && index < digits.length - 1) {
+        digits[index + 1].focus();
+      }
+      syncOtpHiddenField();
+    });
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Backspace" && !input.value && index > 0) {
+        digits[index - 1].focus();
+      }
+    });
+    input.addEventListener("paste", (e) => {
+      e.preventDefault();
+      const pasted = (e.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, digits.length);
+      pasted.split("").forEach((char, i) => {
+        if (digits[i]) digits[i].value = char;
+      });
+      syncOtpHiddenField();
+      const next = digits[Math.min(pasted.length, digits.length - 1)];
+      if (next) next.focus();
+    });
+  });
+}
+
+function syncOtpHiddenField() {
+  document.getElementById("otpCode").value = emailOtpDigits().map((d) => d.value).join("");
+}
+
+function startResendOtpTimer() {
+  let seconds = 30;
+  document.getElementById("resendOtpTimerWrap").style.display = "inline";
+  document.getElementById("resendOtpLink").style.display = "none";
+  document.getElementById("resendOtpTimer").textContent = seconds;
+
+  if (resendOtpIntervalId) clearInterval(resendOtpIntervalId);
+  resendOtpIntervalId = setInterval(() => {
+    seconds -= 1;
+    document.getElementById("resendOtpTimer").textContent = seconds;
+    if (seconds <= 0) {
+      clearInterval(resendOtpIntervalId);
+      document.getElementById("resendOtpTimerWrap").style.display = "none";
+      document.getElementById("resendOtpLink").style.display = "inline";
+    }
+  }, 1000);
+}
+
+async function sendOTP() {
+  const emailInput = document.getElementById("mobileNumber").value.trim().toLowerCase();
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailInput || !emailPattern.test(emailInput)) {
     document.getElementById("mobileNumber").classList.add("is-invalid");
-    document.getElementById("mobileError").textContent = "Please enter a valid 10-digit mobile number";
+    document.getElementById("mobileError").textContent = "Please enter a valid email address";
     return;
   }
 
@@ -81,19 +140,22 @@ async function sendOTP() {
       "POST",
       "/user-api/otp-api/",
       {
-        mobile: mobileNumber,
+        email: emailInput,
       },
       csrf_token
     );
 
     if (success && result.success) {
       currentOtpId = result.data.otp_id;
-      document.getElementById("displayMobile").textContent = mobileNumber;
+      currentOtpEmail = emailInput;
+      document.getElementById("displayMobile").textContent = emailInput;
       document.getElementById("mobile-input-section").style.display = "none";
       document.getElementById("otp-input-section").style.display = "block";
-      console.log(result.data.otp)
-      document.getElementById("otpCode").value = result.data.otp
-      alert("OTP sent successfully!");
+      wireOtpDigitInputs();
+      emailOtpDigits().forEach((d) => (d.value = ""));
+      document.getElementById("otpCode").value = "";
+      emailOtpDigits()[0]?.focus();
+      startResendOtpTimer();
     } else {
       throw new Error(result.error || "Failed to send OTP");
     }
@@ -106,16 +168,40 @@ async function sendOTP() {
   }
 }
 
+async function resendOTP(event) {
+  if (event) event.preventDefault();
+  if (!currentOtpEmail) return;
+
+  try {
+    const [success, result] = await callApi(
+      "POST",
+      "/user-api/otp-api/",
+      { email: currentOtpEmail },
+      csrf_token
+    );
+    if (success && result.success) {
+      currentOtpId = result.data.otp_id;
+      emailOtpDigits().forEach((d) => (d.value = ""));
+      document.getElementById("otpCode").value = "";
+      emailOtpDigits()[0]?.focus();
+      startResendOtpTimer();
+    }
+  } catch (error) {
+    console.error("Error resending OTP:", error);
+  }
+}
+
 async function verifyOTP() {
+  syncOtpHiddenField();
   const otpCode = document.getElementById("otpCode").value.trim();
 
   if (!otpCode || otpCode.length !== 6 || !/^\d+$/.test(otpCode)) {
-    document.getElementById("otpCode").classList.add("is-invalid");
+    emailOtpDigits().forEach((d) => d.classList.add("is-invalid"));
     document.getElementById("otpError").textContent = "Please enter a valid 6-digit OTP";
     return;
   }
 
-  document.getElementById("otpCode").classList.remove("is-invalid");
+  emailOtpDigits().forEach((d) => d.classList.remove("is-invalid"));
   document.getElementById("verifyOtpLoader").style.display = "inline-block";
   document.getElementById("verifyOtpText").textContent = "Verifying...";
 
@@ -131,21 +217,18 @@ async function verifyOTP() {
     );
 
     if (success && result.success && result.data.otp_verified) {
-      alert("Login successful!");
-
-      // Close modal and reload page
       bootstrap.Modal.getInstance(document.getElementById("otpLoginModal")).hide();
       setTimeout(() => {
         window.location.reload();
-      }, 1000);
+      }, 800);
     } else {
       const message = result.data?.message || "Invalid OTP";
-      document.getElementById("otpCode").classList.add("is-invalid");
+      emailOtpDigits().forEach((d) => d.classList.add("is-invalid"));
       document.getElementById("otpError").textContent = message;
     }
   } catch (error) {
     console.error("Error verifying OTP:", error);
-    alert("Error verifying OTP. Please try again.");
+    document.getElementById("otpError").textContent = "Error verifying OTP. Please try again.";
   } finally {
     document.getElementById("verifyOtpLoader").style.display = "none";
     document.getElementById("verifyOtpText").textContent = "Verify OTP";
@@ -153,10 +236,14 @@ async function verifyOTP() {
 }
 
 function goBackToMobile() {
+  if (resendOtpIntervalId) clearInterval(resendOtpIntervalId);
   document.getElementById("otp-input-section").style.display = "none";
   document.getElementById("mobile-input-section").style.display = "block";
   document.getElementById("otpCode").value = "";
-  document.getElementById("otpCode").classList.remove("is-invalid");
+  emailOtpDigits().forEach((d) => {
+    d.value = "";
+    d.classList.remove("is-invalid");
+  });
 }
 
 async function loadUserProfile() {
@@ -371,10 +458,16 @@ function showSection(sectionName) {
 
 async function updateProfile() {
   try {
+    const phone = document.getElementById("phone").value.trim();
+    if (!/^\d{10}$/.test(phone.replace(/^\+91/, ""))) {
+      alert("Please enter a valid 10-digit phone number.");
+      return;
+    }
+
     const profileData = {
       first_name: document.getElementById("firstName").value,
       last_name: document.getElementById("lastName").value,
-      email: document.getElementById("email").value,
+      contact_number: phone,
     };
 
     const [success, result] = await callApi(
@@ -392,7 +485,7 @@ async function updateProfile() {
     }
   } catch (error) {
     console.error("Error updating profile:", error);
-    alert("Error updating profile. Please try again.");
+    alert(error.message || "Error updating profile. Please try again.");
   }
 }
 

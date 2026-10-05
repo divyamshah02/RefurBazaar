@@ -3,8 +3,8 @@ from pathlib import Path
 import base64
 import dj_database_url
 
-IS_LOCAL = True
-LOCAL_DB = True
+IS_LOCAL = False
+LOCAL_DB = False
 IS_PAYMENT_TEST_MODE = False
 
 BASE_DIR = Path(__file__).resolve().parent.parent

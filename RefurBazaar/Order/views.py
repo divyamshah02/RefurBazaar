@@ -23,6 +23,7 @@ from ShoppingCart.models import ShoppingCart, ShoppingCartItem
 from Product.models import ListingUnit
 from utils.decorators import handle_exceptions, check_authentication, check_refurbisher_profile
 from utils.shiprocket_api import ShiprocketClient, ShiprocketAPIException
+from utils.email_service import send_order_confirmation_email
 
 
 class OrderViewSet(viewsets.ViewSet):
@@ -196,7 +197,12 @@ class OrderViewSet(viewsets.ViewSet):
             cart_items.delete()
             cart.active_cart = False
             cart.save()
-        
+
+        # COD orders are confirmed immediately; email right away.
+        # Razorpay orders are confirmed in verify_payment instead.
+        if data['payment_method'] != 'razorpay':
+            send_order_confirmation_email(order)
+
         response_data = OrderSerializer(order).data
         if razorpay_order:
             response_data['razorpay_order'] = razorpay_order
@@ -258,7 +264,9 @@ class OrderViewSet(viewsets.ViewSet):
                 listing_unit.half_sold = False
                 listing_unit.half_sold_at = None
                 listing_unit.save()
-        
+
+        send_order_confirmation_email(order)
+
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": OrderSerializer(order).data, "error": None

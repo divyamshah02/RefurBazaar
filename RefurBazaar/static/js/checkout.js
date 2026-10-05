@@ -296,34 +296,28 @@ async function placeOrder() {
   }
 
   if (!isUserLoggedIn) {
-    const phone = document.getElementById("phone").value.trim()
-    if (!phone || phone.length !== 10) {
-      showToast("Please enter a valid 10-digit phone number", "error")
+    const email = document.getElementById("email").value.trim()
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!email || !emailPattern.test(email)) {
+      showToast("Please enter a valid email address", "error")
       return
     }
-    await sendOtpForCheckout(phone)
+    await sendOtpForCheckout(email)
     return
   }
 
   await proceedWithOrder()
 }
 
-async function sendOtpForCheckout(mobile) {
+async function sendOtpForCheckout(email) {
   try {
-    const requestData = { mobile: mobile }
+    const requestData = { email: email }
     const [success, response] = await callApi("POST", otpUrl, requestData, csrfToken)
 
     if (success && response.success) {
       currentOtpId = response.data.otp_id
 
-      if (response.data.otp) {
-        console.log("OTP for testing:", response.data.otp)
-        setTimeout(() => {
-          fillOtpForTesting(response.data.otp)
-        }, 500)
-      }
-
-      showOtpModal(mobile)
+      showOtpModal(email)
       startResendTimer()
       showToast("OTP sent successfully!", "success")
     } else {
@@ -516,15 +510,14 @@ function setupResendOtp() {
   resendLink.addEventListener("click", async (e) => {
     e.preventDefault()
     if (!resendLink.classList.contains("disabled")) {
-      const phone = document.getElementById("phone").value.trim()
-      await sendOtpForCheckout(phone)
+      const email = document.getElementById("email").value.trim()
+      await sendOtpForCheckout(email)
     }
   })
 }
 
-function showOtpModal(mobile) {
-  const formattedMobile = `+91 ${mobile.slice(0, 5)} ${mobile.slice(5)}`
-  document.getElementById("otpPhoneDisplay").textContent = formattedMobile
+function showOtpModal(email) {
+  document.getElementById("otpPhoneDisplay").textContent = email
 
   document.getElementById("otpModalBackdrop").classList.add("active")
   document.getElementById("otpModal").classList.add("active")
