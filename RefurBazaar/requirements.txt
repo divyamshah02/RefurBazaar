@@ -38,3 +38,4 @@ openpyxl
 reportlab==4.2.5
 svglib==1.5.1
 pyOpenSSL==25.3.0
+resend

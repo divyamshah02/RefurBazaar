@@ -28,7 +28,7 @@ class User(AbstractUser):
     # name = models.CharField(max_length=255, blank=True, null=True)
     first_name = models.CharField(max_length=255, blank=True, null=True)
     last_name = models.CharField(max_length=255, blank=True, null=True)
-    contact_number = models.CharField(max_length=15, unique=True)
+    contact_number = models.CharField(max_length=15, unique=True, blank=True, null=True)
     email = models.EmailField(null=True, blank=True)
     alternate_phone = models.CharField(max_length=15, null=True, blank=True)
 

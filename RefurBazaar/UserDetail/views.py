@@ -105,8 +105,8 @@ class OtpAuthViewSet(viewsets.ViewSet):
             user, created = User.objects.get_or_create(
                 email=otp_obj.email,
                 defaults={
-                    "role": role,
-                    "contact_number": f"E{''.join(random.choices('0123456789', k=14))}",
+                    "role": role
+                    # "contact_number": f"E{''.join(random.choices('0123456789', k=14))}",
                 }
             )
         else:
