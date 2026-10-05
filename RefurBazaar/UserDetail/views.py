@@ -9,28 +9,66 @@ import random
 from .models import *
 from .serializers import *
 from utils.decorators import *
+from utils.email_service import send_otp_email
 
 
 class OtpAuthViewSet(viewsets.ViewSet):
     @handle_exceptions
     def create(self, request):
-        """Generate OTP"""
+        """Generate OTP for either mobile (refurbisher/admin) or email (customer) login."""
         mobile = request.data.get("mobile")
-        if not mobile:
+        email = (request.data.get("email") or "").strip().lower()
+
+        if not mobile and not email:
             return Response({
                 "success": False, "user_not_logged_in": False, "user_unauthorized": False,
-                "data": None, "error": "Mobile number is required."
+                "data": None, "error": "Email or mobile number is required."
             }, status=status.HTTP_400_BAD_REQUEST)
 
+        if email:
+            import re
+            if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None, "error": "Please enter a valid email address."
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Email login is for customers only. If this email already belongs
+            # to a refurbisher/admin account, tell the user instead of letting
+            # them silently create a duplicate customer identity.
+            existing_user = User.objects.filter(email=email).exclude(role="customer").first()
+            if existing_user:
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None,
+                    "error": (
+                        f"This email is already registered as a {existing_user.get_role_display()} "
+                        f"(ID: {existing_user.user_id}). Please log in through the "
+                        f"{existing_user.get_role_display()} portal instead."
+                    )
+                }, status=status.HTTP_400_BAD_REQUEST)
+
         otp = ''.join(random.choices('0123456789', k=6))
-        print(f"OTP: {otp} to {mobile}")
+        print(f"OTP: {otp} to {email or mobile}")
         otp_obj = OTPVerification.objects.create(
-            mobile=mobile, otp=otp,
+            mobile=mobile or None, email=email or None, otp=otp,
             expires_at=timezone.now() + timedelta(minutes=5)
         )
+
+        email_sent = True
+        if email:
+            email_sent = send_otp_email(email, otp, purpose="login")
+
+        response_data = {"otp_id": otp_obj.id}
+        # Only echo the OTP back when email delivery could not be confirmed
+        # (e.g. RESEND_API_KEY missing in this environment), so dev/testing
+        # still works end-to-end.
+        if mobile or not email_sent:
+            response_data["otp"] = otp
+
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
-            "data": {"otp_id": otp_obj.id, "otp": otp}, "error": None
+            "data": response_data, "error": None
         }, status=status.HTTP_201_CREATED)
 
     @handle_exceptions
@@ -63,10 +101,19 @@ class OtpAuthViewSet(viewsets.ViewSet):
         otp_obj.is_verified = True
         otp_obj.save()
 
-        user, created = User.objects.get_or_create(
-            contact_number=otp_obj.mobile,
-            defaults={"role": role}
-        )
+        if otp_obj.email:
+            user, created = User.objects.get_or_create(
+                email=otp_obj.email,
+                defaults={
+                    "role": role,
+                    "contact_number": f"E{''.join(random.choices('0123456789', k=14))}",
+                }
+            )
+        else:
+            user, created = User.objects.get_or_create(
+                contact_number=otp_obj.mobile,
+                defaults={"role": role}
+            )
 
         login(request, user)
         return Response({
@@ -157,10 +204,28 @@ class UserDetailViewSet(viewsets.ViewSet):
         role = user.role
 
         # --- Update base user info ---
+        # Email is the login identifier for customers and is intentionally not
+        # editable here. Phone number can be updated by the user instead.
         user.first_name = request.data.get('first_name', user.first_name)
         user.last_name = request.data.get('last_name', user.last_name)
-        user.email = request.data.get('email', user.email)
         user.alternate_phone = request.data.get('alternate_phone', user.alternate_phone)
+
+        new_contact_number = request.data.get('contact_number')
+        if new_contact_number:
+            new_contact_number = str(new_contact_number).strip().replace("+91", "")
+            if new_contact_number != user.contact_number:
+                if not new_contact_number.isdigit() or len(new_contact_number) != 10:
+                    return Response({
+                        "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                        "data": None, "error": "Please enter a valid 10-digit phone number."
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                if User.objects.filter(contact_number=new_contact_number).exclude(id=user.id).exists():
+                    return Response({
+                        "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                        "data": None, "error": "This phone number is already registered with another account."
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                user.contact_number = new_contact_number
+
         user.save()
 
         # --- If refurbisher, handle CompanyProfile ---
