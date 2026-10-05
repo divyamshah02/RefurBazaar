@@ -260,6 +260,25 @@ async function savePersonalInfo() {
 
 // Save Business Details
 async function saveBusinessDetails() {
+      const gst = document.getElementById("gstNumber").value.toUpperCase().trim();
+      const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}Z[A-Z0-9]{1}$/;
+      const errorDiv = document.getElementById("gstError");
+
+      if (gst === "") {
+          errorDiv.innerText = "";
+           alert("Invalid GSTIN format. Please enter a valid GSTIN.");
+           return;
+
+      }
+
+      if (!gstRegex.test(gst)) {
+          errorDiv.innerText = "Invalid GSTIN format";
+          alert("Invalid GSTIN format. Please enter a valid GSTIN.");
+           return;
+      } else {
+          errorDiv.innerText = "";
+      }
+  
   const formData = {
     first_name: document.getElementById("firstName").value.trim(),
     last_name: document.getElementById("lastName").value.trim(),
