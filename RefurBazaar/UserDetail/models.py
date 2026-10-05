@@ -28,15 +28,15 @@ class User(AbstractUser):
     # name = models.CharField(max_length=255, blank=True, null=True)
     first_name = models.CharField(max_length=255, blank=True, null=True)
     last_name = models.CharField(max_length=255, blank=True, null=True)
-    contact_number = models.CharField(max_length=15, unique=True, blank=True, null=True)
+    contact_number = models.CharField(max_length=15, blank=True, null=True)
     email = models.EmailField(null=True, blank=True)
     alternate_phone = models.CharField(max_length=15, null=True, blank=True)
 
     created_at = models.DateTimeField(default=timezone.now)
     active_user = models.BooleanField(default=True)
 
-    USERNAME_FIELD = 'contact_number'
-    REQUIRED_FIELDS = ['role', 'username']
+    # USERNAME_FIELD = 'contact_number'
+    # REQUIRED_FIELDS = ['role', 'username']
 
     def __str__(self):
         return f"{self.first_name or 'Unnamed'} ({self.role})"
