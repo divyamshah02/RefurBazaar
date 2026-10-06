@@ -1,3 +1,4 @@
+from decimal import Decimal, ROUND_HALF_UP
 from django.db import models
 from django.db.models import Max
 from django.core.validators import MinValueValidator
@@ -179,8 +180,61 @@ class Listing(models.Model):
         return f"{self.listing_id} - {self.model}"
 
 
+COMMISSION_TYPE_CHOICES = [
+    ('percentage', 'Percentage'),
+    ('flat', 'Flat amount'),
+]
+
+
+class CommissionConfig(models.Model):
+    """Default platform commission, set by admin per product category.
+
+    `category` is a ProductModel category key (mobile/tablet/...) or the special
+    key 'default', which is the fallback for any category without its own row.
+    """
+    DEFAULT_KEY = 'default'
+
+    category = models.CharField(max_length=20, unique=True)
+    commission_type = models.CharField(max_length=12, choices=COMMISSION_TYPE_CHOICES, default='percentage')
+    value = models.DecimalField(max_digits=10, decimal_places=2, default=0, validators=[MinValueValidator(0)])
+    is_active = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['category']
+
+    def __str__(self):
+        suffix = '%' if self.commission_type == 'percentage' else ' flat'
+        return f"{self.category}: {self.value}{suffix}"
+
+    @classmethod
+    def resolve(cls, category):
+        """Return (type, value) for a category: category row -> default row -> (percentage, 0)."""
+        rows = {c.category: c for c in cls.objects.filter(category__in=[category, cls.DEFAULT_KEY], is_active=True)}
+        row = rows.get(category) or rows.get(cls.DEFAULT_KEY)
+        if row:
+            return row.commission_type, row.value
+        return 'percentage', Decimal('0')
+
+
+def compute_commission(base_price, commission_type, value):
+    """Commission amount (2dp) on a refurbisher price."""
+    base = Decimal(str(base_price or 0))
+    value = Decimal(str(value or 0))
+    if commission_type == 'flat':
+        amount = value
+    else:
+        amount = base * value / Decimal('100')
+    return amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+
 class ListingUnit(models.Model):
-    """Individual units within a listing - each unit represents ONE device"""
+    """Individual units within a listing - each unit represents ONE device.
+
+    price (customer-facing) = refurbisher_price + platform_commission.
+    The commission uses the per-unit override when set, otherwise the
+    category default from CommissionConfig.
+    """
     
     CONDITION_CHOICES = [
         ('excellent', 'Excellent'),
@@ -191,7 +245,20 @@ class ListingUnit(models.Model):
     
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='units')
     unit_number = models.IntegerField(null=True, blank=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)],
+                                help_text="Customer-facing price = refurbisher_price + platform_commission")
+    refurbisher_price = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)],
+        help_text="Price set by the refurbisher (what they earn)")
+    platform_commission = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0, validators=[MinValueValidator(0)],
+        help_text="Platform commission amount added on top of the refurbisher price")
+    commission_type = models.CharField(
+        max_length=12, choices=COMMISSION_TYPE_CHOICES, null=True, blank=True,
+        help_text="Per-unit override. Leave empty to use the category default.")
+    commission_value = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)],
+        help_text="Per-unit override value (percent or flat amount)")
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES)
     is_available = models.BooleanField(default=True)
     is_sold = models.BooleanField(default=False)
@@ -203,13 +270,38 @@ class ListingUnit(models.Model):
         ordering = ['unit_number']
         unique_together = ['listing', 'unit_number']
     
+    def effective_commission_rule(self):
+        """(type, value, source) — unit override first, then category default."""
+        if self.commission_type and self.commission_value is not None:
+            return self.commission_type, self.commission_value, 'unit'
+        ctype, cvalue = CommissionConfig.resolve(self.listing.model.category)
+        return ctype, cvalue, 'category'
+
+    def apply_commission(self):
+        """Recompute platform_commission and the customer-facing price in memory.
+
+        If refurbisher_price was never set (legacy callers passing only `price`),
+        that value is treated as the refurbisher's price.
+        """
+        if self.refurbisher_price is None:
+            self.refurbisher_price = self.price
+        ctype, cvalue, _ = self.effective_commission_rule()
+        self.platform_commission = compute_commission(self.refurbisher_price, ctype, cvalue)
+        self.price = Decimal(str(self.refurbisher_price)) + self.platform_commission
+
     def save(self, *args, **kwargs):
         if not self.unit_number:
             max_unit = ListingUnit.objects.filter(listing=self.listing).aggregate(
                 Max('unit_number')
             )['unit_number__max']
             self.unit_number = (max_unit or 0) + 1
-        
+
+        # Only price brand-new units automatically. Existing units keep their
+        # stored price on routine saves (e.g. checkout holds) and are repriced
+        # explicitly via apply_commission() when a price/config change is made.
+        if self.pk is None:
+            self.apply_commission()
+
         super().save(*args, **kwargs)
     
     def mark_half_sold(self):

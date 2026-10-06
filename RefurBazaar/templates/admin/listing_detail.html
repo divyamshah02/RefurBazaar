@@ -49,6 +49,7 @@
         </div>
         <div style="display:flex;gap:8px;align-items:center">
           <span class="badge badge-gray" id="ld-unit-count">0 units</span>
+          <button class="btn btn-primary btn-sm" onclick="openUnitModal(null)"><i class="fa-solid fa-plus"></i> Add unit</button>
         </div>
       </div>
       <div class="rb-table-wrap">
@@ -56,15 +57,17 @@
           <thead>
             <tr>
               <th>Unit #</th>
-              <th>Price</th>
+              <th>Refurbisher</th>
+              <th>Commission</th>
+              <th>Customer price</th>
               <th>Condition</th>
               <th>Attributes</th>
               <th>Status</th>
-              <th>Added</th>
+              <th style="text-align:right">Actions</th>
             </tr>
           </thead>
           <tbody id="ld-units-tbody">
-            <tr><td colspan="6" style="padding:32px;text-align:center">
+            <tr><td colspan="8" style="padding:32px;text-align:center">
               <div class="skeleton" style="height:13px;width:50%;margin:0 auto 10px"></div>
               <div class="skeleton" style="height:13px;width:35%;margin:0 auto"></div>
             </td></tr>
@@ -115,7 +118,10 @@
         </div>
         <div class="detail-item">
           <div class="detail-key">Status</div>
-          <div id="ld-meta-status">—</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select class="form-select" id="ld-status-select" style="flex:1"></select>
+            <button class="btn btn-primary btn-sm" id="ld-status-save" onclick="saveListingStatus()">Save</button>
+          </div>
         </div>
         <div class="detail-item">
           <div class="detail-key">Created</div>
@@ -125,6 +131,16 @@
           <div class="detail-key">Last Updated</div>
           <div class="detail-val fs-12" id="ld-updated">—</div>
         </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">Danger zone</div></div>
+      <div style="padding:16px 20px">
+        <button class="btn btn-danger btn-sm" style="width:100%;justify-content:center" onclick="deleteListing()">
+          <i class="fa-solid fa-trash"></i> Delete listing
+        </button>
+        <div class="text-muted fs-12" style="margin-top:8px">Removes the listing and all its units permanently.</div>
       </div>
     </div>
 
@@ -154,6 +170,68 @@
   </div>
 </div>
 
+<!-- Unit editor -->
+<div class="rb-overlay" id="modal-unit">
+  <div class="rb-modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-header-icon blue"><i class="fa-solid fa-pen"></i></div>
+      <div>
+        <div class="modal-title" id="mu-title">Edit unit</div>
+        <div class="modal-subtitle">Prices, commission, condition, availability and attributes</div>
+      </div>
+      <button class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 280px;gap:22px">
+        <div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Refurbisher price (₹) <span style="color:var(--red)">*</span></label>
+              <input type="number" min="0" step="0.01" class="form-input" id="mu-price" oninput="updateUnitPreview()" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Condition</label>
+              <select class="form-select" id="mu-condition"></select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Commission for this unit</label>
+            <div class="form-row">
+              <select class="form-select" id="mu-ctype" onchange="updateUnitPreview()">
+                <option value="default">Use category default</option>
+                <option value="percentage">Custom percentage (%)</option>
+                <option value="flat">Custom flat amount (₹)</option>
+              </select>
+              <input type="number" min="0" step="0.01" class="form-input" id="mu-cvalue" oninput="updateUnitPreview()" placeholder="Value" />
+            </div>
+          </div>
+          <div style="display:flex;gap:24px;margin-bottom:16px">
+            <label class="form-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:0"><input type="checkbox" id="mu-available" /> Available for sale</label>
+            <label class="form-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:0"><input type="checkbox" id="mu-sold" /> Marked as sold</label>
+          </div>
+          <div class="form-label">Attributes</div>
+          <div id="mu-attrs" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
+        </div>
+        <div>
+          <div class="panel" style="background:var(--bg)">
+            <div class="panel-body">
+              <div class="detail-key" style="margin-bottom:10px">Price breakdown</div>
+              <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px"><span>Refurbisher earns</span><span id="mu-pv-ref">—</span></div>
+              <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px"><span>Platform commission</span><span id="mu-pv-com">—</span></div>
+              <div style="display:flex;justify-content:space-between;padding:10px 0 0;font-size:15px;font-weight:700;border-top:1px solid var(--border-light);margin-top:6px"><span>Customer pays</span><span id="mu-pv-total">—</span></div>
+              <div class="text-muted fs-12" style="margin-top:10px" id="mu-pv-rule"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-unit')">Cancel</button>
+      <button class="btn btn-primary" id="mu-save" onclick="saveUnit()">Save unit</button>
+    </div>
+  </div>
+</div>
+
 <!-- Image lightbox overlay -->
 <div class="rb-overlay" id="lightbox">
   <div style="max-width:90vw;max-height:90vh;position:relative">
@@ -173,7 +251,7 @@
     const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
     const lid  = window.location.pathname.split('/').filter(Boolean).pop();
     InitListingDetail(csrf, lid, {
-      detailUrl: `/admin-api/dashboard/${lid}/listing-detail/`
+      manageUrl: `/admin-api/listing-manage/${lid}/`
     });
   });
 </script>

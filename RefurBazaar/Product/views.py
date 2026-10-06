@@ -557,9 +557,11 @@ class ListingViewSet(viewsets.ViewSet):
                 unit_condition = unit_data.get('condition')
                 attributes = unit_data.get('attributes', [])
 
+                # unit_price is the refurbisher's price; ListingUnit.save() adds the
+                # platform commission and stores the customer-facing total in `price`.
                 unit = ListingUnit.objects.create(
                     listing=listing,
-                    price=unit_price,
+                    refurbisher_price=unit_price,
                     condition=unit_condition
                 )
 
@@ -579,7 +581,7 @@ class ListingViewSet(viewsets.ViewSet):
                 # refurbisher was never asked for.
                 _copy_fixed_attributes_to_unit(unit, model)
 
-        serializer = ListingSerializer(listing)
+        serializer = ListingSerializer(listing, context={'pricing_view': 'refurbisher'})
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None
@@ -600,7 +602,7 @@ class ListingViewSet(viewsets.ViewSet):
         if status_filter:
             queryset = queryset.filter(status=status_filter)
 
-        serializer = ListingSerializer(queryset, many=True)
+        serializer = ListingSerializer(queryset, many=True, context={'pricing_view': 'refurbisher'})
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None
@@ -616,7 +618,7 @@ class ListingViewSet(viewsets.ViewSet):
             pk=pk,
             refurbisher=request.user
         )
-        serializer = ListingSerializer(listing)
+        serializer = ListingSerializer(listing, context={'pricing_view': 'refurbisher'})
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None
@@ -633,7 +635,7 @@ class ListingViewSet(viewsets.ViewSet):
             listing.status = request.data['status']
         
         listing.save()
-        serializer = ListingSerializer(listing)
+        serializer = ListingSerializer(listing, context={'pricing_view': 'refurbisher'})
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None
@@ -673,10 +675,10 @@ class ListingViewSet(viewsets.ViewSet):
                 "data": None, "error": "Condition is required."
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Create unit
+        # Create unit (price is the refurbisher's price; commission is added by the model)
         unit = ListingUnit.objects.create(
             listing=listing,
-            price=price,
+            refurbisher_price=price,
             condition=condition
         )
         
@@ -700,7 +702,7 @@ class ListingViewSet(viewsets.ViewSet):
         listing.total_quantity = listing.units.count()
         listing.save()
         
-        serializer = ListingUnitSerializer(unit)
+        serializer = ListingUnitSerializer(unit, context={'pricing_view': 'refurbisher'})
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None
@@ -720,7 +722,9 @@ class ListingViewSet(viewsets.ViewSet):
         if 'is_sold' in request.data:
             unit.is_sold = request.data['is_sold']
         if 'price' in request.data:
-            unit.price = request.data['price']
+            # Refurbisher edits their own price; the commission is re-applied on top.
+            unit.refurbisher_price = request.data['price']
+            unit.apply_commission()
         if 'condition' in request.data:
             unit.condition = request.data['condition']
         
@@ -746,7 +750,7 @@ class ListingViewSet(viewsets.ViewSet):
 
         unit.save()
         
-        serializer = ListingUnitSerializer(unit)
+        serializer = ListingUnitSerializer(unit, context={'pricing_view': 'refurbisher'})
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None
@@ -802,7 +806,7 @@ class ListingUnitViewSet(viewsets.ViewSet):
 
         unit = ListingUnit.objects.create(
             listing=listing,
-            price=price,
+            refurbisher_price=price,
             condition=condition
         )
 
@@ -821,7 +825,7 @@ class ListingUnitViewSet(viewsets.ViewSet):
         # refurbisher was never asked for.
         _copy_fixed_attributes_to_unit(unit, listing.model)
 
-        serializer = ListingUnitSerializer(unit)
+        serializer = ListingUnitSerializer(unit, context={'pricing_view': 'refurbisher'})
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None

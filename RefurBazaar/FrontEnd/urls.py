@@ -63,6 +63,7 @@ router.register(r'admin-catalog-brands', AdminBrandsPageViewSet, basename='admin
 router.register(r'admin-catalog-products', AdminProductsPageViewSet, basename='admin-catalog-products')
 router.register(r'admin-catalog-attributes', AdminAttributesPageViewSet, basename='admin-catalog-attributes')
 router.register(r'admin-team', AdminTeamPageViewSet, basename='admin-team')
+router.register(r'admin-pricing', AdminPricingPageViewSet, basename='admin-pricing-page')
 
 
 
