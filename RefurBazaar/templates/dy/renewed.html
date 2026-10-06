@@ -1,0 +1,22 @@
+{% if renewed %}
+<div class="container-fluid px-3 px-lg-5 my-4">
+    <div class="renewed-banner-wrapper" data-bs-toggle="modal" data-bs-target="#renewedModal">
+        <div class="renewed-banner">
+            <i class="fas fa-certificate renewed-bg-stamp"></i>
+            <div class="d-flex align-items-center justify-content-between renewed-content-flex">
+                <div class="d-flex align-items-center gap-3 flex-column flex-md-row">
+                    <div class="renewed-icon-box"><i class="fas fa-shield-alt"></i></div>
+                    <div class="renewed-text text-center text-md-start">
+                        <h5>{{ renewed.heading }}</h5>
+                        <p>{{ renewed.subtext }}</p>
+                    </div>
+                </div>
+                <div class="renewed-action mt-2 mt-md-0">
+                    <span>{{ renewed.cta_text }}</span>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

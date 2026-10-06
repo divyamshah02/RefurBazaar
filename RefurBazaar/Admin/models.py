@@ -137,6 +137,7 @@ class ProductSection(models.Model):
     ]
 
     title           = models.CharField(max_length=120)
+    subtitle        = models.CharField(max_length=200, blank=True, help_text='Optional line shown under the heading')
     section_type    = models.CharField(max_length=30, choices=SECTION_TYPE_CHOICES, unique=True)
     bg_style        = models.CharField(max_length=30, choices=BG_STYLE_CHOICES, blank=True)
     see_all_url     = models.CharField(max_length=200, blank=True)
@@ -168,8 +169,13 @@ class ProductSectionItem(models.Model):
 
     section         = models.ForeignKey(ProductSection, on_delete=models.CASCADE, related_name='items')
     # FK to Product app's ProductModel — stored as int to avoid cross-app import issues
-    product_model_id = models.PositiveIntegerField(help_text='ProductModel.id from Product app')
-    # Display overrides (optional — if blank, read from ProductModel)
+    product_model_id = models.PositiveIntegerField(help_text='ProductModel.id from Product app', null=True, blank=True)
+    # Preferred: pick a real, live listing unit (Product.models.ListingUnit.id).
+    # When set, name/image/price/specs are read live from this unit at render time.
+    listing_unit_id = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text='ListingUnit.id from Product app — selected from existing refurbisher listings')
+    # Display overrides (optional — if blank, read from ProductModel/ListingUnit)
     display_name    = models.CharField(max_length=200, blank=True)
     display_image   = models.ImageField(upload_to='homepage/items/', blank=True, null=True)
     badge_text      = models.CharField(max_length=30, blank=True, help_text='e.g. -54%')
@@ -195,8 +201,12 @@ class ProductSectionItem(models.Model):
 class SpotlightProduct(models.Model):
     is_active           = models.BooleanField(default=True)
     brand_label         = models.CharField(max_length=60)
-    product_model_id    = models.PositiveIntegerField(help_text='ProductModel.id')
-    display_name        = models.CharField(max_length=200)
+    product_model_id    = models.PositiveIntegerField(help_text='ProductModel.id', null=True, blank=True)
+    # Preferred: pick a real, live listing unit (Product.models.ListingUnit.id).
+    listing_unit_id      = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text='ListingUnit.id from Product app — selected from existing refurbisher listings')
+    display_name        = models.CharField(max_length=200, blank=True)
     display_image       = models.ImageField(upload_to='homepage/spotlight/', blank=True, null=True)
     specs               = models.JSONField(default=list, help_text='List of spec pill strings, e.g. ["CORE I7","16GB"]')
     price               = models.CharField(max_length=30, help_text='e.g. ₹ 41,999')
@@ -295,7 +305,7 @@ class FAQItem(models.Model):
 
 # ─────────────────────────────────────────────
 # 11. STATS COUNTERS  (the rc-stats-section)
-# ─────────────────────────────────────────────
+# ───���─────────────────────────────────────────
 class StatItem(models.Model):
     target_value    = models.FloatField(help_text='Numeric target for counter animation')
     decimals        = models.PositiveSmallIntegerField(default=0)
@@ -314,7 +324,7 @@ class StatItem(models.Model):
 
 # ─────────────────────────────────────────────
 # 12. SECONDARY NAV CATEGORY LINKS
-# ─────────────────────────────────────────────
+# ───────────────────────────���─────────────────
 class NavCategoryLink(models.Model):
     HIGHLIGHT_CHOICES = [
         ('',               'Normal'),
@@ -367,3 +377,29 @@ class RenewedBanner(models.Model):
 
     def __str__(self):
         return self.heading[:60]
+
+
+# ─────────────────────────────────────────────
+# 15. SECTION HEADINGS  (eyebrow / heading / sub-heading for non-product sections)
+# ─────────────────────────────────────────────
+class HomepageSectionText(models.Model):
+    KEY_CHOICES = [
+        ('categories',   'Shop by Category'),
+        ('spotlight',    "Today's Spotlight"),
+        ('price_range',  'Find Your Price Range'),
+        ('shop_by_price','Shop by Price'),
+        ('testimonials', 'Testimonials'),
+        ('faq',          'Frequently Asked Questions'),
+    ]
+
+    key         = models.CharField(max_length=30, choices=KEY_CHOICES, unique=True)
+    eyebrow     = models.CharField(max_length=120, blank=True, help_text='Small label above the heading')
+    heading     = models.CharField(max_length=200)
+    subheading  = models.CharField(max_length=300, blank=True)
+    is_active   = models.BooleanField(default=True, help_text='Untick to hide the whole section')
+
+    class Meta:
+        verbose_name = "Homepage Section Heading"
+
+    def __str__(self):
+        return self.get_key_display()

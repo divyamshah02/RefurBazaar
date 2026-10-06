@@ -1,0 +1,56 @@
+{% with t=texts.spotlight sp=spotlight %}
+{% if sp and t.visible %}
+<section class="spotlight-section py-5">
+    <div class="container-fluid px-3 px-lg-5">
+        {% if t.eyebrow %}<div class="spotlight-label">{{ t.eyebrow }}</div>{% endif %}
+        <h2 class="fw-bold mb-1 spotlight-heading">{{ t.heading }}</h2>
+        {% if t.subheading %}<p class="text-muted mb-4 spotlight-subheading">{{ t.subheading }}</p>{% endif %}
+
+        <div class="spotlight-card">
+            {% if sp.discount %}<div class="spotlight-discount-badge">{{ sp.discount }}% OFF</div>{% endif %}
+
+            <div class="spotlight-image-col">
+                <img src="{{ sp.image }}" alt="{{ sp.title }}" class="spotlight-img">
+            </div>
+
+            <div class="spotlight-detail-col">
+                {% if sp.brand %}<div class="spotlight-brand">{{ sp.brand }}</div>{% endif %}
+                <h3 class="spotlight-title">{{ sp.title }}</h3>
+
+                {% if sp.reviews %}
+                <div class="spotlight-rating d-flex align-items-center gap-2 mb-3">
+                    <div class="spotlight-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                    </div>
+                    <span class="spotlight-rating-count text-muted small">{{ sp.reviews }} reviews</span>
+                </div>
+                {% endif %}
+
+                {% if sp.specs %}
+                <div class="spotlight-specs d-flex flex-wrap gap-2 mb-3">
+                    {% for s in sp.specs %}<span class="spotlight-spec-pill">{{ s }}</span>{% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="spotlight-pricing mb-2">
+                    <span class="spotlight-price-now">{{ sp.price }}</span>
+                    {% if sp.original %}<span class="spotlight-price-old">{{ sp.original }}</span>{% endif %}
+                    {% if sp.save %}<span class="spotlight-save-badge">save {{ sp.save }}</span>{% endif %}
+                </div>
+
+                <div class="spotlight-trust d-flex flex-wrap gap-3 mb-4">
+                    <span class="spotlight-trust-item"><i class="fas fa-check-circle text-success me-1"></i> 50 pt checkpoints</span>
+                    <span class="spotlight-trust-item"><i class="fas fa-shipping-fast text-success me-1"></i> Free Shipping</span>
+                    {% if sp.available %}<span class="spotlight-trust-item"><i class="fas fa-boxes text-success me-1"></i> {{ sp.available }} available</span>{% endif %}
+                </div>
+
+                <div class="spotlight-cta d-flex gap-3 flex-wrap">
+                    <a href="{{ sp.url }}" class="btn btn-dark rounded-pill px-4 py-2 fw-bold"><i class="fas fa-shopping-cart me-2"></i>ADD TO CART</a>
+                    <a href="{{ sp.url }}" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-bold">View Details</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endwith %}

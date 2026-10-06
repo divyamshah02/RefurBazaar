@@ -1,0 +1,55 @@
+{% if s and s.cards %}
+<section class="{% if hot %}hot-deals-section{% else %}products-section {{ s.bg_style|default:default_bg }}{% endif %}">
+    <div class="container-fluid px-3 px-lg-5">
+        {% if hot %}
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center">
+                    <h2 class="fw-bold mb-0">{{ s.title }}</h2>
+                    <i class="fas fa-fire ms-2 text-danger animate-pulse"></i>
+                </div>
+                {% if s.show_timer %}
+                <div class="compact-timer d-none d-md-flex">
+                    <i class="far fa-clock me-2"></i>
+                    <span class="timer-part">02</span><span class="timer-colon">:</span>
+                    <span class="timer-part">14</span><span class="timer-colon">:</span>
+                    <span class="timer-part">45</span><span class="timer-colon">:</span>
+                    <span class="timer-part">12</span>
+                </div>
+                {% endif %}
+            </div>
+            <a href="{{ s.see_all_url }}" class="btn btn-outline-danger rounded-pill px-4 btn-md" style="font-weight: 600;">{{ s.see_all_text }}</a>
+        </div>
+        {% if s.subtitle %}<p class="text-muted mb-4 mt-n2">{{ s.subtitle }}</p>{% endif %}
+        {% if s.show_timer %}
+        <div class="compact-timer d-flex d-md-none mb-4 w-100 justify-content-center">
+            <i class="far fa-clock me-2"></i>
+            <span>Ends in: 02d 14h 45m</span>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-0">{{ s.title }}</h2>
+                {% if s.subtitle %}<p class="text-muted mb-0 mt-1">{{ s.subtitle }}</p>{% endif %}
+            </div>
+            <a href="{{ s.see_all_url }}" class="btn btn-outline-dark rounded-pill px-4" style="font-weight: 600;">{{ s.see_all_text }}</a>
+        </div>
+        {% endif %}
+
+        <div class="product-slider-wrapper">
+            <button class="product-slider-arrow arrow-prev" id="{{ prev_id }}"><i class="fas fa-chevron-left"></i></button>
+
+            <div class="product-track" id="{{ track_id }}">
+                {% for card in s.cards %}
+                <div class="product-slide">
+                    {% include 'dy/card.html' with card=card hot=hot %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <button class="product-slider-arrow arrow-next" id="{{ next_id }}"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+</section>
+{% endif %}

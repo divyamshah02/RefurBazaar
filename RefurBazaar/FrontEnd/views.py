@@ -67,6 +67,15 @@ class LandingPageViewSet(viewsets.ViewSet):
     def list(self, request):
         return render(request, 'landing-page.html')
 
+class DynamicHomePageViewSet(viewsets.ViewSet):
+    """Renders the new fully dynamic homepage, driven entirely by the
+    admin-managed homepage config (Admin.homepage_views.HomepageConfigView)."""
+
+    @handle_exceptions
+    def list(self, request):
+        from Admin.homepage_render import build_homepage_context
+        return render(request, 'dy_homepage.html', build_homepage_context())
+
 class ContactViewSet(viewsets.ViewSet):
 
     @handle_exceptions

@@ -1,0 +1,19 @@
+{% if trust_items %}
+<section class="rc-trust-strip">
+    <div class="container-fluid px-3 px-lg-5">
+        <div class="row g-0 rc-trust-row">
+            {% for item in trust_items %}
+            <div class="col-6 col-lg-3 rc-trust-col">
+                <div class="rc-trust-item">
+                    <div class="rc-trust-icon"><i class="{{ item.icon }}"></i></div>
+                    <div class="rc-trust-text">
+                        <h6>{{ item.title }}</h6>
+                        {% if item.subtitle %}<small>{{ item.subtitle }}</small>{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}

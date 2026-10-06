@@ -1,0 +1,18 @@
+<a href="{{ card.url }}" class="{% if grid %}text-decoration-none text-dark d-block h-100{% else %}product-card-link{% endif %}">
+    <div class="product-card{% if hot %} hot-deal-card{% endif %}{% if grid %} h-100{% endif %}">
+        {% if card.badge %}<div class="product-badge"{% if card.badge_style %} style="{{ card.badge_style }}"{% endif %}>{{ card.badge }}</div>{% endif %}
+        <div class="wishlist-btn"><i class="far fa-heart"></i></div>
+        <img src="{{ card.image }}" alt="{{ card.title }}" class="product-img" loading="lazy">
+        <h5 class="product-title">{{ card.title }}</h5>
+        {% if card.colors %}
+        <div class="color-options{% if grid %} mb-2{% endif %}">
+            {% for col in card.colors %}<span class="color-dot" style="background: {{ col }}; border: 1px solid rgba(0,0,0,.12);"></span>{% endfor %}
+        </div>
+        {% endif %}
+        <p class="product-specs">{{ card.specs }}{% if card.sold_out %}{% if card.specs %} | {% endif %}Sold out{% endif %}</p>
+        <div class="product-pricing{% if grid %} mt-auto{% endif %}">
+            {% if card.original %}<span class="price-original">{{ card.original }}</span>{% endif %}
+            <span class="product-price{% if hot %} text-danger{% endif %}">{{ card.price }}</span>
+        </div>
+    </div>
+</a>

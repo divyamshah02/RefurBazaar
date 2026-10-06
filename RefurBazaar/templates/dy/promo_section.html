@@ -1,0 +1,36 @@
+{% if s and s.cards %}
+<section class="{% if samsung %}certified-samsung-section py-5 {{ s.bg_style|default:'bg-soft-green' }}{% else %}certified-iphones-section py-5 {{ s.bg_style|default:'bg-off-white' }}{% endif %}">
+    <div class="container-fluid px-3 px-lg-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-0">{{ s.title }}</h2>
+                {% if s.subtitle %}<p class="text-muted mb-0 mt-1">{{ s.subtitle }}</p>{% endif %}
+            </div>
+            <a href="{{ s.see_all_url }}" class="btn btn-outline-dark rounded-pill px-4" style="font-weight: 600;">{{ s.see_all_text }}</a>
+        </div>
+
+        <div class="row g-4 align-items-stretch">
+            <div class="col-lg-4 col-xl-3{% if samsung %} order-lg-last{% endif %}">
+                <div class="promo-card {% if samsung %}samsung-promo{% else %}iphones-promo{% endif %} h-100 shadow-sm">
+                    <div class="text-start position-relative z-2">
+                        {% if s.promo_badge %}<span class="badge bg-white text-dark mb-3">{{ s.promo_badge }}</span>{% endif %}
+                        <h3 class="display-5 fw-bold mb-3"{% if not samsung %} style="color: var(--off-white) !important;"{% endif %}>{{ s.promo_heading|default:s.title|linebreaksbr }}</h3>
+                        <a href="{{ s.promo_btn_url }}" class="btn btn-light rounded-pill px-4 fw-bold">{{ s.promo_btn_text|default:'Shop Now' }}</a>
+                    </div>
+                    {% if s.promo_image %}<img src="{{ s.promo_image }}" alt="" class="promo-bg-img">{% endif %}
+                </div>
+            </div>
+
+            <div class="col-lg-8 col-xl-9">
+                <div class="row g-3">
+                    {% for card in s.cards %}
+                    <div class="col-6 col-md-4">
+                        {% include 'dy/card.html' with card=card grid=True %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}

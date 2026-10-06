@@ -1,0 +1,83 @@
+{% if hero_slides %}
+<section class="hero-carousel-section">
+    <div class="container-fluid px-0 position-relative">
+
+        <div id="heroCarousel" class="carousel slide carousel-fade rc-hero-section" data-bs-ride="carousel" data-bs-interval="5000">
+
+            <div class="carousel-indicators rc-hero-indicators">
+                {% for slide in hero_slides %}
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ forloop.counter0 }}"{% if forloop.first %} class="active" aria-current="true"{% endif %} aria-label="Slide {{ forloop.counter }}"></button>
+                {% endfor %}
+            </div>
+
+            <div class="carousel-inner h-100">
+                {% for slide in hero_slides %}
+                {% if slide.bg_style == 'rc-slide-repair' %}
+                <div class="carousel-item{% if forloop.first %} active{% endif %} h-100 rc-slide-repair" style="padding: 0 100px !important;{% if slide.btn1_url %} cursor: pointer;{% endif %}"{% if slide.btn1_url %} onclick="window.open('{{ slide.btn1_url|escapejs }}', '_blank')"{% endif %}>
+                    <div class="container-fluid px-4 px-lg-5 h-100">
+                        <div class="row align-items-center h-100 py-5 py-lg-0">
+                            <div class="col-lg-7 order-2 order-lg-1 mt-4 mt-lg-0 text-center text-lg-start">
+                                <h1 class="rc-hero-hl repair-text-green text-uppercase mb-2" style="font-size: clamp(2.2rem, 4vw, 3.8rem);">{{ slide.heading|linebreaksbr }}</h1>
+                                {% if slide.body_text %}
+                                <p class="text-white mb-4" style="font-size: 1.5rem;">{{ slide.body_text|linebreaksbr }}</p>
+                                {% endif %}
+                                {% if slide.btn1_text %}
+                                <div class="rc-cta-row justify-content-center justify-content-lg-start">
+                                    <a target="_blank" href="{{ slide.btn1_url }}" class="btn repair-btn-green rounded-pill px-4 py-2">{{ slide.btn1_text }}</a>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-lg-5 order-1 order-lg-2 position-relative text-center">
+                                {% if slide.image %}
+                                <div class="rc-hero-img-wrapper">
+                                    <img src="{{ slide.image.url }}" alt="{{ slide.heading }}" class="img-fluid hero-product-img" style="max-height: 320px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));">
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="carousel-item{% if forloop.first %} active{% endif %} h-100 {{ slide.bg_style }}" style="padding: 0 100px !important;">
+                    <div class="container-fluid px-4 px-lg-5 h-100">
+                        <div class="row align-items-center h-100 py-5 py-lg-0">
+                            <div class="col-lg-7 order-2 order-lg-1 mt-4 mt-lg-0 text-center text-lg-start">
+                                {% if slide.tag_text %}<span class="rc-hero-tag {{ slide.tag_style }}">{{ slide.tag_text }}</span>{% endif %}
+                                <h1 class="rc-hero-hl {% if slide.bg_style == 'rc-slide-light' %}text-dark{% else %}text-white{% endif %}">{{ slide.heading|linebreaksbr }}</h1>
+                                {% if slide.body_text %}
+                                <p class="rc-hero-body {% if slide.bg_style == 'rc-slide-light' %}text-dark-gray{% elif slide.bg_style == 'rc-slide-green' %}text-white opacity-75 mb-1{% else %}text-light-gray{% endif %}">{{ slide.body_text|linebreaksbr }}</p>
+                                {% endif %}
+                                {% if slide.btn1_text or slide.btn2_text %}
+                                <div class="rc-cta-row justify-content-center justify-content-lg-start mt-4">
+                                    {% if slide.btn1_text %}<a href="{{ slide.btn1_url|default:'/shop/' }}" class="{{ slide.btn1_style }}">{{ slide.btn1_text }} &rarr;</a>{% endif %}
+                                    {% if slide.btn2_text %}<a href="{{ slide.btn2_url|default:'/shop/' }}" class="{{ slide.btn2_style }}">{{ slide.btn2_text }}</a>{% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-lg-5 order-1 order-lg-2 position-relative text-center">
+                                {% if slide.image %}
+                                <div class="rc-hero-img-wrapper">
+                                    <img src="{{ slide.image.url }}" alt="{{ slide.heading }}" class="img-fluid hero-product-img" style="max-width: {{ slide.image_max_width|default:'500px' }};">
+                                    {% if slide.badge_top_right %}<div class="rc-badge-float badge-top-right bg-green text-white" style="font-size: medium;">{{ slide.badge_top_right }}</div>{% endif %}
+                                    {% if slide.badge_bottom_center %}<div class="rc-badge-float badge-bottom-center {% if slide.bg_style == 'rc-slide-light' %}bg-white text-green fw-bold shadow-sm{% else %}bg-green text-white{% endif %}" style="font-size: medium;">{{ slide.badge_bottom_center }}</div>{% endif %}
+                                    {% if slide.badge_circle %}<div class="rc-badge-circle bg-warning text-white shadow" style="font-size: larger;">{{ slide.badge_circle|linebreaksbr }}</div>{% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-custom ms-4"><i class="fas fa-chevron-left"></i></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-custom me-4"><i class="fas fa-chevron-right"></i></span>
+            </button>
+        </div>
+    </div>
+</section>
+{% endif %}

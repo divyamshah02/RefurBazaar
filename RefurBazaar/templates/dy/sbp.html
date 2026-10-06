@@ -1,0 +1,27 @@
+{% with t=texts.shop_by_price %}
+{% if sbp_slides and t.visible %}
+<section class="shop-by-price-section py-4">
+    <div class="container-fluid px-3 px-lg-5">
+        {% if t.eyebrow %}<div class="price-range-overline">{{ t.eyebrow }}</div>{% endif %}
+        <h2 class="fw-bold {% if t.subheading %}mb-1{% else %}mb-4{% endif %}">{{ t.heading }}</h2>
+        {% if t.subheading %}<p class="text-muted mb-4">{{ t.subheading }}</p>{% endif %}
+        <div class="sbp-slider-wrapper">
+            <button class="sbp-arrow sbp-arrow-prev" id="sbpPrev"><i class="fas fa-chevron-left"></i></button>
+            <div class="sbp-track" id="sbpTrack">
+                {% for slide in sbp_slides %}
+                <div class="sbp-slide">
+                    <a href="{{ slide.url }}" class="text-decoration-none">
+                        <div class="sbp-card">
+                            {% if slide.image %}<img src="{{ slide.image }}" alt="{{ slide.line1 }} {{ slide.line2 }}" class="sbp-img">{% endif %}
+                            <div class="sbp-label">{{ slide.line1 }}<br><strong>{{ slide.line2 }}</strong></div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="sbp-arrow sbp-arrow-next" id="sbpNext"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endwith %}
