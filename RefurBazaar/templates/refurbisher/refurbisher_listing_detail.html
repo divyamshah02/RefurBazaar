@@ -42,6 +42,63 @@
         .attribute-pill-value {
             color: #33302a;
         }
+
+        .attr-swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+
+        .spec-info-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 1px solid #cfd8d3;
+            background: #fff;
+            color: #2f6b57;
+            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .spec-info-btn:hover,
+        .spec-info-btn:focus-visible {
+            background: #2f6b57;
+            color: #fff;
+        }
+
+        .spec-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee9de;
+        }
+
+        .spec-row:last-child {
+            border-bottom: 0;
+        }
+
+        .spec-name {
+            color: #8b6f47;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .spec-value {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #33302a;
+            font-size: 0.9rem;
+            text-align: right;
+        }
     </style>
 </head>
 
@@ -138,7 +195,7 @@
                                             <thead>
                                                 <tr>
                                                     <th>Unit #</th>
-                                                    <th>Attributes</th>
+                                                    <th>Options</th>
                                                     <th>Condition</th>
                                                     <th>Price</th>
                                                     <th>Status</th>
@@ -219,9 +276,30 @@
         </div>
     </div>
 
+    <!-- Read-only specifications (fixed by RefurBazaar) -->
+    <div class="modal fade" id="specsModal" tabindex="-1" aria-labelledby="specsModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" id="specsModalTitle">Specifications</h5>
+                        <small class="text-muted">These specifications are fixed and cannot be edited.</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="specs-list" class="spec-list"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'js/api_caller.js' %}"></script>
-    <script src="{% static 'js/refurbisher/refurbisher_listing_detail.js' %}"></script>
+    <script src="{% static 'js/refurbisher/refurbisher_listing_detail.js' %}?v=swatch2"></script>
 
     <script>
         // Initialize the listing detail page with API endpoints

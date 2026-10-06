@@ -9,9 +9,11 @@ from functools import wraps
 from django.contrib.auth import authenticate, login, logout
 
 
-def check_authentication(required_role=None):
+def check_authentication(required_role=None, allow_incomplete_profile=False):
     '''Checks if user is logged in or not.
-    If required_role is passed (as str or list), will check for that as well.'''
+    If required_role is passed (as str or list), will check for that as well.
+    Refurbishers whose company profile is not complete are redirected to their
+    profile page unless allow_incomplete_profile is True.'''
     def decorator(view_func):
         @wraps(view_func)
         def _wrapped_view(self, request, *args, **kwargs):
@@ -49,6 +51,11 @@ def check_authentication(required_role=None):
                             "error": f"User role must be one of {allowed_roles}"
                         }, status=status.HTTP_403_FORBIDDEN
                     )
+
+            if getattr(user, "role", None) == 'refurbisher' and not allow_incomplete_profile:
+                company_profile = getattr(user, 'company_profile', None)
+                if not company_profile or not company_profile.is_profile_complete:
+                    return redirect('refurbisher-profile-list')
 
             return view_func(self, request, *args, **kwargs)
 
@@ -227,7 +234,7 @@ class RefurbisherLoginViewSet(viewsets.ViewSet):
 class RefurbisherProfileViewSet(viewsets.ViewSet):
 
     @handle_exceptions
-    @check_authentication(required_role='refurbisher')
+    @check_authentication(required_role='refurbisher', allow_incomplete_profile=True)
     def list(self, request):
         return render(request, 'refurbisher/profile.html')
 
@@ -274,7 +281,7 @@ class RefurbisherOrderDetailViewSet(viewsets.ViewSet):
 class RefurbisherLogoutViewSet(viewsets.ViewSet):
 
     @handle_exceptions
-    @check_authentication()
+    @check_authentication(allow_incomplete_profile=True)
     def list(self, request):
         logout(request)
         return redirect('refurbisher-login-list')

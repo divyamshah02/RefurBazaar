@@ -3,7 +3,8 @@ let otp_url = null
 let csrf_token = null
 let currentOtpId = null
 let resendTimerInterval = null
-let currentMobile = null
+let currentEmail = null
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 // Initialize Login Page
 async function initLogin(otp_url_param, csrf_token_param) {
@@ -20,13 +21,6 @@ async function initLogin(otp_url_param, csrf_token_param) {
 // Setup Phone Form
 function setupPhoneForm() {
   const phoneForm = document.getElementById("phoneForm")
-  const mobileInput = document.getElementById("mobileNumber")
-
-  // Only allow numbers in mobile input
-  mobileInput.addEventListener("input", (e) => {
-    e.target.value = e.target.value.replace(/[^0-9]/g, "")
-  })
-
   phoneForm.addEventListener("submit", async (e) => {
     e.preventDefault()
     await sendOtp()
@@ -118,20 +112,19 @@ function setupResendOtp() {
 
 // Send OTP
 async function sendOtp(isResend = false) {
-  let mobile
-  if (isResend && currentMobile) {
-    mobile = currentMobile
+  let email
+  if (isResend && currentEmail) {
+    email = currentEmail
   } else {
-    const mobileInput = document.getElementById("mobileNumber")
-    mobile = mobileInput.value.trim()
+    email = document.getElementById("emailAddress").value.trim().toLowerCase()
   }
 
-  if (!mobile || mobile.length !== 10) {
-    showError("Please enter a valid 10-digit mobile number")
+  if (!email || !EMAIL_PATTERN.test(email)) {
+    showError("Please enter a valid email address")
     return
   }
 
-  currentMobile = mobile
+  currentEmail = email
 
   const sendOtpBtn = document.getElementById("sendOtpBtn")
   setButtonLoading(sendOtpBtn, true)
@@ -139,7 +132,8 @@ async function sendOtp(isResend = false) {
   hideSuccess()
 
   const requestData = {
-    mobile: `${mobile}`,
+    email: email,
+    role: "refurbisher",
   }
 
   const [success, response] = await callApi("POST", otp_url, requestData, csrf_token)
@@ -155,12 +149,7 @@ async function sendOtp(isResend = false) {
       showSuccess("OTP sent successfully!")
     }
 
-    // Auto-fill OTP for testing if provided
-    if (response.data.otp) {
-      fillOtpForTesting(response.data.otp)
-    }
-
-    showOtpSection(mobile)
+    showOtpSection(email)
     startResendTimer()
   } else {
     showError(response.error || "Failed to send OTP. Please try again.")
@@ -228,11 +217,10 @@ function showPhoneSection() {
   stopResendTimer()
 }
 
-function showOtpSection(mobile) {
+function showOtpSection(email) {
   document.getElementById("phoneSection").style.display = "none"
   document.getElementById("otpSection").classList.add("active")
-  const formattedMobile = `+91 ${mobile.slice(0, 5)} ${mobile.slice(5)}`
-  document.getElementById("displayMobile").textContent = formattedMobile
+  document.getElementById("displayEmail").textContent = email
 
   setTimeout(() => {
     document.querySelector(".otp-input").focus()
@@ -327,15 +315,4 @@ function stopResendTimer() {
   }
 }
 
-function fillOtpForTesting(otp) {
-  if (otp && otp.length === 6) {
-    setTimeout(() => {
-      const otpInputs = document.querySelectorAll(".otp-input")
-      otpInputs.forEach((input, index) => {
-        input.value = otp[index]
-        input.classList.add("filled")
-      })
-      console.log("Auto-filled OTP for testing:", otp)
-    }, 500)
-  }
-}
+

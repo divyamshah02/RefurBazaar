@@ -234,10 +234,11 @@ async function savePersonalInfo() {
     first_name: document.getElementById("firstName").value.trim(),
     last_name: document.getElementById("lastName").value.trim(),
     email: document.getElementById("email").value.trim(),
+    contact_number: document.getElementById("contactNumber").value.trim().replace(/^\+91/, ""),
   }
 
   // Validate
-  if (!formData.first_name || !formData.last_name || !formData.email) {
+  if (!formData.first_name || !formData.last_name || !formData.email || !formData.contact_number) {
     showErrorMessage("All fields are required")
     return
   }
@@ -247,11 +248,17 @@ async function savePersonalInfo() {
     return
   }
 
+  if (!/^\d{10}$/.test(formData.contact_number)) {
+    showErrorMessage("Please enter a valid 10-digit mobile number")
+    return
+  }
+
   // Update user profile
   const [success, response] = await callApi("PUT", `${profile_url}${profileData.id}/`, formData, csrf_token)
 
   if (success && response.success) {
     showSuccessMessage("Personal information updated successfully!")
+    setTimeout(() => location.reload(), 1000);
     await loadProfileData()
   } else {
     showErrorMessage(response.error || "Failed to update personal information")
@@ -283,7 +290,7 @@ async function saveBusinessDetails() {
     first_name: document.getElementById("firstName").value.trim(),
     last_name: document.getElementById("lastName").value.trim(),
     email: document.getElementById("email").value.trim(),
-    contact_number: profileData.contact_number,
+    contact_number: document.getElementById("contactNumber").value.trim(),
     business_type: document.getElementById("businessType").value,
     company_name: document.getElementById("companyName").value.trim(),
     gst_registration_no: document.getElementById("gstNumber").value.trim(),
@@ -300,6 +307,7 @@ async function saveBusinessDetails() {
 
   if (success && response.success) {
     showSuccessMessage("Business details updated successfully!")
+    setTimeout(() => location.reload(), 1000);
     await loadProfileData()
   } else {
     showErrorMessage(response.error || "Failed to update business details")
@@ -312,7 +320,7 @@ async function saveAddress() {
     first_name: document.getElementById("firstName").value.trim(),
     last_name: document.getElementById("lastName").value.trim(),
     email: document.getElementById("email").value.trim(),
-    contact_number: profileData.contact_number,
+    contact_number: document.getElementById("contactNumber").value.trim(),
     business_type: document.getElementById("businessType").value,
     company_name: document.getElementById("companyName").value.trim(),
     gst_registration_no: document.getElementById("gstNumber").value.trim(),
@@ -348,6 +356,7 @@ async function saveAddress() {
 
   if (success && response.success) {
     showSuccessMessage("Address information updated successfully!")
+    setTimeout(() => location.reload(), 1000);
     await loadProfileData()
   } else {
     showErrorMessage(response.error || "Failed to update address information")
@@ -362,7 +371,7 @@ async function saveDocuments() {
   formData.append("first_name", document.getElementById("firstName").value.trim())
   formData.append("last_name", document.getElementById("lastName").value.trim())
   formData.append("email", document.getElementById("email").value.trim())
-  formData.append("contact_number", profileData.contact_number)
+  formData.append("contact_number", document.getElementById("contactNumber").value.trim())
   formData.append("business_type", document.getElementById("businessType").value)
   formData.append("company_name", document.getElementById("companyName").value.trim())
   formData.append("gst_registration_no", document.getElementById("gstNumber").value.trim())
@@ -403,6 +412,7 @@ async function saveDocuments() {
 
   if (success && response.success) {
     showSuccessMessage("Documents uploaded successfully!")
+    setTimeout(() => location.reload(), 1000);
     await loadProfileData()
   } else {
     showErrorMessage(response.error || "Failed to upload documents")
@@ -663,7 +673,7 @@ async function savePaymentInfo() {
     first_name: document.getElementById("firstName").value.trim(),
     last_name: document.getElementById("lastName").value.trim(),
     email: document.getElementById("email").value.trim(),
-    contact_number: profileData.contact_number,
+    contact_number: document.getElementById("contactNumber").value.trim(),
     business_type: document.getElementById("businessType").value,
     company_name: document.getElementById("companyName").value.trim(),
     gst_registration_no: document.getElementById("gstNumber").value.trim(),
@@ -711,6 +721,7 @@ async function savePaymentInfo() {
 
   if (success && response.success) {
     showSuccessMessage("Payment information updated successfully!")
+    setTimeout(() => location.reload(), 1000);
     await loadProfileData()
   } else {
     showErrorMessage(response.error || "Failed to update payment information")

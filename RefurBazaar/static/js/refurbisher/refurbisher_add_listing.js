@@ -215,7 +215,37 @@ function isLightColor(hex) {
     return brightness > 128;
 }
 
+// Colour attributes are labelled the other way round on this page:
+// "Colour Options" asks for the colour name, "Colour Hex Codes" shows the swatch picker.
+function attributeDisplayLabel(name) {
+  if (name === "Colour Options") return "Colour Name"
+  if (name === "Colour Hex Codes") return "Colour options"
+  return name
+}
+
+function ensureColorSwatchStyles() {
+  if (document.getElementById("colorSwatchStyles")) return
+  const style = document.createElement("style")
+  style.id = "colorSwatchStyles"
+  style.textContent = `
+    .color-swatch-group { display: flex; flex-wrap: wrap; gap: 12px; padding: 4px 0; }
+    .color-swatch { position: relative; margin: 0; cursor: pointer; }
+    .color-swatch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+    .color-swatch-dot {
+      display: block; width: 52px; height: 52px; border-radius: 50%;
+      border: 4px solid #d9d9d9; box-shadow: inset 0 0 0 4px #fff;
+      transition: border-color .15s ease, transform .15s ease;
+    }
+    .color-swatch-dot.is-light { outline: 1px solid rgba(0, 0, 0, .12); outline-offset: -5px; }
+    .color-swatch:hover .color-swatch-dot { transform: scale(1.06); }
+    .color-swatch input:checked + .color-swatch-dot { border-color: #333; }
+    .color-swatch input:focus-visible + .color-swatch-dot { outline: 2px solid #0d6efd; outline-offset: 2px; }
+  `
+  document.head.appendChild(style)
+}
+
 function addNewUnit() {
+  ensureColorSwatchStyles()
   unitCounter++
   const unitId = `unit_${unitCounter}`
 
@@ -240,15 +270,19 @@ function addNewUnit() {
       attributesHtml += `
         <div class="col-md-6">
           <div class="form-group">
-            <label class="form-label">${attr.name}${isRequired ? " *" : ""}</label>
+            <label class="form-label">${attributeDisplayLabel(attr.name)}${isRequired ? " *" : ""}</label>
             
             ${attr.name == "Colour Hex Codes" ? `
-              <select class="form-select" data-attr-id="${attr.id}" ${isRequired ? "required" : ""}>
-                  <option value="">Select ${attr.name}</option>
-                  ${possVals.map((val) => `
-                      <option value="${val}" style="background-color: ${val}; color: ${isLightColor(val) ? '#000' : '#fff'};">${val}</option>
-                  `).join("")}
-              </select>
+              <div class="color-swatch-group" role="radiogroup" aria-label="${attributeDisplayLabel(attr.name)}">
+                <input type="hidden" data-attr-id="${attr.id}">
+                ${possVals.map((val) => `
+                  <label class="color-swatch" title="${val}">
+                    <input type="radio" name="color_${unitCounter}_${attr.id}" value="${val}" aria-label="${val}"
+                           onchange="this.closest('.color-swatch-group').querySelector('[data-attr-id]').value = this.value">
+                    <span class="color-swatch-dot${isLightColor(val) ? " is-light" : ""}" style="background-color: ${val};"></span>
+                  </label>
+                `).join("")}
+              </div>
               ` : `
               <select class="form-select" data-attr-id="${attr.id}" ${isRequired ? "required" : ""}>
                 <option value="">Select ${attr.name}</option>

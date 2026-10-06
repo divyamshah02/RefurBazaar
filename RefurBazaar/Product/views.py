@@ -329,7 +329,25 @@ class ProductModelViewSet(viewsets.ViewSet):
                 listing_unit__is_sold=False,
                 attribute=attr
             ).values_list('value', flat=True).distinct().order_by('value')
-            
+            available_values = list(available_values)
+
+            # Every value a customer could ever pick: the admin-defined choices
+            # first (in their configured order), then any value that exists on a
+            # unit of this model (sold / unavailable ones included). The page
+            # shows all of them and disables the ones missing from
+            # `available_values`.
+            all_values = []
+            if pm_attr.data_type == 'choice' and isinstance(pm_attr.possible_values, list):
+                all_values = [str(v).strip() for v in pm_attr.possible_values if str(v).strip()]
+            ever_values = ListingUnitAttribute.objects.filter(
+                listing_unit__listing__model=product_model,
+                attribute=attr
+            ).values_list('value', flat=True).distinct().order_by('value')
+            for value in list(ever_values) + available_values:
+                value = str(value).strip()
+                if value and value not in all_values:
+                    all_values.append(value)
+
             attributes_data.append({
                 'id': attr.id,
                 'name': attr.name,
@@ -339,8 +357,31 @@ class ProductModelViewSet(viewsets.ViewSet):
                 'is_filter': pm_attr.is_filter,
                 'section': pm_attr.section,
                 'default_value': pm_attr.default_value,
-                'available_values': list(available_values)
+                'available_values': available_values,
+                'all_values': all_values
             })
+
+        # Colour name -> hex code, paired per unit so the swatch always matches
+        # its name even for colours that currently have no stock.
+        color_map = {}
+        hex_attr_ids = [a['id'] for a in attributes_data if a['name'].strip().lower() == 'colour hex codes']
+        name_attr_ids = [
+            a['id'] for a in attributes_data
+            if ('colour' in a['name'].lower() or 'color' in a['name'].lower())
+            and 'hex' not in a['name'].lower()
+        ]
+        if hex_attr_ids and name_attr_ids:
+            pairs = {}
+            for row in ListingUnitAttribute.objects.filter(
+                listing_unit__listing__model=product_model,
+                attribute_id__in=hex_attr_ids + name_attr_ids
+            ).values('listing_unit_id', 'attribute_id', 'value'):
+                pair = pairs.setdefault(row['listing_unit_id'], {})
+                key = 'hex' if row['attribute_id'] in hex_attr_ids else 'name'
+                pair[key] = str(row['value']).strip()
+            for pair in pairs.values():
+                if pair.get('name') and pair.get('hex'):
+                    color_map.setdefault(pair['name'], pair['hex'])
         
         # Get price range for this product
         price_range = ListingUnit.objects.filter(
@@ -371,6 +412,7 @@ class ProductModelViewSet(viewsets.ViewSet):
             "data": {
                 "product": product_data,
                 "attributes": attributes_data,
+                "color_map": color_map,
                 "price_range": price_range,
                 "conditions": list(conditions)
             },
@@ -420,9 +462,23 @@ class ProductModelViewSet(viewsets.ViewSet):
         
         # Serialize with refurbisher details
         units_data = []
-        for unit in queryset:
+        seen_offers = {}
+        for unit in queryset.prefetch_related('attributes__attribute'):
+            # One row per refurbisher + condition + identical attributes. The
+            # queryset is ordered by price, so the first unit seen is the
+            # cheapest one and is the one that gets added to the cart.
+            offer_key = (
+                unit.listing.refurbisher_id,
+                unit.condition,
+                tuple(sorted((a.attribute_id, str(a.value).strip()) for a in unit.attributes.all())),
+            )
+            if offer_key in seen_offers:
+                seen_offers[offer_key]['quantity'] += 1
+                continue
+
             company_profile = CompanyProfile.objects.filter(user=unit.listing.refurbisher).first()
             unit_data = {
+                'quantity': 1,
                 'id': unit.id,
                 'unit_number': unit.unit_number,
                 'price': float(unit.price),
@@ -442,6 +498,7 @@ class ProductModelViewSet(viewsets.ViewSet):
                     for attr in unit.attributes.all()
                 ]
             }
+            seen_offers[offer_key] = unit_data
             units_data.append(unit_data)
         
         return Response({

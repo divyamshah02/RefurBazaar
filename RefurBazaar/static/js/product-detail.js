@@ -7,6 +7,8 @@ let product_id = null
 
 let productData = null
 let attributesData = []
+let colorMap = {}
+let inStockConditions = []
 const selectedFilters = {}
 let availableUnits = []
 let selectedUnit = null
@@ -111,6 +113,8 @@ async function loadProductDetail() {
   if (success && response.success) {
     productData = response.data.product
     attributesData = response.data.attributes
+    colorMap = response.data.color_map || {}
+    inStockConditions = (response.data.conditions || []).map((c) => c.condition)
 
     renderProductInfo()
     renderFilters()
@@ -289,13 +293,17 @@ function renderConditionFilter() {
   const conditionGrid = document.getElementById("conditionGrid");
 
   const conditionHTML = CONDITION_OPTIONS.map(
-    (condition) => `
-        <div class="condition-card" data-condition="${condition.value}" onclick="selectCondition('${condition.value}')">
+    (condition) => {
+      const inStock = inStockConditions.includes(condition.value)
+      return `
+        <div class="condition-card ${inStock ? "" : "disabled"}" data-condition="${condition.value}"
+             ${inStock ? `onclick="selectCondition('${condition.value}')"` : 'aria-disabled="true" title="Currently unavailable"'}>
             <div class="condition-info d-flex align-items-center">
                 <h6>${condition.label === "Excellent" ? 'Superb' : `${condition.label}`}</h6>
             </div>
         </div>
     `
+    }
   ).join("");
 
   conditionGrid.innerHTML = conditionHTML;
@@ -322,7 +330,7 @@ function renderAttributeFilters() {
     // default_value copied onto every unit — they're shown in the read-only
     // Specifications section, never as a pickable filter.
     if (!attr.is_filter || !attr.is_required) return
-    if (attr.available_values.length === 0) return
+    if (getAllValues(attr).length === 0) return
 
     const attrNameLower = attr.name.toLowerCase()
 
@@ -341,6 +349,23 @@ function renderAttributeFilters() {
   container.innerHTML = filtersHTML
 }
 
+// Every value the product can have, falling back to in-stock values for older API responses.
+function getAllValues(attr) {
+  return attr.all_values && attr.all_values.length ? attr.all_values : attr.available_values || []
+}
+
+function isValueAvailable(attr, value) {
+  return (attr.available_values || []).some((v) => String(v).trim() === String(value).trim())
+}
+
+// Click handler for in-stock options, aria/title for the ones with no stock.
+function optionInteractionAttrs(attr, value) {
+  if (isValueAvailable(attr, value)) {
+    return `onclick="selectAttribute(${attr.id}, '${escapeHtml(value).replace(/'/g, "\\'")}')"`
+  }
+  return 'aria-disabled="true" title="Currently unavailable"'
+}
+
 function renderStorageFilter(attr) {
   return `
         <div class="selection-section">
@@ -348,11 +373,11 @@ function renderStorageFilter(attr) {
                 <h6>${escapeHtml(attr.name)}</h6>
             </div>
             <div class="storage-options">
-                ${attr.available_values
+                ${getAllValues(attr)
       .map(
         (value) => `
-                    <div class="storage-card" data-attribute="${attr.id}" data-value="${escapeHtml(value)}" 
-                         onclick="selectAttribute(${attr.id}, '${escapeHtml(value).replace(/'/g, "\\'")}')">
+                    <div class="storage-card ${isValueAvailable(attr, value) ? "" : "disabled"}" data-attribute="${attr.id}" data-value="${escapeHtml(value)}" 
+                         ${optionInteractionAttrs(attr, value)}>
                         <div class="storage-info">
                             <h6>${escapeHtml(value)}</h6>
                             <p class="storage-price"></p>
@@ -373,17 +398,17 @@ function renderColorFilter(attr, colorHexAttr) {
         <h6>Select ${attr.name}</h6>
       </div>
       <div class="color-options">
-        ${attr.available_values
+        ${getAllValues(attr)
       .map((value, index) => {
-        let colorValue = "#cccccc"
-        if (colorHexAttr && colorHexAttr.available_values[index]) {
+        let colorValue = colorMap[value] || "#cccccc"
+        if (!colorMap[value] && colorHexAttr && colorHexAttr.available_values[index]) {
           colorValue = colorHexAttr.available_values[index]
         }
         return `
-              <div class="color-card"
+              <div class="color-card ${isValueAvailable(attr, value) ? "" : "disabled"}"
                    data-attribute="${attr.id}"
                    data-value="${escapeHtml(value)}"
-                   onclick="selectAttribute(${attr.id}, '${escapeHtml(value).replace(/'/g, "\\'")}')">
+                   ${optionInteractionAttrs(attr, value)}>
                 <div class="color-dot me-2" style="background:${colorValue};"></div>
                 &nbsp;
                 <div class="color-info">
@@ -406,11 +431,11 @@ function renderGenericFilter(attr) {
                 <h6>Select ${attr.name}</h6>
             </div>
             <div class="storage-options">
-                ${attr.available_values
+                ${getAllValues(attr)
       .map(
         (value) => `
-                    <div class="storage-card" data-attribute="${attr.id}" data-value="${escapeHtml(value)}" 
-                         onclick="selectAttribute(${attr.id}, '${escapeHtml(value).replace(/'/g, "\\'")}')">
+                    <div class="storage-card ${isValueAvailable(attr, value) ? "" : "disabled"}" data-attribute="${attr.id}" data-value="${escapeHtml(value)}" 
+                         ${optionInteractionAttrs(attr, value)}>
                         <div class="storage-info">
                             <h6>${escapeHtml(value)}</h6>
                             <p class="storage-price"></p>
@@ -425,11 +450,12 @@ function renderGenericFilter(attr) {
 }
 
 function autoSelectFilters() {
-  const excellentCondition = CONDITION_OPTIONS.find((c) => c.value === "excellent")
-  if (excellentCondition) {
-    selectCondition("excellent")
-  } else {
-    selectCondition(CONDITION_OPTIONS[0].value)
+  // Prefer "excellent", otherwise the first condition that actually has stock.
+  const startCondition = inStockConditions.includes("excellent")
+    ? "excellent"
+    : CONDITION_OPTIONS.find((c) => inStockConditions.includes(c.value))?.value
+  if (startCondition) {
+    selectCondition(startCondition)
   }
 
   attributesData.forEach((attr) => {
@@ -444,6 +470,8 @@ function autoSelectFilters() {
 }
 
 function selectCondition(value) {
+  if (!inStockConditions.includes(value)) return
+
   document.querySelectorAll(".condition-card").forEach((card) => {
     card.classList.remove("active");
   });
@@ -469,6 +497,9 @@ function selectCondition(value) {
 }
 
 function selectAttribute(attrId, value) {
+  const attr = attributesData.find((a) => a.id === attrId)
+  if (attr && !isValueAvailable(attr, value)) return
+
   document.querySelectorAll(`[data-attribute="${attrId}"]`).forEach((card) => {
     card.classList.remove("active")
     const radio = card.querySelector('input[type="radio"]')
