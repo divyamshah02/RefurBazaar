@@ -374,15 +374,13 @@
             <div id="phoneSection">
                 <form id="phoneForm">
                     <div class="phone-input-group">
-                        <label class="form-label">Mobile Number</label>
-                        <span class="phone-prefix">+91</span>
+                        <label class="form-label" for="emailAddress">Email Address</label>
                         <input 
-                            type="tel" 
-                            class="form-control phone-input" 
-                            id="mobileNumber" 
-                            placeholder="Enter your mobile number"
-                            maxlength="10"
-                            pattern="[0-9]{10}"
+                            type="email" 
+                            class="form-control" 
+                            id="emailAddress" 
+                            placeholder="you@company.com"
+                            autocomplete="email"
                             required
                         >
                     </div>
@@ -395,12 +393,12 @@
             <div id="otpSection" class="otp-container">
                 <a href="#" class="back-button" id="backToPhone">
                     <i class="fas fa-arrow-left"></i>
-                    Change Number
+                    Change Email
                 </a>
                 
                 <div class="otp-header">
                     <p class="text-muted">Enter the 6-digit OTP sent to</p>
-                    <p class="phone-display" id="displayMobile"></p>
+                    <p class="phone-display" id="displayEmail"></p>
                 </div>
 
                 <form id="otpForm">

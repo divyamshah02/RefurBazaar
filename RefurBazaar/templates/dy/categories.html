@@ -1,0 +1,29 @@
+{% with t=texts.categories %}
+{% if categories and t.visible %}
+<section class="featured-categories bg-soft-green">
+    <div class="container-fluid px-3 px-lg-5">
+        {% if t.eyebrow %}<div class="price-range-overline">{{ t.eyebrow }}</div>{% endif %}
+        <h2 class="fw-bold {% if t.subheading %}mb-1{% else %}mb-4{% endif %}">{{ t.heading }}</h2>
+        {% if t.subheading %}<p class="text-muted mb-4">{{ t.subheading }}</p>{% endif %}
+
+        <div class="row g-2 g-md-3">
+            {% for c in categories %}
+            <div class="col-lg-2 col-md-4 col-6">
+                <a href="{{ c.url }}" class="text-decoration-none text-dark d-block h-100">
+                    <div class="category-card position-relative h-100">
+                        {% if c.badge %}<span class="badge {{ c.badge_style }} position-absolute top-0 end-0 mt-2 me-2" style="font-size: 0.65rem; z-index: 2;{% if c.badge_style == 'bg-success' %} color: var(--off-white) !important;{% endif %}">{{ c.badge }}</span>{% endif %}
+                        <div class="category-icon">
+                            <img src="{{ c.image }}" alt="{{ c.name }}" class="category-small-icon">
+                        </div>
+                        <h6>{{ c.name }}</h6>
+                        {% if c.count %}<small>{{ c.count }} Products</small>{% endif %}
+                        {% if c.start %}<p class="text-success fw-bold small mt-1 mb-0">Starting From {{ c.start }}</p>{% endif %}
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endwith %}

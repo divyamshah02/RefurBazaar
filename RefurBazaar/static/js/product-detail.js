@@ -7,6 +7,15 @@ let product_id = null
 
 let productData = null
 let attributesData = []
+let colorMap = {}
+let inStockConditions = []
+// In-stock combinations: [{ condition, price, attrs: { "<attrId>": value } }]
+let variants = []
+// Ordered selectable groups: condition first, then each variant attribute.
+// An option's availability depends only on the groups before it, so the
+// customer can never end up on a combination that has no unit.
+let filterGroups = []
+let unitsRequestId = 0
 const selectedFilters = {}
 let availableUnits = []
 let selectedUnit = null
@@ -111,6 +120,9 @@ async function loadProductDetail() {
   if (success && response.success) {
     productData = response.data.product
     attributesData = response.data.attributes
+    colorMap = response.data.color_map || {}
+    inStockConditions = (response.data.conditions || []).map((c) => c.condition)
+    variants = response.data.variants || []
 
     renderProductInfo()
     renderFilters()
@@ -289,13 +301,17 @@ function renderConditionFilter() {
   const conditionGrid = document.getElementById("conditionGrid");
 
   const conditionHTML = CONDITION_OPTIONS.map(
-    (condition) => `
-        <div class="condition-card" data-condition="${condition.value}" onclick="selectCondition('${condition.value}')">
+    (condition) => {
+      const inStock = inStockConditions.includes(condition.value)
+      return `
+        <div class="condition-card ${inStock ? "" : "disabled"}" data-condition="${condition.value}"
+             ${inStock ? `onclick="selectCondition('${condition.value}')"` : 'aria-disabled="true" title="Currently unavailable"'}>
             <div class="condition-info d-flex align-items-center">
                 <h6>${condition.label === "Excellent" ? 'Superb' : `${condition.label}`}</h6>
             </div>
         </div>
     `
+    }
   ).join("");
 
   conditionGrid.innerHTML = conditionHTML;
@@ -321,13 +337,11 @@ function renderAttributeFilters() {
     // Screen Size, SIM Slots, ...) have is_required=false and a single
     // default_value copied onto every unit — they're shown in the read-only
     // Specifications section, never as a pickable filter.
-    if (!attr.is_filter || !attr.is_required) return
-    if (attr.available_values.length === 0) return
+    if (!isVariantFilterAttr(attr)) return
 
     const attrNameLower = attr.name.toLowerCase()
 
-    if (attrNameLower === "colour hex codes") return
-    if (attrNameLower === "refurb price range") return
+
 
     if (attrNameLower.includes("storage") || attrNameLower.includes("memory")) {
       filtersHTML += renderStorageFilter(attr)
@@ -341,6 +355,29 @@ function renderAttributeFilters() {
   container.innerHTML = filtersHTML
 }
 
+// Every value the product can have, falling back to in-stock values for older API responses.
+function getAllValues(attr) {
+  return attr.all_values && attr.all_values.length ? attr.all_values : attr.available_values || []
+}
+
+function isValueAvailable(attr, value) {
+  return (attr.available_values || []).some((v) => String(v).trim() === String(value).trim())
+}
+
+// Only real per-unit variant attributes (RAM, Storage, Colour, ...) are pickable.
+function isVariantFilterAttr(attr) {
+  if (!attr.is_filter || !attr.is_required) return false
+  const name = attr.name.toLowerCase()
+  if (name === "colour hex codes" || name === "refurb price range") return false
+  return getAllValues(attr).length > 0
+}
+
+// Every option keeps its click handler; selectAttribute() ignores clicks on
+// options that are disabled for the current selection.
+function optionInteractionAttrs(attr, value) {
+  return `onclick="selectAttribute(${attr.id}, '${escapeHtml(value).replace(/'/g, "\\'")}')"`
+}
+
 function renderStorageFilter(attr) {
   return `
         <div class="selection-section">
@@ -348,11 +385,11 @@ function renderStorageFilter(attr) {
                 <h6>${escapeHtml(attr.name)}</h6>
             </div>
             <div class="storage-options">
-                ${attr.available_values
+                ${getAllValues(attr)
       .map(
         (value) => `
-                    <div class="storage-card" data-attribute="${attr.id}" data-value="${escapeHtml(value)}" 
-                         onclick="selectAttribute(${attr.id}, '${escapeHtml(value).replace(/'/g, "\\'")}')">
+                    <div class="storage-card ${isValueAvailable(attr, value) ? "" : "disabled"}" data-attribute="${attr.id}" data-value="${escapeHtml(value)}" 
+                         ${optionInteractionAttrs(attr, value)}>
                         <div class="storage-info">
                             <h6>${escapeHtml(value)}</h6>
                             <p class="storage-price"></p>
@@ -373,17 +410,17 @@ function renderColorFilter(attr, colorHexAttr) {
         <h6>Select ${attr.name}</h6>
       </div>
       <div class="color-options">
-        ${attr.available_values
+        ${getAllValues(attr)
       .map((value, index) => {
-        let colorValue = "#cccccc"
-        if (colorHexAttr && colorHexAttr.available_values[index]) {
+        let colorValue = colorMap[value] || "#cccccc"
+        if (!colorMap[value] && colorHexAttr && colorHexAttr.available_values[index]) {
           colorValue = colorHexAttr.available_values[index]
         }
         return `
-              <div class="color-card"
+              <div class="color-card ${isValueAvailable(attr, value) ? "" : "disabled"}"
                    data-attribute="${attr.id}"
                    data-value="${escapeHtml(value)}"
-                   onclick="selectAttribute(${attr.id}, '${escapeHtml(value).replace(/'/g, "\\'")}')">
+                   ${optionInteractionAttrs(attr, value)}>
                 <div class="color-dot me-2" style="background:${colorValue};"></div>
                 &nbsp;
                 <div class="color-info">
@@ -406,11 +443,11 @@ function renderGenericFilter(attr) {
                 <h6>Select ${attr.name}</h6>
             </div>
             <div class="storage-options">
-                ${attr.available_values
+                ${getAllValues(attr)
       .map(
         (value) => `
-                    <div class="storage-card" data-attribute="${attr.id}" data-value="${escapeHtml(value)}" 
-                         onclick="selectAttribute(${attr.id}, '${escapeHtml(value).replace(/'/g, "\\'")}')">
+                    <div class="storage-card ${isValueAvailable(attr, value) ? "" : "disabled"}" data-attribute="${attr.id}" data-value="${escapeHtml(value)}" 
+                         ${optionInteractionAttrs(attr, value)}>
                         <div class="storage-info">
                             <h6>${escapeHtml(value)}</h6>
                             <p class="storage-price"></p>
@@ -424,72 +461,129 @@ function renderGenericFilter(attr) {
     `
 }
 
-function autoSelectFilters() {
-  const excellentCondition = CONDITION_OPTIONS.find((c) => c.value === "excellent")
-  if (excellentCondition) {
-    selectCondition("excellent")
-  } else {
-    selectCondition(CONDITION_OPTIONS[0].value)
-  }
-
+function buildFilterGroups() {
+  filterGroups = [{ key: "condition" }]
   attributesData.forEach((attr) => {
-    // Same scoping as renderAttributeFilters — only auto-select real
-    // per-unit variant attributes, not fixed model specs.
-    if (attr.is_filter && attr.is_required && attr.available_values.length > 0) {
-      selectAttribute(attr.id, attr.available_values[0])
+    if (isVariantFilterAttr(attr)) {
+      filterGroups.push({ key: `attribute_${attr.id}`, attrId: attr.id })
     }
   })
+}
 
+function variantValue(variant, group) {
+  return group.key === "condition" ? variant.condition : variant.attrs[String(group.attrId)]
+}
+
+// In-stock variants that agree with the selection of every group before `index`.
+function matchingVariants(index) {
+  return variants.filter((variant) =>
+    filterGroups.slice(0, index).every((group) => {
+      const selected = selectedFilters[group.key]
+      return selected === undefined || variantValue(variant, group) === selected
+    }),
+  )
+}
+
+function availableValuesFor(index) {
+  const group = filterGroups[index]
+  const values = new Set()
+  matchingVariants(index).forEach((variant) => {
+    const value = variantValue(variant, group)
+    if (value !== undefined && value !== "") values.add(value)
+  })
+  return values
+}
+
+// Walk the groups in order and replace any selection that no longer fits the
+// groups before it with the value of the cheapest matching variant.
+function reconcileSelections(fromIndex) {
+  for (let i = fromIndex; i < filterGroups.length; i++) {
+    const group = filterGroups[i]
+    const options = availableValuesFor(i)
+    const current = selectedFilters[group.key]
+    if (current !== undefined && options.has(current)) continue
+
+    const candidates = matchingVariants(i).filter((variant) => options.has(variantValue(variant, group)))
+    if (candidates.length === 0) {
+      delete selectedFilters[group.key]
+      continue
+    }
+    const cheapest = candidates.reduce((best, v) => (parseFloat(v.price) < parseFloat(best.price) ? v : best))
+    selectedFilters[group.key] = variantValue(cheapest, group)
+  }
+}
+
+// Sync active / disabled state of every option card with the selection.
+function applySelectionState() {
+  filterGroups.forEach((group, index) => {
+    const options = availableValuesFor(index)
+    const selector =
+      group.key === "condition" ? ".condition-card" : `[data-attribute="${group.attrId}"]`
+
+    document.querySelectorAll(selector).forEach((card) => {
+      const value = group.key === "condition" ? card.dataset.condition : card.dataset.value
+      const enabled = options.has(value)
+
+      card.classList.toggle("disabled", !enabled)
+      card.classList.toggle("active", enabled && selectedFilters[group.key] === value)
+      if (enabled) {
+        card.removeAttribute("aria-disabled")
+        card.removeAttribute("title")
+      } else {
+        card.setAttribute("aria-disabled", "true")
+        card.setAttribute("title", "Currently unavailable")
+      }
+      const radio = card.querySelector('input[type="radio"]')
+      if (radio) radio.checked = enabled && selectedFilters[group.key] === value
+    })
+  })
+
+  const conditionObj = CONDITION_OPTIONS.find((c) => c.value === selectedFilters["condition"])
+  if (conditionObj) {
+    const labelEl = document.getElementById("selectedConditionLabel")
+    if (labelEl) labelEl.textContent = conditionObj.label === "Excellent" ? "Superb" : conditionObj.label
+
+    const descEl = document.getElementById("selectedConditionDesc")
+    if (descEl) descEl.textContent = `(${conditionObj.description})`
+  }
+}
+
+function autoSelectFilters() {
+  buildFilterGroups()
+
+  // Prefer "excellent", otherwise the first condition that actually has stock.
+  const startCondition = inStockConditions.includes("excellent")
+    ? "excellent"
+    : CONDITION_OPTIONS.find((c) => inStockConditions.includes(c.value))?.value
+  if (startCondition) {
+    selectedFilters["condition"] = startCondition
+  }
+
+  // Every other group is filled from the cheapest real variant, so the
+  // default selection always corresponds to a unit that exists.
+  reconcileSelections(0)
+  applySelectionState()
+  loadAvailableUnits()
+}
+
+function chooseOption(index, value) {
+  if (index < 0 || !availableValuesFor(index).has(value)) return
+
+  selectedFilters[filterGroups[index].key] = value
+  reconcileSelections(index + 1)
+  applySelectionState()
   loadAvailableUnits()
 }
 
 function selectCondition(value) {
-  document.querySelectorAll(".condition-card").forEach((card) => {
-    card.classList.remove("active");
-  });
-
-  const selectedCard = document.querySelector(`.condition-card[data-condition="${value}"]`);
-  if (selectedCard) {
-    selectedCard.classList.add("active");
-  }
-
-  selectedFilters["condition"] = value;
-
-  const conditionObj = CONDITION_OPTIONS.find(c => c.value === value);
-  if (conditionObj) {
-    const labelEl = document.getElementById("selectedConditionLabel");
-    // if(labelEl) labelEl.textContent = if conditionObj.label ==="Excellent" ? 'Superb' : `${conditionObj.label }`
-    if (labelEl) labelEl.textContent = conditionObj.label === "Excellent" ? "Superb" : conditionObj.label;
-
-    const descEl = document.getElementById("selectedConditionDesc");
-    if (descEl) descEl.textContent = `(${conditionObj.description})`;
-  }
-
-  loadAvailableUnits();
+  chooseOption(0, value)
 }
 
 function selectAttribute(attrId, value) {
-  document.querySelectorAll(`[data-attribute="${attrId}"]`).forEach((card) => {
-    card.classList.remove("active")
-    const radio = card.querySelector('input[type="radio"]')
-    if (radio) radio.checked = false
-  })
-
-  // Escape the value for safe use inside a CSS attribute selector — values
-  // can contain quotes (e.g. Screen Size = 6.72") which would otherwise
-  // produce an invalid selector and throw.
-  const selectedCard = document.querySelector(
-    `[data-attribute="${attrId}"][data-value="${CSS.escape(String(value))}"]`,
+  chooseOption(
+    filterGroups.findIndex((group) => group.attrId === attrId),
+    value,
   )
-  if (selectedCard) {
-    selectedCard.classList.add("active")
-    const radio = selectedCard.querySelector('input[type="radio"]')
-    if (radio) radio.checked = true
-
-    selectedFilters[`attribute_${attrId}`] = value
-
-    loadAvailableUnits()
-  }
 }
 
 // Load Available Units
@@ -501,8 +595,12 @@ async function loadAvailableUnits() {
   }
 
   const url = `${units_api_url}?${params.toString()}`
+  const requestId = ++unitsRequestId
 
   const [success, response] = await window.callApi("GET", url, null, csrf_token)
+
+  // A newer selection was made while this request was in flight.
+  if (requestId !== unitsRequestId) return
 
   if (success && response.success) {
     availableUnits = response.data.units

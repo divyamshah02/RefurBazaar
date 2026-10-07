@@ -21,6 +21,7 @@ from django.http import JsonResponse
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.db.models import Q
 
 import json
 
@@ -28,7 +29,8 @@ from .models import (
     PromoBanner, HeroBannerSlide, TrustStripItem, CategoryCard,
     ProductSection, ProductSectionItem, SpotlightProduct,
     PriceRangeCard, ShopByPriceSlide, TestimonialCard,
-    FAQItem, StatItem, NavCategoryLink, PartnerCTABanner, RenewedBanner
+    FAQItem, StatItem, NavCategoryLink, PartnerCTABanner, RenewedBanner,
+    HomepageSectionText
 )
 
 
@@ -44,6 +46,31 @@ def image_url(request, img_field):
         except Exception:
             return None
     return None
+
+
+def resolve_listing_unit(listing_unit_id, request):
+    """Look up a real ListingUnit and return live display data, or None.
+    Lazy-imported to avoid a hard cross-app dependency at module load time."""
+    if not listing_unit_id:
+        return None
+    from Product.models import ListingUnit, ProductModelImage
+    unit = (ListingUnit.objects
+            .select_related('listing', 'listing__model', 'listing__model__brand')
+            .filter(pk=listing_unit_id).first())
+    if not unit:
+        return None
+    model = unit.listing.model
+    image = ProductModelImage.objects.filter(product_model=model, is_primary=True).first() \
+        or ProductModelImage.objects.filter(product_model=model).first()
+    return {
+        'name':        f"{model.brand.name} {model.name}".strip(),
+        'image':       image_url(request, image.image) if image else image_url(request, model.image),
+        'price':       f"₹{int(unit.price):,}",
+        'original_price_num': model.price_max,
+        'condition':   unit.get_condition_display() if hasattr(unit, 'get_condition_display') else unit.condition,
+        'is_available': unit.is_available and not unit.is_sold,
+        'product_model_id': model.id,
+    }
 
 
 def ok(data=None, status=200):
@@ -118,18 +145,22 @@ def ser_category(obj, request):
 
 
 def ser_section_item(obj, request):
+    live = resolve_listing_unit(obj.listing_unit_id, request)
     return {
         'id':               obj.id,
         'product_model_id': obj.product_model_id,
-        'display_name':     obj.display_name,
-        'display_image':    image_url(request, obj.display_image),
+        'listing_unit_id':  obj.listing_unit_id,
+        'display_name':     obj.display_name or (live['name'] if live else ''),
+        'display_image':    image_url(request, obj.display_image) or (live['image'] if live else None),
+        'image_override':   image_url(request, obj.display_image),
         'badge_text':       obj.badge_text,
         'badge_style':      obj.badge_style,
-        'specs_text':       obj.specs_text,
-        'display_price':    obj.display_price,
+        'specs_text':       obj.specs_text or (live['condition'] if live else ''),
+        'display_price':    obj.display_price or (live['price'] if live else ''),
         'original_price':   obj.original_price,
         'link_url':         obj.link_url,
         'order':            obj.order,
+        'sold_out':         bool(live) and not live['is_available'],
     }
 
 
@@ -137,6 +168,7 @@ def ser_section(obj, request):
     return {
         'id':           obj.id,
         'title':        obj.title,
+        'subtitle':     obj.subtitle,
         'section_type': obj.section_type,
         'bg_style':     obj.bg_style,
         'see_all_url':  obj.see_all_url,
@@ -155,14 +187,17 @@ def ser_section(obj, request):
 
 
 def ser_spotlight(obj, request):
+    live = resolve_listing_unit(obj.listing_unit_id, request)
     return {
         'id':               obj.id,
         'brand_label':      obj.brand_label,
         'product_model_id': obj.product_model_id,
-        'display_name':     obj.display_name,
-        'display_image':    image_url(request, obj.display_image),
+        'listing_unit_id':  obj.listing_unit_id,
+        'display_name':     obj.display_name or (live['name'] if live else ''),
+        'display_image':    image_url(request, obj.display_image) or (live['image'] if live else None),
+        'image_override':   image_url(request, obj.display_image),
         'specs':            obj.specs,
-        'price':            obj.price,
+        'price':            obj.price or (live['price'] if live else ''),
         'original_price':   obj.original_price,
         'discount_pct':     obj.discount_pct,
         'save_amount':      obj.save_amount,
@@ -246,9 +281,55 @@ def ser_renewed(obj):
             'subtext': obj.subtext, 'cta_text': obj.cta_text}
 
 
+def ser_section_text(obj):
+    return {'id': obj.id, 'key': obj.key, 'key_label': obj.get_key_display(),
+            'eyebrow': obj.eyebrow, 'heading': obj.heading,
+            'subheading': obj.subheading, 'is_active': obj.is_active}
+
+
 # ─────────────────────────────────────────────────────────────────────
 # PUBLIC: Full config endpoint
 # ─────────────────────────────────────────────────────────────────────
+
+class AdminListingSearchView(View):
+    """Search live, sellable listing units for the homepage product picker.
+    GET /admin-homepage-api/listing-search/?q=iphone
+    Returns units that are approved, available and not sold."""
+
+    @method_decorator(staff_required)
+    def get(self, request):
+        from Product.models import ListingUnit, ProductModelImage
+        q = request.GET.get('q', '').strip()
+        qs = (ListingUnit.objects
+              .select_related('listing', 'listing__model', 'listing__model__brand')
+              .filter(is_available=True, is_sold=False, listing__status='active'))
+        if q:
+            qs = qs.filter(
+                Q(listing__model__name__icontains=q) |
+                Q(listing__model__brand__name__icontains=q)
+            )
+        qs = qs.order_by('-id')[:40]
+        results = []
+        for unit in qs:
+            model = unit.listing.model
+            image = ProductModelImage.objects.filter(product_model=model, is_primary=True).first() \
+                or ProductModelImage.objects.filter(product_model=model).first()
+            attrs = [ua.value for ua in unit.attributes.select_related('attribute').all()][:4]
+            results.append({
+                'listing_unit_id': unit.id,
+                'product_model_id': model.id,
+                'listing_id': unit.listing.listing_id,
+                'unit_number': unit.unit_number,
+                'name': f"{model.brand.name} {model.name}",
+                'price': float(unit.price),
+                'mrp': float(model.price_max) if model.price_max else None,
+                'brand': model.brand.name,
+                'condition': unit.get_condition_display(),
+                'specs': ' · '.join(attrs),
+                'image': image_url(request, image.image) if image else (image_url(request, model.image)),
+            })
+        return ok(results)
+
 
 class HomepageConfigView(View):
     """GET /api/homepage/config/ — returns the full homepage data payload."""
@@ -291,7 +372,7 @@ class HomepageConfigView(View):
 
 # ─────────────────────────────────────────────────────────────────────
 # GENERIC ADMIN CRUD BASE
-# ─────────────────────────────────────────────────────────────────────
+# ─────────────────────���──────────────────────────────────────────���────
 
 @method_decorator(csrf_exempt, name='dispatch')
 class AdminCRUDView(View):
@@ -306,7 +387,9 @@ class AdminCRUDView(View):
     """
     model = None
     fields = []
+    image_fields = []          # ImageField names accepted via multipart upload
     order_field = 'order'
+    MAX_IMAGE_BYTES = 5 * 1024 * 1024
 
     def serialise(self, obj, request):
         raise NotImplementedError
@@ -314,16 +397,62 @@ class AdminCRUDView(View):
     def get_queryset(self):
         return self.model.objects.all().order_by(self.order_field)
 
+    @staticmethod
+    def is_multipart(request):
+        return (request.content_type or '').startswith('multipart/')
+
     def get_body(self, request):
+        if self.is_multipart(request):
+            return request.POST.dict()
         try:
             return json.loads(request.body)
         except Exception:
             return {}
 
+    def coerce(self, obj, name, value):
+        """Multipart values arrive as strings — convert them to the model field type."""
+        try:
+            field = obj._meta.get_field(name)
+        except Exception:
+            return value
+        kind = field.get_internal_type()
+        if not isinstance(value, str):
+            return value
+        text = value.strip()
+        if kind == 'BooleanField':
+            return text.lower() in ('true', '1', 'on', 'yes')
+        if kind in ('IntegerField', 'PositiveIntegerField', 'PositiveSmallIntegerField',
+                    'BigIntegerField', 'ForeignKey'):
+            if text == '':
+                return None if field.null else 0
+            return int(float(text))
+        if kind == 'FloatField':
+            return float(text) if text else 0.0
+        if kind == 'JSONField':
+            try:
+                return json.loads(text) if text else []
+            except ValueError:
+                return []
+        return value
+
     def apply_fields(self, obj, body):
         for f in self.fields:
             if f in body:
-                setattr(obj, f, body[f])
+                setattr(obj, f, self.coerce(obj, f, body[f]))
+
+    def apply_images(self, obj, request, body):
+        """Handle uploaded files and `clear_<field>` flags. Returns an error string or None."""
+        for f in self.image_fields:
+            upload = request.FILES.get(f)
+            if upload:
+                if not (upload.content_type or '').startswith('image/'):
+                    return f'{f}: only image files are allowed'
+                if upload.size > self.MAX_IMAGE_BYTES:
+                    return f'{f}: image must be 5 MB or smaller'
+                setattr(obj, f, upload)
+            elif str(body.get(f'clear_{f}', '')).lower() in ('true', '1'):
+                setattr(obj, f, None)
+        return None
 
     # ── Collection ──────────────────────────────
     @staff_required
@@ -334,8 +463,11 @@ class AdminCRUDView(View):
     def create(self, request):
         body = self.get_body(request)
         obj = self.model()
-        self.apply_fields(obj, body)
         try:
+            self.apply_fields(obj, body)
+            problem = self.apply_images(obj, request, body)
+            if problem:
+                return err(problem)
             obj.save()
         except Exception as e:
             return err(str(e))
@@ -348,6 +480,9 @@ class AdminCRUDView(View):
 
     def post(self, request, pk=None):
         if pk is not None:
+            # Django does not parse multipart bodies on PUT, so file updates arrive as POST.
+            if self.is_multipart(request):
+                return self.put(request, pk)
             return err('POST not allowed on detail', 405)
         return self.create(request)
 
@@ -361,8 +496,11 @@ class AdminCRUDView(View):
     def put(self, request, pk):
         obj = get_object_or_404(self.model, pk=pk)
         body = self.get_body(request)
-        self.apply_fields(obj, body)
         try:
+            self.apply_fields(obj, body)
+            problem = self.apply_images(obj, request, body)
+            if problem:
+                return err(problem)
             obj.save()
         except Exception as e:
             return err(str(e))
@@ -381,6 +519,7 @@ class AdminCRUDView(View):
 
 class AdminHeroSlidesView(AdminCRUDView):
     model  = HeroBannerSlide
+    image_fields = ['image']
     fields = ['order','is_active','bg_style','tag_text','tag_style','heading','body_text',
               'btn1_text','btn1_url','btn1_style','btn2_text','btn2_url','btn2_style',
               'image_max_width','badge_top_right','badge_bottom_center','badge_circle']
@@ -395,27 +534,31 @@ class AdminTrustItemsView(AdminCRUDView):
 
 class AdminCategoriesView(AdminCRUDView):
     model  = CategoryCard
+    image_fields = ['image']
     fields = ['name','link_url','badge_text','badge_style','product_count','starting_price','order','is_active']
     def serialise(self, o, r): return ser_category(o, r)
 
 
 class AdminProductSectionsView(AdminCRUDView):
     model  = ProductSection
-    fields = ['title','section_type','bg_style','see_all_url','see_all_text','show_timer',
+    image_fields = ['promo_image']
+    fields = ['title','subtitle','section_type','bg_style','see_all_url','see_all_text','show_timer',
               'order','is_active','promo_badge','promo_heading','promo_btn_text','promo_btn_url','promo_style']
     def serialise(self, o, r): return ser_section(o, r)
 
 
 class AdminSectionItemsView(AdminCRUDView):
     model  = ProductSectionItem
-    fields = ['section_id','product_model_id','display_name','badge_text','badge_style',
+    image_fields = ['display_image']
+    fields = ['section_id','product_model_id','listing_unit_id','display_name','badge_text','badge_style',
               'specs_text','display_price','original_price','link_url','order','is_active']
     def serialise(self, o, r): return ser_section_item(o, r)
 
 
 class AdminSpotlightView(AdminCRUDView):
     model  = SpotlightProduct
-    fields = ['is_active','brand_label','product_model_id','display_name','specs','price',
+    image_fields = ['display_image']
+    fields = ['is_active','brand_label','product_model_id','listing_unit_id','display_name','specs','price',
               'original_price','discount_pct','save_amount','review_count','available_count','link_url']
     def serialise(self, o, r): return ser_spotlight(o, r)
 
@@ -428,6 +571,7 @@ class AdminPriceRangeView(AdminCRUDView):
 
 class AdminShopByPriceView(AdminCRUDView):
     model  = ShopByPriceSlide
+    image_fields = ['image']
     fields = ['label_line1','label_line2','link_url','order','is_active']
     def serialise(self, o, r): return ser_sbp(o, r)
 
@@ -468,6 +612,22 @@ class AdminRenewedBannerView(AdminCRUDView):
     order_field = 'id'
     fields = ['heading','subtext','cta_text','is_active']
     def serialise(self, o, r): return ser_renewed(o)
+
+
+class AdminSectionTextsView(AdminCRUDView):
+    model       = HomepageSectionText
+    order_field = 'id'
+    fields = ['key','eyebrow','heading','subheading','is_active']
+
+    def get_queryset(self):
+        # Make sure every editable heading has a row so the admin can always edit it.
+        from .homepage_render import DEFAULT_TEXTS
+        existing = set(HomepageSectionText.objects.values_list('key', flat=True))
+        for key, d in DEFAULT_TEXTS.items():
+            if key not in existing:
+                HomepageSectionText.objects.create(key=key, is_active=True, **d)
+        return super().get_queryset()
+    def serialise(self, o, r): return ser_section_text(o)
 
 
 class AdminPromoBannerView(AdminCRUDView):

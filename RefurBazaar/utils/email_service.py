@@ -16,7 +16,7 @@ FROM_EMAIL = "Recarvit <info@recarvit.com>"
 
 
 def _get_client():
-    api_key = os.environ.get("RESEND_API_KEY")
+    api_key = os.environ.get("RESEND_API_KEY")    
     if not api_key:
         logger.warning("RESEND_API_KEY is not set. Skipping email send.")
         return None

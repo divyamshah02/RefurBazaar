@@ -461,7 +461,7 @@ class AdminDashboardViewSet(viewsets.ViewSet):
                 "data": None, "error": "Listing not found"
             }, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = ListingSerializer(listing)
+        serializer = ListingSerializer(listing, context={'pricing_view': 'admin'})
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None

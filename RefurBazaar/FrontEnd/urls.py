@@ -9,6 +9,7 @@ router = DefaultRouter()
 router.register(r'', IndexViewSet, basename='index')
 # router.register(r'', LandingPageViewSet, basename='index')
 router.register(r'landing-page', LandingPageViewSet, basename='landing-page')
+router.register(r'dy_homepage', DynamicHomePageViewSet, basename='dy-homepage')
 router.register(r'contact', ContactViewSet, basename='contact')
 router.register(r'about', AboutViewSet, basename='about')
 router.register(r'wishlist', WishlistPageViewSet, basename='wishlist')
@@ -62,6 +63,7 @@ router.register(r'admin-catalog-brands', AdminBrandsPageViewSet, basename='admin
 router.register(r'admin-catalog-products', AdminProductsPageViewSet, basename='admin-catalog-products')
 router.register(r'admin-catalog-attributes', AdminAttributesPageViewSet, basename='admin-catalog-attributes')
 router.register(r'admin-team', AdminTeamPageViewSet, basename='admin-team')
+router.register(r'admin-pricing', AdminPricingPageViewSet, basename='admin-pricing-page')
 
 
 

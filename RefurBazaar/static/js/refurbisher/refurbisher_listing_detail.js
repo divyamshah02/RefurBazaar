@@ -8,6 +8,75 @@ let editingUnitId = null
 let editingUnitData = null
 const bootstrap = window.bootstrap // Declare the bootstrap variable
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+}
+
+// Same naming used on the add-listing page.
+function attributeLabel(name) {
+  if (name === "Colour Options") return "Colour Name"
+  if (name === "Colour Hex Codes") return "Colour options"
+  return name
+}
+
+// Attributes the refurbisher chooses while adding a listing (is_required on the model link).
+function getEditableAttributeIds() {
+  return new Set(productModelAttributes.filter((pma) => pma.is_required).map((pma) => pma.attribute.id))
+}
+
+function getEditableProductAttributes() {
+  return productModelAttributes.filter((pma) => pma.is_required)
+}
+
+function isHexColour(value) {
+  return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(String(value || "").trim())
+}
+
+function isLightColour(value) {
+  const hex = String(value || "").trim().replace("#", "")
+  const full = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex
+  if (!/^[0-9a-f]{6}$/i.test(full)) return false
+  const r = Number.parseInt(full.substring(0, 2), 16)
+  const g = Number.parseInt(full.substring(2, 4), 16)
+  const b = Number.parseInt(full.substring(4, 6), 16)
+  return (r * 299 + g * 587 + b * 114) / 1000 > 128
+}
+
+// Same round swatch look as the add-listing page.
+function ensureColorSwatchStyles() {
+  if (document.getElementById("colorSwatchStyles")) return
+  const style = document.createElement("style")
+  style.id = "colorSwatchStyles"
+  style.textContent = `
+    .color-swatch-group { display: flex; flex-wrap: wrap; gap: 12px; padding: 4px 0; }
+    .color-swatch { position: relative; margin: 0; cursor: pointer; }
+    .color-swatch input[type="radio"] { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+    .color-swatch-dot {
+      display: block; width: 52px; height: 52px; border-radius: 50%;
+      border: 4px solid #d9d9d9; box-shadow: inset 0 0 0 4px #fff;
+      transition: border-color .15s ease, transform .15s ease;
+    }
+    .color-swatch-dot.is-light { outline: 1px solid rgba(0, 0, 0, .12); outline-offset: -5px; }
+    .color-swatch:hover .color-swatch-dot { transform: scale(1.06); }
+    .color-swatch input:checked + .color-swatch-dot { border-color: #333; }
+    .color-swatch input:focus-visible + .color-swatch-dot { outline: 2px solid #0d6efd; outline-offset: 2px; }
+  `
+  document.head.appendChild(style)
+}
+
+function renderAttributeValue(attr) {
+  const value = escapeHtml(attr.value)
+  const swatch = isHexColour(attr.value)
+    ? `<span class="attr-swatch" style="background:${escapeHtml(attr.value)}"></span>`
+    : ""
+  return `${swatch}<span class="attribute-pill-value">${value}</span>`
+}
+
+
 /**
  * Initialize the listing detail page
  * @param {number} listingId - The listing ID
@@ -198,15 +267,27 @@ function renderUnitsTable() {
 
   tbody.innerHTML = listingData.units
     .map((unit) => {
-      const attributes =
-        unit.attributes && unit.attributes.length > 0
-          ? `<div class="attribute-pills">${unit.attributes
+      const editableIds = getEditableAttributeIds()
+      const unitAttributes = unit.attributes || []
+      const options = unitAttributes.filter((attr) => editableIds.has(attr.attribute))
+      const fixedSpecs = unitAttributes.filter((attr) => !editableIds.has(attr.attribute))
+
+      const optionPills =
+        options.length > 0
+          ? options
               .map(
                 (attr) =>
-                  `<span class="attribute-pill"><span class="attribute-pill-label">${attr.attribute_name}</span><span class="attribute-pill-value">${attr.value}</span></span>`,
+                  `<span class="attribute-pill"><span class="attribute-pill-label">${escapeHtml(attributeLabel(attr.attribute_name))}</span>${renderAttributeValue(attr)}</span>`,
               )
-              .join("")}</div>`
-          : '<span class="text-muted">No attributes</span>'
+              .join("")
+          : '<span class="text-muted small">No options</span>'
+
+      const specsButton =
+        fixedSpecs.length > 0
+          ? `<button type="button" class="spec-info-btn" onclick="showUnitSpecs(${unit.id})" title="View all specifications" aria-label="View all specifications for unit ${unit.unit_number}"><i class="fas fa-info"></i></button>`
+          : ""
+
+      const attributes = `<div class="attribute-pills">${optionPills}${specsButton}</div>`
 
       const conditionBadge = getConditionBadge(unit.condition)
 
@@ -268,11 +349,52 @@ function renderUnitsTable() {
  * @returns {string} HTML string for the form field
  */
 function renderAttributeField(pma, currentValue = "") {
+  ensureColorSwatchStyles()
   const attr      = pma.attribute
-  const dataType  = pma.data_type        // on pma, not pma.attribute
-  const possVals  = pma.possible_values  // on pma, not pma.attribute
+  let dataType    = pma.data_type        // on pma, not pma.attribute
+  let possVals    = pma.possible_values  // on pma, not pma.attribute
+  if (typeof possVals === "string") {
+    try { possVals = JSON.parse(possVals) } catch (e) { possVals = possVals.split(",").map((s) => s.trim()).filter(Boolean) }
+  }
   const required  = pma.is_required ? "required" : ""
-  const label     = `${attr.name}${pma.is_required ? " *" : ""}`
+  const label     = `${attributeLabel(attr.name)}${pma.is_required ? " *" : ""}`
+  const isHexAttribute = String(attr.name || "").trim().toLowerCase() === "colour hex codes"
+
+  // Colour Hex Codes always renders as round swatches. If the model has no stored
+  // choice list, fall back to every hex already used on this listing's units.
+  if (isHexAttribute && (!Array.isArray(possVals) || possVals.length === 0)) {
+    const used = new Set()
+    ;((listingData && listingData.units) || []).forEach((u) =>
+      (u.attributes || []).forEach((a) => {
+        if (a.attribute === attr.id && a.value) used.add(a.value)
+      }),
+    )
+    if (currentValue) used.add(currentValue)
+    possVals = Array.from(used)
+    dataType = "choice"
+  }
+
+  if (isHexAttribute && Array.isArray(possVals) && possVals.length > 0) {
+    const groupName = `color_${attr.id}_${Math.random().toString(36).slice(2, 8)}`
+    const swatches = possVals
+      .map(
+        (v) => `
+          <label class="color-swatch" title="${escapeHtml(v)}">
+            <input type="radio" name="${groupName}" value="${escapeHtml(v)}" aria-label="${escapeHtml(v)}"${v === currentValue ? " checked" : ""}
+                   onchange="this.closest('.color-swatch-group').querySelector('[data-attribute-id]').value = this.value">
+            <span class="color-swatch-dot${isLightColour(v) ? " is-light" : ""}" style="background-color: ${escapeHtml(v)};"></span>
+          </label>`,
+      )
+      .join("")
+    return `
+      <div class="mb-3">
+        <label class="form-label">${label}</label>
+        <div class="color-swatch-group" role="radiogroup" aria-label="${escapeHtml(attributeLabel(attr.name))}">
+          <input type="hidden" data-attribute-id="${attr.id}" value="${escapeHtml(currentValue)}" ${required}>
+          ${swatches}
+        </div>
+      </div>`
+  }
 
   if (dataType === "choice" && possVals && possVals.length > 0) {
     const options = possVals
@@ -313,7 +435,7 @@ function showAddUnitModal() {
   document.getElementById("unitModalTitle").textContent = "Add New Unit"
 
   const container = document.getElementById("unit-attributes-container")
-  container.innerHTML = productModelAttributes
+  container.innerHTML = getEditableProductAttributes()
     .map((pma) => renderAttributeField(pma, ""))
     .join("")
 
@@ -342,7 +464,7 @@ function editUnit(unitId) {
 
   // Populate attribute fields with current values
   const container = document.getElementById("unit-attributes-container")
-  container.innerHTML = productModelAttributes
+  container.innerHTML = getEditableProductAttributes()
     .map((pma) => {
       // unit.attributes items have shape: {id, attribute (int FK), attribute_name, value}
       const currentAttr = unit.attributes.find((a) => a.attribute === pma.attribute.id)
@@ -357,6 +479,37 @@ function editUnit(unitId) {
   // Show modal
   const modal = new bootstrap.Modal(document.getElementById("unitModal"))
   modal.show()
+}
+
+/**
+ * Show the read-only specifications (everything the refurbisher cannot change)
+ */
+function showUnitSpecs(unitId) {
+  const unit = listingData.units.find((u) => u.id === unitId)
+  if (!unit) {
+    showError("Unit not found")
+    return
+  }
+
+  const editableIds = getEditableAttributeIds()
+  const fixedSpecs = (unit.attributes || []).filter((attr) => !editableIds.has(attr.attribute))
+
+  document.getElementById("specsModalTitle").textContent = `${listingData.model_name} - Unit #${unit.unit_number}`
+
+  document.getElementById("specs-list").innerHTML =
+    fixedSpecs.length > 0
+      ? fixedSpecs
+          .map(
+            (attr) => `
+        <div class="spec-row">
+          <span class="spec-name">${escapeHtml(attributeLabel(attr.attribute_name))}</span>
+          <span class="spec-value">${renderAttributeValue(attr)}</span>
+        </div>`,
+          )
+          .join("")
+      : '<p class="text-muted mb-0">No additional specifications.</p>'
+
+  new bootstrap.Modal(document.getElementById("specsModal")).show()
 }
 
 /**
@@ -377,7 +530,8 @@ async function saveNewUnit() {
 
   for (const field of attributeFields) {
     if (!field.value && field.required) {
-      showError(`Please fill in ${field.previousElementSibling?.textContent || "a required field"}`)
+      const labelText = field.closest(".mb-3")?.querySelector("label")?.textContent?.replace("*", "").trim()
+      showError(`Please fill in ${labelText || "a required field"}`)
       return
     }
     if (field.value) {

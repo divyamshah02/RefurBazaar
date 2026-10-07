@@ -85,6 +85,30 @@ class ListingUnitSerializer(serializers.ModelSerializer):
             'attributes', 'created_at',
         ]
 
+    def to_representation(self, instance):
+        """Pricing visibility is driven by serializer context `pricing_view`:
+          - unset (customers / public): only the customer-facing `price`
+          - 'refurbisher': `price` is the refurbisher's own price, no commission data
+          - 'admin': full breakdown (refurbisher price, commission, override, effective rule)
+        """
+        data = super().to_representation(instance)
+        view = self.context.get('pricing_view')
+        if view == 'refurbisher':
+            if instance.refurbisher_price is not None:
+                data['price'] = str(instance.refurbisher_price)
+        elif view == 'admin':
+            ctype, cvalue, source = instance.effective_commission_rule()
+            data.update({
+                'refurbisher_price': str(instance.refurbisher_price if instance.refurbisher_price is not None else instance.price),
+                'platform_commission': str(instance.platform_commission),
+                'commission_type': instance.commission_type,
+                'commission_value': str(instance.commission_value) if instance.commission_value is not None else None,
+                'effective_commission_type': ctype,
+                'effective_commission_value': str(cvalue),
+                'commission_source': source,
+            })
+        return data
+
 
 class ListingSerializer(serializers.ModelSerializer):
     model_name  = serializers.CharField(source='model.name',               read_only=True)

@@ -2,6 +2,7 @@ from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.utils import timezone
+from django.db.models import Q
 from django.contrib.auth import login, authenticate
 from datetime import timedelta
 import random
@@ -12,12 +13,42 @@ from utils.decorators import *
 from utils.email_service import send_otp_email
 
 
+EMAIL_LOGIN_ROLES = ("customer", "refurbisher")
+
+
+def _email_role_conflict(email, role):
+    """Return an error message if `email` already belongs to an account with a different role."""
+    existing_user = User.objects.filter(email__iexact=email).exclude(role=role).first()
+    if not existing_user:
+        return None
+    return (
+        f"This email is already registered as a {existing_user.get_role_display()} "
+        f"(ID: {existing_user.user_id}), not as a {dict(User.ROLE_CHOICES).get(role, role.title())}. "
+        f"Please log in through the {existing_user.get_role_display()} portal instead."
+    )
+
+
+def _find_refurbisher_by_email(email):
+    """Find a refurbisher by login email, linking legacy mobile-only accounts via their company profile email."""
+    user = User.objects.filter(email__iexact=email, role="refurbisher").first()
+    if user:
+        return user
+    legacy = User.objects.filter(
+        role="refurbisher", company_profile__email__iexact=email
+    ).filter(Q(email__isnull=True) | Q(email="")).first()
+    if legacy:
+        legacy.email = email
+        legacy.save(update_fields=["email"])
+    return legacy
+
+
 class OtpAuthViewSet(viewsets.ViewSet):
     @handle_exceptions
     def create(self, request):
-        """Generate OTP for either mobile (refurbisher/admin) or email (customer) login."""
+        """Generate OTP for email (customer/refurbisher) or mobile login."""
         mobile = request.data.get("mobile")
         email = (request.data.get("email") or "").strip().lower()
+        role = (request.data.get("role") or "customer").strip().lower()
 
         if not mobile and not email:
             return Response({
@@ -33,37 +64,40 @@ class OtpAuthViewSet(viewsets.ViewSet):
                     "data": None, "error": "Please enter a valid email address."
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-            # Email login is for customers only. If this email already belongs
-            # to a refurbisher/admin account, tell the user instead of letting
-            # them silently create a duplicate customer identity.
-            existing_user = User.objects.filter(email=email).exclude(role="customer").first()
-            if existing_user:
+            if role not in EMAIL_LOGIN_ROLES:
                 return Response({
                     "success": False, "user_not_logged_in": False, "user_unauthorized": False,
-                    "data": None,
-                    "error": (
-                        f"This email is already registered as a {existing_user.get_role_display()} "
-                        f"(ID: {existing_user.user_id}). Please log in through the "
-                        f"{existing_user.get_role_display()} portal instead."
-                    )
+                    "data": None, "error": "Email login is only available for customers and refurbishers."
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # If this email already belongs to an account with a different
+            # role, say so instead of silently creating a duplicate identity.
+            conflict = _email_role_conflict(email, role)
+            if conflict:
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None, "error": conflict
                 }, status=status.HTTP_400_BAD_REQUEST)
 
         otp = ''.join(random.choices('0123456789', k=6))
-        print(f"OTP: {otp} to {email or mobile}")
         otp_obj = OTPVerification.objects.create(
             mobile=mobile or None, email=email or None, otp=otp,
             expires_at=timezone.now() + timedelta(minutes=5)
         )
 
-        email_sent = True
         if email:
-            email_sent = send_otp_email(email, otp, purpose="login")
+            if not send_otp_email(email, otp, purpose="login"):
+                otp_obj.delete()
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None,
+                    "error": "We could not send the verification email. Please try again in a moment."
+                }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        else:
+            print(f"OTP: {otp} to {mobile}")
 
         response_data = {"otp_id": otp_obj.id}
-        # Only echo the OTP back when email delivery could not be confirmed
-        # (e.g. RESEND_API_KEY missing in this environment), so dev/testing
-        # still works end-to-end.
-        if mobile or not email_sent:
+        if mobile and not email:
             response_data["otp"] = otp
 
         return Response({
@@ -98,17 +132,30 @@ class OtpAuthViewSet(viewsets.ViewSet):
                 "error": None
             }, status=status.HTTP_200_OK)
 
+        if otp_obj.email:
+            if role not in EMAIL_LOGIN_ROLES:
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None, "error": "Email login is only available for customers and refurbishers."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            conflict = _email_role_conflict(otp_obj.email, role)
+            if conflict:
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None, "error": conflict
+                }, status=status.HTTP_400_BAD_REQUEST)
+
         otp_obj.is_verified = True
         otp_obj.save()
 
         if otp_obj.email:
-            user, created = User.objects.get_or_create(
-                email=otp_obj.email,
-                defaults={
-                    "role": role
-                    # "contact_number": f"E{''.join(random.choices('0123456789', k=14))}",
-                }
-            )
+            user = _find_refurbisher_by_email(otp_obj.email) if role == "refurbisher" else None
+            created = False
+            if not user:
+                user, created = User.objects.get_or_create(
+                    email=otp_obj.email,
+                    defaults={"role": role}
+                )
         else:
             user, created = User.objects.get_or_create(
                 contact_number=otp_obj.mobile,
@@ -233,17 +280,25 @@ class UserDetailViewSet(viewsets.ViewSet):
             # Check if company profile exists for this refurbisher
             company_profile = getattr(user, 'company_profile', None)
 
+            # The login email and the (user-editable) phone number are owned by the
+            # user record; keep the company profile copy in sync with them.
+            profile_data = request.data.copy()
+            if user.email:
+                profile_data['email'] = user.email
+            if user.contact_number:
+                profile_data['contact_number'] = user.contact_number
+
             if company_profile:
                 # Update existing profile - handle both FILES and DATA
                 serializer = CompanyProfileSerializer(
                     company_profile, 
-                    data=request.data, 
+                    data=profile_data, 
                     partial=True,
                     context={'request': request}
                 )
             else:
                 # Create new profile
-                data = request.data.copy()
+                data = profile_data
                 data['user'] = user.id
                 serializer = CompanyProfileSerializer(
                     data=data,

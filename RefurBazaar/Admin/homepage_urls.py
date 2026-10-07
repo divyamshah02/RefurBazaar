@@ -39,9 +39,11 @@ from .homepage_views import (
     AdminPriceRangeView, AdminShopByPriceView, AdminTestimonialsView,
     AdminFAQsView, AdminStatsView, AdminNavLinksView,
     AdminPartnerCTAView, AdminRenewedBannerView, AdminPromoBannerView,
+    AdminListingSearchView, AdminSectionTextsView,
 )
 
 admin_api_patterns = [
+    path('listing-search/', AdminListingSearchView.as_view()),
     *[path(f'hero-slides/{p}', v) for p, v in [
         ('',           AdminHeroSlidesView.as_view()),
         ('<int:pk>/',  AdminHeroSlidesView.as_view()),
@@ -97,6 +99,10 @@ admin_api_patterns = [
     *[path(f'renewed-banner/{p}', v) for p, v in [
         ('',           AdminRenewedBannerView.as_view()),
         ('<int:pk>/',  AdminRenewedBannerView.as_view()),
+    ]],
+    *[path(f'section-texts/{p}', v) for p, v in [
+        ('',           AdminSectionTextsView.as_view()),
+        ('<int:pk>/',  AdminSectionTextsView.as_view()),
     ]],
     *[path(f'promo-banner/{p}', v) for p, v in [
         ('',           AdminPromoBannerView.as_view()),

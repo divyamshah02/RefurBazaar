@@ -1,0 +1,120 @@
+{% extends 'admin/_base.html' %}
+{% load static %}
+{% block title %}Pricing &amp; Commission{% endblock %}
+{% block nav_pricing %}active{% endblock %}
+{% block page_title %}Pricing &amp; Commission{% endblock %}
+{% block page_subtitle %}Set the platform commission added on top of each refurbisher's price{% endblock %}
+
+{% block extra_style %}
+.pc-grid { display:grid; grid-template-columns: 1fr 320px; gap:20px; align-items:start; }
+@media (max-width: 1100px) { .pc-grid { grid-template-columns: 1fr; } }
+.pc-formula { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:14px 18px; background:var(--accent-light); border-radius:var(--radius-md); color:var(--accent); font-size:13px; font-weight:600; margin-bottom:20px; }
+.pc-formula .op { color:var(--text-muted); font-weight:500; }
+.pc-formula .chip { background:var(--surface); padding:4px 10px; border-radius:20px; }
+.pc-type { display:inline-flex; border:1px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; }
+.pc-type button { border:0; background:var(--surface); padding:6px 12px; font-size:12px; font-weight:600; color:var(--text-muted); cursor:pointer; }
+.pc-type button.on { background:var(--accent); color:#fff; }
+.pc-value { width:110px; }
+.pc-row-dirty td { background:var(--yellow-bg); }
+.pc-switch { position:relative; display:inline-block; width:36px; height:20px; }
+.pc-switch input { opacity:0; width:0; height:0; }
+.pc-switch span { position:absolute; inset:0; background:var(--border); border-radius:20px; cursor:pointer; transition:.15s; }
+.pc-switch span::before { content:''; position:absolute; width:14px; height:14px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.15s; }
+.pc-switch input:checked + span { background:var(--green); }
+.pc-switch input:checked + span::before { transform:translateX(16px); }
+.pc-calc-row { display:flex; justify-content:space-between; padding:8px 0; font-size:13px; border-bottom:1px solid var(--border-light); }
+.pc-calc-row:last-child { border-bottom:0; font-weight:700; font-size:15px; }
+.pc-hint { font-size:12px; color:var(--text-muted); line-height:1.5; }
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+
+<div class="pc-formula">
+  <span class="chip">Refurbisher price</span><span class="op">+</span>
+  <span class="chip">Platform commission</span><span class="op">=</span>
+  <span class="chip">Customer price</span>
+  <span class="op" style="margin-left:auto;font-weight:500">Customers never see the commission.</span>
+</div>
+
+<div class="pc-grid">
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Commission by category</div>
+        <div class="panel-subtitle">Applies to new listings. A category with no rule uses the Default row. Individual units can override this on the listing page.</div>
+      </div>
+    </div>
+    <div class="rb-table-wrap">
+      <table class="rb-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Type</th>
+            <th>Value</th>
+            <th>Active</th>
+            <th>Units</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="pc-tbody">
+          <tr><td colspan="6" style="padding:32px;text-align:center"><div class="skeleton" style="height:13px;width:50%;margin:0 auto"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">Price preview</div></div>
+      <div class="panel-body">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-select" id="pc-calc-cat"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Refurbisher price (₹)</label>
+          <input type="number" min="0" step="0.01" class="form-input" id="pc-calc-price" value="10000" />
+        </div>
+        <div class="pc-calc-row"><span>Refurbisher earns</span><span id="pc-calc-ref">—</span></div>
+        <div class="pc-calc-row"><span>Platform commission</span><span id="pc-calc-com">—</span></div>
+        <div class="pc-calc-row"><span>Customer pays</span><span id="pc-calc-total">—</span></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-body pc-hint">
+        <strong style="color:var(--text-primary)">How it works</strong><br />
+        Saving a rule changes the price of <em>new</em> listings only. Existing listings keep their price until you press <em>Re-price</em> on a row. Re-pricing skips sold units and keeps each refurbisher's price unchanged.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="rb-overlay" id="modal-reprice">
+  <div class="rb-modal">
+    <div class="modal-header">
+      <div class="modal-header-icon yellow"><i class="fa-solid fa-rotate"></i></div>
+      <div>
+        <div class="modal-title">Re-price existing listings</div>
+        <div class="modal-subtitle" id="reprice-sub"></div>
+      </div>
+      <button class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body pc-hint" id="reprice-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-reprice')">Cancel</button>
+      <button class="btn btn-warning" id="reprice-confirm">Re-price units</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/admin/pricing_admin.js' %}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    PricingAdmin.init(csrf, '/admin-api/pricing/');
+  });
+</script>
+{% endblock %}

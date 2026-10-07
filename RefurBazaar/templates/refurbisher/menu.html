@@ -15,6 +15,7 @@
                                         <i class="fas fa-tachometer-alt"></i>Dashboard
                                     </a>
                                 </li> -->
+                                {% if user.company_profile.is_profile_complete %}
                                 <li class="dashboard-nav-item">
                                     <a href="/refurbisher-listings" class="dashboard-nav-link active">
                                         <i class="fas fa-list"></i>My Listings
@@ -25,6 +26,7 @@
                                         <i class="fas fa-shopping-bag"></i>Orders
                                     </a>
                                 </li>
+                                {% endif %}
                                 <!-- <li class="dashboard-nav-item">
                                     <a href="refurbisher_analytics.html" class="dashboard-nav-link">
                                         <i class="fas fa-chart-bar"></i>Analytics

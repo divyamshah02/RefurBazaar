@@ -1,0 +1,28 @@
+{% with t=texts.price_range %}
+{% if price_cards and t.visible %}
+<section class="price-range-section py-5">
+    <div class="container-fluid px-3 px-lg-5">
+        <div class="mb-4">
+            {% if t.eyebrow %}<div class="price-range-overline">{{ t.eyebrow }}</div>{% endif %}
+            <h2 class="fw-bold price-range-heading">{{ t.heading }}</h2>
+            {% if t.subheading %}<p class="text-muted mb-0">{{ t.subheading }}</p>{% endif %}
+        </div>
+
+        <div class="row g-3 justify-content-center">
+            {% for card in price_cards %}
+            <div class="col-6 col-md-3">
+                <a href="{{ card.link_url }}" class="text-decoration-none">
+                    <div class="price-range-card{% if card.is_dark %} price-range-card-dark{% endif %}">
+                        <div class="price-range-tier">{{ card.tier }}</div>
+                        <div class="price-range-value">{{ card.label }}</div>
+                        <div class="price-range-desc">{{ card.description }}</div>
+                        <div class="price-range-link">{{ card.link_text }}</div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endwith %}

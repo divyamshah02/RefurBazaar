@@ -329,7 +329,25 @@ class ProductModelViewSet(viewsets.ViewSet):
                 listing_unit__is_sold=False,
                 attribute=attr
             ).values_list('value', flat=True).distinct().order_by('value')
-            
+            available_values = list(available_values)
+
+            # Every value a customer could ever pick: the admin-defined choices
+            # first (in their configured order), then any value that exists on a
+            # unit of this model (sold / unavailable ones included). The page
+            # shows all of them and disables the ones missing from
+            # `available_values`.
+            all_values = []
+            if pm_attr.data_type == 'choice' and isinstance(pm_attr.possible_values, list):
+                all_values = [str(v).strip() for v in pm_attr.possible_values if str(v).strip()]
+            ever_values = ListingUnitAttribute.objects.filter(
+                listing_unit__listing__model=product_model,
+                attribute=attr
+            ).values_list('value', flat=True).distinct().order_by('value')
+            for value in list(ever_values) + available_values:
+                value = str(value).strip()
+                if value and value not in all_values:
+                    all_values.append(value)
+
             attributes_data.append({
                 'id': attr.id,
                 'name': attr.name,
@@ -339,8 +357,31 @@ class ProductModelViewSet(viewsets.ViewSet):
                 'is_filter': pm_attr.is_filter,
                 'section': pm_attr.section,
                 'default_value': pm_attr.default_value,
-                'available_values': list(available_values)
+                'available_values': available_values,
+                'all_values': all_values
             })
+
+        # Colour name -> hex code, paired per unit so the swatch always matches
+        # its name even for colours that currently have no stock.
+        color_map = {}
+        hex_attr_ids = [a['id'] for a in attributes_data if a['name'].strip().lower() == 'colour hex codes']
+        name_attr_ids = [
+            a['id'] for a in attributes_data
+            if ('colour' in a['name'].lower() or 'color' in a['name'].lower())
+            and 'hex' not in a['name'].lower()
+        ]
+        if hex_attr_ids and name_attr_ids:
+            pairs = {}
+            for row in ListingUnitAttribute.objects.filter(
+                listing_unit__listing__model=product_model,
+                attribute_id__in=hex_attr_ids + name_attr_ids
+            ).values('listing_unit_id', 'attribute_id', 'value'):
+                pair = pairs.setdefault(row['listing_unit_id'], {})
+                key = 'hex' if row['attribute_id'] in hex_attr_ids else 'name'
+                pair[key] = str(row['value']).strip()
+            for pair in pairs.values():
+                if pair.get('name') and pair.get('hex'):
+                    color_map.setdefault(pair['name'], pair['hex'])
         
         # Get price range for this product
         price_range = ListingUnit.objects.filter(
@@ -364,6 +405,30 @@ class ProductModelViewSet(viewsets.ViewSet):
             min_price=Min('price')
         ).order_by('condition')
         
+        # Every in-stock combination (condition + attribute values) with its
+        # cheapest price. The page uses this to disable options that cannot be
+        # combined with what the customer has already picked.
+        in_stock_units = ListingUnit.objects.filter(
+            listing__model=product_model,
+            listing__status='active',
+            is_available=True,
+            is_sold=False
+        ).prefetch_related('attributes')
+        variants_by_key = {}
+        for unit in in_stock_units:
+            attrs = {str(a.attribute_id): str(a.value).strip() for a in unit.attributes.all()}
+            variant_key = (unit.condition, tuple(sorted(attrs.items())))
+            price = float(unit.price)
+            existing = variants_by_key.get(variant_key)
+            if existing is None:
+                variants_by_key[variant_key] = {
+                    'condition': unit.condition,
+                    'price': price,
+                    'attrs': attrs,
+                }
+            elif price < existing['price']:
+                existing['price'] = price
+        
         return Response({
             "success": True,
             "user_not_logged_in": False,
@@ -371,8 +436,10 @@ class ProductModelViewSet(viewsets.ViewSet):
             "data": {
                 "product": product_data,
                 "attributes": attributes_data,
+                "color_map": color_map,
                 "price_range": price_range,
-                "conditions": list(conditions)
+                "conditions": list(conditions),
+                "variants": list(variants_by_key.values())
             },
             "error": None
         }, status=status.HTTP_200_OK)
@@ -420,9 +487,23 @@ class ProductModelViewSet(viewsets.ViewSet):
         
         # Serialize with refurbisher details
         units_data = []
-        for unit in queryset:
+        seen_offers = {}
+        for unit in queryset.prefetch_related('attributes__attribute'):
+            # One row per refurbisher + condition + identical attributes. The
+            # queryset is ordered by price, so the first unit seen is the
+            # cheapest one and is the one that gets added to the cart.
+            offer_key = (
+                unit.listing.refurbisher_id,
+                unit.condition,
+                tuple(sorted((a.attribute_id, str(a.value).strip()) for a in unit.attributes.all())),
+            )
+            if offer_key in seen_offers:
+                seen_offers[offer_key]['quantity'] += 1
+                continue
+
             company_profile = CompanyProfile.objects.filter(user=unit.listing.refurbisher).first()
             unit_data = {
+                'quantity': 1,
                 'id': unit.id,
                 'unit_number': unit.unit_number,
                 'price': float(unit.price),
@@ -442,6 +523,7 @@ class ProductModelViewSet(viewsets.ViewSet):
                     for attr in unit.attributes.all()
                 ]
             }
+            seen_offers[offer_key] = unit_data
             units_data.append(unit_data)
         
         return Response({
@@ -557,9 +639,11 @@ class ListingViewSet(viewsets.ViewSet):
                 unit_condition = unit_data.get('condition')
                 attributes = unit_data.get('attributes', [])
 
+                # unit_price is the refurbisher's price; ListingUnit.save() adds the
+                # platform commission and stores the customer-facing total in `price`.
                 unit = ListingUnit.objects.create(
                     listing=listing,
-                    price=unit_price,
+                    refurbisher_price=unit_price,
                     condition=unit_condition
                 )
 
@@ -579,7 +663,7 @@ class ListingViewSet(viewsets.ViewSet):
                 # refurbisher was never asked for.
                 _copy_fixed_attributes_to_unit(unit, model)
 
-        serializer = ListingSerializer(listing)
+        serializer = ListingSerializer(listing, context={'pricing_view': 'refurbisher'})
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None
@@ -600,7 +684,7 @@ class ListingViewSet(viewsets.ViewSet):
         if status_filter:
             queryset = queryset.filter(status=status_filter)
 
-        serializer = ListingSerializer(queryset, many=True)
+        serializer = ListingSerializer(queryset, many=True, context={'pricing_view': 'refurbisher'})
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None
@@ -616,7 +700,7 @@ class ListingViewSet(viewsets.ViewSet):
             pk=pk,
             refurbisher=request.user
         )
-        serializer = ListingSerializer(listing)
+        serializer = ListingSerializer(listing, context={'pricing_view': 'refurbisher'})
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None
@@ -633,7 +717,7 @@ class ListingViewSet(viewsets.ViewSet):
             listing.status = request.data['status']
         
         listing.save()
-        serializer = ListingSerializer(listing)
+        serializer = ListingSerializer(listing, context={'pricing_view': 'refurbisher'})
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None
@@ -673,10 +757,10 @@ class ListingViewSet(viewsets.ViewSet):
                 "data": None, "error": "Condition is required."
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Create unit
+        # Create unit (price is the refurbisher's price; commission is added by the model)
         unit = ListingUnit.objects.create(
             listing=listing,
-            price=price,
+            refurbisher_price=price,
             condition=condition
         )
         
@@ -700,7 +784,7 @@ class ListingViewSet(viewsets.ViewSet):
         listing.total_quantity = listing.units.count()
         listing.save()
         
-        serializer = ListingUnitSerializer(unit)
+        serializer = ListingUnitSerializer(unit, context={'pricing_view': 'refurbisher'})
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None
@@ -720,7 +804,9 @@ class ListingViewSet(viewsets.ViewSet):
         if 'is_sold' in request.data:
             unit.is_sold = request.data['is_sold']
         if 'price' in request.data:
-            unit.price = request.data['price']
+            # Refurbisher edits their own price; the commission is re-applied on top.
+            unit.refurbisher_price = request.data['price']
+            unit.apply_commission()
         if 'condition' in request.data:
             unit.condition = request.data['condition']
         
@@ -746,7 +832,7 @@ class ListingViewSet(viewsets.ViewSet):
 
         unit.save()
         
-        serializer = ListingUnitSerializer(unit)
+        serializer = ListingUnitSerializer(unit, context={'pricing_view': 'refurbisher'})
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None
@@ -802,7 +888,7 @@ class ListingUnitViewSet(viewsets.ViewSet):
 
         unit = ListingUnit.objects.create(
             listing=listing,
-            price=price,
+            refurbisher_price=price,
             condition=condition
         )
 
@@ -821,7 +907,7 @@ class ListingUnitViewSet(viewsets.ViewSet):
         # refurbisher was never asked for.
         _copy_fixed_attributes_to_unit(unit, listing.model)
 
-        serializer = ListingUnitSerializer(unit)
+        serializer = ListingUnitSerializer(unit, context={'pricing_view': 'refurbisher'})
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": serializer.data, "error": None

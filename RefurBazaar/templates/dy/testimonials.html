@@ -1,0 +1,44 @@
+{% with t=texts.testimonials %}
+{% if testimonials and t.visible %}
+<section class="testimonials-section bg-soft-green" id="testimonialsSection">
+    <div class="container-fluid px-3 px-lg-5 position-relative z-1">
+
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-8 text-center">
+                {% if t.eyebrow %}<div class="price-range-overline">{{ t.eyebrow }}</div>{% endif %}
+                <h2 class="fw-bold mb-3">{{ t.heading }}</h2>
+                {% if t.subheading %}<p class="text-muted">{{ t.subheading }}</p>{% endif %}
+            </div>
+        </div>
+
+        <div class="testimonial-slider-container" style="max-width: 1300px; margin: 0 auto;">
+            <button class="product-slider-arrow arrow-prev" id="testPrevBtn"><i class="fas fa-chevron-left"></i></button>
+
+            <div class="testimonial-track" id="testimonialTrack">
+                {% for r in testimonials %}
+                <div class="testimonial-slide">
+                    <div class="testimonial-card h-100">
+                        <div class="reviewer-profile d-flex align-items-center gap-3">
+                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 50px; height: 50px; font-size: 1.2rem;">{{ r.initials }}</div>
+                            <div class="reviewer-meta">
+                                <h6 class="mb-1">{{ r.name }}</h6>
+                                {% if r.location %}<small class="text-muted d-block mb-1">{{ r.location }}</small>{% endif %}
+                                <div class="verified-badge"><i class="fas fa-check-circle"></i> Verified Buyer</div>
+                            </div>
+                        </div>
+                        <div class="product-pill mt-3 mb-2"><i class="{{ r.icon }} me-1 text-muted"></i> Bought: {{ r.product }}</div>
+                        <p class="review-text">{{ r.text }}</p>
+                        <div class="text-success mt-2" style="font-size: 0.9rem;">
+                            {% for _ in r.stars %}<i class="fas fa-star"></i>{% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <button class="product-slider-arrow arrow-next" id="testNextBtn"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endwith %}

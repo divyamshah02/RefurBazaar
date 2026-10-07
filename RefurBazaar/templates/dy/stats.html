@@ -1,0 +1,14 @@
+{% if stats %}
+<section class="rc-stats-section py-4 py-md-5">
+    <div class="container-fluid px-3 px-lg-5">
+        <div class="row g-4 text-center justify-content-center align-items-center">
+            {% for st in stats %}
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="rc-stat-num"><span class="counter" data-target="{{ st.target_value|stringformat:'g' }}"{% if st.decimals %} data-decimals="{{ st.decimals }}"{% endif %}>{% if st.decimals %}0.0{% else %}0{% endif %}</span>{% if st.suffix == '★' %}<span style="font-size: 0.7em;">★</span>{% else %}{{ st.suffix }}{% endif %}</div>
+                <div class="rc-stat-label">{{ st.label }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
