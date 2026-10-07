@@ -405,6 +405,30 @@ class ProductModelViewSet(viewsets.ViewSet):
             min_price=Min('price')
         ).order_by('condition')
         
+        # Every in-stock combination (condition + attribute values) with its
+        # cheapest price. The page uses this to disable options that cannot be
+        # combined with what the customer has already picked.
+        in_stock_units = ListingUnit.objects.filter(
+            listing__model=product_model,
+            listing__status='active',
+            is_available=True,
+            is_sold=False
+        ).prefetch_related('attributes')
+        variants_by_key = {}
+        for unit in in_stock_units:
+            attrs = {str(a.attribute_id): str(a.value).strip() for a in unit.attributes.all()}
+            variant_key = (unit.condition, tuple(sorted(attrs.items())))
+            price = float(unit.price)
+            existing = variants_by_key.get(variant_key)
+            if existing is None:
+                variants_by_key[variant_key] = {
+                    'condition': unit.condition,
+                    'price': price,
+                    'attrs': attrs,
+                }
+            elif price < existing['price']:
+                existing['price'] = price
+        
         return Response({
             "success": True,
             "user_not_logged_in": False,
@@ -414,7 +438,8 @@ class ProductModelViewSet(viewsets.ViewSet):
                 "attributes": attributes_data,
                 "color_map": color_map,
                 "price_range": price_range,
-                "conditions": list(conditions)
+                "conditions": list(conditions),
+                "variants": list(variants_by_key.values())
             },
             "error": None
         }, status=status.HTTP_200_OK)
