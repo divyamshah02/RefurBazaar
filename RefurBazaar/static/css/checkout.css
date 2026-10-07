@@ -770,3 +770,214 @@
         font-size: 0.8rem;
     }
 }
+
+/* ---------- Saved address cards ---------- */
+.saved-address-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.saved-address {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  min-height: 112px;
+  padding: 1rem 1.125rem;
+  margin: 0;
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.saved-address:hover {
+  border-color: #b9dba4;
+}
+
+.saved-address.is-selected {
+  border-color: var(--primary-color, #6bb044);
+  background: #f6fbf2;
+  box-shadow: 0 0 0 3px rgba(107, 176, 68, 0.15);
+}
+
+.saved-address-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.saved-address-input:focus-visible + .saved-address-radio {
+  outline: 2px solid var(--primary-color, #6bb044);
+  outline-offset: 2px;
+}
+
+.saved-address-radio {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  border: 2px solid #cbd5e1;
+  border-radius: 50%;
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.saved-address.is-selected .saved-address-radio {
+  border-color: var(--primary-color, #6bb044);
+  box-shadow: inset 0 0 0 4px #fff, inset 0 0 0 10px var(--primary-color, #6bb044);
+}
+
+.saved-address-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.saved-address-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.saved-address-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.saved-address-badge {
+  padding: 0.125rem 0.625rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #2f6b14;
+  background: #e3f3d8;
+  border-radius: 999px;
+}
+
+.saved-address-line {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #475569;
+  overflow-wrap: anywhere;
+}
+
+.saved-address-new {
+  align-items: center;
+  border-style: dashed;
+}
+
+.saved-address-body-center {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.saved-address-body-center i {
+  color: var(--primary-color, #6bb044);
+  font-size: 1.1rem;
+}
+
+/* ---------- Order status page (success / failed) ---------- */
+.order-status-page {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 1rem 4rem;
+  background: #f8fafc;
+  min-height: 60vh;
+}
+
+.order-status-card {
+  width: 100%;
+  max-width: 520px;
+  align-self: flex-start;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.order-status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 1.25rem;
+  font-size: 1.75rem;
+  color: #fff;
+  border-radius: 50%;
+}
+
+.order-status-icon.is-success { background: var(--primary-color, #6bb044); }
+.order-status-icon.is-error { background: #dc3545; }
+.order-status-icon.is-pending { background: #94a3b8; }
+
+.order-status-title {
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  text-wrap: balance;
+}
+
+.order-status-text {
+  margin-bottom: 1.5rem;
+  color: #64748b;
+  text-wrap: pretty;
+}
+
+.order-status-summary {
+  margin: 0 0 1.5rem;
+  padding: 0.5rem 1rem;
+  text-align: left;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.order-status-summary div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.order-status-summary div:last-child { border-bottom: 0; }
+.order-status-summary dt { font-weight: 500; color: #64748b; }
+.order-status-summary dd { margin: 0; font-weight: 600; color: #0f172a; text-align: right; }
+
+.order-status-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+@media (min-width: 480px) {
+  .order-status-actions { flex-direction: row; justify-content: center; }
+}
+
+/* ---------- Payment result banner (order detail) ---------- */
+.payment-result-banner {
+  display: none;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  border-radius: 14px;
+  border: 1px solid;
+}
+
+.payment-result-banner.is-error { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+.payment-result-banner.is-info { background: #f1f5f9; border-color: #cbd5e1; color: #334155; }
+.payment-result-banner strong { display: block; margin-bottom: 0.125rem; }
+.payment-result-banner p { margin: 0; font-size: 0.9rem; }

@@ -142,7 +142,8 @@ class OrderItem(models.Model):
     ]
     
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
-    listing_unit = models.OneToOneField(ListingUnit, on_delete=models.PROTECT)
+    # FK (not one-to-one): a device can be in a cancelled/abandoned order and a later paid one.
+    listing_unit = models.ForeignKey(ListingUnit, on_delete=models.PROTECT, related_name='order_items')
     
     # Snapshot data (price at time of purchase)
     price_at_purchase = models.DecimalField(max_digits=10, decimal_places=2)
@@ -199,6 +200,9 @@ class OrderItem(models.Model):
     
     class Meta:
         ordering = ['created_at']
+        constraints = [
+            models.UniqueConstraint(fields=['order', 'listing_unit'], name='unique_unit_per_order'),
+        ]
     
     def __str__(self):
         return f"OrderItem {self.id} - {self.order.order_id}"

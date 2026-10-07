@@ -1,31 +1,22 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Detail - RefurBazar</title>
+    <title>Order Detail - Recarvit</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="{% static 'css/homepage/styles.css' %}" rel="stylesheet">
     <link href="/static/css/style.css" rel="stylesheet">
+    <link href="{% static 'css/checkout.css' %}" rel="stylesheet">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg main-navbar" id="navbar">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-recycle me-2"></i>RefurBazar
-            </a>
-            
-            <div class="d-flex align-items-center ms-auto">
-                <a href="/cart/" class="nav-icon me-3" id="cartBtn"><i class="fas fa-shopping-cart"></i><span class="badge" id="cartCount">0</span></a>
-                <a href="/account/" class="btn btn-primary">My Account</a>
-            </div>
-        </div>
-    </nav>
+    {% include 'navbar.html' %}
 
     <!-- Breadcrumb -->
-    <div class="px-4 py-3" style="margin-top: 100px;">
+    <div class="px-4 py-3">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/">Home</a></li>
@@ -37,6 +28,13 @@
 
     <!-- Order Detail Content -->
     <div class="px-4 pb-5">
+        <div class="payment-result-banner" id="payment-result-banner" role="alert">
+            <i class="fas fa-exclamation-circle mt-1"></i>
+            <div>
+                <strong data-banner-title></strong>
+                <p data-banner-text></p>
+            </div>
+        </div>
         <!-- Order Header -->
         <div class="card border-0 shadow-sm mb-4" style="border-radius: 20px;">
             <div class="card-body p-4">
@@ -163,6 +161,16 @@
 
                 <!-- Actions -->
                 <div class="d-grid gap-2">
+                    <div id="pending-payment-box" class="alert alert-warning mb-2" style="display: none; border-radius: 16px;">
+                        <div class="fw-semibold mb-1"><i class="fas fa-clock me-2"></i>Payment pending</div>
+                        <div class="small mb-3">Complete your payment to confirm this order. Your device is reserved for a limited time.</div>
+                        <button class="btn btn-success w-100 mb-2" id="pay-now-btn">
+                            <i class="fas fa-lock me-2"></i>Pay Now
+                        </button>
+                        <button class="btn btn-outline-danger w-100" id="cancel-order-btn">
+                            Cancel Order
+                        </button>
+                    </div>
                     <button class="btn btn-outline-primary" id="download-invoice-btn">
                         <i class="fas fa-download me-2"></i>Download Invoice
                     </button>
@@ -198,7 +206,10 @@
         </div>
     </div>
 
+    {% include 'footer.html' %}
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="/static/js/api_caller.js"></script>
     <script src="/static/js/order-detail.js"></script>
     

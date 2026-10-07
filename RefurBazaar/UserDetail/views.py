@@ -118,6 +118,13 @@ class OtpAuthViewSet(viewsets.ViewSet):
                 "data": None, "error": "otp_id, otp, and role are required."
             }, status=status.HTTP_400_BAD_REQUEST)
 
+        # Admins sign in with a password only; OTP can never grant admin access.
+        if role not in EMAIL_LOGIN_ROLES:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": True,
+                "data": None, "error": "OTP login is only available for customers and refurbishers."
+            }, status=status.HTTP_403_FORBIDDEN)
+
         otp_obj = OTPVerification.objects.filter(id=otp_id).first()
         if not otp_obj:
             return Response({
@@ -145,8 +152,21 @@ class OtpAuthViewSet(viewsets.ViewSet):
                     "data": None, "error": conflict
                 }, status=status.HTTP_400_BAD_REQUEST)
 
+        if otp_obj.mobile and not otp_obj.email:
+            existing_mobile_user = User.objects.filter(contact_number=otp_obj.mobile).first()
+            if existing_mobile_user and existing_mobile_user.role != role:
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": True,
+                    "data": None,
+                    "error": (
+                        f"This number belongs to a {existing_mobile_user.get_role_display()} account. "
+                        f"Please log in through the {existing_mobile_user.get_role_display()} portal."
+                    )
+                }, status=status.HTTP_403_FORBIDDEN)
+
         otp_obj.is_verified = True
         otp_obj.save()
+
 
         if otp_obj.email:
             user = _find_refurbisher_by_email(otp_obj.email) if role == "refurbisher" else None

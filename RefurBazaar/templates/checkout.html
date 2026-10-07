@@ -124,7 +124,16 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="email" class="form-label">Email *</label>
-                                <input type="email" class="form-control" id="email" required>
+                                <div class="input-group">
+                                    <input type="email" class="form-control" id="email" autocomplete="email" required>
+                                    <button type="button" class="btn btn-outline-success" id="verifyEmailBtn" disabled>Verify</button>
+                                    <span class="input-group-text text-success fw-semibold" id="emailVerifiedBadge" style="display: none;">
+                                        <i class="fas fa-check-circle me-1"></i>Verified
+                                    </span>
+                                </div>
+                                <small class="text-muted" id="verifyEmailHint" style="display: none;">
+                                    Enter your email and verify it to fill in your details.
+                                </small>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="phone" class="form-label">Phone *</label>
@@ -442,8 +451,9 @@
                 '/cart-api/cart/',
                 '/order-api/create/',
                 '/order-api/verify-payment/',
-                '/user-detail-api/user-detail-api/addresses/',
-                '{% url "otp-api-list" %}'
+                '/user-api/addresses/',
+                '{% url "otp-api-list" %}',
+                '/user-api/user-detail-api/'
             );
         }
     </script>

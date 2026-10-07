@@ -150,7 +150,7 @@ function formatDate(dateString) {
 
 function logout() {
     if (confirm('Are you sure you want to logout?')) {
-        window.location.href = '/refurbisher-logout/';
+        window.location.href = '/admin-logout/';
     }
 }
 

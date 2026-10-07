@@ -571,8 +571,8 @@ async function logout() {
   }
 
   try {
-    // Clear session and redirect to home
-    window.location.href = "/";
+    // Server clears the session, then redirects customers to the homepage
+    window.location.href = "/logout/";
   } catch (error) {
     console.error("Error logging out:", error);
     alert("Error logging out. Please try again.");

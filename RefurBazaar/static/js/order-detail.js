@@ -74,6 +74,8 @@ function populateOrderDetails() {
 
   // Order status
   updateOrderStatus(orderData.status);
+  updatePendingPaymentBox();
+
 
   // Tracking timeline + courier info
   populateTrackingTimeline();
@@ -271,9 +273,149 @@ function populateOrderSummary() {
   document.getElementById("summary-total").textContent = `₹${total.toFixed(2)}`;
 }
 
+function getCookie(name) {
+  const match = document.cookie.split(";").map((c) => c.trim()).find((c) => c.startsWith(name + "="));
+  return match ? decodeURIComponent(match.substring(name.length + 1)) : null;
+}
+
+function setPayButtonsBusy(busy) {
+  const payBtn = document.getElementById("pay-now-btn");
+  const cancelBtn = document.getElementById("cancel-order-btn");
+  if (payBtn) {
+    payBtn.disabled = busy;
+    payBtn.innerHTML = busy
+      ? '<i class="fas fa-spinner fa-spin me-2"></i>Processing...'
+      : '<i class="fas fa-lock me-2"></i>Pay Now';
+  }
+  if (cancelBtn) cancelBtn.disabled = busy;
+}
+
+function updatePendingPaymentBox() {
+  const box = document.getElementById("pending-payment-box");
+  if (!box || !orderData) return;
+  const awaitingPayment =
+    orderData.status === "pending" && !orderData.payment_received && orderData.payment_method === "razorpay";
+  box.style.display = awaitingPayment ? "block" : "none";
+}
+
+async function payPendingOrder() {
+  setPayButtonsBusy(true);
+  try {
+    const [success, result] = await callApi(
+      "POST",
+      `${order_api_base_url}${order_id}/pay/`,
+      {},
+      getCookie("csrftoken") || csrf_token
+    );
+
+    if (!result || !result.success) {
+      if (result && result.user_not_logged_in) {
+        window.location.href = "/";
+        return;
+      }
+      alert((result && result.error) || "Could not start the payment. Please try again.");
+      await loadOrderDetails();
+      setPayButtonsBusy(false);
+      return;
+    }
+
+    if (result.data.already_paid) {
+      window.location.href = `/order-success/?order_id=${order_id}`;
+      return;
+    }
+
+    openRazorpayForOrder(result.data.razorpay_order, result.data.order);
+  } catch (error) {
+    console.error("Error starting payment:", error);
+    alert("Could not start the payment. Please try again.");
+    setPayButtonsBusy(false);
+  }
+}
+
+function openRazorpayForOrder(razorpayOrder, order) {
+  if (typeof window.Razorpay !== "function") {
+    alert("Payment gateway failed to load. Please refresh the page and try again.");
+    setPayButtonsBusy(false);
+    return;
+  }
+
+  // Redirect mode: Razorpay takes the whole page through the bank / UPI step and then
+  // posts the result to our server, which verifies the signature and redirects back.
+  const rzp = new window.Razorpay({
+    key: razorpayOrder.key_id,
+    amount: razorpayOrder.amount,
+    currency: razorpayOrder.currency,
+    order_id: razorpayOrder.id,
+    name: "Recarvit",
+    description: `Order ${order.order_number || order.order_id}`,
+    callback_url: `${window.location.origin}/order-api/payment-callback/?order_id=${encodeURIComponent(order.order_id)}`,
+    redirect: true,
+    prefill: {
+      name: `${order.first_name || ""} ${order.last_name || ""}`.trim(),
+      email: order.email,
+      contact: order.phone,
+    },
+    theme: { color: "#6bb044" },
+    modal: {
+      ondismiss: () => setPayButtonsBusy(false),
+    },
+  });
+  rzp.open();
+}
+
+function showPaymentResultBanner() {
+  const params = new URLSearchParams(window.location.search);
+  const state = params.get("payment");
+  const banner = document.getElementById("payment-result-banner");
+  if (!banner || !state) return;
+
+  const reason = params.get("reason") || "";
+  const text = banner.querySelector("[data-banner-text]");
+  banner.className = "payment-result-banner " + (state === "cancelled" ? "is-info" : "is-error");
+  banner.querySelector("[data-banner-title]").textContent =
+    state === "cancelled" ? "Order cancelled" : "Payment not completed";
+  text.textContent = reason || "Your payment could not be completed. You have not been charged for a failed payment.";
+  banner.style.display = "flex";
+
+  // Keep the page address clean so a refresh does not repeat the message.
+  params.delete("payment");
+  params.delete("reason");
+  const query = params.toString();
+  window.history.replaceState({}, "", window.location.pathname + (query ? "?" + query : ""));
+}
+
+async function cancelPendingOrder() {
+  if (!confirm("Cancel this order? The device will be released for other buyers.")) return;
+  setPayButtonsBusy(true);
+  try {
+    const [success, result] = await callApi(
+      "POST",
+      `${order_api_base_url}${order_id}/cancel/`,
+      {},
+      getCookie("csrftoken") || csrf_token
+    );
+    if (result && result.success) {
+      await loadOrderDetails();
+    } else {
+      alert((result && result.error) || "Could not cancel the order.");
+    }
+  } catch (error) {
+    console.error("Error cancelling order:", error);
+    alert("Could not cancel the order.");
+  }
+  setPayButtonsBusy(false);
+}
+
 function initializeEventListeners() {
+  showPaymentResultBanner();
   // Download invoice button
   document.getElementById("download-invoice-btn").addEventListener("click", downloadInvoice);
+
+  const payBtn = document.getElementById("pay-now-btn");
+  if (payBtn) payBtn.addEventListener("click", payPendingOrder);
+  const cancelBtn = document.getElementById("cancel-order-btn");
+  if (cancelBtn) cancelBtn.addEventListener("click", cancelPendingOrder);
+
 
   // Return request form
   const returnForm = document.getElementById("returnRequestForm");

@@ -4,63 +4,15 @@ from rest_framework.response import Response
 from django.utils.dateparse import parse_date
 
 from utils.decorators import handle_exceptions  # your custom decorators
+from utils.page_access import (
+    page_access,
+    safe_next_url,
+    ROLE_HOME_URLS,
+    ROLE_LOGOUT_URLS,
+)
 from django.shortcuts import render, redirect
-from functools import wraps
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import logout
 
-
-def check_authentication(required_role=None, allow_incomplete_profile=False):
-    '''Checks if user is logged in or not.
-    If required_role is passed (as str or list), will check for that as well.
-    Refurbishers whose company profile is not complete are redirected to their
-    profile page unless allow_incomplete_profile is True.'''
-    def decorator(view_func):
-        @wraps(view_func)
-        def _wrapped_view(self, request, *args, **kwargs):
-            user = request.user
-            session_info = {}
-
-            if hasattr(request, 'session'):
-                session_info = {
-                    'session_key': request.session.session_key,
-                    'session_expiry': request.session.get_expiry_date(),
-                    'session_data_keys': list(request.session.keys()),
-                }
-
-            if not user.is_authenticated:
-                # logger.warning(f"Unauthenticated access attempt: {request.path}")
-                if required_role == 'refurbisher' or (isinstance(required_role, (list, tuple, set)) and 'refurbisher' in required_role):
-                    return redirect('refurbisher-login-list')
-                return redirect('login-list')
-
-            if required_role:
-                # Convert to list if it's a string
-                allowed_roles = required_role if isinstance(required_role, (list, tuple, set)) else [required_role]
-                
-                if getattr(user, "role", None) not in allowed_roles:
-                    # logger.warning(
-                    #     f"Unauthorized access: User {user.id} role {user.role} "
-                    #     f"required {allowed_roles}"
-                    # )
-                    return Response(
-                        {
-                            "success": False,
-                            "user_not_logged_in": False,
-                            "user_unauthorized": True,
-                            "data": None,
-                            "error": f"User role must be one of {allowed_roles}"
-                        }, status=status.HTTP_403_FORBIDDEN
-                    )
-
-            if getattr(user, "role", None) == 'refurbisher' and not allow_incomplete_profile:
-                company_profile = getattr(user, 'company_profile', None)
-                if not company_profile or not company_profile.is_profile_complete:
-                    return redirect('refurbisher-profile-list')
-
-            return view_func(self, request, *args, **kwargs)
-
-        return _wrapped_view
-    return decorator
 
 class IndexViewSet(viewsets.ViewSet):
 
@@ -210,17 +162,53 @@ class OrderDetailViewSet(viewsets.ViewSet):
 
 
 class AccountViewSet(viewsets.ViewSet):
+    """Customer account page. Logged-out visitors get the page itself, which
+    opens the customer OTP login; other roles get the access-restricted page."""
 
     @handle_exceptions
+    @page_access('customer', anonymous_ok=True)
     def list(self, request):
         return render(request, 'account.html')
 
+
+def _logout_and_redirect(request, fallback_role):
+    """End the session and send the user to the login page of the role they
+    were signed in as (customers go to the homepage). If nobody is signed in,
+    ``fallback_role`` decides where the visitor lands."""
+    role = getattr(request.user, 'role', None) if request.user.is_authenticated else None
+    role = role if role in ROLE_LOGOUT_URLS else fallback_role
+
+    # An explicit ?next= (e.g. from the access-denied page) wins, but only
+    # towards a login page so logout can never be used as an open redirect.
+    login_targets = {'/admin-login/', '/refurbisher-login/', '/account/'}
+    requested_next = request.GET.get('next') or request.POST.get('next')
+    explicit_next = requested_next if requested_next in login_targets else None
+
+    logout(request)
+    return redirect(explicit_next or ROLE_LOGOUT_URLS[role])
+
+
 class LogoutViewSet(viewsets.ViewSet):
+    """Universal logout: redirects by the role of the signed-in user."""
 
     @handle_exceptions
     def list(self, request):
-        logout(request)
-        return redirect('login-list')
+        return _logout_and_redirect(request, 'customer')
+
+    @handle_exceptions
+    def create(self, request):
+        return _logout_and_redirect(request, 'customer')
+
+
+class AdminLogoutViewSet(viewsets.ViewSet):
+
+    @handle_exceptions
+    def list(self, request):
+        return _logout_and_redirect(request, 'admin')
+
+    @handle_exceptions
+    def create(self, request):
+        return _logout_and_redirect(request, 'admin')
 
 
 ### Refurbisher Views ###
@@ -228,13 +216,16 @@ class RefurbisherLoginViewSet(viewsets.ViewSet):
 
     @handle_exceptions
     def list(self, request):
+        user = request.user
+        if user.is_authenticated and getattr(user, 'role', None) == 'refurbisher' and user.is_active:
+            return redirect(safe_next_url(request, 'refurbisher') or '/refurbisher-profile/')
         return render(request, 'refurbisher/login.html')
 
 
 class RefurbisherProfileViewSet(viewsets.ViewSet):
 
     @handle_exceptions
-    @check_authentication(required_role='refurbisher', allow_incomplete_profile=True)
+    @page_access('refurbisher', allow_incomplete_profile=True)
     def list(self, request):
         return render(request, 'refurbisher/profile.html')
 
@@ -242,14 +233,14 @@ class RefurbisherProfileViewSet(viewsets.ViewSet):
 class RefurbisherAddListingViewSet(viewsets.ViewSet):
 
     @handle_exceptions
-    @check_authentication(required_role='refurbisher')
+    @page_access('refurbisher')
     def list(self, request):
         return render(request, 'refurbisher/refurbisher_add_listing.html')
 
 class RefurbisherListingsViewSet(viewsets.ViewSet):
 
     @handle_exceptions
-    @check_authentication(required_role='refurbisher')
+    @page_access('refurbisher')
     def list(self, request):
         return render(request, 'refurbisher/refurbisher_listings.html')
 
@@ -257,7 +248,7 @@ class RefurbisherListingsViewSet(viewsets.ViewSet):
 class RefurbisherListingDetailViewSet(viewsets.ViewSet):
 
     @handle_exceptions
-    @check_authentication(required_role='refurbisher')
+    @page_access('refurbisher')
     def list(self, request):
         return render(request, 'refurbisher/refurbisher_listing_detail.html')
 
@@ -265,7 +256,7 @@ class RefurbisherListingDetailViewSet(viewsets.ViewSet):
 class RefurbisherOrdersViewSet(viewsets.ViewSet):
 
     @handle_exceptions
-    @check_authentication(required_role='refurbisher')
+    @page_access('refurbisher')
     def list(self, request):
         return render(request, 'refurbisher/refurbisher_orders.html')
 
@@ -273,7 +264,7 @@ class RefurbisherOrdersViewSet(viewsets.ViewSet):
 class RefurbisherOrderDetailViewSet(viewsets.ViewSet):
 
     @handle_exceptions
-    @check_authentication(required_role='refurbisher')
+    @page_access('refurbisher')
     def list(self, request):
         return render(request, 'refurbisher/refurbisher_order_detail.html')
 
@@ -281,7 +272,9 @@ class RefurbisherOrderDetailViewSet(viewsets.ViewSet):
 class RefurbisherLogoutViewSet(viewsets.ViewSet):
 
     @handle_exceptions
-    @check_authentication(allow_incomplete_profile=True)
     def list(self, request):
-        logout(request)
-        return redirect('refurbisher-login-list')
+        return _logout_and_redirect(request, 'refurbisher')
+
+    @handle_exceptions
+    def create(self, request):
+        return _logout_and_redirect(request, 'refurbisher')
