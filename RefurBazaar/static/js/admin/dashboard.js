@@ -79,7 +79,7 @@ async function loadPendingRefurbishers(csrf, url) {
     return;
   }
   container.innerHTML = items.slice(0, 6).map(r => {
-    const name     = `${r.first_name||''} ${r.last_name||''}`.trim() || 'Unnamed';
+    const name     = `${r.first_name||''} ${r.last_name||''}`.trim() || (r.email || r.contact_number || 'Name not provided');
     const company  = r.company_profile?.company_name || r.business_name || '—';
     const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const color    = avatarColor(name);

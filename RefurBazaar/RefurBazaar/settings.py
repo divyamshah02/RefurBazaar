@@ -202,7 +202,7 @@ prod_shiprocket_api_pass = base64_to_text("WWhAcUVFaCpNVzd2YjRtYzdtT1lZQVQ5MF5iW
 # production (with real credentials) when you're ready to create live pickups.
 
 # SHIPROCKET_MODE = os.environ.get('SHIPROCKET_MODE', 'sandbox')  # 'sandbox' | 'production'
-SHIPROCKET_MODE = 'sandbox'  # 'sandbox' | 'production'
+SHIPROCKET_MODE = 'production'  # 'sandbox' | 'production'
 
 # SHIPROCKET_BASE_URL = 'https://apiv2.shiprocket.in/v1/external'
 # SHIPROCKET_BASE_URL = 'https://api-sandbox.shiprocket.in/v1/external'

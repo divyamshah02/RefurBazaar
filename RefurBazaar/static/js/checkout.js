@@ -266,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function () {
 function updateCartBadge(data) {
   const cartBadge = document.getElementById("cartCount")
   if (cartBadge && data.items) {
-    cartBadge.textContent = data.items.length
+    window.setCartBadge ? window.setCartBadge(data.items.length) : (cartBadge.textContent = data.items.length)
   }
 }
 

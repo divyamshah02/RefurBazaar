@@ -59,10 +59,10 @@ async function loadList() {
   }
 
   body.innerHTML = rows.map(c => {
-    const name     = `${c.first_name||''} ${c.last_name||''}`.trim() || 'Unknown';
+    const name     = `${c.first_name||''} ${c.last_name||''}`.trim() || 'Name not provided';
     const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const color    = avatarColor(name);
-    const isActive = c.is_active !== false;
+    const isActive = c.active_user !== false;
     return `<tr>
       <td>
         <div style="display:flex;align-items:center;gap:10px">
@@ -73,7 +73,7 @@ async function loadList() {
           </div>
         </div>
       </td>
-      <td class="mono">${c.phone || c.contact_number || '—'}</td>
+      <td class="mono">${(c.contact_number && c.contact_number !== 'None') ? c.contact_number : '—'}</td>
       <td class="fw-600">${(c.total_orders || 0).toLocaleString('en-IN')}</td>
       <td class="fw-600">${fmtCurrency(c.total_spent || 0)}</td>
       <td><span class="badge ${isActive ? 'badge-green' : 'badge-gray'}">${isActive ? 'Active' : 'Inactive'}</span></td>

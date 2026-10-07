@@ -65,7 +65,7 @@ function renderTable() {
       <td>
         <div style="display:flex;gap:6px;justify-content:flex-end">
           <button class="btn btn-ghost btn-sm" onclick="editBrand(${b.id})"><i class="fa-solid fa-pen"></i> Edit</button>
-          <button class="btn btn-danger btn-sm" onclick="promptDelete(${b.id},'${escStr(b.name)}')"><i class="fa-solid fa-trash"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="promptDelete(${b.id},'${escStr(b.name)}')" aria-label="Delete brand ${escStr(b.name)}" title="Delete brand"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
         </div>
       </td>
     </tr>`).join('');

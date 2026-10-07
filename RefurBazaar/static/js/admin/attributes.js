@@ -71,7 +71,7 @@ function renderTable() {
       <td>
         <div style="display:flex;gap:6px;justify-content:flex-end">
           <button class="btn btn-ghost btn-sm" onclick="editAttr(${a.id})"><i class="fa-solid fa-pen"></i> Edit</button>
-          <button class="btn btn-danger btn-sm" onclick="promptDelete(${a.id},'${escStr(a.name)}')"><i class="fa-solid fa-trash"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="promptDelete(${a.id},'${escStr(a.name)}')" aria-label="Delete attribute ${escStr(a.name)}" title="Delete attribute"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
         </div>
       </td>
     </tr>`;

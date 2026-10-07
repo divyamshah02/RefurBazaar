@@ -790,9 +790,9 @@ document.addEventListener("DOMContentLoaded", () => {
             : "Product added to cart!",
           "success"
         )
-        const cartCount = document.getElementById("cartCount")
+        const cartCount = window.refreshCartBadge
         if (cartCount) {
-          cartCount.textContent = Number.parseInt(cartCount.textContent) + 1
+          cartCount()
         }
       } else {
         showToast(response.error || "Failed to add to cart", "danger")

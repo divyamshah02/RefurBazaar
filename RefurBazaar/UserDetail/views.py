@@ -203,7 +203,15 @@ class AdminPasswordLoginViewSet(viewsets.ViewSet):
                 "data": None, "error": "Contact number and password are required."
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        user = authenticate(request, username=contact_number, password=password)
+        # contact_number is not the User's USERNAME_FIELD and is not unique, so find
+        # admin accounts by number and authenticate against each one's real username.
+        normalized_number = ''.join(contact_number.split()).replace('-', '')
+        candidates = User.objects.filter(role='admin', contact_number__in={contact_number, normalized_number})
+        user = None
+        for candidate in candidates:
+            user = authenticate(request, username=candidate.username, password=password)
+            if user is not None:
+                break
 
         if user is None:
             return Response({

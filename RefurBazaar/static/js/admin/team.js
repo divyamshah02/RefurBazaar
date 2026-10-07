@@ -48,11 +48,11 @@ function applyFilter() {
 function renderTable() {
   const tbody = document.getElementById('tbl-body');
   if (!_tmFiltered.length) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-user-shield"></i><h4>No admins found</h4><p>Click "Add Admin" to create the first account</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-user-shield"></i><h4>${_tmAll.length ? 'No admins match these filters' : 'No admins found'}</h4><p>${_tmAll.length ? 'Try a different search or status filter' : 'Click "Add Admin" to create the first account'}</p></div></td></tr>`;
     return;
   }
   tbody.innerHTML = _tmFiltered.map(a => {
-    const name     = `${a.first_name||''} ${a.last_name||''}`.trim() || 'Unnamed';
+    const name     = `${a.first_name||''} ${a.last_name||''}`.trim() || (a.email || a.contact_number || 'Administrator');
     const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const color    = avatarColor(name);
     const isActive = a.active_user !== false;
@@ -78,7 +78,7 @@ function renderTable() {
           <button class="btn btn-ghost btn-sm" onclick="toggleActive(${a.id})" title="${isActive ? 'Deactivate' : 'Activate'}" ${isSelf ? 'disabled' : ''}>
             <i class="fa-solid ${isActive ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
           </button>
-          <button class="btn btn-danger btn-sm" onclick="promptDelete(${a.id},'${escStr(name)}')" title="Remove" ${isSelf ? 'disabled' : ''}><i class="fa-solid fa-trash"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="promptDelete(${a.id},'${escStr(name)}')" title="Remove admin" aria-label="Remove admin ${escStr(name)}" ${isSelf ? 'disabled' : ''}><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
         </div>
       </td>
     </tr>`;
