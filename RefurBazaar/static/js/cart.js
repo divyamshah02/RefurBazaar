@@ -177,7 +177,7 @@ function showEmptyCart() {
   document.getElementById("cartItemCount").textContent = "0 items in your cart"
 
   const cartBadge = document.getElementById("cartCount")
-  if (cartBadge) cartBadge.textContent = 0
+  window.setCartBadge ? window.setCartBadge(0) : cartBadge && (cartBadge.textContent = 0)
 }
 
 // =========================================
@@ -241,7 +241,7 @@ function updateCartSummary(data) {
 
   // Update cart badge
   const cartBadge = document.getElementById("cartCount")
-  if (cartBadge) cartBadge.textContent = data.items.length
+  window.setCartBadge ? window.setCartBadge(data.items.length) : cartBadge && (cartBadge.textContent = data.items.length)
 }
 
 function calculateGST(mrpTotal) {

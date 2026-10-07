@@ -1,3 +1,5 @@
+{% load static %}
+<script src="{% static 'js/cart-badge.js' %}" defer></script>
 <!-- 2. Primary Navigation (Navbar) -->
 <nav class="navbar-main">
     <div class="container-fluid px-3 px-lg-5">
@@ -30,7 +32,7 @@
                 </a>
                 <a href="/cart" class="nav-icon-btn" aria-label="Cart">
                     <i class="fas fa-shopping-cart"></i>
-                    <span class="badge rounded-pill bg-danger cart-count">2</span>
+                    <span class="badge rounded-pill bg-danger cart-count" style="display:none;" aria-live="polite"></span>
                 </a>
             </div>
 
@@ -59,6 +61,7 @@
                    href="#"
                    role="button"
                    data-bs-toggle="dropdown"
+                   data-bs-popper-config='{"strategy":"fixed"}'
                    aria-expanded="false">
                     More
                 </a>

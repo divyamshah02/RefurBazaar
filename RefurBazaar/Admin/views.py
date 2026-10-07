@@ -58,7 +58,7 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             role='customer', date_joined__gte=month_start
         ).count()
         inactive_customers   = User.objects.filter(
-            role='customer', is_active=False
+            role='customer', active_user=False
         ).count()
 
         return Response({
@@ -473,6 +473,18 @@ class AdminDashboardViewSet(viewsets.ViewSet):
     def all_customers(self, request):
         """Get all customers"""
         customers = User.objects.filter(role='customer').order_by('-created_at')
+
+        has_orders = request.query_params.get('has_orders')
+        if has_orders == 'true':
+            customers = customers.filter(orders__isnull=False).distinct()
+        elif has_orders == 'false':
+            customers = customers.filter(orders__isnull=True)
+
+        is_active = request.query_params.get('is_active')
+        if is_active == 'true':
+            customers = customers.filter(active_user=True)
+        elif is_active == 'false':
+            customers = customers.filter(active_user=False)
 
         # Search by name or phone
         search = request.query_params.get('search')

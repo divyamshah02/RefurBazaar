@@ -76,7 +76,7 @@ async function loadList() {
   body.innerHTML = rows.map(o => {
     const cust  = `${o.first_name||''} ${o.last_name||''}`.trim() || '—';
     const s     = o.status || 'pending';
-    const paid  = o.is_paid || o.payment_status === 'paid';
+    const paid  = o.payment_received === true;
     return `<tr style="cursor:pointer" onclick="location.href='/admin-order-detail/${o.order_id}/'">
       <td><span class="mono fw-600" style="font-size:12px">${o.order_id}</span></td>
       <td>
@@ -85,7 +85,7 @@ async function loadList() {
       </td>
       <td>${o.item_count ?? (o.items?.length ?? '—')}</td>
       <td class="fw-600">${fmtCurrency(o.total_amount)}</td>
-      <td><span class="badge ${paid ? 'badge-green' : 'badge-yellow'}">${paid ? 'Paid' : 'Unpaid'}</span></td>
+      <td><span class="badge ${paid ? 'badge-green' : 'badge-yellow'}">${paid ? 'Paid' : 'Unpaid'}</span><div class="text-muted fs-12">${o.payment_method_display || ''}</div></td>
       <td>${orderBadge(s)}</td>
       <td class="text-muted fs-12">${fmtDate(o.created_at)}</td>
       <td><div style="display:flex;gap:6px;justify-content:flex-end" onclick="event.stopPropagation()">

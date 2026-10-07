@@ -52,6 +52,8 @@ class ShiprocketClient:
             #     timeout=15,
             # )
             print(f"{self.base_url}/auth/login")
+            print(self.email)
+            print(self.password)
             r = requests.request(method="POST", url=f"{self.base_url}/auth/login", json={"email": self.email, "password": self.password}, headers={"Content-Type": "application/json"}, timeout=15)
             print(r.text)
         except requests.RequestException as e:

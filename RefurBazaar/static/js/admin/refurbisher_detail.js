@@ -29,7 +29,7 @@ async function loadDetail() {
 }
 
 function renderProfile(u, cp, listings, orders, reviewHistory) {
-  const name    = `${u.first_name||''} ${u.last_name||''}`.trim() || 'Unknown';
+  const name    = `${u.first_name||''} ${u.last_name||''}`.trim() || 'Name not provided';
   const initials= name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   const color   = avatarColor(name);
 
@@ -64,7 +64,7 @@ function renderProfile(u, cp, listings, orders, reviewHistory) {
   set('rd-p-email',    u.email      || '—');
   set('rd-p-phone',    u.contact_number || u.phone || '—');
   set('rd-joined',     fmtDateTime(u.date_joined || u.created_at));
-  document.getElementById('rd-active').innerHTML = u.is_active
+  document.getElementById('rd-active').innerHTML = (u.active_user !== false)
     ? '<span class="badge badge-green">Active</span>'
     : '<span class="badge badge-red">Inactive</span>';
 

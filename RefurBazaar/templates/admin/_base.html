@@ -219,7 +219,16 @@
     .rb-topbar-actions { display: flex; align-items: center; gap: 8px; }
 
     /* ─── Page content ──────────────────────────────────────────── */
-    .rb-content { padding: 24px; flex: 1; }
+    .rb-content { padding: 24px; flex: 1; min-width: 0; }
+    .rb-main { min-width: 0; }
+    .dash-two-col { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
+    .dash-two-col > * { min-width: 0; }
+    @media (max-width: 900px) {
+      .dash-two-col { grid-template-columns: minmax(0, 1fr); }
+      .rb-content { padding: 16px; }
+      .rb-table-wrap, .panel { max-width: 100%; }
+      .panel { overflow-x: auto; }
+    }
 
     /* ─── Stat cards ────────────────────────────────────────────── */
     .stats-grid {
@@ -404,7 +413,7 @@
     .empty-state h4 { font-size: 15px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
     .empty-state p  { font-size: 13px; color: var(--text-muted); }
 
-    /* ─── Loading skeleton ──────────────────────���───────────────── */
+    /* ─── Loading skeleton ──────────────────���───���───────────────── */
     .skeleton {
       background: linear-gradient(90deg, var(--border-light) 25%, var(--border) 50%, var(--border-light) 75%);
       background-size: 200% 100%;
@@ -722,7 +731,7 @@
     }
   });
 
-  // ─── Tab helpers ─────────────────────────���────────────────────
+  // ─── Tab helpers ─────────────────────────────────��────────────
   function initTabs(containerSelector) {
     const container = document.querySelector(containerSelector);
     if (!container) return;
