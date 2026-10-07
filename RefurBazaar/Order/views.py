@@ -1,8 +1,12 @@
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from urllib.parse import urlencode
+import json
 from django.db import transaction
 from django.conf import settings
 from datetime import timedelta
@@ -18,12 +22,238 @@ from .serializers import (
     OrderItemVerificationSerializer, OrderItemActionSerializer,
     ReturnRequestSerializer
 )
+from .services import (
+    CheckoutError, release_expired_holds, hold_unit, sell_unit, cancel_pending_order,
+    supersede_pending_orders, confirm_payment, create_razorpay_order, get_razorpay_client,
+    valid_signature, refund_payment, sync_customer_profile, save_checkout_address,
+)
 from .shiprocket_service import create_shiprocket_shipment, refresh_tracking
 from ShoppingCart.models import ShoppingCart, ShoppingCartItem
 from Product.models import ListingUnit
 from utils.decorators import handle_exceptions, check_authentication, check_refurbisher_profile
 from utils.shiprocket_api import ShiprocketClient, ShiprocketAPIException
 from utils.email_service import send_order_confirmation_email
+
+
+def _error(message, code=400, not_logged_in=False):
+    return Response({
+        "success": False, "user_not_logged_in": not_logged_in, "user_unauthorized": code == 403,
+        "data": None, "error": message
+    }, status=code)
+
+
+def _place_order(user, cart, data):
+    """Create the order, claim its devices and (for Razorpay) the payment order. Runs inside a transaction."""
+    cart_items = list(
+        ShoppingCartItem.objects.filter(cart=cart).select_related(
+            'listing_unit__listing__model__brand', 'listing_unit__listing__refurbisher'
+        )
+    )
+    if not cart_items:
+        raise CheckoutError("Your cart is empty", 400)
+
+    units = {
+        u.id: u for u in ListingUnit.objects.select_for_update().filter(
+            id__in=[ci.listing_unit_id for ci in cart_items]
+        )
+    }
+    unavailable = [
+        str(ci.listing_unit.listing.model) for ci in cart_items
+        if units[ci.listing_unit_id].is_sold or not units[ci.listing_unit_id].is_available
+    ]
+    if unavailable:
+        raise CheckoutError(
+            f"Some items are no longer available: {', '.join(unavailable)}. "
+            "Please remove them from your cart and try again.", 409
+        )
+
+    subtotal_amount = sum(units[ci.listing_unit_id].price for ci in cart_items)
+    tax_amount = Decimal('0.00')
+    delivery_charge = Decimal('50.00')
+    # Warranty comes from the cart items' server-set price, never from the request body.
+    warranty_amount = sum(
+        (ci.warranty_price for ci in cart_items if ci.has_extended_warranty), Decimal('0.00')
+    )
+    total_amount = subtotal_amount + tax_amount + delivery_charge + warranty_amount
+
+    sync_customer_profile(user, data)
+    address = save_checkout_address(user, data, data['set_as_primary']) if data['save_address'] else None
+    shipping_address_id = data.get('shipping_address_id') or (address.id if address else None)
+
+    order = Order.objects.create(
+        user=user,
+        first_name=data['first_name'],
+        last_name=data['last_name'],
+        # The verified account email is authoritative.
+        email=(user.email or data['email']).lower(),
+        phone=data['phone'],
+        alternate_phone=data.get('alternate_phone', ''),
+        shipping_address=data['shipping_address'],
+        shipping_city=data['shipping_city'],
+        shipping_state=data['shipping_state'],
+        shipping_pincode=data['shipping_pincode'],
+        shipping_address_id=shipping_address_id,
+        different_billing_address=data['different_billing_address'],
+        billing_first_name=data.get('billing_first_name', ''),
+        billing_last_name=data.get('billing_last_name', ''),
+        billing_address=data.get('billing_address', ''),
+        billing_city=data.get('billing_city', ''),
+        billing_state=data.get('billing_state', ''),
+        billing_pincode=data.get('billing_pincode', ''),
+        billing_phone=data.get('billing_phone', ''),
+        billing_alternate_phone=data.get('billing_alternate_phone', ''),
+        delivery_date=data.get('delivery_date'),
+        timeslot_id=data.get('timeslot_id', ''),
+        special_instructions=data.get('special_instructions', ''),
+        subtotal_amount=subtotal_amount,
+        tax_amount=tax_amount,
+        delivery_charge=delivery_charge,
+        warranty_amount=warranty_amount,
+        discount_amount=Decimal('0.00'),
+        coupon_code=data.get('coupon_code', ''),
+        coupon_discount=Decimal('0.00'),
+        total_amount=total_amount,
+        payment_method=data['payment_method'],
+        order_note=data.get('order_note', ''),
+        status='pending',
+    )
+
+    is_online = data['payment_method'] == 'razorpay'
+    for ci in cart_items:
+        unit = units[ci.listing_unit_id]
+        OrderItem.objects.create(
+            order=order,
+            listing_unit=unit,
+            price_at_purchase=unit.price,
+            condition_at_purchase=unit.condition,
+            refurbisher=unit.listing.refurbisher,
+            refurbisher_name=unit.listing.refurbisher.first_name,
+            has_extended_warranty=ci.has_extended_warranty,
+            warranty_price=ci.warranty_price if ci.has_extended_warranty else 0,
+        )
+        # Older unpaid orders for this device can no longer be fulfilled.
+        supersede_pending_orders(unit, order)
+        # The device is taken: drop it from every other cart too.
+        ShoppingCartItem.objects.filter(listing_unit=unit).exclude(cart=cart).delete()
+        if is_online:
+            hold_unit(unit)
+        else:
+            sell_unit(unit)
+
+    razorpay_order = None
+    if is_online:
+        razorpay_order = create_razorpay_order(order)
+    else:
+        order.status = 'confirmed'
+        order.payment_received = False  # COD: collected on delivery
+        order.save()
+
+    ShoppingCartItem.objects.filter(cart=cart).delete()
+    cart.active_cart = False
+    cart.user = user
+    cart.save()
+
+    return order, razorpay_order
+
+
+def _reusable_razorpay_order(order):
+    """
+    Reuse the order's existing Razorpay order when it is still open and the amount
+    matches. Returns {'already_paid': True} if Razorpay says it was paid (and
+    reconciles our order), or None when a fresh Razorpay order is needed.
+    """
+    if not order.razorpay_order_id:
+        return None
+    try:
+        client, key_id = get_razorpay_client()
+        existing = client.order.fetch(order.razorpay_order_id)
+        rzp_status = existing.get('status')
+
+        if rzp_status == 'paid':
+            payments = client.order.payments(order.razorpay_order_id).get('items', [])
+            paid = next((p for p in payments if p.get('status') in ('captured', 'authorized')), None)
+            if paid:
+                confirm_payment(order, paid['id'])
+                return {'already_paid': True}
+            return None
+
+        if rzp_status in ('created', 'attempted') and existing.get('amount') == int(order.total_amount * 100):
+            existing['key_id'] = key_id
+            return existing
+    except Exception:
+        return None
+    return None
+
+
+def _page_url(path, **params):
+    query = urlencode({k: v for k, v in params.items() if v})
+    return f"{path}?{query}" if query else path
+
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def payment_callback(request):
+    """
+    Razorpay redirect-mode callback (checkout option `callback_url`).
+
+    After the customer pays (including the 3-D Secure / UPI step), Razorpay sends the
+    browser here with a POST: razorpay_payment_id, razorpay_order_id, razorpay_signature.
+    On failure it posts `error[code]`, `error[description]` and `error[metadata]`.
+    Trust comes from the signature, not the session (the cross-site POST carries no
+    SameSite=Lax cookie), so this view is CSRF-exempt. It always ends in a redirect to
+    a normal page, where the customer's own session takes over.
+    """
+    data = request.POST if request.method == 'POST' else request.GET
+
+    rzp_order_id = data.get('razorpay_order_id') or ''
+    rzp_payment_id = data.get('razorpay_payment_id') or ''
+    rzp_signature = data.get('razorpay_signature') or ''
+
+    error_description = data.get('error[description]') or data.get('error_description') or ''
+    if not rzp_order_id:
+        try:
+            metadata = json.loads(data.get('error[metadata]') or '{}')
+            rzp_order_id = metadata.get('order_id') or ''
+        except (ValueError, TypeError):
+            pass
+
+    order = None
+    if request.GET.get('order_id'):
+        order = Order.objects.filter(order_id=request.GET['order_id']).first()
+    if order is None and rzp_order_id:
+        order = Order.objects.filter(razorpay_order_id=rzp_order_id).first()
+    if order is None:
+        return redirect('/account/')
+
+    detail_path = '/order-detail/'
+    if order.payment_received:
+        return redirect(_page_url('/order-success/', order_id=order.order_id))
+
+    paid_fields = rzp_payment_id and rzp_signature and rzp_order_id
+    if not paid_fields or error_description:
+        return redirect(_page_url(
+            detail_path, order_id=order.order_id, payment='failed',
+            reason=error_description or 'The payment was not completed.',
+        ))
+
+    if order.razorpay_order_id != rzp_order_id or not valid_signature(rzp_order_id, rzp_payment_id, rzp_signature):
+        return redirect(_page_url(
+            detail_path, order_id=order.order_id, payment='failed',
+            reason='We could not verify this payment. If money was deducted it will be refunded.',
+        ))
+
+    if order.status == 'cancelled':
+        refunded = refund_payment(rzp_payment_id)
+        return redirect(_page_url(
+            detail_path, order_id=order.order_id, payment='cancelled',
+            reason='This order was cancelled before the payment completed. '
+                   + ('Your payment has been refunded.' if refunded
+                      else 'Any amount charged will be refunded shortly.'),
+        ))
+
+    confirm_payment(order, rzp_payment_id, rzp_signature)
+    send_order_confirmation_email(order)
+    return redirect(_page_url('/order-success/', order_id=order.order_id))
 
 
 class OrderViewSet(viewsets.ViewSet):
@@ -33,272 +263,186 @@ class OrderViewSet(viewsets.ViewSet):
     @handle_exceptions
     def create_order(self, request):
         """
-        Create order from cart and initiate payment
-        For Razorpay: Creates Razorpay order and marks items as half_sold
-        For COD: Creates order directly and marks items as sold
+        Create an order from the cart.
+        Razorpay: the devices are held (hidden from the shop) until payment is
+        verified or the hold expires. COD: the devices are sold immediately.
+        Requires a verified (logged-in) customer; the profile and address book
+        are updated from what was entered at checkout.
         """
+        release_expired_holds()
+
+        if not request.user.is_authenticated:
+            return _error("Please verify your email to place an order.", 401, not_logged_in=True)
+
         serializer = OrderCreateSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response({
-                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
-                "data": None, "error": serializer.errors
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
+            return _error(serializer.errors, 400)
+
         data = serializer.validated_data
-        cart_id = data['cart_id']
-        
-        # Get cart
+        user = request.user
+
+        cart = ShoppingCart.objects.filter(cart_id=data['cart_id'], active_cart=True).first()
+        if not cart:
+            return _error("Cart not found or inactive", 404)
+
+        session_token = request.session.get('cart_session_token')
+        owns_cart = cart.user_id == user.pk or (
+            cart.user_id is None and session_token and cart.session_id == session_token
+        )
+        if not owns_cart:
+            return _error("This cart does not belong to you", 403)
+
         try:
-            cart = ShoppingCart.objects.get(cart_id=cart_id, active_cart=True)
-        except ShoppingCart.DoesNotExist:
-            return Response({
-                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
-                "data": None, "error": "ShoppingCart not found or inactive"
-            }, status=status.HTTP_404_NOT_FOUND)
-        
-        # Get cart items
-        cart_items = ShoppingCartItem.objects.filter(cart=cart).select_related(
-            'listing_unit', 'listing_unit__listing', 'listing_unit__listing__model',
-            'listing_unit__listing__refurbisher'
-        )
-        
-        if not cart_items.exists():
-            return Response({
-                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
-                "data": None, "error": "ShoppingCart is empty"
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Validate all items are available
-        unavailable_items = []
-        for item in cart_items:
-            if item.listing_unit.is_sold or not item.listing_unit.is_available:
-                unavailable_items.append(str(item.listing_unit.id))
-        
-        if unavailable_items:
-            return Response({
-                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
-                "data": None, 
-                "error": f"Some items are no longer available: {', '.join(unavailable_items)}"
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
-        subtotal_amount = sum(item.listing_unit.price for item in cart_items)
-        tax_amount = Decimal('0.00')
-        delivery_charge = Decimal('50.00')
-        # Warranty amount is derived entirely from the cart items' server-set
-        # has_extended_warranty/warranty_price — never trust anything from the request body.
-        warranty_amount = sum(
-            item.warranty_price for item in cart_items if item.has_extended_warranty
-        ) or Decimal('0.00')
-        discount_amount = Decimal('0.00')
-        coupon_discount = Decimal('0.00')
-        total_amount = (
-            subtotal_amount + tax_amount + delivery_charge + warranty_amount
-            - discount_amount - coupon_discount
-        )
-        
-        with transaction.atomic():
-            order = Order.objects.create(
-                user=request.user if request.user.is_authenticated else None,
-                session_id=cart.session_id if not request.user.is_authenticated else None,
-                first_name=data['first_name'],
-                last_name=data['last_name'],
-                email=data['email'],
-                phone=data['phone'],
-                alternate_phone=data.get('alternate_phone', ''),
-                shipping_address=data['shipping_address'],
-                shipping_city=data['shipping_city'],
-                shipping_state=data['shipping_state'],
-                shipping_pincode=data['shipping_pincode'],
-                shipping_address_id=data.get('shipping_address_id'),
-                different_billing_address=data['different_billing_address'],
-                billing_first_name=data.get('billing_first_name', ''),
-                billing_last_name=data.get('billing_last_name', ''),
-                billing_address=data.get('billing_address', ''),
-                billing_city=data.get('billing_city', ''),
-                billing_state=data.get('billing_state', ''),
-                billing_pincode=data.get('billing_pincode', ''),
-                billing_phone=data.get('billing_phone', ''),
-                billing_alternate_phone=data.get('billing_alternate_phone', ''),
-                delivery_date=data.get('delivery_date'),
-                timeslot_id=data.get('timeslot_id', ''),
-                special_instructions=data.get('special_instructions', ''),
-                subtotal_amount=subtotal_amount,
-                tax_amount=tax_amount,
-                delivery_charge=delivery_charge,
-                warranty_amount=warranty_amount,
-                discount_amount=discount_amount,
-                coupon_code=data.get('coupon_code', ''),
-                coupon_discount=coupon_discount,
-                total_amount=total_amount,
-                payment_method=data['payment_method'],
-                order_note=data.get('order_note', ''),
-                status='pending'
-            )
-            
-            # Create order items
-            for cart_item in cart_items:
-                OrderItem.objects.create(
-                    order=order,
-                    listing_unit=cart_item.listing_unit,
-                    price_at_purchase=cart_item.listing_unit.price,
-                    condition_at_purchase=cart_item.listing_unit.condition,
-                    refurbisher=cart_item.listing_unit.listing.refurbisher,
-                    refurbisher_name=cart_item.listing_unit.listing.refurbisher.first_name,
-                    has_extended_warranty=cart_item.has_extended_warranty,
-                    warranty_price=cart_item.warranty_price if cart_item.has_extended_warranty else 0,
-                )
-                
-                # Mark as half_sold (for Razorpay) or sold (for COD)
-                if data['payment_method'] == 'razorpay':
-                    cart_item.listing_unit.half_sold = True
-                    cart_item.listing_unit.half_sold_at = timezone.now()
-                else:  # COD
-                    cart_item.listing_unit.is_sold = True
-                    cart_item.listing_unit.is_available = False
-                    order.status = 'confirmed'
-                    order.payment_received = False  # COD not paid yet
-                    order.save()
-                
-                cart_item.listing_unit.save()
-            
-            # If Razorpay, create Razorpay order
-            razorpay_order = None
-            if data['payment_method'] == 'razorpay':
-                try:
-                    razorpay_key_id = getattr(settings, 'RAZORPAY_KEY_ID', None)
-                    razorpay_key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', None)
-                    
-                    if not razorpay_key_id or not razorpay_key_secret:
-                        return Response({
-                            "success": False, "user_not_logged_in": False, "user_unauthorized": False,
-                            "data": None, "error": "Razorpay credentials not configured"
-                        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-                    
-                    client = razorpay.Client(auth=(razorpay_key_id, razorpay_key_secret))
-                    razorpay_order = client.order.create({
-                        'amount': int(total_amount * 100),  # Amount in paise
-                        'currency': 'INR',
-                        'receipt': order.order_id,
-                        'notes': {
-                            'order_id': order.order_id
-                        }
-                    })
-                    order.razorpay_order_id = razorpay_order['id']
-                    order.save()
-                    
-                    razorpay_order['key_id'] = razorpay_key_id
-                except Exception as e:
-                    return Response({
-                        "success": False, "user_not_logged_in": False, "user_unauthorized": False,
-                        "data": None, "error": f"Razorpay order creation failed: {str(e)}"
-                    }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
-            # Clear cart
-            cart_items.delete()
-            cart.active_cart = False
-            cart.save()
+            with transaction.atomic():
+                order, razorpay_order = _place_order(user, cart, data)
+        except CheckoutError as exc:
+            return _error(exc.message, exc.status_code)
 
         # COD orders are confirmed immediately; email right away.
         # Razorpay orders are confirmed in verify_payment instead.
-        if data['payment_method'] != 'razorpay':
+        if order.payment_method != 'razorpay':
             send_order_confirmation_email(order)
 
         response_data = OrderSerializer(order).data
         if razorpay_order:
             response_data['razorpay_order'] = razorpay_order
-        
+
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": response_data, "error": None
         }, status=status.HTTP_201_CREATED)
-    
+
     @action(detail=False, methods=['post'], url_path='verify-payment')
     @handle_exceptions
     def verify_payment(self, request):
-        """Verify Razorpay payment and confirm order"""
-        # serializer = PaymentVerificationSerializer(data=request.data)
-        # if not serializer.is_valid():
-        #     return Response({
-        #         "success": False, "user_not_logged_in": False, "user_unauthorized": False,
-        #         "data": None, "error": serializer.errors
-        #     }, status=status.HTTP_400_BAD_REQUEST)
-        
-        # data = serializer.validated_data
-        
-        # Get order
+        """Verify Razorpay payment signature and confirm the order"""
         order = get_object_or_404(Order, order_id=request.data.get('order_id'))
-        
-        razorpay_key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', None)
-        
-        # if not razorpay_key_secret:
-        #     return Response({
-        #         "success": False, "user_not_logged_in": False, "user_unauthorized": False,
-        #         "data": None, "error": "Razorpay credentials not configured"
-        #     }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-        # # Verify signature
-        # generated_signature = hmac.new(
-        #     razorpay_key_secret.encode(),
-        #     f"{data['razorpay_order_id']}|{data['razorpay_payment_id']}".encode(),
-        #     hashlib.sha256
-        # ).hexdigest()
-        
-        # if generated_signature != data['razorpay_signature']:
-        #     return Response({
-        #         "success": False, "user_not_logged_in": False, "user_unauthorized": False,
-        #         "data": None, "error": "Payment verification failed"
-        #     }, status=status.HTTP_400_BAD_REQUEST)
-        
-        with transaction.atomic():
-            # order.razorpay_payment_id = data['razorpay_payment_id']
-            # order.razorpay_signature = data['razorpay_signature']
-            order.payment_received = True
-            order.status = 'confirmed'
-            order.save()
-            
-            # Mark all items as sold
-            for order_item in order.items.all():
-                listing_unit = order_item.listing_unit
-                listing_unit.is_sold = True
-                listing_unit.is_available = False
-                listing_unit.half_sold = False
-                listing_unit.half_sold_at = None
-                listing_unit.save()
 
+        rzp_order_id = request.data.get('razorpay_order_id') or ''
+        rzp_payment_id = request.data.get('razorpay_payment_id') or ''
+        rzp_signature = request.data.get('razorpay_signature') or ''
+
+        if not getattr(settings, 'RAZORPAY_KEY_SECRET', None):
+            return _error("Razorpay credentials not configured", 500)
+        if not (rzp_order_id and rzp_payment_id and rzp_signature):
+            return _error("Missing payment details")
+        if order.razorpay_order_id != rzp_order_id:
+            return _error("Payment does not belong to this order")
+        if not valid_signature(rzp_order_id, rzp_payment_id, rzp_signature):
+            return _error("Payment verification failed")
+
+        # Already confirmed (e.g. double submit) - success without re-sending the email.
+        if order.payment_received:
+            return Response({
+                "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": OrderSerializer(order).data, "error": None
+            }, status=status.HTTP_200_OK)
+
+        if order.status == 'cancelled':
+            refunded = refund_payment(rzp_payment_id)
+            return _error(
+                "This order was cancelled before the payment completed. "
+                + ("Your payment has been refunded." if refunded
+                   else "Any amount charged will be refunded to you shortly."),
+                409,
+            )
+
+        confirm_payment(order, rzp_payment_id, rzp_signature)
         send_order_confirmation_email(order)
 
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": OrderSerializer(order).data, "error": None
         }, status=status.HTTP_200_OK)
-    
+
+    @action(detail=True, methods=['post'], url_path='pay')
+    @handle_exceptions
+    @check_authentication()
+    def pay_order(self, request, pk=None):
+        """
+        Resume payment for an order that is still 'Pending Payment'.
+        Re-checks the devices are still free, refreshes the hold and returns a
+        Razorpay order for the checkout modal.
+        """
+        release_expired_holds()
+        order = get_object_or_404(Order, order_id=pk, user=request.user)
+
+        if order.payment_received or order.status != 'pending':
+            return _error("This order is not waiting for payment.", 400)
+        if order.payment_method != 'razorpay':
+            return _error("This order is not an online payment order.", 400)
+
+        items = list(order.items.select_related('listing_unit__listing__model__brand'))
+
+        with transaction.atomic():
+            units = {
+                u.id: u for u in ListingUnit.objects.select_for_update().filter(
+                    id__in=[i.listing_unit_id for i in items]
+                )
+            }
+            gone = [
+                str(units[i.listing_unit_id].listing.model)
+                for i in items
+                if units[i.listing_unit_id].is_sold
+                or (not units[i.listing_unit_id].is_available and not units[i.listing_unit_id].half_sold)
+            ]
+
+        if gone:
+            cancel_pending_order(order)
+            return _error(
+                f"Sorry, {', '.join(gone)} is no longer available, so this order has been cancelled.", 409
+            )
+
+        try:
+            with transaction.atomic():
+                for i in items:
+                    hold_unit(ListingUnit.objects.select_for_update().get(pk=i.listing_unit_id))
+
+                razorpay_order = _reusable_razorpay_order(order)
+                if razorpay_order is None:
+                    razorpay_order = create_razorpay_order(order)
+        except CheckoutError as exc:
+            return _error(exc.message, exc.status_code)
+
+        if razorpay_order.get('already_paid'):
+            order.refresh_from_db()
+            send_order_confirmation_email(order)
+            return Response({
+                "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": {"already_paid": True, "order": OrderSerializer(order).data}, "error": None
+            }, status=status.HTTP_200_OK)
+
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": {"already_paid": False, "razorpay_order": razorpay_order,
+                     "order": OrderSerializer(order).data},
+            "error": None
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='cancel')
+    @handle_exceptions
+    @check_authentication()
+    def cancel_order(self, request, pk=None):
+        """Cancel an order that has not been paid yet and free its devices."""
+        order = get_object_or_404(Order, order_id=pk, user=request.user)
+        if not cancel_pending_order(order):
+            return _error("Only orders that are waiting for payment can be cancelled here.", 400)
+        order.refresh_from_db()
+        return Response({
+            "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+            "data": OrderSerializer(order).data, "error": None
+        }, status=status.HTTP_200_OK)
+
     @action(detail=False, methods=['post'], url_path='cleanup-half-sold')
     @handle_exceptions
     def cleanup_half_sold(self, request):
-        """
-        Release products marked as half_sold for more than 10 minutes
-        Should be called periodically (e.g., via cron job)
-        """
-        time_threshold = timezone.now() - timedelta(minutes=10)
-        
-        # Find all listing units that are half_sold for more than 10 minutes
-        expired_units = ListingUnit.objects.filter(
-            half_sold=True,
-            half_sold_at__lt=time_threshold
-        )
-        
-        count = expired_units.count()
-        
-        # Reset half_sold status
-        expired_units.update(
-            half_sold=False,
-            half_sold_at=None
-        )
-        
+        """Release devices whose checkout hold expired (also runs automatically)."""
+        count = release_expired_holds()
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": {"released_count": count}, "error": None
         }, status=status.HTTP_200_OK)
+    
     
     @action(detail=False, methods=['get'], url_path='my-orders')
     @handle_exceptions
@@ -319,9 +463,13 @@ class OrderViewSet(viewsets.ViewSet):
         """Get order details by order_id"""
         order = get_object_or_404(Order, order_id=pk)
         
-        # Check authorization
-        if request.user.is_authenticated:
-            if order.user and order.user != request.user:
+        if order.user_id:
+            if not request.user.is_authenticated:
+                return Response({
+                    "success": False, "user_not_logged_in": True, "user_unauthorized": False,
+                    "data": None, "error": "Please log in to view this order."
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            if order.user != request.user:
                 return Response({
                     "success": False, "user_not_logged_in": False, "user_unauthorized": True,
                     "data": None, "error": "Unauthorized access"

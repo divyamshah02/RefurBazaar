@@ -16,6 +16,13 @@ DEBUG = IS_LOCAL
 ALLOWED_HOSTS = ["*"] # to be updated during prod
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+# Razorpay opens the bank (3-D Secure) page in a popup that must message back
+# to this page. Django >= 4.0 defaults COOP to 'same-origin', which severs
+# window.opener and breaks that handshake, so allow popups explicitly.
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin-allow-popups'
+# Default 'same-origin' strips the Referer on requests to checkout.razorpay.com.
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 # X_FRAME_OPTIONS = 'ALLOWALL'
 # CORS_ALLOW_ALL_ORIGINS = True  # allow fetch/ajax from anywhere
 
@@ -46,7 +53,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'Order.middleware.ReleaseExpiredHoldsMiddleware',
 ]
+
+# Minutes a device stays reserved for an unpaid online-payment order.
+CHECKOUT_HOLD_MINUTES = 30
 
 ROOT_URLCONF = 'RefurBazaar.urls'
 

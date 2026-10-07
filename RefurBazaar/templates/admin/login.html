@@ -212,7 +212,9 @@
       if (!res.success) { showError(res.error || 'Login failed.'); return; }
       if (!res.data.login_success) { showError(res.data.message || 'Invalid credentials.'); return; }
 
-      window.location.href = '/admin-dashboard/';
+      const next = new URLSearchParams(window.location.search).get('next');
+      const nextIsSafe = next && next.startsWith('/admin-') && !next.startsWith('//');
+      window.location.href = nextIsSafe ? next : '/admin-dashboard/';
     });
   </script>
 </body>

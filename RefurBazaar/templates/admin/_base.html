@@ -654,7 +654,7 @@
         <div class="sb-footer-name" id="sb-admin-name">Admin</div>
         <div class="sb-footer-role">Administrator</div>
       </div>
-      <a href="/logout/" class="btn-icon" title="Logout" style="background:transparent;border:none;color:var(--sb-text);">
+      <a href="/admin-logout/" class="btn-icon" title="Logout" aria-label="Logout" style="background:transparent;border:none;color:var(--sb-text);">
         <i class="fa-solid fa-arrow-right-from-bracket"></i>
       </a>
     </div>
@@ -722,7 +722,7 @@
     }
   });
 
-  // ─── Tab helpers ──────────────────────────────────────────────
+  // ─── Tab helpers ─────────────────────────���────────────────────
   function initTabs(containerSelector) {
     const container = document.querySelector(containerSelector);
     if (!container) return;

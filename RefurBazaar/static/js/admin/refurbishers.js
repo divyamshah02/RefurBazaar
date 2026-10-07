@@ -17,6 +17,9 @@ function approvalBadge(s) {
 /* ─── Entry point ───────────────────────────────────────────────── */
 async function InitRefurbishers(csrf, urls) {
   _rfCsrf = csrf; _rfUrls = urls;
+  const initialStatus = new URLSearchParams(window.location.search).get('status');
+  if (initialStatus) document.getElementById('f-status').value = initialStatus;
+
   await loadStats();
   await loadList();
 
@@ -141,7 +144,7 @@ function renderPagination(total) {
     <button class="btn btn-ghost btn-sm" ${_rfPage >= pages ? 'disabled' : ''} onclick="_rfPage++;loadList()"><i class="fa-solid fa-chevron-right"></i></button>`;
 }
 
-/* ─── Approve / Reject ──────────────────────────────────────────── */
+/* ─── Approve / Reject ────────��─────────────────────────────────── */
 let _pendingAction = null;
 function promptAction(action, userId, name) {
   _pendingAction = { action, userId };

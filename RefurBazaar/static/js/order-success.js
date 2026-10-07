@@ -1,148 +1,83 @@
-let csrf_token = null;
-let verify_payment_url = null;
-let orderId = null;
-let paymentId = null;
-let razorpayOrderId = null;
-let razorpaySignature = null;
-let verificationAttempts = 0;
-const maxAttempts = 3;
+let orderApiBaseUrl = "/order-api/";
+let currentOrderId = null;
 
-async function InitializeOrderSuccess(csrfTokenParam, verifyPaymentUrlParam) {
-  csrf_token = csrfTokenParam;
-  verify_payment_url = verifyPaymentUrlParam;
+const MAX_CHECKS = 5;
+const CHECK_INTERVAL_MS = 2000;
 
-  try {
-    // Get URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    orderId = urlParams.get("order_id");
-    paymentId = urlParams.get("razorpay_payment_id");
-    razorpayOrderId = urlParams.get("razorpay_order_id");
-    razorpaySignature = urlParams.get("razorpay_signature");
-
-    // Validate required parameters
-    if (!orderId) {
-      showError("Order ID not found in URL parameters.");
-      return;
-    }
-
-    // Start payment verification process
-    await startPaymentVerification();
-  } catch (error) {
-    console.error("Error initializing order success:", error);
-    showError("Error initializing payment verification.");
-  }
+function showState(name) {
+  ["checking", "success", "failed"].forEach((state) => {
+    const element = document.getElementById(`state-${state}`);
+    if (element) element.style.display = state === name ? "block" : "none";
+  });
 }
 
-async function startPaymentVerification() {
-  try {
-    // Show checking card
-    showCheckingCard();
-
-    // Start progress animation
-    animateProgress();
-
-    // Wait a moment for better UX
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    // Verify payment
-    await verifyPayment();
-  } catch (error) {
-    console.error("Error in payment verification:", error);
-    showError("Payment verification failed. Please try again.");
-  }
+function formatAmount(value) {
+  const amount = Number(value);
+  if (Number.isNaN(amount)) return "-";
+  return "\u20B9" + amount.toLocaleString("en-IN");
 }
 
-function animateProgress() {
-  const progressBar = document.getElementById("verification-progress");
-  let width = 0;
-
-  const interval = setInterval(() => {
-    if (width >= 90) {
-      clearInterval(interval);
-    } else {
-      width += Math.random() * 10;
-      progressBar.style.width = Math.min(width, 90) + "%";
-    }
-  }, 200);
+function showFailure(message) {
+  document.getElementById("error-message").textContent = message;
+  const link = document.getElementById("failed-order-link");
+  if (currentOrderId) link.href = `/order-detail/?order_id=${encodeURIComponent(currentOrderId)}`;
+  showState("failed");
 }
 
-async function verifyPayment() {
-  verificationAttempts++;
+function showSuccess(order) {
+  const isCod = order.payment_method === "cod";
+  document.getElementById("success-order-number").textContent = order.order_number || order.order_id;
+  document.getElementById("success-amount").textContent = formatAmount(order.total_amount);
+  document.getElementById("success-payment").textContent = isCod ? "Cash on delivery" : "Paid online";
+  document.getElementById("success-message").textContent = order.email
+    ? `A confirmation has been sent to ${order.email}.`
+    : "Thank you for your purchase.";
+  document.getElementById("view-order-link").href = `/order-detail/?order_id=${encodeURIComponent(order.order_id)}`;
+  showState("success");
+}
 
-  try {
-    const requestData = {
-      order_id: orderId,
-      razorpay_order_id: razorpayOrderId,
-      razorpay_payment_id: paymentId,
-      razorpay_signature: razorpaySignature
-    };
+async function fetchOrder() {
+  const [, result] = await callApi("GET", `${orderApiBaseUrl}${encodeURIComponent(currentOrderId)}/detail/`);
+  return result && result.success ? result.data : null;
+}
 
-    const [success, result] = await callApi("POST", verify_payment_url, requestData, csrf_token);
+async function checkOrder() {
+  showState("checking");
 
-    if (success && result.success) {
-      // Payment verified successfully
-      showSuccess();
-
-      // Complete progress bar
-      const progressBar = document.getElementById("verification-progress");
-      progressBar.style.width = "100%";
-
-      // Redirect to order detail page after 3 seconds
-      setTimeout(() => {
-        window.location.href = `/order-detail/?order_id=${orderId}`;
-      }, 3000);
-    } else {
-      // Payment verification failed
-      const errorMessage = result.error || "Payment verification failed.";
-
-      if (verificationAttempts < maxAttempts) {
-        // Retry after a delay
-        setTimeout(() => {
-          verifyPayment();
-        }, 3000);
-      } else {
-        showError(errorMessage);
+  for (let attempt = 0; attempt < MAX_CHECKS; attempt++) {
+    try {
+      const order = await fetchOrder();
+      if (order) {
+        const confirmed = order.payment_received || order.payment_method === "cod";
+        if (confirmed) {
+          showSuccess(order);
+          return;
+        }
+        if (order.status === "cancelled") {
+          showFailure("This order was cancelled. If you were charged, the amount will be refunded.");
+          return;
+        }
       }
+    } catch (error) {
+      console.error("Error checking order:", error);
     }
-  } catch (error) {
-    console.error("Error verifying payment:", error);
-
-    if (verificationAttempts < maxAttempts) {
-      // Retry after a delay
-      setTimeout(() => {
-        verifyPayment();
-      }, 3000);
-    } else {
-      showError("Network error. Please check your connection and try again.");
-    }
+    await new Promise((resolve) => setTimeout(resolve, CHECK_INTERVAL_MS));
   }
+
+  showFailure(
+    "We have not received the payment confirmation yet. If money was deducted, it will be confirmed or refunded automatically."
+  );
 }
 
-function showCheckingCard() {
-  document.getElementById("payment-checking-card").style.display = "block";
-  document.getElementById("payment-success-card").style.display = "none";
-  document.getElementById("payment-failed-card").style.display = "none";
-}
+function InitializeOrderSuccess(csrfToken, apiBaseUrl) {
+  if (apiBaseUrl) orderApiBaseUrl = apiBaseUrl;
 
-function showSuccess() {
-  document.getElementById("payment-checking-card").style.display = "none";
-  document.getElementById("payment-success-card").style.display = "block";
-  document.getElementById("payment-failed-card").style.display = "none";
-}
-
-function showError(message) {
-  document.getElementById("payment-checking-card").style.display = "none";
-  document.getElementById("payment-success-card").style.display = "none";
-  document.getElementById("payment-failed-card").style.display = "block";
-
-  // Update error message
-  const errorMessageElement = document.getElementById("error-message");
-  if (errorMessageElement) {
-    errorMessageElement.textContent = message;
+  currentOrderId = new URLSearchParams(window.location.search).get("order_id");
+  if (!currentOrderId) {
+    showFailure("We could not find your order. Please check your account for its status.");
+    return;
   }
-}
 
-function retryVerification() {
-  verificationAttempts = 0;
-  startPaymentVerification();
+  document.getElementById("retry-check-btn").addEventListener("click", checkOrder);
+  checkOrder();
 }

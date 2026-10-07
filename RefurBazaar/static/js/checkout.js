@@ -9,36 +9,133 @@ let userAddresses = []
 let isUserLoggedIn = false
 let currentOtpId = null
 let resendTimerInterval = null
+let userUrl = null
+let emailVerified = false
+let pendingPlaceOrder = false
+let orderInFlight = false
+let selectedAddressId = null
 
-function init(csrf, cartUrl, orderUrl, verifyUrl, addrUrl, otpEndpoint) {
+function init(csrf, cartUrl, orderUrl, verifyUrl, addrUrl, otpEndpoint, userDetailUrl) {
   csrfToken = csrf
   cartListUrl = cartUrl
   createOrderUrl = orderUrl
   verifyPaymentUrl = verifyUrl
   addressesUrl = addrUrl
   otpUrl = otpEndpoint
+  userUrl = userDetailUrl
 
+  setupEmailVerification()
   checkUserAuth()
   loadCart()
   setupEventListeners()
   setupOtpModal()
 }
 
-async function checkUserAuth() {
-  try {
-    const [success, response] = await callApi("GET", addressesUrl, null, csrfToken)
+const GUEST_LOCKED_FIELDS = ["firstName", "lastName", "phone", "address", "city", "state", "pincode"]
 
-    if (response.success && !response.user_not_logged_in) {
-      isUserLoggedIn = true
-      loadAddresses()
-    } else {
-      isUserLoggedIn = false
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+}
+
+function setGuestFieldsLocked(locked) {
+  GUEST_LOCKED_FIELDS.forEach((id) => {
+    const field = document.getElementById(id)
+    if (field) field.disabled = locked
+  })
+  const hint = document.getElementById("verifyEmailHint")
+  if (hint) hint.style.display = locked ? "block" : "none"
+}
+
+function updateVerifyButton() {
+  const emailInput = document.getElementById("email")
+  const btn = document.getElementById("verifyEmailBtn")
+  const badge = document.getElementById("emailVerifiedBadge")
+  if (!emailInput || !btn) return
+
+  btn.style.display = emailVerified ? "none" : "inline-block"
+  if (badge) badge.style.display = emailVerified ? "inline-flex" : "none"
+  btn.disabled = !isValidEmail(emailInput.value.trim())
+}
+
+function setupEmailVerification() {
+  const emailInput = document.getElementById("email")
+  const btn = document.getElementById("verifyEmailBtn")
+  if (!emailInput || !btn) return
+
+  setGuestFieldsLocked(true)
+  updateVerifyButton()
+
+  emailInput.addEventListener("input", () => {
+    emailInput.classList.remove("is-invalid")
+    updateVerifyButton()
+  })
+  emailInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      if (!btn.disabled && !emailVerified) btn.click()
+    }
+  })
+  btn.addEventListener("click", async () => {
+    pendingPlaceOrder = false
+    await sendOtpForCheckout(emailInput.value.trim())
+  })
+
+  const backdrop = document.getElementById("otpModalBackdrop")
+  if (backdrop) {
+    backdrop.addEventListener("click", () => {
+      pendingPlaceOrder = false
+      hideOtpModal()
+    })
+  }
+}
+
+// Marks the session as verified and fills the form from the account.
+async function applyVerifiedUser(user) {
+  isUserLoggedIn = true
+  emailVerified = true
+
+  const emailInput = document.getElementById("email")
+  if (emailInput) {
+    if (user && user.email) emailInput.value = user.email
+    emailInput.readOnly = true
+  }
+  updateVerifyButton()
+
+  const fill = (id, value) => {
+    const field = document.getElementById(id)
+    if (field && value) field.value = value
+  }
+  if (user) {
+    fill("firstName", user.first_name)
+    fill("lastName", user.last_name)
+    fill("phone", user.contact_number)
+  }
+
+  setGuestFieldsLocked(false)
+  await loadAddresses()
+}
+
+async function fetchCurrentUser() {
+  if (!userUrl) return null
+  try {
+    const [success, response] = await callApi("GET", userUrl, null, csrfToken)
+    if (success && response && response.success && !response.user_not_logged_in && response.data) {
+      return response.data.user || null
     }
   } catch (error) {
     console.log("User not logged in")
-    isUserLoggedIn = false
+  }
+  return null
+}
+
+async function checkUserAuth() {
+  const user = await fetchCurrentUser()
+  if (user) {
+    await applyVerifiedUser(user)
   }
 }
+
+
 
 async function loadCart() {
   try {
@@ -179,8 +276,10 @@ async function loadAddresses() {
   try {
     const [success, response] = await callApi("GET", addressesUrl, null, csrfToken)
 
-    if (response.success && response.data && response.data.addresses) {
-      userAddresses = response.data.addresses
+    if (success && response && response.success && response.data) {
+      const list = Array.isArray(response.data) ? response.data : response.data.addresses || []
+      // Default address first, then newest.
+      userAddresses = [...list].sort((a, b) => Number(!!b.is_default) - Number(!!a.is_default))
       renderSavedAddresses()
     }
   } catch (error) {
@@ -189,75 +288,92 @@ async function loadAddresses() {
 }
 
 function renderSavedAddresses() {
-  if (!userAddresses || userAddresses.length === 0) return
-
   const container = document.getElementById("savedAddressesContainer")
+  const primaryCheckbox = document.getElementById("setasprimaryaddress")
+
+  if (!userAddresses || userAddresses.length === 0) {
+    container.innerHTML = ""
+    selectedAddressId = null
+    if (primaryCheckbox) primaryCheckbox.checked = true
+    return
+  }
+  // A returning customer only changes the primary address on purpose.
+  if (primaryCheckbox) primaryCheckbox.checked = false
 
   container.innerHTML = `
     <div class="checkout-section">
       <h4>Saved Addresses</h4>
-      <div class="row g-3">
+      <div class="saved-address-grid" role="radiogroup" aria-label="Saved addresses">
         ${userAddresses
-      .map(
-        (address, index) => `
-          <div class="col-md-6">
-            <div class="card h-100 address-card ${index === 0 ? "border-primary" : ""}" onclick="selectAddress(${index})">
-              <div class="card-body">
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="savedAddress" id="address${index}" value="${index}" ${index === 0 ? "checked" : ""}>
-                  <label class="form-check-label" for="address${index}">
-                    <strong>${address.address_name || "Address " + (index + 1)}</strong>
-                  </label>
-                </div>
-                <p class="mb-1 mt-2">${address.address_line}</p>
-                <p class="mb-0">${address.city}, ${address.state} - ${address.pincode}</p>
-              </div>
-            </div>
-          </div>
+          .map(
+            (address, index) => `
+          <label class="saved-address ${index === 0 ? "is-selected" : ""}" data-address-index="${index}" for="address${index}">
+            <input class="saved-address-input" type="radio" name="savedAddress" id="address${index}" value="${index}" ${index === 0 ? "checked" : ""}>
+            <span class="saved-address-radio" aria-hidden="true"></span>
+            <span class="saved-address-body">
+              <span class="saved-address-top">
+                <span class="saved-address-name">${escapeHtml(address.address_name || "Address " + (index + 1))}</span>
+                ${address.is_default ? '<span class="saved-address-badge">Primary</span>' : ""}
+              </span>
+              <span class="saved-address-line">${escapeHtml(address.address_line)}</span>
+              <span class="saved-address-line">${escapeHtml(address.city)}, ${escapeHtml(address.state)} - ${escapeHtml(address.pincode)}</span>
+            </span>
+          </label>
         `,
-      )
-      .join("")}
-        <div class="col-md-6">
-          <div class="card h-100 address-card border-dashed" onclick="selectNewAddress()">
-            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center">
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="savedAddress" id="addressNew" value="new">
-                <label class="form-check-label" for="addressNew">
-                  <i class="fas fa-plus-circle me-2"></i>Add New Address
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
+          )
+          .join("")}
+        <label class="saved-address saved-address-new" data-address-index="new" for="addressNew">
+          <input class="saved-address-input" type="radio" name="savedAddress" id="addressNew" value="new">
+          <span class="saved-address-radio" aria-hidden="true"></span>
+          <span class="saved-address-body saved-address-body-center">
+            <i class="fas fa-plus-circle"></i>
+            <span class="saved-address-name">Add a new address</span>
+          </span>
+        </label>
       </div>
     </div>
   `
 
-  // Pre-fill first address
-  if (userAddresses.length > 0) {
-    fillAddressFields(userAddresses[0])
-  }
+  container.querySelectorAll(".saved-address-input").forEach((radio) => {
+    radio.addEventListener("change", () => {
+      if (!radio.checked) return
+      if (radio.value === "new") selectNewAddress()
+      else selectAddress(Number(radio.value))
+    })
+  })
+
+  fillAddressFields(userAddresses[0])
+  selectedAddressId = userAddresses[0].id
+}
+
+function markSelectedAddressCard(target) {
+  document.querySelectorAll(".saved-address").forEach((card) => {
+    card.classList.toggle("is-selected", card.dataset.addressIndex === String(target))
+  })
 }
 
 function selectAddress(index) {
-  document.querySelectorAll(".address-card").forEach((card) => card.classList.remove("border-primary"))
-  event.currentTarget.classList.add("border-primary")
+  markSelectedAddressCard(index)
 
   fillAddressFields(userAddresses[index])
+  selectedAddressId = userAddresses[index].id
 
-  document.getElementById(`address${index}`).checked = true
+  const radio = document.getElementById(`address${index}`)
+  if (radio) radio.checked = true
 }
 
 function selectNewAddress() {
-  document.querySelectorAll(".address-card").forEach((card) => card.classList.remove("border-primary"))
-  event.currentTarget.classList.add("border-primary")
+  markSelectedAddressCard("new")
 
-  document.getElementById("address").value = ""
-  document.getElementById("city").value = ""
-  document.getElementById("state").value = ""
-  document.getElementById("pincode").value = ""
+  ;["address", "city", "state", "pincode"].forEach((id) => {
+    document.getElementById(id).value = ""
+  })
+  selectedAddressId = null
+  const primaryCheckbox = document.getElementById("setasprimaryaddress")
+  if (primaryCheckbox) primaryCheckbox.checked = false
 
   document.getElementById("addressNew").checked = true
+  document.getElementById("address").focus()
 }
 
 function fillAddressFields(address) {
@@ -265,6 +381,30 @@ function fillAddressFields(address) {
   document.getElementById("city").value = address.city || ""
   document.getElementById("state").value = address.state || ""
   document.getElementById("pincode").value = address.pincode || ""
+}
+
+function escapeHtml(value) {
+  return String(value == null ? "" : value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c])
+}
+
+function formatApiError(error, fallback) {
+  if (!error) return fallback
+  if (typeof error === "string") return error
+  if (typeof error === "object") {
+    const parts = Object.values(error).flat().map((v) => (typeof v === "string" ? v : JSON.stringify(v)))
+    if (parts.length) return parts.join(" ")
+  }
+  return fallback
+}
+
+// The shipping fields still equal the saved address the customer picked.
+function selectedAddressUnchanged() {
+  const saved = userAddresses.find((a) => a.id === selectedAddressId)
+  if (!saved) return false
+  const same = (id, value) => document.getElementById(id).value.trim() === String(value || "").trim()
+  return (
+    same("address", saved.address_line) && same("city", saved.city) && same("state", saved.state) && same("pincode", saved.pincode)
+  )
 }
 
 function setupEventListeners() {
@@ -291,18 +431,24 @@ function setupEventListeners() {
 }
 
 async function placeOrder() {
-  if (!validateForm()) {
+  if (orderInFlight) return
+
+  if (!isUserLoggedIn || !emailVerified) {
+    const emailInput = document.getElementById("email")
+    const email = emailInput.value.trim()
+    if (!isValidEmail(email)) {
+      emailInput.classList.add("is-invalid")
+      showToast("Please enter your email and verify it to place your order", "error")
+      emailInput.focus()
+      return
+    }
+    pendingPlaceOrder = true
+    showToast("Please verify your email to continue", "info")
+    await sendOtpForCheckout(email)
     return
   }
 
-  if (!isUserLoggedIn) {
-    const email = document.getElementById("email").value.trim()
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!email || !emailPattern.test(email)) {
-      showToast("Please enter a valid email address", "error")
-      return
-    }
-    await sendOtpForCheckout(email)
+  if (!validateForm()) {
     return
   }
 
@@ -310,22 +456,28 @@ async function placeOrder() {
 }
 
 async function sendOtpForCheckout(email) {
+  const verifyBtn = document.getElementById("verifyEmailBtn")
+  if (verifyBtn) verifyBtn.disabled = true
   try {
-    const requestData = { email: email }
+    const requestData = { email: email, role: "customer" }
     const [success, response] = await callApi("POST", otpUrl, requestData, csrfToken)
 
-    if (success && response.success) {
+    if (success && response && response.success) {
       currentOtpId = response.data.otp_id
 
       showOtpModal(email)
       startResendTimer()
-      showToast("OTP sent successfully!", "success")
+      showToast("Verification code sent to your email", "success")
     } else {
-      showToast(response.error || "Failed to send OTP. Please try again.", "error")
+      pendingPlaceOrder = false
+      showToast(formatApiError(response && response.error, "Failed to send OTP. Please try again."), "error")
     }
   } catch (error) {
     console.error("Error sending OTP:", error)
+    pendingPlaceOrder = false
     showToast("Failed to send OTP. Please try again.", "error")
+  } finally {
+    updateVerifyButton()
   }
 }
 
@@ -363,26 +515,42 @@ async function verifyOtpAndPlaceOrder() {
   hideOtpError()
   hideOtpSuccess()
 
-  const requestData = {
-    otp: otp,
-    role: "customer",
-  }
-
   try {
-    const [success, response] = await callApi("PUT", `${otpUrl}${currentOtpId}/`, requestData, csrfToken)
+    const [success, response] = await callApi("PUT", `${otpUrl}${currentOtpId}/`, { otp: otp, role: "customer" }, csrfToken)
 
     setButtonLoading(verifyBtn, false)
 
-    if (success && response.success && response.data.otp_verified) {
-      isUserLoggedIn = true
-      showOtpSuccess("OTP verified successfully!")
-      csrfToken = getCSRFToken()
+    if (success && response && response.success && response.data && response.data.otp_verified) {
+      showOtpSuccess("Email verified!")
+      // Django rotates the CSRF token when the session logs in.
+      csrfToken = getCSRFToken() || csrfToken
+
+      const continueOrder = pendingPlaceOrder
+      pendingPlaceOrder = false
+
       setTimeout(async () => {
         hideOtpModal()
-        await proceedWithOrder()
-      }, 1000)
+
+        const user = await fetchCurrentUser()
+        await applyVerifiedUser(user || { email: document.getElementById("email").value.trim() })
+
+        if (!continueOrder) {
+          showToast(
+            userAddresses.length || (user && user.first_name)
+              ? "Email verified. We filled in your saved details."
+              : "Email verified. Please add your delivery details.",
+            "success",
+          )
+          return
+        }
+        if (validateForm()) {
+          await proceedWithOrder()
+        } else {
+          showToast("Email verified. Please complete the highlighted details and place your order.", "info")
+        }
+      }, 700)
     } else {
-      showOtpError(response.data?.message || "Invalid OTP. Please try again.")
+      showOtpError((response && response.data && response.data.message) || formatApiError(response && response.error, "Invalid OTP. Please try again."))
       clearOtpInputs()
       document.querySelector(".otp-input").focus()
     }
@@ -396,54 +564,84 @@ async function verifyOtpAndPlaceOrder() {
 }
 
 async function proceedWithOrder() {
-  csrfToken = getCSRFToken()
+  if (orderInFlight) return
+  csrfToken = getCSRFToken() || csrfToken
   const billingSame = document.getElementById("billingSameAsShipping").checked
   const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value
+  const value = (id) => document.getElementById(id).value.trim()
 
   const orderData = {
     cart_id: cartData.cart_id,
-    first_name: document.getElementById("firstName").value.trim(),
-    last_name: document.getElementById("lastName").value.trim(),
-    email: document.getElementById("email").value.trim(),
-    phone: document.getElementById("phone").value.trim(),
-    shipping_address: document.getElementById("address").value.trim(),
-    shipping_city: document.getElementById("city").value.trim(),
-    shipping_state: document.getElementById("state").value.trim(),
-    shipping_pincode: document.getElementById("pincode").value.trim(),
-    billing_same_as_shipping: billingSame,
-    billing_address: billingSame ? "" : document.getElementById("billingAddress").value.trim(),
-    billing_city: billingSame ? "" : document.getElementById("billingCity").value.trim(),
-    billing_state: billingSame ? "" : document.getElementById("billingState").value.trim(),
-    billing_pincode: billingSame ? "" : document.getElementById("billingPincode").value.trim(),
+    first_name: value("firstName"),
+    last_name: value("lastName"),
+    email: value("email"),
+    phone: value("phone"),
+    shipping_address: value("address"),
+    shipping_city: value("city"),
+    shipping_state: value("state"),
+    shipping_pincode: value("pincode"),
+    shipping_address_id: selectedAddressUnchanged() ? selectedAddressId : null,
+    different_billing_address: !billingSame,
+    billing_address: billingSame ? "" : value("billingAddress"),
+    billing_city: billingSame ? "" : value("billingCity"),
+    billing_state: billingSame ? "" : value("billingState"),
+    billing_pincode: billingSame ? "" : value("billingPincode"),
     payment_method: paymentMethod,
-    order_notes: document.getElementById("orderNotes").value.trim(),
+    order_note: value("orderNotes"),
+    save_address: true,
+    set_as_primary: document.getElementById("setasprimaryaddress").checked,
     // Extended warranty is derived server-side from each cart item's
     // has_extended_warranty flag — nothing to send here.
   }
 
-  try {
-    showLoading()
+  orderInFlight = true
+  showLoading()
 
+  try {
     const [success, response] = await callApi("POST", createOrderUrl, orderData, csrfToken)
 
-    if (response.success && response.data) {
+    if (response && response.user_not_logged_in) {
+      // Session expired mid-checkout: verify again, then continue.
+      isUserLoggedIn = false
+      emailVerified = false
+      document.getElementById("email").readOnly = false
+      pendingPlaceOrder = true
+      orderInFlight = false
+      hideLoading()
+      showToast("Your session expired. Please verify your email again.", "info")
+      await sendOtpForCheckout(orderData.email)
+      return
+    }
+
+    if (response && response.success && response.data) {
       const order = response.data
+      // The server has emptied the cart; reflect that in the navbar straight away.
+      document.querySelectorAll("#cartCount, .cart-count").forEach((badge) => {
+        badge.textContent = "0"
+        badge.style.display = "none"
+      })
 
       if (paymentMethod === "razorpay" && order.razorpay_order) {
         initiateRazorpayPayment(order)
       } else {
         showToast("Order placed successfully!", "success")
         setTimeout(() => {
-          window.location.href = `/order-success?order_id=${order.order_id}`
+          window.location.href = `/order-success/?order_id=${order.order_id}`
         }, 1500)
       }
     } else {
-      showToast(response.error || "Failed to create order", "error")
+      showToast(formatApiError(response && response.error, "Failed to create order"), "error")
+      orderInFlight = false
       hideLoading()
+      // Items may have been sold in the meantime: refresh the cart view.
+      if (response && response.error && /no longer available|empty/i.test(String(response.error))) {
+        loadCart()
+      }
     }
   } catch (error) {
     console.error("Error placing order:", error)
     showToast("Failed to place order. Please try again.", "error")
+    orderInFlight = false
     hideLoading()
   }
 }
@@ -628,21 +826,19 @@ function setButtonLoading(button, isLoading) {
 }
 
 function initiateRazorpayPayment(orderData) {
+  const orderDetailUrl = `/order-detail/?order_id=${orderData.order_id}`
+
   const razorpayOptions = {
     key: orderData.razorpay_order.key_id,
     amount: orderData.razorpay_order.amount,
     currency: orderData.razorpay_order.currency,
     order_id: orderData.razorpay_order.id,
-    name: "RefurBazar",
+    name: "Recarvit",
     description: `Order ${orderData.order_number}`,
-    handler: async (response) => {
-      await verifyPayment({
-        order_id: orderData.order_id,
-        razorpay_order_id: response.razorpay_order_id,
-        razorpay_payment_id: response.razorpay_payment_id,
-        razorpay_signature: response.razorpay_signature,
-      })
-    },
+    // Redirect mode: the whole page goes to the bank / UPI step and then back to our
+    // server, which verifies the signature. No popup window and no JS handler to lose.
+    callback_url: `${window.location.origin}/order-api/payment-callback/?order_id=${encodeURIComponent(orderData.order_id)}`,
+    redirect: true,
     prefill: {
       name: `${orderData.first_name} ${orderData.last_name}`,
       email: orderData.email,
@@ -653,40 +849,40 @@ function initiateRazorpayPayment(orderData) {
     },
     modal: {
       ondismiss: () => {
+        orderInFlight = false
         hideLoading()
-        showToast("Payment cancelled. You can complete payment later from your orders.", "info")
+        showToast("Payment not completed. Your order is saved - you can pay from your order page.", "info")
+        setTimeout(() => {
+          window.location.href = orderDetailUrl
+        }, 2500)
       },
     },
   }
 
-  const rzp = new window.Razorpay(razorpayOptions)
-  rzp.open()
-}
-
-async function verifyPayment(paymentData) {
-  try {
-    const [success, response] = await callApi("POST", verifyPaymentUrl, paymentData, csrfToken)
-
-    if (response.success) {
-      showToast("Payment successful!", "success")
-      setTimeout(() => {
-        window.location.href = `/order-success?order_id=${paymentData.order_id}`
-      }, 1500)
-    } else {
-      showToast(response.error || "Payment verification failed", "error")
-      hideLoading()
-    }
-  } catch (error) {
-    console.error("Error verifying payment:", error)
-    showToast("Payment verification failed. Please contact support.", "error")
+  if (typeof window.Razorpay !== "function") {
+    showToast("Payment gateway failed to load. Opening your order so you can pay from there.", "error")
+    orderInFlight = false
     hideLoading()
+    setTimeout(() => {
+      window.location.href = orderDetailUrl
+    }, 2500)
+    return
   }
+
+  const rzp = new window.Razorpay(razorpayOptions)
+  rzp.on("payment.failed", (failure) => {
+    const reason = failure && failure.error && failure.error.description
+    console.error("Razorpay payment failed:", failure && failure.error)
+    showToast(reason || "Payment failed. You can retry in the payment window.", "error")
+  })
+  rzp.open()
 }
 
 function validateForm() {
   const requiredFields = ["firstName", "lastName", "email", "phone", "address", "city", "state", "pincode"]
 
   let isValid = true
+  let message = "Please fill in all required fields"
 
   requiredFields.forEach((fieldId) => {
     const field = document.getElementById(fieldId)
@@ -697,6 +893,23 @@ function validateForm() {
       if (field) field.classList.remove("is-invalid")
     }
   })
+
+  const markInvalid = (id, text) => {
+    const field = document.getElementById(id)
+    if (field && field.value.trim()) {
+      field.classList.add("is-invalid")
+      isValid = false
+      message = text
+    }
+  }
+
+  const digits = document.getElementById("phone").value.replace(/\D/g, "")
+  if (digits && !/^(91)?[6-9]\d{9}$/.test(digits.replace(/^0+/, ""))) {
+    markInvalid("phone", "Please enter a valid 10-digit phone number")
+  }
+  if (!/^\d{6}$/.test(document.getElementById("pincode").value.trim())) {
+    markInvalid("pincode", "Please enter a valid 6-digit pincode")
+  }
 
   const billingSame = document.getElementById("billingSameAsShipping").checked
   if (!billingSame) {
@@ -710,10 +923,13 @@ function validateForm() {
         if (field) field.classList.remove("is-invalid")
       }
     })
+    if (!/^\d{6}$/.test(document.getElementById("billingPincode").value.trim())) {
+      markInvalid("billingPincode", "Please enter a valid 6-digit billing pincode")
+    }
   }
 
   if (!isValid) {
-    showToast("Please fill in all required fields", "error")
+    showToast(message, "error")
   }
 
   return isValid

@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import Order, OrderItem, DevicePhoto
 from Product.serializers import ListingUnitSerializer
+from .services import normalize_phone
+
 
 
 class DevicePhotoSerializer(serializers.ModelSerializer):
@@ -130,6 +132,45 @@ class OrderCreateSerializer(serializers.Serializer):
     payment_method = serializers.ChoiceField(choices=['razorpay', 'cod'])
     order_note = serializers.CharField(required=False, allow_blank=True)
     coupon_code = serializers.CharField(max_length=50, required=False, allow_blank=True)
+
+    # Address book behaviour
+    save_address = serializers.BooleanField(required=False, default=True)
+    set_as_primary = serializers.BooleanField(required=False, default=False)
+
+    def validate_phone(self, value):
+        phone = normalize_phone(value)
+        if not phone:
+            raise serializers.ValidationError("Enter a valid 10-digit phone number.")
+        return phone
+
+    def validate_alternate_phone(self, value):
+        if not value:
+            return ''
+        phone = normalize_phone(value)
+        if not phone:
+            raise serializers.ValidationError("Enter a valid 10-digit phone number.")
+        return phone
+
+    def validate_shipping_pincode(self, value):
+        value = value.strip()
+        if not (value.isdigit() and len(value) == 6):
+            raise serializers.ValidationError("Enter a valid 6-digit pincode.")
+        return value
+
+    def validate(self, attrs):
+        if attrs.get('different_billing_address'):
+            missing = [
+                f for f in ('billing_address', 'billing_city', 'billing_state', 'billing_pincode')
+                if not (attrs.get(f) or '').strip()
+            ]
+            if missing:
+                raise serializers.ValidationError(
+                    {f: "This field is required when billing differs from shipping." for f in missing}
+                )
+            pin = attrs['billing_pincode'].strip()
+            if not (pin.isdigit() and len(pin) == 6):
+                raise serializers.ValidationError({'billing_pincode': "Enter a valid 6-digit pincode."})
+        return attrs
 
 
 class PaymentVerificationSerializer(serializers.Serializer):

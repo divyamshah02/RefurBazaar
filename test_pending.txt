@@ -2,3 +2,7 @@ Logut not working
 1- shiprocket warehouse not created check
 2 - cart - view product not working
 3 - cart always shows 2 number solve it
+
+4 - if logged in than in checkout autofilled the details from the profile and also save the address - profile number and email when new account is created from the checkout
+
+next see i found a issue when an order is placed without the payment than in the listing unit it is not marked as sold or sometihng and hence the order is created with pending payment but the unit is not makred sold and hnce the new order is not able to be placed for smae device sinc the unit is in order and it has unique id in order but it is visible for sale as well have ot solve this in some way
