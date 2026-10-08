@@ -5,7 +5,7 @@ import dj_database_url
 
 IS_LOCAL = False
 LOCAL_DB = False
-IS_PAYMENT_TEST_MODE = False
+IS_PAYMENT_TEST_MODE = True
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -15,14 +15,13 @@ DEBUG = IS_LOCAL
 
 ALLOWED_HOSTS = ["*"] # to be updated during prod
 
-X_FRAME_OPTIONS = 'SAMEORIGIN'
-
 # Razorpay opens the bank (3-D Secure) page in a popup that must message back
-# to this page. Django >= 4.0 defaults COOP to 'same-origin', which severs
 # window.opener and breaks that handshake, so allow popups explicitly.
 SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin-allow-popups'
 # Default 'same-origin' strips the Referer on requests to checkout.razorpay.com.
 SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 # X_FRAME_OPTIONS = 'ALLOWALL'
 # CORS_ALLOW_ALL_ORIGINS = True  # allow fetch/ajax from anywhere
 
@@ -80,13 +79,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'RefurBazaar.wsgi.application'
 
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 if IS_LOCAL:
     if LOCAL_DB:
         DATABASES = {
@@ -98,19 +90,13 @@ if IS_LOCAL:
     else:
         DATABASES = {
             "default": dj_database_url.config(
-                default="postgresql://refurbazaar_db_user:m7MPW6TxqBQ0KzqekniD6cXqIGtbjN9L@dpg-db0ad6gu01pc739hc7t0-a.singapore-postgres.render.com/refurbazaar_db", # DB ecternal link
+                default=os.environ.get("EXTERNAL_DATABASE_URL"), # DB ecternal link
                 conn_max_age=600,
                 ssl_require=True,
             )
         }
 
-else:
-    # DATABASES = {
-    #         'default': {
-    #             'ENGINE': 'django.db.backends.sqlite3',
-    #             'NAME': BASE_DIR / 'db.sqlite3',
-    #         }
-    #     }
+else:    
     DATABASES = {
         "default": dj_database_url.config(
             default=os.environ.get("DATABASE_URL"),
@@ -151,7 +137,7 @@ STATICFILES_DIRS = [
 ]
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-# Use WhiteNoise to serve static files efficiently on Render
+
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 WHITENOISE_AUTOREFRESH = False
 WHITENOISE_USE_FINDERS = True
@@ -168,55 +154,29 @@ def base64_to_text(b64_text):
     return base64.b64decode(b64_text.encode()).decode()
 
 
-# To be kept in env during prod
-
-
-# RAZORPAY_KEY_ID = base64_to_text("cnpwX3Rlc3RfUzV6OXlXcFh0d0VkVVg=")
-# RAZORPAY_KEY_SECRET = base64_to_text("NTAyaldFeDBWUFE1b2RuSkJQVzNJblNS")
-
-
 if IS_PAYMENT_TEST_MODE:
-    RAZORPAY_KEY_ID = base64_to_text("cnpwX3Rlc3RfUzV6OXlXcFh0d0VkVVg=")
-    RAZORPAY_KEY_SECRET = base64_to_text("NTAyaldFeDBWUFE1b2RuSkJQVzNJblNS")
+    RAZORPAY_KEY_ID = os.environ.get("TEST_RAZORPAY_KEY_ID")
+    RAZORPAY_KEY_SECRET = os.environ.get("TEST_RAZORPAY_KEY_SECRET")
 
 
 else:
-    RAZORPAY_KEY_ID = base64_to_text("cnpwX3Rlc3RfUzV6OXlXcFh0d0VkVVg=")
-    RAZORPAY_KEY_SECRET = base64_to_text("NTAyaldFeDBWUFE1b2RuSkJQVzNJblNS")
+    RAZORPAY_KEY_ID = os.environ.get("PROD_RAZORPAY_KEY_ID")
+    RAZORPAY_KEY_SECRET = os.environ.get("PROD_RAZORPAY_KEY_SECRET")
 
 
+shiprocket_api_email = os.environ.get("TEST_SHIPROCKET_API_EMAIL")
+shiprocket_api_pass = os.environ.get("TEST_SHIPROCKET_API_PASS")
 
-shiprocket_api_email = base64_to_text("aW5mbythcGlAcmVjYXJ2aXQuY29t")
-shiprocket_api_pass = base64_to_text("NTBmN2VmMmM5MDU2MmU2NzdkZjgzMmU0MjYwMDRlNmE=")
-
-prod_shiprocket_api_email = base64_to_text("ZGl2eWFtQG1pcmFja2xlLmNvbQ==")
-prod_shiprocket_api_pass = base64_to_text("WWhAcUVFaCpNVzd2YjRtYzdtT1lZQVQ5MF5iWCNzRG8=")
+prod_shiprocket_api_email = os.environ.get("PROD_SHIPROCKET_API_EMAIL")
+prod_shiprocket_api_pass = os.environ.get("PROD_SHIPROCKET_API_PASS")
 
 
 # ---------------------------------------------------------------------------
 # ShipRocket configuration
 # ---------------------------------------------------------------------------
-# ShipRocket has a single production API host — there is no separate "sandbox"
-# hostname. To test safely, sign up for a second (test) ShipRocket account and
-# point SHIPROCKET_MODE=sandbox at its credentials; flip to SHIPROCKET_MODE=
-# production (with real credentials) when you're ready to create live pickups.
 
 # SHIPROCKET_MODE = os.environ.get('SHIPROCKET_MODE', 'sandbox')  # 'sandbox' | 'production'
-SHIPROCKET_MODE = 'production'  # 'sandbox' | 'production'
-
-# SHIPROCKET_BASE_URL = 'https://apiv2.shiprocket.in/v1/external'
-# SHIPROCKET_BASE_URL = 'https://api-sandbox.shiprocket.in/v1/external'
-
-# SHIPROCKET_CREDENTIALS = {
-#     'sandbox': {
-#         'email': os.environ.get('SHIPROCKET_SANDBOX_EMAIL', ''),
-#         'password': os.environ.get('SHIPROCKET_SANDBOX_PASSWORD', ''),
-#     },
-#     'production': {
-#         'email': os.environ.get('SHIPROCKET_EMAIL', ''),
-#         'password': os.environ.get('SHIPROCKET_PASSWORD', ''),
-#     },
-# }
+SHIPROCKET_MODE = 'production'  # 'sandbox' | 'production' # To be worked upon since sandbox was throwing errors
 
 
 SHIPROCKET_CREDENTIALS = {
@@ -245,5 +205,4 @@ SHIPROCKET_BOX_DEFAULTS_BY_CATEGORY = {
     'accessory': {'length': 20, 'breadth': 15, 'height': 8, 'weight': 0.3},
 }
 SHIPROCKET_DEFAULT_BOX = {'length': 20, 'breadth': 15, 'height': 8, 'weight': 0.5}
-
 
