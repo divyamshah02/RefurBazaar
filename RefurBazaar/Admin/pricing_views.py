@@ -15,6 +15,7 @@ from Product.models import (
 from Product.serializers import ListingSerializer, ListingUnitSerializer
 from Product.views import _copy_fixed_attributes_to_unit
 from utils.decorators import handle_exceptions, check_authentication
+from utils.parsing import parse_bool
 
 COMMISSION_TYPES = {c[0] for c in COMMISSION_TYPE_CHOICES}
 ADMIN_CTX = {'pricing_view': 'admin'}
@@ -105,7 +106,7 @@ class AdminPricingViewSet(viewsets.ViewSet):
             defaults={
                 'commission_type': request.data['commission_type'],
                 'value': value,
-                'is_active': bool(request.data.get('is_active', True)),
+                'is_active': parse_bool(request.data.get('is_active'), True),
             },
         )
         return _ok({'category': cfg.category, 'commission_type': cfg.commission_type,
@@ -225,9 +226,15 @@ class AdminListingManageViewSet(viewsets.ViewSet):
             unit.condition = data['condition']
 
         if 'is_available' in data:
-            unit.is_available = bool(data['is_available'])
+            parsed = parse_bool(data['is_available'])
+            if parsed is None:
+                raise ValueError("is_available must be true or false")
+            unit.is_available = parsed
         if 'is_sold' in data:
-            unit.is_sold = bool(data['is_sold'])
+            parsed = parse_bool(data['is_sold'])
+            if parsed is None:
+                raise ValueError("is_sold must be true or false")
+            unit.is_sold = parsed
 
         if touch_price:
             unit.apply_commission()

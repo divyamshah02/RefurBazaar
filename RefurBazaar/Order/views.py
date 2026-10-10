@@ -185,6 +185,24 @@ def _reusable_razorpay_order(order):
     return None
 
 
+# Billing, payment gateway and session details a refurbisher does not need to fulfil an item.
+REFURBISHER_HIDDEN_ORDER_FIELDS = (
+    'user', 'session_id', 'email', 'alternate_phone',
+    'different_billing_address', 'billing_first_name', 'billing_last_name',
+    'billing_address', 'billing_city', 'billing_state', 'billing_pincode',
+    'billing_phone', 'billing_alternate_phone',
+    'razorpay_order_id', 'razorpay_payment_id', 'razorpay_signature', 'razorpay_link',
+    'coupon_code', 'coupon_discount', 'discount_amount',
+)
+
+
+def refurbisher_safe_order_data(order):
+    data = OrderSerializer(order).data
+    for field in REFURBISHER_HIDDEN_ORDER_FIELDS:
+        data.pop(field, None)
+    return data
+
+
 def _page_url(path, **params):
     query = urlencode({k: v for k, v in params.items() if v})
     return f"{path}?{query}" if query else path
@@ -435,6 +453,7 @@ class OrderViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'], url_path='cleanup-half-sold')
     @handle_exceptions
+    @check_authentication(required_role='admin')
     def cleanup_half_sold(self, request):
         """Release devices whose checkout hold expired (also runs automatically)."""
         count = release_expired_holds()
@@ -505,7 +524,7 @@ class OrderViewSet(viewsets.ViewSet):
         # Serialize orders
         orders_data = []
         for order_info in orders_dict.values():
-            order_data = OrderSerializer(order_info['order']).data
+            order_data = refurbisher_safe_order_data(order_info['order'])
             # Filter items to only show this refurbisher's items
             order_data['items'] = [
                 OrderItemSerializer(item).data 
@@ -541,7 +560,7 @@ class OrderViewSet(viewsets.ViewSet):
             }, status=status.HTTP_403_FORBIDDEN)
         
         # Serialize order with only refurbisher's items
-        order_data = OrderSerializer(order).data
+        order_data = refurbisher_safe_order_data(order)
         order_data['items'] = [OrderItemSerializer(item).data for item in refurbisher_items]
         
         return Response({
@@ -565,6 +584,12 @@ class OrderViewSet(viewsets.ViewSet):
                 "success": False, "user_not_logged_in": False, "user_unauthorized": True,
                 "data": None, "error": "Unauthorized access"
             }, status=status.HTTP_403_FORBIDDEN)
+
+        if not order_item.order.payment_received:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Payment has not been confirmed for this order yet."
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         profile = getattr(request.user, 'company_profile', None)
         if not profile or not profile.shiprocket_warehouse_created or not profile.shiprocket_pickup_code:
@@ -654,6 +679,12 @@ class OrderViewSet(viewsets.ViewSet):
                 "data": None, "error": "Unauthorized access"
             }, status=status.HTTP_403_FORBIDDEN)
 
+        if not order_item.order.payment_received:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Payment has not been confirmed for this order yet."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         if not order_item.pickup_scheduled_date:
             return Response({
                 "success": False, "user_not_logged_in": False, "user_unauthorized": False,
@@ -716,6 +747,12 @@ class OrderViewSet(viewsets.ViewSet):
                 "success": False, "user_not_logged_in": False, "user_unauthorized": True,
                 "data": None, "error": "Unauthorized access"
             }, status=status.HTTP_403_FORBIDDEN)
+
+        if not order_item.order.payment_received:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Payment has not been confirmed for this order yet."
+            }, status=status.HTTP_400_BAD_REQUEST)
         
         # Validate data
         serializer = OrderItemVerificationSerializer(data=request.data)
@@ -770,6 +807,12 @@ class OrderViewSet(viewsets.ViewSet):
                 "success": False, "user_not_logged_in": False, "user_unauthorized": True,
                 "data": None, "error": "Unauthorized access"
             }, status=status.HTTP_403_FORBIDDEN)
+
+        if order_item.fulfillment_status in ('shipped', 'delivered', 'rejected'):
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "This item can no longer be changed."
+            }, status=status.HTTP_400_BAD_REQUEST)
         
         # Validate data
         serializer = OrderItemActionSerializer(data=request.data)
@@ -800,11 +843,13 @@ class OrderViewSet(viewsets.ViewSet):
             order_item.rejected_at = timezone.now()
             order_item.save()
             
-            # Mark listing unit as available again
-            listing_unit = order_item.listing_unit
-            listing_unit.is_sold = False
-            listing_unit.is_available = True
-            listing_unit.save()
+            # Unpaid holds go back on sale; a paid unit stays off the market until
+            # the refund/cancellation workflow is handled by admin.
+            if not order_item.order.payment_received:
+                listing_unit = order_item.listing_unit
+                listing_unit.is_sold = False
+                listing_unit.is_available = True
+                listing_unit.save()
         
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,

@@ -9,7 +9,7 @@ IS_PAYMENT_TEST_MODE = True
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-%k3^obid8rb5d&z4-7@vm@og#0@x2p%*%3d(h2e_k1gr)^9e(+' # to be kept in env during prod
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-%k3^obid8rb5d&z4-7@vm@og#0@x2p%*%3d(h2e_k1gr)^9e(+')  # set DJANGO_SECRET_KEY in production
 
 DEBUG = IS_LOCAL
 

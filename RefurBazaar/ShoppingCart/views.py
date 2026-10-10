@@ -13,6 +13,7 @@ from Product.utils import get_warranty_price
 from .models import Wishlist, WishlistItem
 from .serializers import WishlistSerializer, WishlistItemSerializer
 from utils.decorators import handle_exceptions, check_authentication
+from utils.parsing import parse_bool
 
 
 def generate_unique_cart_id():
@@ -36,6 +37,21 @@ def get_or_create_session_token(request):
     return token
 
 
+def cart_belongs_to_request(request, cart):
+    """A cart may only be used by its owner (logged-in user) or the guest session that created it."""
+    if cart is None:
+        return False
+    if request.user.is_authenticated and cart.user_id == request.user.id:
+        return True
+    token = request.session.get('cart_session_token')
+    return bool(token) and cart.session_id == token
+
+
+def get_owned_cart(request, cart_id):
+    cart = ShoppingCart.objects.filter(cart_id=cart_id, active_cart=True).first()
+    return cart if cart_belongs_to_request(request, cart) else None
+
+
 class CartViewSet(viewsets.ViewSet):
     """
     ViewSet for managing shopping cart operations.
@@ -56,7 +72,7 @@ class CartViewSet(viewsets.ViewSet):
         
         # Priority: cart_id > user > session_id
         if cart_id:
-            cart = ShoppingCart.objects.filter(cart_id=cart_id, active_cart=True).first()
+            cart = get_owned_cart(request, cart_id)
         elif user:
             cart = ShoppingCart.objects.filter(user=user, active_cart=True).first()
         elif session_id:
@@ -97,7 +113,7 @@ class CartViewSet(viewsets.ViewSet):
         listing_unit_id = request.data.get('listing_unit_id')
         # Accept a raw truthy value from the client (e.g. checkbox state),
         # but the actual price is always computed server-side below.
-        wants_warranty = bool(request.data.get('has_extended_warranty'))
+        wants_warranty = parse_bool(request.data.get('has_extended_warranty'), False)
 
         if not listing_unit_id:
             return Response({
@@ -213,6 +229,14 @@ class CartViewSet(viewsets.ViewSet):
                 "error": "Cart item not found"
             }, status=status.HTTP_404_NOT_FOUND)
 
+        if not cart_belongs_to_request(request, cart_item.cart):
+            return Response({
+                "success": False,
+                "user_not_logged_in": False,
+                "data": None,
+                "error": "Cart item not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+
         cart_item.delete()
 
         return Response({
@@ -241,7 +265,15 @@ class CartViewSet(viewsets.ViewSet):
                 "error": "Cart item not found"
             }, status=status.HTTP_404_NOT_FOUND)
 
-        wants_warranty = bool(request.data.get('has_extended_warranty'))
+        if not cart_belongs_to_request(request, cart_item.cart):
+            return Response({
+                "success": False,
+                "user_not_logged_in": False,
+                "data": None,
+                "error": "Cart item not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        wants_warranty = parse_bool(request.data.get('has_extended_warranty'), False)
 
         cart_item.has_extended_warranty = wants_warranty
         cart_item.warranty_price = (
@@ -272,7 +304,7 @@ class CartViewSet(viewsets.ViewSet):
         cart = None
         
         if cart_id:
-            cart = ShoppingCart.objects.filter(cart_id=cart_id, active_cart=True).first()
+            cart = get_owned_cart(request, cart_id)
         elif user:
             cart = ShoppingCart.objects.filter(user=user, active_cart=True).first()
         elif session_id:
@@ -310,7 +342,7 @@ class CartViewSet(viewsets.ViewSet):
         cart = None
         
         if cart_id:
-            cart = ShoppingCart.objects.filter(cart_id=cart_id, active_cart=True).first()
+            cart = get_owned_cart(request, cart_id)
         elif user:
             cart = ShoppingCart.objects.filter(user=user, active_cart=True).first()
         elif session_id:
@@ -367,10 +399,9 @@ class CartTransferViewSet(viewsets.ViewSet):
             }, status=status.HTTP_401_UNAUTHORIZED)
 
         user = request.user
-        session_id = request.data.get('session_id')
-
-        if not session_id:
-            session_id = request.session.get('cart_session_token')
+        # Only the guest cart tied to this browser session may be transferred;
+        # a caller-supplied session_id is ignored.
+        session_id = request.session.get('cart_session_token')
 
         if not session_id:
             return Response({

@@ -9,6 +9,8 @@ from UserDetail.models import *
 from utils.decorators import *
 import pandas as pd
 from django.db import transaction
+from django.db.models import ProtectedError
+from utils.parsing import parse_bool
 
 
 def _copy_fixed_attributes_to_unit(unit, product_model):
@@ -707,7 +709,7 @@ class ListingViewSet(viewsets.ViewSet):
         }, status=status.HTTP_200_OK)
 
     @handle_exceptions
-    @check_authentication(required_role='refurbisher')
+    @check_refurbisher_profile()
     def update(self, request, pk=None):
         """Update listing (partial update supported)"""
         listing = get_object_or_404(Listing, pk=pk, refurbisher=request.user)
@@ -724,11 +726,17 @@ class ListingViewSet(viewsets.ViewSet):
         }, status=status.HTTP_200_OK)
 
     @handle_exceptions
-    @check_authentication(required_role='refurbisher')
+    @check_refurbisher_profile()
     def destroy(self, request, pk=None):
         """Delete listing and all its units"""
         listing = get_object_or_404(Listing, pk=pk, refurbisher=request.user)
-        listing.delete()
+        try:
+            listing.delete()
+        except ProtectedError:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "This listing has units that are part of orders and cannot be deleted."
+            }, status=status.HTTP_400_BAD_REQUEST)
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": None, "error": None
@@ -736,7 +744,7 @@ class ListingViewSet(viewsets.ViewSet):
 
     @action(detail=True, methods=['post'])
     @handle_exceptions
-    @check_authentication(required_role='refurbisher')
+    @check_refurbisher_profile()
     def add_unit(self, request, pk=None):
         """Add a new unit to existing listing"""
         listing = get_object_or_404(Listing, pk=pk, refurbisher=request.user)
@@ -792,17 +800,36 @@ class ListingViewSet(viewsets.ViewSet):
 
     @action(detail=True, methods=['patch'], url_path='update_unit/(?P<unit_id>[^/.]+)')
     @handle_exceptions
-    @check_authentication(required_role='refurbisher')
+    @check_refurbisher_profile()
     def update_unit(self, request, pk=None, unit_id=None):
         """Update a specific unit"""
         listing = get_object_or_404(Listing, pk=pk, refurbisher=request.user)
         unit = get_object_or_404(ListingUnit, pk=unit_id, listing=listing)
         
         # Update allowed fields
+        if unit.is_sold:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "This unit is already sold and can no longer be edited."
+            }, status=status.HTTP_400_BAD_REQUEST)
         if 'is_available' in request.data:
-            unit.is_available = request.data['is_available']
+            parsed = parse_bool(request.data['is_available'])
+            if parsed is None:
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None, "error": "is_available must be true or false."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            unit.is_available = parsed
         if 'is_sold' in request.data:
-            unit.is_sold = request.data['is_sold']
+            parsed = parse_bool(request.data['is_sold'])
+            if parsed is None:
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None, "error": "is_sold must be true or false."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            unit.is_sold = parsed
+            if parsed:
+                unit.is_available = False
         if 'price' in request.data:
             # Refurbisher edits their own price; the commission is re-applied on top.
             unit.refurbisher_price = request.data['price']
@@ -840,14 +867,20 @@ class ListingViewSet(viewsets.ViewSet):
 
     @action(detail=True, methods=['delete'], url_path='delete_unit/(?P<unit_id>[^/.]+)')
     @handle_exceptions
-    @check_authentication(required_role='refurbisher')
+    @check_refurbisher_profile()
     def delete_unit(self, request, pk=None, unit_id=None):
         """Delete a specific unit"""
         listing = get_object_or_404(Listing, pk=pk, refurbisher=request.user)
         unit = get_object_or_404(ListingUnit, pk=unit_id, listing=listing)
         
-        unit.delete()
-        
+        try:
+            unit.delete()
+        except ProtectedError:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "This unit is part of an order and cannot be deleted."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         # Update listing total quantity
         listing.total_quantity = listing.units.count()
         listing.save()
@@ -861,7 +894,7 @@ class ListingViewSet(viewsets.ViewSet):
 class ListingUnitViewSet(viewsets.ViewSet):
 
     @handle_exceptions
-    @check_authentication(required_role='refurbisher')
+    @check_refurbisher_profile()
     def create(self, request):
         """
         Create ListingUnit and its ListingUnitAttribute rows.
@@ -1122,6 +1155,7 @@ class SeedDataViewSet(viewsets.ViewSet):
     """
 
     @handle_exceptions
+    @check_authentication(required_role='admin')
     def list(self, request):
         file_path = r"C:\Users\Divyam Shah\OneDrive\Desktop\Dynamic Labz\Clients\Clients\EcoReco\RefurBazaar\RefurBazaar\Product\Copy of device_catalog_parent_child(1) (1).xlsx"
         df = pd.read_excel(file_path, sheet_name="Sheet1")
@@ -1456,7 +1490,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
         if 'price_max' in request.data:
             product_model.price_max = request.data.get('price_max') or None
         if 'is_active' in request.data:
-            product_model.is_active = True if request.data['is_active'] == 'true' else False
+            product_model.is_active = parse_bool(request.data['is_active'], default=product_model.is_active)
 
         # Handle image upload
         if 'image' in request.FILES:
@@ -1476,35 +1510,36 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                 except:
                     attributes = []
 
-            # Remove existing attributes
-            ProductModelAttribute.objects.filter(product_model=product_model).delete()
+            with transaction.atomic():
+                # Remove existing attributes (rolled back with the re-create if anything fails)
+                ProductModelAttribute.objects.filter(product_model=product_model).delete()
 
-            # Add new attributes
-            for attr_data in attributes:
-                attr_id         = attr_data.get('attribute_id')
-                is_required     = attr_data.get('is_required', False)
-                section         = attr_data.get('section', 'main')
-                data_type       = attr_data.get('data_type', 'text')
-                possible_values = attr_data.get('possible_values', [])
-                default_value   = attr_data.get('default_value') or None
-                if isinstance(possible_values, str):
-                    import json as _json
-                    try: possible_values = _json.loads(possible_values)
-                    except: possible_values = []
+                # Add new attributes
+                for attr_data in attributes:
+                    attr_id         = attr_data.get('attribute_id')
+                    is_required     = attr_data.get('is_required', False)
+                    section         = attr_data.get('section', 'main')
+                    data_type       = attr_data.get('data_type', 'text')
+                    possible_values = attr_data.get('possible_values', [])
+                    default_value   = attr_data.get('default_value') or None
+                    if isinstance(possible_values, str):
+                        import json as _json
+                        try: possible_values = _json.loads(possible_values)
+                        except: possible_values = []
 
-                if not attr_id:
-                    continue
+                    if not attr_id:
+                        continue
 
-                attribute = get_object_or_404(AttributeMaster, id=attr_id)
-                ProductModelAttribute.objects.create(
-                    product_model=product_model,
-                    attribute=attribute,
-                    is_required=is_required,
-                    section=section,
-                    data_type=data_type,
-                    possible_values=possible_values,
-                    default_value=default_value,
-                )
+                    attribute = get_object_or_404(AttributeMaster, id=attr_id)
+                    ProductModelAttribute.objects.create(
+                        product_model=product_model,
+                        attribute=attribute,
+                        is_required=is_required,
+                        section=section,
+                        data_type=data_type,
+                        possible_values=possible_values,
+                        default_value=default_value,
+                    )
 
         serializer = ProductModelSerializer(product_model)
         return Response({
@@ -1537,7 +1572,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
         if 'price_max' in request.data:
             product_model.price_max = request.data.get('price_max') or None
         if 'is_active' in request.data:
-            product_model.is_active = True if request.data['is_active'] == 'true' else False
+            product_model.is_active = parse_bool(request.data['is_active'], default=product_model.is_active)
 
         # Handle image upload
         if 'image' in request.FILES:
@@ -1557,35 +1592,36 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
                 except:
                     attributes = []
 
-            # Remove existing attributes
-            ProductModelAttribute.objects.filter(product_model=product_model).delete()
+            with transaction.atomic():
+                # Remove existing attributes (rolled back with the re-create if anything fails)
+                ProductModelAttribute.objects.filter(product_model=product_model).delete()
 
-            # Add new attributes
-            for attr_data in attributes:
-                attr_id         = attr_data.get('attribute_id')
-                is_required     = attr_data.get('is_required', False)
-                section         = attr_data.get('section', 'main')
-                data_type       = attr_data.get('data_type', 'text')
-                possible_values = attr_data.get('possible_values', [])
-                default_value   = attr_data.get('default_value') or None
-                if isinstance(possible_values, str):
-                    import json as _json
-                    try: possible_values = _json.loads(possible_values)
-                    except: possible_values = []
+                # Add new attributes
+                for attr_data in attributes:
+                    attr_id         = attr_data.get('attribute_id')
+                    is_required     = attr_data.get('is_required', False)
+                    section         = attr_data.get('section', 'main')
+                    data_type       = attr_data.get('data_type', 'text')
+                    possible_values = attr_data.get('possible_values', [])
+                    default_value   = attr_data.get('default_value') or None
+                    if isinstance(possible_values, str):
+                        import json as _json
+                        try: possible_values = _json.loads(possible_values)
+                        except: possible_values = []
 
-                if not attr_id:
-                    continue
+                    if not attr_id:
+                        continue
 
-                attribute = get_object_or_404(AttributeMaster, id=attr_id)
-                ProductModelAttribute.objects.create(
-                    product_model=product_model,
-                    attribute=attribute,
-                    is_required=is_required,
-                    section=section,
-                    data_type=data_type,
-                    possible_values=possible_values,
-                    default_value=default_value,
-                )
+                    attribute = get_object_or_404(AttributeMaster, id=attr_id)
+                    ProductModelAttribute.objects.create(
+                        product_model=product_model,
+                        attribute=attribute,
+                        is_required=is_required,
+                        section=section,
+                        data_type=data_type,
+                        possible_values=possible_values,
+                        default_value=default_value,
+                    )
 
         serializer = ProductModelSerializer(product_model)
         return Response({
@@ -1604,7 +1640,13 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
         Delete a ProductModel and all its associations.
         """
         product_model = get_object_or_404(ProductModel, id=pk)
-        product_model.delete()
+        try:
+            product_model.delete()
+        except ProtectedError:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "This model has listings and cannot be deleted. Mark it inactive instead."
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({
             "success": True,

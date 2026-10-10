@@ -12,6 +12,17 @@ from UserDetail.serializers import UserSerializer, CompanyProfileSerializer, App
 from Order.serializers import OrderSerializer
 from Product.serializers import ListingSerializer
 from utils.decorators import handle_exceptions, check_authentication
+from utils.parsing import parse_bool
+
+
+ORDER_STATUS_TRANSITIONS = {
+    'pending': ('confirmed', 'cancelled'),
+    'confirmed': ('processing', 'shipped', 'cancelled'),
+    'processing': ('shipped', 'cancelled'),
+    'shipped': ('delivered',),
+    'delivered': (),
+    'cancelled': (),
+}
 
 
 class AdminDashboardViewSet(viewsets.ViewSet):
@@ -179,10 +190,19 @@ class AdminDashboardViewSet(viewsets.ViewSet):
         if new_status and new_status not in VALID_STATUSES:
             return Response({"success": False, "error": f"Invalid status '{new_status}'"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if new_status:
-            order.status = new_status
         if payment_received is not None:
-            order.payment_received = bool(payment_received)
+            parsed_payment = parse_bool(payment_received)
+            if parsed_payment is None:
+                return Response({"success": False, "error": "payment_received must be true or false"}, status=status.HTTP_400_BAD_REQUEST)
+            order.payment_received = parsed_payment
+
+        if new_status and new_status != order.status:
+            allowed = ORDER_STATUS_TRANSITIONS.get(order.status, ())
+            if new_status not in allowed:
+                return Response({"success": False, "error": f"Cannot change order from '{order.status}' to '{new_status}'"}, status=status.HTTP_400_BAD_REQUEST)
+            if new_status in ('shipped', 'delivered') and not order.payment_received and order.payment_method != 'cod':
+                return Response({"success": False, "error": "Payment must be received before the order can be shipped or delivered"}, status=status.HTTP_400_BAD_REQUEST)
+            order.status = new_status
         order.save()
 
         serializer = OrderSerializer(order)
@@ -229,7 +249,9 @@ class AdminDashboardViewSet(viewsets.ViewSet):
                 company_data = CompanyProfileSerializer(refurbisher.company_profile).data
 
             total_listings = Listing.objects.filter(refurbisher=refurbisher).count()
-            total_sales = OrderItem.objects.filter(refurbisher=refurbisher).count()
+            total_sales = OrderItem.objects.filter(
+                refurbisher=refurbisher, order__payment_received=True
+            ).exclude(order__status='cancelled').count()
 
             data.append({
                 **user_data,
@@ -659,12 +681,18 @@ class AdminDashboardViewSet(viewsets.ViewSet):
                 setattr(target, field, request.data.get(field))
 
         if 'active_user' in request.data:
-            if target.pk == request.user.pk and not request.data.get('active_user'):
+            new_active = parse_bool(request.data.get('active_user'))
+            if new_active is None:
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None, "error": "active_user must be true or false."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            if target.pk == request.user.pk and not new_active:
                 return Response({
                     "success": False, "user_not_logged_in": False, "user_unauthorized": False,
                     "data": None, "error": "You cannot deactivate your own account."
                 }, status=status.HTTP_400_BAD_REQUEST)
-            target.active_user = bool(request.data.get('active_user'))
+            target.active_user = new_active
 
         target.save()
         return Response({
@@ -713,6 +741,15 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             }, status=status.HTTP_404_NOT_FOUND)
 
         if request.method == 'DELETE':
+            from Product.models import ProductModelAttribute, ListingUnitAttribute
+            model_count = ProductModelAttribute.objects.filter(attribute=attr).count()
+            unit_count = ListingUnitAttribute.objects.filter(attribute=attr).count()
+            if model_count or unit_count:
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None,
+                    "error": f"Attribute is in use by {model_count} product model(s) and {unit_count} unit value(s). Remove it from them before deleting."
+                }, status=status.HTTP_409_CONFLICT)
             attr.delete()
             return Response({
                 "success": True, "user_not_logged_in": False, "user_unauthorized": False,
