@@ -116,8 +116,8 @@ class OtpAuthViewSet(viewsets.ViewSet):
             print(f"OTP: {otp} to {mobile}")
 
         response_data = {"otp_id": otp_obj.id}
-        if mobile and not email:
-            response_data["otp"] = otp
+        # if mobile and not email:
+        #     response_data["otp"] = otp
 
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
