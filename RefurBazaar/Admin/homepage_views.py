@@ -19,7 +19,6 @@ Resources: hero-slides, trust-items, categories, product-sections,
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.views import View
-from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.db.models import Q
 
@@ -370,11 +369,10 @@ class HomepageConfigView(View):
         return ok(data)
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────���──
 # GENERIC ADMIN CRUD BASE
 # ─────────────────────���──────────────────────────────────────────���────
 
-@method_decorator(csrf_exempt, name='dispatch')
 class AdminCRUDView(View):
     """
     Base class for simple list/create (GET/POST on collection)

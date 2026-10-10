@@ -72,6 +72,17 @@ def check_authentication(required_role=None):
                     }, status=status.HTTP_401_UNAUTHORIZED
                 )
 
+            if getattr(user, "active_user", True) is False:
+                return Response(
+                    {
+                        "success": False,
+                        "user_not_logged_in": False,
+                        "user_unauthorized": True,
+                        "data": None,
+                        "error": "This account has been deactivated."
+                    }, status=status.HTTP_403_FORBIDDEN
+                )
+
             if required_role:
                 # Convert to list if it's a string
                 allowed_roles = required_role if isinstance(required_role, (list, tuple, set)) else [required_role]
@@ -118,6 +129,19 @@ def check_refurbisher_profile():
                     }, status=status.HTTP_401_UNAUTHORIZED
                 )
             
+            if getattr(user, "active_user", True) is False:
+                return Response(
+                    {
+                        "success": False,
+                        "user_not_logged_in": False,
+                        "user_unauthorized": True,
+                        "profile_incomplete": False,
+                        "profile_not_approved": False,
+                        "data": None,
+                        "error": "This account has been deactivated."
+                    }, status=status.HTTP_403_FORBIDDEN
+                )
+
             # Check if user is refurbisher
             if getattr(user, "role", None) != 'refurbisher':
                 return Response(

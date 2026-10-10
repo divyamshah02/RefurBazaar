@@ -5,7 +5,10 @@ from django.utils import timezone
 from django.db.models import Q
 from django.contrib.auth import login, authenticate
 from datetime import timedelta
-import random
+import secrets
+
+OTP_RESEND_COOLDOWN_SECONDS = 30
+OTP_MAX_ATTEMPTS = 5
 
 from .models import *
 from .serializers import *
@@ -40,6 +43,14 @@ def _find_refurbisher_by_email(email):
         legacy.email = email
         legacy.save(update_fields=["email"])
     return legacy
+
+
+ADMIN_ONLY_PROFILE_FIELDS = (
+    'is_approved', 'is_profile_complete', 'is_rejected', 'rejection_reason',
+    'shiprocket_pickup_code', 'shiprocket_warehouse_created',
+    'shiprocket_warehouse_created_at', 'shiprocket_warehouse_response',
+    'shiprocket_warehouse_error', 'user',
+)
 
 
 class OtpAuthViewSet(viewsets.ViewSet):
@@ -79,7 +90,15 @@ class OtpAuthViewSet(viewsets.ViewSet):
                     "data": None, "error": conflict
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-        otp = ''.join(random.choices('0123456789', k=6))
+        destination_filter = {"email": email} if email else {"mobile": mobile}
+        last_otp = OTPVerification.objects.filter(**destination_filter).order_by('-created_at').first()
+        if last_otp and (timezone.now() - last_otp.created_at).total_seconds() < OTP_RESEND_COOLDOWN_SECONDS:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Please wait a few seconds before requesting another OTP."
+            }, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+        otp = ''.join(secrets.choice('0123456789') for _ in range(6))
         otp_obj = OTPVerification.objects.create(
             mobile=mobile or None, email=email or None, otp=otp,
             expires_at=timezone.now() + timedelta(minutes=5)
@@ -132,7 +151,16 @@ class OtpAuthViewSet(viewsets.ViewSet):
                 "data": None, "error": "Invalid OTP ID."
             }, status=status.HTTP_404_NOT_FOUND)
 
+        if otp_obj.attempt_count >= OTP_MAX_ATTEMPTS:
+            return Response({
+                "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": {"otp_verified": False, "message": "Too many incorrect attempts. Please request a new OTP."},
+                "error": None
+            }, status=status.HTTP_200_OK)
+
         if otp_obj.is_verified or otp_obj.otp != otp or otp_obj.expires_at < timezone.now():
+            otp_obj.attempt_count += 1
+            otp_obj.save(update_fields=['attempt_count'])
             return Response({
                 "success": True, "user_not_logged_in": False, "user_unauthorized": False,
                 "data": {"otp_verified": False, "message": "Invalid or expired OTP."},
@@ -181,6 +209,12 @@ class OtpAuthViewSet(viewsets.ViewSet):
                 contact_number=otp_obj.mobile,
                 defaults={"role": role}
             )
+
+        if not user.active_user:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": True,
+                "data": None, "error": "This account has been deactivated. Please contact support."
+            }, status=status.HTTP_403_FORBIDDEN)
 
         login(request, user)
         return Response({
@@ -311,6 +345,10 @@ class UserDetailViewSet(viewsets.ViewSet):
             # The login email and the (user-editable) phone number are owned by the
             # user record; keep the company profile copy in sync with them.
             profile_data = request.data.copy()
+            # Approval / rejection / warehouse fields are admin-controlled; ignore them here.
+            for admin_field in ADMIN_ONLY_PROFILE_FIELDS:
+                if admin_field in profile_data:
+                    del profile_data[admin_field]
             if user.email:
                 profile_data['email'] = user.email
             if user.contact_number:
