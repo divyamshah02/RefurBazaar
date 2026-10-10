@@ -13,7 +13,7 @@
             render(res.data);
         })
         .catch(err => {
-            console.log('[v0] dy_homepage load error:', err);
+            console.log('dy_homepage load error:', err);
             root.innerHTML = `<div class="dh-loading"><p>Could not load homepage content. Please try again later.</p></div>`;
         });
 
