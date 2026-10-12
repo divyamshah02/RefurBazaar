@@ -352,7 +352,12 @@ async function fetchShippingRates() {
 
             renderCourierOptions(response.data.couriers || [], response.data.recommended_courier_id);
         } else {
-            alert('Failed to fetch delivery charges: ' + JSON.stringify(response.error));
+            const reason = (response && response.error) || 'Unknown error';
+            const message = typeof reason === 'string' ? reason : JSON.stringify(reason);
+            const setupHint = /warehouse|pickup point/i.test(message)
+                ? '\n\nPickup setup is managed by the RefurBazaar admin. Contact admin to activate your warehouse, then reopen this window and click Check Delivery Charges again.'
+                : '';
+            alert('Failed to fetch delivery charges: ' + message + setupHint);
         }
     } catch (error) {
         btn.disabled = false;

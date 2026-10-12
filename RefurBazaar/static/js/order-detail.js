@@ -138,12 +138,15 @@ function populateTrackingTimeline() {
   }
   cancelledMessage.style.display = "none";
 
-  // "pending" (awaiting payment) has no meaningful progress yet on the shipping timeline
-  const currentIndex = TRACKING_STEPS.findIndex((step) => step.key === status);
+  // An unpaid order must not read as confirmed, so show a payment-pending step instead.
+  const steps = status === "pending"
+    ? [{ key: "pending", label: "Payment Pending", icon: "fa-clock" }, ...TRACKING_STEPS.slice(1)]
+    : TRACKING_STEPS;
+  const currentIndex = steps.findIndex((step) => step.key === status);
 
   container.innerHTML = `
     <div class="tracking-timeline">
-      ${TRACKING_STEPS.map((step, index) => {
+      ${steps.map((step, index) => {
         let stateClass = "";
         if (currentIndex === -1) {
           stateClass = "";
@@ -269,7 +272,7 @@ function populateOrderSummary() {
   document.getElementById("summary-subtotal").textContent = `₹${subtotal.toFixed(2)}`;
   document.getElementById("summary-delivery").textContent =
     deliveryCharges === 0 ? "Free" : `₹${deliveryCharges.toFixed(2)}`;
-  document.getElementById("summary-tax").textContent = `₹${tax.toFixed(2)}`;
+  document.getElementById("summary-tax").textContent = `₹${tax.toFixed(2)} (incl. in price)`;
   document.getElementById("summary-total").textContent = `₹${total.toFixed(2)}`;
 }
 

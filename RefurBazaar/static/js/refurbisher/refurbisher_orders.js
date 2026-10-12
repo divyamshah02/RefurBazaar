@@ -52,6 +52,7 @@ function filterOrders() {
         filteredOrders = ordersData;
     } else {
         filteredOrders = ordersData.filter(order => {
+            if (order.status === 'cancelled') return false;
             return order.items.some(item => {
                 if (currentFilter === 'pending') {
                     return item.fulfillment_status === 'pending' || item.fulfillment_status === 'device_verified';
@@ -116,6 +117,9 @@ function getRefurbisherTotal(items) {
 }
 
 function getOrderStatusBadge(order) {
+    if (order.status === 'cancelled') {
+        return '<span class="badge bg-dark">Cancelled</span>';
+    }
     const statusCounts = {
         pending: 0,
         device_verified: 0,
@@ -146,14 +150,15 @@ function getOrderStatusBadge(order) {
 }
 
 function updateStats() {
+    const activeOrders = ordersData.filter(order => order.status !== 'cancelled');
     const stats = {
-        total: ordersData.length,
+        total: activeOrders.length,
         pending: 0,
         packed: 0,
         delivered: 0
     };
     
-    ordersData.forEach(order => {
+    activeOrders.forEach(order => {
         order.items.forEach(item => {
             if (item.fulfillment_status === 'pending' || item.fulfillment_status === 'device_verified') {
                 stats.pending++;

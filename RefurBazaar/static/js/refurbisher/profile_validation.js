@@ -30,6 +30,16 @@ function showProfileStatusAlert(companyProfile) {
         return;
     }
 
+    if (!companyProfile.shiprocket_warehouse_created && companyProfile.shiprocket_warehouse_error) {
+        showWarningAlert(
+            'Pickup Address Needs Correction',
+            'Your profile is approved, but we could not set up your pickup warehouse. Courier message: '
+                + escapeHtml(companyProfile.shiprocket_warehouse_error)
+                + ' Please correct your address, city, state and PIN code in Business Details and save. Our team will retry the setup.'
+        );
+        return;
+    }
+
     // Profile is complete and approved
     showSuccessAlert(
         'Profile Approved',

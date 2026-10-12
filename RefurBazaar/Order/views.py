@@ -25,7 +25,8 @@ from .serializers import (
 from .services import (
     CheckoutError, release_expired_holds, hold_unit, sell_unit, cancel_pending_order,
     supersede_pending_orders, confirm_payment, create_razorpay_order, get_razorpay_client,
-    valid_signature, refund_payment, sync_customer_profile, save_checkout_address,
+    valid_signature, request_refund, retry_failed_refunds, sync_customer_profile, save_checkout_address,
+    PaymentNotCaptured, active_claims, unit_problem,
 )
 from .shiprocket_service import create_shiprocket_shipment, refresh_tracking
 from ShoppingCart.models import ShoppingCart, ShoppingCartItem
@@ -40,6 +41,17 @@ def _error(message, code=400, not_logged_in=False):
         "success": False, "user_not_logged_in": not_logged_in, "user_unauthorized": code == 403,
         "data": None, "error": message
     }, status=code)
+
+
+def _fulfilment_block_reason(order):
+    """Why a refurbisher may not act on this order yet, or None. COD orders are payable on delivery."""
+    if order.status == 'cancelled':
+        return "This order has been cancelled."
+    if order.payment_received:
+        return None
+    if order.payment_method == 'cod' and order.status in ('confirmed', 'processing', 'shipped'):
+        return None
+    return "Payment has not been confirmed for this order yet."
 
 
 def _place_order(user, cart, data):
@@ -60,6 +72,7 @@ def _place_order(user, cart, data):
     unavailable = [
         str(ci.listing_unit.listing.model) for ci in cart_items
         if units[ci.listing_unit_id].is_sold or not units[ci.listing_unit_id].is_available
+        or unit_problem(units[ci.listing_unit_id])
     ]
     if unavailable:
         raise CheckoutError(
@@ -68,13 +81,15 @@ def _place_order(user, cart, data):
         )
 
     subtotal_amount = sum(units[ci.listing_unit_id].price for ci in cart_items)
-    tax_amount = Decimal('0.00')
-    delivery_charge = Decimal('50.00')
+    # Delivery is free (as shown in cart and checkout) and prices already include 18% GST,
+    # so the tax is recorded for display only and never added on top again.
+    delivery_charge = Decimal('0.00')
     # Warranty comes from the cart items' server-set price, never from the request body.
     warranty_amount = sum(
         (ci.warranty_price for ci in cart_items if ci.has_extended_warranty), Decimal('0.00')
     )
-    total_amount = subtotal_amount + tax_amount + delivery_charge + warranty_amount
+    total_amount = subtotal_amount + delivery_charge + warranty_amount
+    tax_amount = ((total_amount * 18) / 118).quantize(Decimal('0.01'))
 
     sync_customer_profile(user, data)
     address = save_checkout_address(user, data, data['set_as_primary']) if data['save_address'] else None
@@ -164,6 +179,7 @@ def _reusable_razorpay_order(order):
     """
     if not order.razorpay_order_id:
         return None
+    paid_payment_id = None
     try:
         client, key_id = get_razorpay_client()
         existing = client.order.fetch(order.razorpay_order_id)
@@ -172,16 +188,25 @@ def _reusable_razorpay_order(order):
         if rzp_status == 'paid':
             payments = client.order.payments(order.razorpay_order_id).get('items', [])
             paid = next((p for p in payments if p.get('status') in ('captured', 'authorized')), None)
-            if paid:
-                confirm_payment(order, paid['id'])
-                return {'already_paid': True}
-            return None
-
-        if rzp_status in ('created', 'attempted') and existing.get('amount') == int(order.total_amount * 100):
+            if not paid:
+                return None
+            paid_payment_id = paid['id']
+        elif rzp_status in ('created', 'attempted') and existing.get('amount') == int(order.total_amount * 100):
             existing['key_id'] = key_id
             return existing
     except Exception:
         return None
+
+    if paid_payment_id:
+        # Outside the lookup try-block so a cancelled/unavailable order is refunded, not hidden.
+        try:
+            confirm_payment(order, paid_payment_id)
+            return {'already_paid': True}
+        except PaymentNotCaptured:
+            return None
+        except CheckoutError:
+            request_refund(order, paid_payment_id)
+            raise
     return None
 
 
@@ -261,7 +286,7 @@ def payment_callback(request):
         ))
 
     if order.status == 'cancelled':
-        refunded = refund_payment(rzp_payment_id)
+        refunded = request_refund(order, rzp_payment_id)
         return redirect(_page_url(
             detail_path, order_id=order.order_id, payment='cancelled',
             reason='This order was cancelled before the payment completed. '
@@ -269,8 +294,19 @@ def payment_callback(request):
                       else 'Any amount charged will be refunded shortly.'),
         ))
 
-    confirm_payment(order, rzp_payment_id, rzp_signature)
-    send_order_confirmation_email(order)
+    try:
+        confirmed = confirm_payment(order, rzp_payment_id, rzp_signature)
+    except PaymentNotCaptured as exc:
+        return redirect(_page_url(detail_path, order_id=order.order_id, payment='failed', reason=exc.message))
+    except CheckoutError as exc:
+        refunded = request_refund(order, rzp_payment_id)
+        return redirect(_page_url(
+            detail_path, order_id=order.order_id, payment='cancelled',
+            reason=exc.message + (' Your payment has been refunded.' if refunded
+                                  else ' Any amount charged will be refunded shortly.'),
+        ))
+    if confirmed:
+        send_order_confirmation_email(order)
     return redirect(_page_url('/order-success/', order_id=order.order_id))
 
 
@@ -291,6 +327,8 @@ class OrderViewSet(viewsets.ViewSet):
 
         if not request.user.is_authenticated:
             return _error("Please verify your email to place an order.", 401, not_logged_in=True)
+        if getattr(request.user, 'active_user', True) is False:
+            return _error("This account has been deactivated.", 403)
 
         serializer = OrderCreateSerializer(data=request.data)
         if not serializer.is_valid():
@@ -357,7 +395,7 @@ class OrderViewSet(viewsets.ViewSet):
             }, status=status.HTTP_200_OK)
 
         if order.status == 'cancelled':
-            refunded = refund_payment(rzp_payment_id)
+            refunded = request_refund(order, rzp_payment_id)
             return _error(
                 "This order was cancelled before the payment completed. "
                 + ("Your payment has been refunded." if refunded
@@ -365,8 +403,19 @@ class OrderViewSet(viewsets.ViewSet):
                 409,
             )
 
-        confirm_payment(order, rzp_payment_id, rzp_signature)
-        send_order_confirmation_email(order)
+        try:
+            confirmed = confirm_payment(order, rzp_payment_id, rzp_signature)
+        except PaymentNotCaptured as exc:
+            return _error(exc.message, 402)
+        except CheckoutError as exc:
+            refunded = request_refund(order, rzp_payment_id)
+            return _error(
+                exc.message + (" Your payment has been refunded." if refunded
+                               else " Any amount charged will be refunded to you shortly."),
+                exc.status_code,
+            )
+        if confirmed:
+            send_order_confirmation_email(order)
 
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
@@ -390,37 +439,41 @@ class OrderViewSet(viewsets.ViewSet):
         if order.payment_method != 'razorpay':
             return _error("This order is not an online payment order.", 400)
 
-        items = list(order.items.select_related('listing_unit__listing__model__brand'))
+        gone = []
+        try:
+            with transaction.atomic():
+                # Lock the order first so a cancel or a payment landing at the same moment is serialised.
+                locked = Order.objects.select_for_update().get(pk=order.pk)
+                if locked.payment_received or locked.status != 'pending':
+                    raise CheckoutError("This order is not waiting for payment.", 400)
 
-        with transaction.atomic():
-            units = {
-                u.id: u for u in ListingUnit.objects.select_for_update().filter(
-                    id__in=[i.listing_unit_id for i in items]
-                )
-            }
-            gone = [
-                str(units[i.listing_unit_id].listing.model)
-                for i in items
-                if units[i.listing_unit_id].is_sold
-                or (not units[i.listing_unit_id].is_available and not units[i.listing_unit_id].half_sold)
-            ]
+                items = list(locked.items.all())
+                units = {
+                    u.id: u for u in ListingUnit.objects.select_for_update().filter(
+                        id__in=[i.listing_unit_id for i in items]
+                    )
+                }
+                gone = [
+                    str(units[i.listing_unit_id].listing.model)
+                    for i in items if unit_problem(units[i.listing_unit_id], locked)
+                ]
+
+                if not gone:
+                    for i in items:
+                        hold_unit(units[i.listing_unit_id])
+
+                    razorpay_order = _reusable_razorpay_order(locked)
+                    if razorpay_order is None:
+                        razorpay_order = create_razorpay_order(locked)
+        except CheckoutError as exc:
+            return _error(exc.message, exc.status_code)
 
         if gone:
             cancel_pending_order(order)
             return _error(
                 f"Sorry, {', '.join(gone)} is no longer available, so this order has been cancelled.", 409
             )
-
-        try:
-            with transaction.atomic():
-                for i in items:
-                    hold_unit(ListingUnit.objects.select_for_update().get(pk=i.listing_unit_id))
-
-                razorpay_order = _reusable_razorpay_order(order)
-                if razorpay_order is None:
-                    razorpay_order = create_razorpay_order(order)
-        except CheckoutError as exc:
-            return _error(exc.message, exc.status_code)
+        order.refresh_from_db()
 
         if razorpay_order.get('already_paid'):
             order.refresh_from_db()
@@ -457,9 +510,11 @@ class OrderViewSet(viewsets.ViewSet):
     def cleanup_half_sold(self, request):
         """Release devices whose checkout hold expired (also runs automatically)."""
         count = release_expired_holds()
+        retried, still_failing = retry_failed_refunds()
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
-            "data": {"released_count": count}, "error": None
+            "data": {"released_count": count, "refunds_retried": retried,
+                     "refunds_still_failing": still_failing}, "error": None
         }, status=status.HTTP_200_OK)
     
     
@@ -585,11 +640,9 @@ class OrderViewSet(viewsets.ViewSet):
                 "data": None, "error": "Unauthorized access"
             }, status=status.HTTP_403_FORBIDDEN)
 
-        if not order_item.order.payment_received:
-            return Response({
-                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
-                "data": None, "error": "Payment has not been confirmed for this order yet."
-            }, status=status.HTTP_400_BAD_REQUEST)
+        blocked = _fulfilment_block_reason(order_item.order)
+        if blocked:
+            return _error(blocked, 400)
 
         profile = getattr(request.user, 'company_profile', None)
         if not profile or not profile.shiprocket_warehouse_created or not profile.shiprocket_pickup_code:
@@ -679,11 +732,9 @@ class OrderViewSet(viewsets.ViewSet):
                 "data": None, "error": "Unauthorized access"
             }, status=status.HTTP_403_FORBIDDEN)
 
-        if not order_item.order.payment_received:
-            return Response({
-                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
-                "data": None, "error": "Payment has not been confirmed for this order yet."
-            }, status=status.HTTP_400_BAD_REQUEST)
+        blocked = _fulfilment_block_reason(order_item.order)
+        if blocked:
+            return _error(blocked, 400)
 
         if not order_item.pickup_scheduled_date:
             return Response({
@@ -727,6 +778,10 @@ class OrderViewSet(viewsets.ViewSet):
                 "data": None, "error": "Unauthorized access"
             }, status=status.HTTP_403_FORBIDDEN)
 
+        if order_item.shiprocket_awb_code and not order_item.shiprocket_pickup_booked:
+            create_shiprocket_shipment(order_item)
+            order_item.refresh_from_db()
+
         ok, error = refresh_tracking(order_item)
         return Response({
             "success": ok, "user_not_logged_in": False, "user_unauthorized": False,
@@ -748,11 +803,12 @@ class OrderViewSet(viewsets.ViewSet):
                 "data": None, "error": "Unauthorized access"
             }, status=status.HTTP_403_FORBIDDEN)
 
-        if not order_item.order.payment_received:
-            return Response({
-                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
-                "data": None, "error": "Payment has not been confirmed for this order yet."
-            }, status=status.HTTP_400_BAD_REQUEST)
+        blocked = _fulfilment_block_reason(order_item.order)
+        if blocked:
+            return _error(blocked, 400)
+
+        if order_item.fulfillment_status not in ('pending', 'device_verified'):
+            return _error("This item can no longer be verified.", 400)
         
         # Validate data
         serializer = OrderItemVerificationSerializer(data=request.data)
@@ -813,6 +869,8 @@ class OrderViewSet(viewsets.ViewSet):
                 "success": False, "user_not_logged_in": False, "user_unauthorized": False,
                 "data": None, "error": "This item can no longer be changed."
             }, status=status.HTTP_400_BAD_REQUEST)
+        if order_item.order.status == 'cancelled':
+            return _error("This order has been cancelled.", 400)
         
         # Validate data
         serializer = OrderItemActionSerializer(data=request.data)
@@ -846,10 +904,14 @@ class OrderViewSet(viewsets.ViewSet):
             # Unpaid holds go back on sale; a paid unit stays off the market until
             # the refund/cancellation workflow is handled by admin.
             if not order_item.order.payment_received:
-                listing_unit = order_item.listing_unit
-                listing_unit.is_sold = False
-                listing_unit.is_available = True
-                listing_unit.save()
+                with transaction.atomic():
+                    listing_unit = ListingUnit.objects.select_for_update().get(pk=order_item.listing_unit_id)
+                    if not active_claims(listing_unit, exclude_order=order_item.order):
+                        listing_unit.is_sold = False
+                        listing_unit.half_sold = False
+                        listing_unit.half_sold_at = None
+                        listing_unit.is_available = True
+                        listing_unit.save(update_fields=['is_sold', 'half_sold', 'half_sold_at', 'is_available'])
         
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,

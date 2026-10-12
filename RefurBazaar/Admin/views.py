@@ -24,6 +24,40 @@ ORDER_STATUS_TRANSITIONS = {
     'cancelled': (),
 }
 
+DEFAULT_PAGE_SIZE = 20
+MAX_PAGE_SIZE = 100
+
+
+def paginate_queryset(request, queryset):
+    """Slice a queryset using ?page and ?page_size.
+
+    Returns (page_items, meta). meta is merged into the response data next to
+    `results` so list screens can render their pager from `count`.
+    """
+    try:
+        page_size = int(request.query_params.get('page_size', DEFAULT_PAGE_SIZE))
+    except (TypeError, ValueError):
+        page_size = DEFAULT_PAGE_SIZE
+    page_size = max(1, min(page_size, MAX_PAGE_SIZE))
+
+    count = queryset.count()
+    total_pages = max(1, -(-count // page_size))
+
+    try:
+        page = int(request.query_params.get('page', 1))
+    except (TypeError, ValueError):
+        page = 1
+    page = max(1, min(page, total_pages))
+
+    start = (page - 1) * page_size
+    meta = {
+        'count': count,
+        'page': page,
+        'page_size': page_size,
+        'total_pages': total_pages,
+    }
+    return queryset[start:start + page_size], meta
+
 
 class AdminDashboardViewSet(viewsets.ViewSet):
     """Admin Dashboard APIs"""
@@ -137,12 +171,13 @@ class AdminDashboardViewSet(viewsets.ViewSet):
 
         orders = orders.order_by('-created_at')
 
-        serializer = OrderSerializer(orders, many=True)
+        page_items, meta = paginate_queryset(request, orders)
+        serializer = OrderSerializer(page_items, many=True)
         return Response({
             "success": True,
             "user_not_logged_in": False,
             "user_unauthorized": False,
-            "data": serializer.data,
+            "data": {"results": serializer.data, **meta},
             "error": None
         }, status=status.HTTP_200_OK)
 
@@ -241,8 +276,11 @@ class AdminDashboardViewSet(viewsets.ViewSet):
                 Q(contact_number__icontains=search)
             )
 
+        refurbishers = refurbishers.order_by('-created_at')
+        page_items, meta = paginate_queryset(request, refurbishers)
+
         data = []
-        for refurbisher in refurbishers:
+        for refurbisher in page_items:
             user_data = UserSerializer(refurbisher).data
             company_data = None
             if hasattr(refurbisher, 'company_profile'):
@@ -266,7 +304,7 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             "success": True,
             "user_not_logged_in": False,
             "user_unauthorized": False,
-            "data": data[::-1],
+            "data": {"results": data, **meta},
             "error": None
         }, status=status.HTTP_200_OK)
 
@@ -459,12 +497,13 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             )
 
         listings = listings.order_by('-created_at')
-        serializer = ListingSerializer(listings, many=True)
+        page_items, meta = paginate_queryset(request, listings)
+        serializer = ListingSerializer(page_items, many=True)
         return Response({
             "success": True,
             "user_not_logged_in": False,
             "user_unauthorized": False,
-            "data": serializer.data,
+            "data": {"results": serializer.data, **meta},
             "error": None
         }, status=status.HTTP_200_OK)
 
@@ -518,8 +557,10 @@ class AdminDashboardViewSet(viewsets.ViewSet):
                 Q(email__icontains=search)
             )
 
+        page_items, meta = paginate_queryset(request, customers)
+
         data = []
-        for customer in customers:
+        for customer in page_items:
             user_data = UserSerializer(customer).data
 
             total_orders = Order.objects.filter(user=customer).count()
@@ -538,7 +579,7 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             "success": True,
             "user_not_logged_in": False,
             "user_unauthorized": False,
-            "data": data,
+            "data": {"results": data, **meta},
             "error": None
         }, status=status.HTTP_200_OK)
 

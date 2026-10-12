@@ -48,7 +48,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
             'shiprocket_courier_id', 'shiprocket_courier_name', 'shiprocket_shipping_rate',
             'shipping_selected_at', 'shiprocket_order_id', 'shiprocket_shipment_id',
             'shiprocket_awb_code', 'shiprocket_status', 'shiprocket_tracking_url',
-            'shiprocket_last_synced_at', 'shiprocket_last_error',
+            'shiprocket_pickup_booked', 'shiprocket_last_synced_at', 'shiprocket_last_error',
             'created_at', 'updated_at'
         ]
 
