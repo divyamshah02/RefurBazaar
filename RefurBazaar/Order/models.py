@@ -79,6 +79,18 @@ class Order(models.Model):
     razorpay_signature = models.CharField(max_length=255, null=True, blank=True)
     razorpay_link = models.URLField(null=True, blank=True)
     payment_received = models.BooleanField(default=False)
+
+    # Refund tracking for money received on an order we could not fulfil
+    REFUND_STATUS_CHOICES = [
+        ('none', 'No refund'),
+        ('processed', 'Refund accepted'),
+        ('failed', 'Refund failed - needs attention'),
+    ]
+    refund_status = models.CharField(max_length=20, choices=REFUND_STATUS_CHOICES, default='none')
+    refund_payment_id = models.CharField(max_length=100, blank=True, default='')
+    refund_id = models.CharField(max_length=100, blank=True, default='')
+    refund_attempts = models.PositiveSmallIntegerField(default=0)
+    refund_error = models.TextField(blank=True, default='')
     
     # Order status
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -192,6 +204,7 @@ class OrderItem(models.Model):
     shiprocket_awb_code = models.CharField(max_length=50, null=True, blank=True)
     shiprocket_status = models.CharField(max_length=100, null=True, blank=True, help_text="Latest raw status text from ShipRocket")
     shiprocket_tracking_url = models.URLField(null=True, blank=True)
+    shiprocket_pickup_booked = models.BooleanField(default=False, help_text="Courier pickup successfully booked (tracked separately from shipment creation)")
     shiprocket_last_synced_at = models.DateTimeField(null=True, blank=True)
     shiprocket_last_error = models.TextField(null=True, blank=True, help_text="Last error encountered while talking to ShipRocket, if any")
 

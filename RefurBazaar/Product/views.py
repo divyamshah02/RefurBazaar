@@ -35,6 +35,55 @@ def _copy_fixed_attributes_to_unit(unit, product_model):
         )
 
 
+def _clean_unit_attributes(product_model, attributes, condition=None):
+    """
+    Validates a unit's condition and attributes against the product model's own
+    definition. Returns (clean_list, error). Each attribute must belong to the model,
+    appear once, and (for 'choice' types) use one of the allowed values.
+    """
+    if condition is not None and condition not in dict(ListingUnit.CONDITION_CHOICES):
+        return None, "Invalid condition."
+    if not isinstance(attributes, list):
+        return None, "attributes must be a list."
+
+    allowed = {
+        pma.attribute_id: pma
+        for pma in ProductModelAttribute.objects.filter(product_model=product_model)
+    }
+    clean, seen = [], set()
+    for attr in attributes:
+        if not isinstance(attr, dict):
+            return None, "Invalid attribute entry."
+        attr_id = attr.get('attribute_id') or attr.get('attribute') or attr.get('id')
+        if not attr_id:
+            continue
+        try:
+            attr_id = int(attr_id)
+        except (TypeError, ValueError):
+            return None, "Invalid attribute id."
+        pma = allowed.get(attr_id)
+        if pma is None:
+            return None, "Attribute does not belong to the selected product."
+        if attr_id in seen:
+            return None, "Duplicate attribute."
+        seen.add(attr_id)
+        value = attr.get('value')
+        value = str(value).strip() if value is not None else ''
+        if not value:
+            return None, f"Value is required for {pma.attribute.name}."
+        if pma.data_type == 'choice' and pma.possible_values and value not in pma.possible_values:
+            return None, f"'{value}' is not a valid option for {pma.attribute.name}."
+        clean.append((pma.attribute, value))
+
+    missing = [
+        pma.attribute.name for pma in allowed.values()
+        if pma.is_required and pma.attribute_id not in seen
+    ]
+    if missing:
+        return None, "Missing required attribute(s): " + ", ".join(missing)
+    return clean, None
+
+
 class BrandViewSet(viewsets.ViewSet):
 
     @handle_exceptions
@@ -612,8 +661,14 @@ class ListingViewSet(viewsets.ViewSet):
         refurbisher = request.user
 
         # Validate all units before writing to DB
+        if not isinstance(units, list):
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "units must be a list."
+            }, status=status.HTTP_400_BAD_REQUEST)
+        cleaned_attributes = []
         for unit_data in units:
-            if not unit_data.get('price'):
+            if not isinstance(unit_data, dict) or not unit_data.get('price'):
                 return Response({
                     "success": False, "user_not_logged_in": False, "user_unauthorized": False,
                     "data": None, "error": "Price is required for each unit."
@@ -623,6 +678,16 @@ class ListingViewSet(viewsets.ViewSet):
                     "success": False, "user_not_logged_in": False, "user_unauthorized": False,
                     "data": None, "error": "Condition is required for each unit."
                 }, status=status.HTTP_400_BAD_REQUEST)
+            clean, attr_error = _clean_unit_attributes(
+                model, unit_data.get('attributes', []), unit_data.get('condition')
+            )
+            if attr_error:
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None, "error": attr_error
+                }, status=status.HTTP_400_BAD_REQUEST)
+            cleaned_attributes.append(clean)
+
 
         # Total quantity is just the number of units (each unit = 1 device)
         total_quantity = len(units)
@@ -636,10 +701,10 @@ class ListingViewSet(viewsets.ViewSet):
             )
 
             # Create units with individual prices and conditions
-            for unit_data in units:
+            for unit_data, attributes in zip(units, cleaned_attributes):
                 unit_price = unit_data.get('price')
                 unit_condition = unit_data.get('condition')
-                attributes = unit_data.get('attributes', [])
+
 
                 # unit_price is the refurbisher's price; ListingUnit.save() adds the
                 # platform commission and stores the customer-facing total in `price`.
@@ -650,15 +715,11 @@ class ListingViewSet(viewsets.ViewSet):
                 )
 
                 # Create attributes for this unit
-                for attr in attributes:
-                    attr_id = attr.get('attribute_id') or attr.get('id')
-                    if not attr_id:
-                        continue
-                    attr_obj = get_object_or_404(AttributeMaster, id=attr_id)
+                for attr_obj, value in attributes:
                     ListingUnitAttribute.objects.create(
                         listing_unit=unit,
                         attribute=attr_obj,
-                        value=attr.get('value')
+                        value=value
                     )
 
                 # Auto-copy fixed specs (Processor, Screen Size, OS, ...) that the
@@ -765,6 +826,13 @@ class ListingViewSet(viewsets.ViewSet):
                 "data": None, "error": "Condition is required."
             }, status=status.HTTP_400_BAD_REQUEST)
         
+        clean, attr_error = _clean_unit_attributes(listing.model, attributes, condition)
+        if attr_error:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": attr_error
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         # Create unit (price is the refurbisher's price; commission is added by the model)
         unit = ListingUnit.objects.create(
             listing=listing,
@@ -772,17 +840,13 @@ class ListingViewSet(viewsets.ViewSet):
             condition=condition
         )
         
-        # Create attributes
-        for attr in attributes:
-            attr_id = attr.get('attribute') or attr.get('attribute_id')
-            if not attr_id:
-                continue
-            attr_obj = get_object_or_404(AttributeMaster, id=attr_id)
+        for attr_obj, value in clean:
             ListingUnitAttribute.objects.create(
                 listing_unit=unit,
                 attribute=attr_obj,
-                value=attr.get('value')
+                value=value
             )
+
 
         # Auto-copy fixed specs (Processor, Screen Size, OS, ...) that the
         # refurbisher was never asked for.
@@ -835,24 +899,32 @@ class ListingViewSet(viewsets.ViewSet):
             unit.refurbisher_price = request.data['price']
             unit.apply_commission()
         if 'condition' in request.data:
+            if request.data['condition'] not in dict(ListingUnit.CONDITION_CHOICES):
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None, "error": "Invalid condition."
+                }, status=status.HTTP_400_BAD_REQUEST)
             unit.condition = request.data['condition']
-        
-        # Update attributes if provided
+
+        clean = None
         if 'attributes' in request.data:
-            # Delete existing attributes
+            clean, attr_error = _clean_unit_attributes(listing.model, request.data['attributes'])
+            if attr_error:
+                return Response({
+                    "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": None, "error": attr_error
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Update attributes if provided
+        if clean is not None:
             unit.attributes.all().delete()
-            
-            # Create new attributes
-            for attr in request.data['attributes']:
-                attr_id = attr.get('attribute') or attr.get('attribute_id')
-                if not attr_id:
-                    continue
-                attr_obj = get_object_or_404(AttributeMaster, id=attr_id)
+            for attr_obj, value in clean:
                 ListingUnitAttribute.objects.create(
                     listing_unit=unit,
                     attribute=attr_obj,
-                    value=attr.get('value')
+                    value=value
                 )
+
 
             # Re-copy fixed specs since we just wiped all attributes for this unit.
             _copy_fixed_attributes_to_unit(unit, listing.model)
@@ -1553,10 +1625,11 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
 
     @handle_exceptions
     @check_authentication(required_role='admin')
-    def patch(self, request, pk=None):
+    def partial_update(self, request, pk=None):
         """
         Update an existing ProductModel and its attributes.
-        Partial updates are supported.
+        Partial updates are supported. The admin product page sends PATCH, which
+        the router only binds to `partial_update`.
         """
         product_model = get_object_or_404(ProductModel, id=pk)
 

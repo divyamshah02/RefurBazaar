@@ -16,6 +16,7 @@ device has not been bought by someone else in the meantime.
 import re
 import hmac
 import hashlib
+import logging
 from datetime import timedelta
 
 import razorpay
@@ -26,6 +27,8 @@ from django.utils import timezone
 from Product.models import ListingUnit
 from UserDetail.models import Address
 
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_HOLD_MINUTES = 30
 
@@ -79,19 +82,72 @@ def release_expired_holds():
 
 # --------------------------------------------------------------- orders ----
 
+class PaymentNotCaptured(CheckoutError):
+    """Razorpay has not (yet) reported the payment as captured."""
+
+
+def active_claims(unit, exclude_order=None):
+    """True if a live (not cancelled, not rejected) order item still owns `unit`."""
+    from .models import OrderItem
+    claims = OrderItem.objects.filter(listing_unit=unit).exclude(
+        order__status='cancelled'
+    ).exclude(fulfillment_status='rejected')
+    if exclude_order is not None:
+        claims = claims.exclude(order=exclude_order)
+    return claims.exists()
+
+
+def unit_problem(unit, order=None):
+    """Why `unit` cannot be bought/paid for right now, or None when it is fine."""
+    listing = unit.listing
+    if unit.is_sold:
+        return "already sold"
+    if listing.status in ('inactive', 'draft'):
+        return "no longer listed for sale"
+    seller = listing.refurbisher
+    if getattr(seller, 'active_user', True) is False:
+        return "from a seller who is no longer active"
+    profile = getattr(seller, 'company_profile', None)
+    if profile is not None and not profile.is_approved:
+        return "from a seller who is not approved"
+    if not unit.is_available and not unit.half_sold:
+        return "not available"
+    if active_claims(unit, exclude_order=order):
+        return "reserved by another order"
+    return None
+
+
+def release_order_units(order):
+    """Put this order's devices back on sale, never touching a device another live order owns."""
+    with transaction.atomic():
+        for item in order.items.all():
+            unit = ListingUnit.objects.select_for_update().get(pk=item.listing_unit_id)
+            if active_claims(unit, exclude_order=order):
+                continue
+            unit.is_sold = False
+            unit.half_sold = False
+            unit.half_sold_at = None
+            unit.is_available = True
+            unit.save(update_fields=['is_sold', 'half_sold', 'half_sold_at', 'is_available'])
+
+
 def cancel_pending_order(order, release_units=True):
     """Cancel an unpaid order and (optionally) give its devices back to the shop."""
-    if order.payment_received or order.status != 'pending':
-        return False
+    from .models import Order
     with transaction.atomic():
-        order.status = 'cancelled'
-        order.save(update_fields=['status', 'updated_at'])
+        # Lock the order so a payment confirming at the same moment cannot also be cancelled.
+        locked = Order.objects.select_for_update().get(pk=order.pk)
+        if locked.payment_received or locked.status != 'pending':
+            order.refresh_from_db()
+            return False
+        locked.status = 'cancelled'
+        locked.save(update_fields=['status', 'updated_at'])
         if release_units:
-            for item in order.items.select_related('listing_unit'):
-                unit = item.listing_unit
-                # Only release a unit that is still held by this (now cancelled) order.
-                if unit.half_sold and not unit.is_sold:
+            for item in locked.items.all():
+                unit = ListingUnit.objects.select_for_update().get(pk=item.listing_unit_id)
+                if unit.half_sold and not unit.is_sold and not active_claims(unit, exclude_order=locked):
                     release_unit(unit)
+    order.refresh_from_db()
     return True
 
 
@@ -110,18 +166,53 @@ def supersede_pending_orders(unit, keep_order):
         stale_order.save(update_fields=['status', 'updated_at'])
 
 
-def confirm_payment(order, payment_id, signature=''):
-    """Mark an order as paid and its devices as sold. Idempotent."""
+def confirm_payment(order, payment_id, signature='', verify_capture=True):
+    """
+    Mark an order as paid and its devices as sold. Idempotent.
+
+    Raises PaymentNotCaptured while Razorpay has not captured the money, and
+    CheckoutError when the order was cancelled or a device is no longer free
+    (the caller should then refund). The order row and its devices are locked
+    together so cancel/pay races end in exactly one outcome.
+    """
+    from .models import Order
     if order.payment_received:
         return False
+    if verify_capture and not payment_is_captured(order, payment_id):
+        raise PaymentNotCaptured(
+            "Your payment is not captured yet. If money was deducted, the order will be "
+            "confirmed or the amount refunded automatically.", 402
+        )
     with transaction.atomic():
-        order.razorpay_payment_id = payment_id
-        order.razorpay_signature = signature or order.razorpay_signature
-        order.payment_received = True
-        order.status = 'confirmed'
-        order.save()
-        for item in order.items.select_related('listing_unit'):
-            sell_unit(item.listing_unit)
+        locked = Order.objects.select_for_update().get(pk=order.pk)
+        if locked.payment_received:
+            order.refresh_from_db()
+            return False
+        if locked.status == 'cancelled':
+            raise CheckoutError("This order was cancelled before the payment completed.", 409)
+
+        items = list(locked.items.all())
+        units = {
+            u.id: u for u in ListingUnit.objects.select_for_update().filter(
+                id__in=[i.listing_unit_id for i in items]
+            )
+        }
+        for item in items:
+            unit = units[item.listing_unit_id]
+            if unit.is_sold or active_claims(unit, exclude_order=locked):
+                raise CheckoutError(
+                    "A device in this order was bought by someone else before the payment completed.", 409
+                )
+
+        locked.razorpay_payment_id = payment_id or locked.razorpay_payment_id
+        locked.razorpay_signature = signature or locked.razorpay_signature
+        locked.payment_received = True
+        if locked.status == 'pending':
+            locked.status = 'confirmed'
+        locked.save()
+        for unit in units.values():
+            sell_unit(unit)
+    order.refresh_from_db()
     return True
 
 
@@ -163,14 +254,73 @@ def valid_signature(razorpay_order_id, razorpay_payment_id, signature):
     return hmac.compare_digest(expected, signature or '')
 
 
-def refund_payment(payment_id):
-    """Best-effort full refund, used when money arrives for an order we can no longer fulfil."""
+def payment_is_captured(order, payment_id):
+    """
+    True once Razorpay reports the payment as captured. An authorized payment
+    (manual-capture accounts) is captured here first; anything else is not paid.
+    """
+    if not payment_id:
+        return False
     try:
         client, _ = get_razorpay_client()
-        client.payment.refund(payment_id, {})
-        return True
+        payment = client.payment.fetch(payment_id)
+        expected = int(order.total_amount * 100)
+        if order.razorpay_order_id and payment.get('order_id') != order.razorpay_order_id:
+            return False
+        if int(payment.get('amount') or 0) != expected:
+            return False
+        if payment.get('status') == 'captured':
+            return True
+        if payment.get('status') == 'authorized':
+            captured = client.payment.capture(payment_id, expected, {'currency': 'INR'})
+            return captured.get('status') == 'captured'
     except Exception:
-        return False
+        logger.exception("Could not verify capture for payment %s", payment_id)
+    return False
+
+
+MAX_REFUND_ATTEMPTS = 5
+
+
+def request_refund(order, payment_id=None):
+    """
+    Full refund of a payment we cannot fulfil. The attempt and its outcome are
+    saved on the order so a failed refund is visible to admin and retried
+    (see retry_failed_refunds). Returns True once Razorpay has accepted it.
+    """
+    if order.refund_status == 'processed':
+        return True
+    payment_id = payment_id or order.refund_payment_id or order.razorpay_payment_id
+    order.refund_payment_id = payment_id or ''
+    order.refund_attempts = (order.refund_attempts or 0) + 1
+    try:
+        client, _ = get_razorpay_client()
+        refund = client.payment.refund(payment_id, {})
+        order.refund_status = 'processed'
+        order.refund_id = refund.get('id', '') if isinstance(refund, dict) else ''
+        order.refund_error = ''
+        accepted = True
+    except Exception as exc:
+        order.refund_status = 'failed'
+        order.refund_error = str(exc)[:500]
+        logger.error("Refund failed for order %s (attempt %s): %s", order.order_id, order.refund_attempts, exc)
+        accepted = False
+    order.save(update_fields=[
+        'refund_payment_id', 'refund_attempts', 'refund_status', 'refund_id', 'refund_error', 'updated_at'
+    ])
+    return accepted
+
+
+def retry_failed_refunds():
+    """Retry refunds that failed earlier. Returns (retried, still_failing)."""
+    from .models import Order
+    pending = Order.objects.filter(refund_status='failed', refund_attempts__lt=MAX_REFUND_ATTEMPTS)
+    retried = still_failing = 0
+    for order in pending:
+        retried += 1
+        if not request_refund(order):
+            still_failing += 1
+    return retried, still_failing
 
 
 # -------------------------------------------------- customer profile sync ----

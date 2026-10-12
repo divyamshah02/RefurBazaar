@@ -175,6 +175,11 @@
 
   <script src="{% static 'js/api_caller.js' %}"></script>
   <script>
+    // Back/forward cache can restore this page with a stale CSRF token; reload to get a fresh one.
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) window.location.reload();
+    });
+
     const togglePass = document.getElementById('toggle-pass');
     const passInput = document.getElementById('password');
     togglePass.addEventListener('click', () => {

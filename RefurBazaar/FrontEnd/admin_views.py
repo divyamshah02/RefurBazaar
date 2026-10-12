@@ -10,7 +10,12 @@ class AdminLoginPageViewSet(viewsets.ViewSet):
         user = request.user
         if user.is_authenticated and getattr(user, 'role', None) == 'admin' and user.is_active:
             return redirect(safe_next_url(request, 'admin') or '/admin-dashboard/')
-        return render(request, 'admin/login.html')
+        # The form embeds a CSRF token that rotates on login, so a cached copy
+        # (browser Back) would post a stale token and fail.
+        response = render(request, 'admin/login.html')
+        response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response['Pragma'] = 'no-cache'
+        return response
 
 
 class AdminDashboardPageViewSet(viewsets.ViewSet):

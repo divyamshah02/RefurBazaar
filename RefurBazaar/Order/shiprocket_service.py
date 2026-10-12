@@ -27,8 +27,9 @@ def create_shiprocket_shipment(order_item):
         order_item.save(update_fields=['shiprocket_last_error'])
         return False, order_item.shiprocket_last_error
 
-    if order_item.shiprocket_order_id and order_item.shiprocket_awb_code:
-        # Already fully created — nothing to do.
+    if (order_item.shiprocket_order_id and order_item.shiprocket_awb_code
+            and order_item.shiprocket_pickup_booked):
+        # Shipment and pickup are both done — nothing to do.
         return True, None
 
     listing_unit = order_item.listing_unit
@@ -81,12 +82,16 @@ def create_shiprocket_shipment(order_item):
                 order_item.shiprocket_courier_name = awb_data["courier_name"]
             order_item.save(update_fields=['shiprocket_awb_code', 'shiprocket_courier_name'])
 
-            # Best-effort pickup scheduling — don't fail the whole shipment if this errors.
+        # Pickup is booked (and retried) independently of shipment creation, so a
+        # transient courier error never leaves a shipment that nobody will collect.
+        if order_item.shiprocket_awb_code and not order_item.shiprocket_pickup_booked:
             try:
                 client.generate_pickup(
                     shipment_ids=[order_item.shiprocket_shipment_id],
                     pickup_date=order_item.pickup_scheduled_date.strftime("%Y-%m-%d"),
                 )
+                order_item.shiprocket_pickup_booked = True
+                order_item.shiprocket_last_error = None
             except ShiprocketAPIException as e:
                 order_item.shiprocket_last_error = f"Pickup scheduling failed (shipment created): {e}"
 
@@ -97,7 +102,8 @@ def create_shiprocket_shipment(order_item):
         )
         order_item.shiprocket_last_synced_at = timezone.now()
         order_item.save(update_fields=[
-            'shiprocket_status', 'shiprocket_tracking_url', 'shiprocket_last_synced_at', 'shiprocket_last_error'
+            'shiprocket_status', 'shiprocket_tracking_url', 'shiprocket_last_synced_at', 'shiprocket_last_error',
+            'shiprocket_pickup_booked',
         ])
 
         # Mirror onto the parent Order's existing tracking_number/courier_name/tracking_url
@@ -133,7 +139,17 @@ def refresh_tracking(order_item):
             order_item.shiprocket_status = status_text
         order_item.shiprocket_last_synced_at = timezone.now()
         order_item.shiprocket_last_error = None
-        order_item.save(update_fields=['shiprocket_status', 'shiprocket_last_synced_at', 'shiprocket_last_error'])
+        fields = ['shiprocket_status', 'shiprocket_last_synced_at', 'shiprocket_last_error']
+        if (status_text or '').strip().lower() == 'delivered' and order_item.fulfillment_status != 'delivered':
+            order_item.fulfillment_status = 'delivered'
+            fields.append('fulfillment_status')
+        order_item.save(update_fields=fields)
+        if order_item.fulfillment_status == 'delivered':
+            order = order_item.order
+            siblings = order.items.exclude(fulfillment_status='rejected')
+            if order.status != 'delivered' and not siblings.exclude(fulfillment_status='delivered').exists():
+                order.status = 'delivered'
+                order.save()
         return True, None
     except ShiprocketAPIException as e:
         order_item.shiprocket_last_error = str(e)
