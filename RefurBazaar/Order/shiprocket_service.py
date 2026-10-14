@@ -8,6 +8,38 @@ from django.utils import timezone
 from utils.shiprocket_api import ShiprocketClient, ShiprocketAPIException
 
 
+def item_payable_amount(order_item):
+    """What the buyer pays for this item: device price plus any extended warranty."""
+    amount = order_item.price_at_purchase
+    if order_item.has_extended_warranty:
+        amount += order_item.warranty_price or 0
+    return amount
+
+
+def shipment_is_booked(order_item):
+    return bool(order_item.shiprocket_order_id or order_item.shiprocket_awb_code)
+
+
+def cancel_shiprocket_shipment(order_item):
+    """
+    Cancel the courier shipment for an item. Returns (ok, error). Nothing to
+    cancel counts as success; the booking is only cleared once the courier confirms.
+    """
+    if not shipment_is_booked(order_item):
+        return True, None
+    try:
+        ShiprocketClient().cancel_order([order_item.shiprocket_order_id])
+    except ShiprocketAPIException as e:
+        order_item.shiprocket_last_error = f"Shipment cancellation failed: {e}"
+        order_item.save(update_fields=['shiprocket_last_error'])
+        return False, str(e)
+    order_item.shiprocket_status = "Cancelled"
+    order_item.shiprocket_pickup_booked = False
+    order_item.shiprocket_last_error = None
+    order_item.save(update_fields=['shiprocket_status', 'shiprocket_pickup_booked', 'shiprocket_last_error'])
+    return True, None
+
+
 def create_shiprocket_shipment(order_item):
     """
     Creates the ShipRocket adhoc order, assigns the refurbisher's chosen
@@ -60,7 +92,8 @@ def create_shiprocket_shipment(order_item):
                     "selling_price": str(order_item.price_at_purchase),
                 }],
                 "payment_method": "COD" if order.payment_method == "cod" else "Prepaid",
-                "sub_total": str(order_item.price_at_purchase),
+                # The courier collects the full payable amount for this item, warranty included.
+                "sub_total": str(item_payable_amount(order_item)),
                 "length": float(order_item.box_length or 20),
                 "breadth": float(order_item.box_breadth or 15),
                 "height": float(order_item.box_height or 8),
@@ -142,7 +175,8 @@ def refresh_tracking(order_item):
         fields = ['shiprocket_status', 'shiprocket_last_synced_at', 'shiprocket_last_error']
         if (status_text or '').strip().lower() == 'delivered' and order_item.fulfillment_status != 'delivered':
             order_item.fulfillment_status = 'delivered'
-            fields.append('fulfillment_status')
+            order_item.delivered_at = timezone.now()
+            fields += ['fulfillment_status', 'delivered_at']
         order_item.save(update_fields=fields)
         if order_item.fulfillment_status == 'delivered':
             order = order_item.order

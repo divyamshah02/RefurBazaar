@@ -26,9 +26,13 @@ from .services import (
     CheckoutError, release_expired_holds, hold_unit, sell_unit, cancel_pending_order,
     supersede_pending_orders, confirm_payment, create_razorpay_order, get_razorpay_client,
     valid_signature, request_refund, retry_failed_refunds, sync_customer_profile, save_checkout_address,
-    PaymentNotCaptured, active_claims, unit_problem,
+    PaymentNotCaptured, active_claims, unit_problem, knows_razorpay_order, refund_extra_payment,
+    needs_online_refund,
 )
-from .shiprocket_service import create_shiprocket_shipment, refresh_tracking
+from .shiprocket_service import (
+    create_shiprocket_shipment, refresh_tracking, cancel_shiprocket_shipment, shipment_is_booked,
+    item_payable_amount,
+)
 from ShoppingCart.models import ShoppingCart, ShoppingCartItem
 from Product.models import ListingUnit
 from utils.decorators import handle_exceptions, check_authentication, check_refurbisher_profile
@@ -140,6 +144,8 @@ def _place_order(user, cart, data):
             order=order,
             listing_unit=unit,
             price_at_purchase=unit.price,
+            refurbisher_price_at_purchase=unit.refurbisher_price if unit.refurbisher_price is not None else unit.price,
+            platform_commission_at_purchase=unit.platform_commission or 0,
             condition_at_purchase=unit.condition,
             refurbisher=unit.listing.refurbisher,
             refurbisher_name=unit.listing.refurbisher.first_name,
@@ -264,12 +270,18 @@ def payment_callback(request):
     if request.GET.get('order_id'):
         order = Order.objects.filter(order_id=request.GET['order_id']).first()
     if order is None and rzp_order_id:
-        order = Order.objects.filter(razorpay_order_id=rzp_order_id).first()
+        order = (Order.objects.filter(razorpay_order_id=rzp_order_id).first()
+                 or Order.objects.filter(previous_razorpay_order_ids__contains=rzp_order_id).first())
     if order is None:
         return redirect('/account/')
 
     detail_path = '/order-detail/'
     if order.payment_received:
+        # A second, late payment on an earlier attempt must not be kept as a double charge.
+        if (rzp_payment_id and rzp_payment_id != order.razorpay_payment_id
+                and knows_razorpay_order(order, rzp_order_id)
+                and valid_signature(rzp_order_id, rzp_payment_id, rzp_signature)):
+            refund_extra_payment(rzp_payment_id)
         return redirect(_page_url('/order-success/', order_id=order.order_id))
 
     paid_fields = rzp_payment_id and rzp_signature and rzp_order_id
@@ -279,7 +291,7 @@ def payment_callback(request):
             reason=error_description or 'The payment was not completed.',
         ))
 
-    if order.razorpay_order_id != rzp_order_id or not valid_signature(rzp_order_id, rzp_payment_id, rzp_signature):
+    if not knows_razorpay_order(order, rzp_order_id) or not valid_signature(rzp_order_id, rzp_payment_id, rzp_signature):
         return redirect(_page_url(
             detail_path, order_id=order.order_id, payment='failed',
             reason='We could not verify this payment. If money was deducted it will be refunded.',
@@ -382,13 +394,15 @@ class OrderViewSet(viewsets.ViewSet):
             return _error("Razorpay credentials not configured", 500)
         if not (rzp_order_id and rzp_payment_id and rzp_signature):
             return _error("Missing payment details")
-        if order.razorpay_order_id != rzp_order_id:
+        if not knows_razorpay_order(order, rzp_order_id):
             return _error("Payment does not belong to this order")
         if not valid_signature(rzp_order_id, rzp_payment_id, rzp_signature):
             return _error("Payment verification failed")
 
         # Already confirmed (e.g. double submit) - success without re-sending the email.
         if order.payment_received:
+            if rzp_payment_id != order.razorpay_payment_id:
+                refund_extra_payment(rzp_payment_id)
             return Response({
                 "success": True, "user_not_logged_in": False, "user_unauthorized": False,
                 "data": OrderSerializer(order).data, "error": None
@@ -557,7 +571,7 @@ class OrderViewSet(viewsets.ViewSet):
     
     @action(detail=False, methods=['get'], url_path='refurbisher-orders')
     @handle_exceptions
-    @check_refurbisher_profile()
+    @check_refurbisher_profile(allow_unapproved=True)
     def refurbisher_orders(self, request):
         """Get all orders for refurbisher's sold items"""
         # Get all order items for this refurbisher
@@ -597,7 +611,7 @@ class OrderViewSet(viewsets.ViewSet):
     
     @action(detail=True, methods=['get'], url_path='refurbisher-order-detail')
     @handle_exceptions
-    @check_refurbisher_profile()
+    @check_refurbisher_profile(allow_unapproved=True)
     def refurbisher_order_detail(self, request, pk=None):
         """Get order detail for refurbisher (shows only their items)"""
         order = get_object_or_404(Order, order_id=pk)
@@ -625,7 +639,7 @@ class OrderViewSet(viewsets.ViewSet):
     
     @action(detail=True, methods=['post'], url_path='shipping-rates')
     @handle_exceptions
-    @check_refurbisher_profile()
+    @check_refurbisher_profile(allow_unapproved=True)
     def shipping_rates(self, request, pk=None):
         """
         Step 1 of accepting an order: refurbisher gives a pickup date (+ optional
@@ -716,7 +730,7 @@ class OrderViewSet(viewsets.ViewSet):
 
     @action(detail=True, methods=['post'], url_path='confirm-shipping')
     @handle_exceptions
-    @check_refurbisher_profile()
+    @check_refurbisher_profile(allow_unapproved=True)
     def confirm_shipping(self, request, pk=None):
         """
         Step 2: refurbisher confirms (or accepts the default/cheapest) courier
@@ -767,7 +781,7 @@ class OrderViewSet(viewsets.ViewSet):
 
     @action(detail=True, methods=['post'], url_path='track-shipment')
     @handle_exceptions
-    @check_refurbisher_profile()
+    @check_refurbisher_profile(allow_unapproved=True)
     def track_shipment(self, request, pk=None):
         """Manually refresh ShipRocket tracking status for this item. Safe to call anytime."""
         order_item = get_object_or_404(OrderItem, id=pk)
@@ -791,7 +805,7 @@ class OrderViewSet(viewsets.ViewSet):
 
     @action(detail=True, methods=['post'], url_path='verify-item')
     @handle_exceptions
-    @check_refurbisher_profile()
+    @check_refurbisher_profile(allow_unapproved=True)
     def verify_order_item(self, request, pk=None):
         """Refurbisher verifies device and uploads IMEI/photos"""
         order_item = get_object_or_404(OrderItem, id=pk)
@@ -852,7 +866,7 @@ class OrderViewSet(viewsets.ViewSet):
     
     @action(detail=True, methods=['post'], url_path='item-action')
     @handle_exceptions
-    @check_refurbisher_profile()
+    @check_refurbisher_profile(allow_unapproved=True)
     def order_item_action(self, request, pk=None):
         """Refurbisher packs or rejects order item"""
         order_item = get_object_or_404(OrderItem, id=pk)
@@ -896,14 +910,40 @@ class OrderViewSet(viewsets.ViewSet):
             order_item.save()
             
         elif action == 'reject':
+            # A booked courier shipment must be cancelled before the item can be rejected.
+            if shipment_is_booked(order_item):
+                cancelled, cancel_error = cancel_shiprocket_shipment(order_item)
+                if not cancelled:
+                    return _error(
+                        "The courier shipment could not be cancelled, so this item cannot be "
+                        f"rejected yet. Please try again. ({cancel_error})", 409
+                    )
+
             order_item.fulfillment_status = 'rejected'
             order_item.rejection_reason = data.get('rejection_reason', '')
             order_item.rejected_at = timezone.now()
             order_item.save()
-            
-            # Unpaid holds go back on sale; a paid unit stays off the market until
-            # the refund/cancellation workflow is handled by admin.
-            if not order_item.order.payment_received:
+
+            order = order_item.order
+            if order.payment_received:
+                # Paid item: refund its amount, close the order when nothing is left to
+                # fulfil, and free the device only after the refund is accepted.
+                refund_ok = True
+                if needs_online_refund(order):
+                    refund_ok = request_refund(order, amount=item_payable_amount(order_item))
+                if not order.items.exclude(fulfillment_status='rejected').exists():
+                    order.status = 'cancelled'
+                    order.save(update_fields=['status', 'updated_at'])
+                if refund_ok:
+                    with transaction.atomic():
+                        listing_unit = ListingUnit.objects.select_for_update().get(pk=order_item.listing_unit_id)
+                        if not active_claims(listing_unit, exclude_order=order):
+                            listing_unit.is_sold = False
+                            listing_unit.half_sold = False
+                            listing_unit.half_sold_at = None
+                            listing_unit.is_available = True
+                            listing_unit.save(update_fields=['is_sold', 'half_sold', 'half_sold_at', 'is_available'])
+            else:
                 with transaction.atomic():
                     listing_unit = ListingUnit.objects.select_for_update().get(pk=order_item.listing_unit_id)
                     if not active_claims(listing_unit, exclude_order=order_item.order):

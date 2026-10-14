@@ -237,6 +237,22 @@ class AdminDashboardViewSet(viewsets.ViewSet):
                 return Response({"success": False, "error": f"Cannot change order from '{order.status}' to '{new_status}'"}, status=status.HTTP_400_BAD_REQUEST)
             if new_status in ('shipped', 'delivered') and not order.payment_received and order.payment_method != 'cod':
                 return Response({"success": False, "error": "Payment must be received before the order can be shipped or delivered"}, status=status.HTTP_400_BAD_REQUEST)
+            if new_status == 'cancelled':
+                from Order.services import cancel_order_with_refund, CheckoutError
+                order.save(update_fields=['payment_received', 'updated_at'])
+                try:
+                    outcome = cancel_order_with_refund(order)
+                except CheckoutError as exc:
+                    return Response({"success": False, "error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+                serializer = OrderSerializer(order)
+                message = (
+                    "Order cancelled. The refund could not be issued yet and has been queued for retry."
+                    if outcome == 'refund_failed' else "Order cancelled."
+                )
+                return Response({
+                    "success": True, "data": serializer.data, "message": message,
+                    "refund_status": getattr(order, 'refund_status', ''), "error": None,
+                }, status=status.HTTP_200_OK)
             order.status = new_status
         order.save()
 
@@ -279,6 +295,18 @@ class AdminDashboardViewSet(viewsets.ViewSet):
         refurbishers = refurbishers.order_by('-created_at')
         page_items, meta = paginate_queryset(request, refurbishers)
 
+        page_items = list(page_items)
+        page_ids = [r.pk for r in page_items]
+        listing_counts = dict(
+            Listing.objects.filter(refurbisher_id__in=page_ids)
+            .values_list('refurbisher_id').annotate(n=Count('pk'))
+        )
+        sales_counts = dict(
+            OrderItem.objects.filter(refurbisher_id__in=page_ids, order__payment_received=True)
+            .exclude(order__status='cancelled')
+            .values_list('refurbisher_id').annotate(n=Count('pk'))
+        )
+
         data = []
         for refurbisher in page_items:
             user_data = UserSerializer(refurbisher).data
@@ -286,17 +314,12 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             if hasattr(refurbisher, 'company_profile'):
                 company_data = CompanyProfileSerializer(refurbisher.company_profile).data
 
-            total_listings = Listing.objects.filter(refurbisher=refurbisher).count()
-            total_sales = OrderItem.objects.filter(
-                refurbisher=refurbisher, order__payment_received=True
-            ).exclude(order__status='cancelled').count()
-
             data.append({
                 **user_data,
                 'company_profile': company_data,
                 'stats': {
-                    'total_listings': total_listings,
-                    'total_sales': total_sales
+                    'total_listings': listing_counts.get(refurbisher.pk, 0),
+                    'total_sales': sales_counts.get(refurbisher.pk, 0),
                 }
             })
 
@@ -559,20 +582,25 @@ class AdminDashboardViewSet(viewsets.ViewSet):
 
         page_items, meta = paginate_queryset(request, customers)
 
+        page_items = list(page_items)
+        totals = {
+            row['user_id']: row
+            for row in Order.objects.filter(user_id__in=[c.pk for c in page_items])
+            .values('user_id')
+            .annotate(
+                orders=Count('pk'),
+                spent=Sum('total_amount', filter=Q(payment_received=True)),
+            )
+        }
+
         data = []
         for customer in page_items:
             user_data = UserSerializer(customer).data
-
-            total_orders = Order.objects.filter(user=customer).count()
-            total_spent = Order.objects.filter(
-                user=customer,
-                payment_received=True
-            ).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
-
+            row = totals.get(customer.pk, {})
             data.append({
                 **user_data,
-                'total_orders': total_orders,
-                'total_spent': float(total_spent),
+                'total_orders': row.get('orders', 0),
+                'total_spent': float(row.get('spent') or 0),
             })
 
         return Response({
@@ -594,6 +622,26 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             cat = request.query_params.get('category')
             if cat:
                 qs = qs.filter(category=cat)
+            data_type = request.query_params.get('data_type')
+            if data_type:
+                qs = qs.filter(data_type=data_type)
+            search = (request.query_params.get('search') or '').strip()
+            if search:
+                qs = qs.filter(name__icontains=search)
+
+            if request.query_params.get('page') or request.query_params.get('page_size'):
+                page_items, meta = paginate_queryset(request, qs)
+                counts = {
+                    c: AttributeMaster.objects.filter(category=c).count()
+                    for c in ('mobile', 'laptop', 'tablet')
+                }
+                meta['stats'] = {'total': AttributeMaster.objects.count(), **counts}
+                serializer = AttributeMasterSerializer(page_items, many=True)
+                return Response({
+                    "success": True, "user_not_logged_in": False, "user_unauthorized": False,
+                    "data": serializer.data, "meta": meta, "error": None
+                }, status=status.HTTP_200_OK)
+
             serializer = AttributeMasterSerializer(qs, many=True)
             return Response({
                 "success": True, "user_not_logged_in": False, "user_unauthorized": False,

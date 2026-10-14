@@ -88,7 +88,11 @@ def staff_required(fn):
         user = request.user
         if not user.is_authenticated or getattr(user, 'role', None) != 'admin':
             return err('Forbidden', 403)
+        if getattr(user, 'active_user', True) is False:
+            return err('This account has been deactivated.', 403)
         return fn(self, request, *args, **kwargs)
+    wrapper.__name__ = getattr(fn, '__name__', 'wrapper')
+    wrapper.__doc__ = getattr(fn, '__doc__', None)
     return wrapper
 
 
@@ -295,7 +299,7 @@ class AdminListingSearchView(View):
     GET /admin-homepage-api/listing-search/?q=iphone
     Returns units that are approved, available and not sold."""
 
-    @method_decorator(staff_required)
+    @staff_required
     def get(self, request):
         from Product.models import ListingUnit, ProductModelImage
         q = request.GET.get('q', '').strip()
@@ -369,9 +373,9 @@ class HomepageConfigView(View):
         return ok(data)
 
 
-# ──────────────────────────────────────────────────────────────────���──
+# ─────────────────────────────────────────────────────────────────────
 # GENERIC ADMIN CRUD BASE
-# ─────────────────────���──────────────────────────────────────────���────
+# ─────────────────────���───────────────���──────────────────────────���────
 
 class AdminCRUDView(View):
     """

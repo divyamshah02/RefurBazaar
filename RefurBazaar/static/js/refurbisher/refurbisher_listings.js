@@ -4,6 +4,8 @@ let CSRF_TOKEN = ""
 let allListings = []
 let filteredListings = []
 let currentPage = 1
+let totalListings = 0
+let listingStats = null
 const itemsPerPage = 10
 
 /**
@@ -98,11 +100,23 @@ async function loadListings() {
   try {
     showLoadingState()
 
-    const [success, response] = await callApi("GET", API_URLS.listings)
+    const params = new URLSearchParams({ page: currentPage, page_size: itemsPerPage })
+    const categoryValue = document.getElementById("category-filter").value
+    const statusValue = document.getElementById("status-filter").value
+    const searchValue = document.getElementById("search-input").value.trim()
+    if (categoryValue) params.set("category", categoryValue)
+    if (statusValue) params.set("status", statusValue)
+    if (searchValue) params.set("search", searchValue)
+    const separator = API_URLS.listings.includes("?") ? "&" : "?"
+
+    const [success, response] = await callApi("GET", `${API_URLS.listings}${separator}${params}`)
 
     if (response.success && response.data) {
       allListings = response.data
-      filteredListings = [...allListings]
+      filteredListings = allListings
+      listingStats = response.stats || null
+      totalListings = response.count ?? allListings.length
+      currentPage = response.page || currentPage
 
       updateStats()
       renderListings()
@@ -119,10 +133,13 @@ async function loadListings() {
  * Update statistics cards
  */
 function updateStats() {
-  const total = allListings.length
-  const active = allListings.filter((l) => l.status === "active").length
-  const inactive = allListings.filter((l) => l.status === "inactive").length
-  const draft = allListings.filter((l) => l.status === "draft").length
+  const stats = listingStats || {
+    total: allListings.length,
+    active: allListings.filter((l) => l.status === "active").length,
+    inactive: allListings.filter((l) => l.status === "inactive").length,
+    draft: allListings.filter((l) => l.status === "draft").length,
+  }
+  const { total, active, inactive, draft } = stats
 
   const statsContainer = document.getElementById("stats-container")
   statsContainer.innerHTML = `
@@ -161,34 +178,8 @@ function updateStats() {
  * Apply filters and search
  */
 function applyFilters() {
-  const categoryFilter = document.getElementById("category-filter").value
-  const statusFilter = document.getElementById("status-filter").value
-  const searchQuery = document.getElementById("search-input").value.toLowerCase()
-
-  filteredListings = allListings.filter((listing) => {
-    // Category filter
-    if (categoryFilter && listing.category !== categoryFilter) {
-      return false
-    }
-
-    // Status filter
-    if (statusFilter && listing.status !== statusFilter) {
-      return false
-    }
-
-    // Search filter
-    if (searchQuery) {
-      const searchText = `${listing.model_name} ${listing.brand_name}`.toLowerCase()
-      if (!searchText.includes(searchQuery)) {
-        return false
-      }
-    }
-
-    return true
-  })
-
   currentPage = 1
-  renderListings()
+  loadListings()
 }
 
 /**
@@ -208,9 +199,7 @@ function renderListings() {
   emptyState.style.display = "none"
 
   // Calculate pagination
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const paginatedListings = filteredListings.slice(startIndex, endIndex)
+  const paginatedListings = filteredListings
 
   // Render table rows
   tbody.innerHTML = paginatedListings
@@ -272,7 +261,7 @@ function renderListings() {
  * Render pagination controls
  */
 function renderPagination() {
-  const totalPages = Math.ceil(filteredListings.length / itemsPerPage)
+  const totalPages = Math.ceil(totalListings / itemsPerPage)
 
   if (totalPages <= 1) {
     document.getElementById("pagination-container").style.display = "none"
@@ -318,11 +307,11 @@ function renderPagination() {
  * Change page
  */
 function changePage(page) {
-  const totalPages = Math.ceil(filteredListings.length / itemsPerPage)
+  const totalPages = Math.ceil(totalListings / itemsPerPage)
   if (page < 1 || page > totalPages) return
 
   currentPage = page
-  renderListings()
+  loadListings()
   window.scrollTo({ top: 0, behavior: "smooth" })
 }
 

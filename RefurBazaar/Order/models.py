@@ -91,6 +91,12 @@ class Order(models.Model):
     refund_id = models.CharField(max_length=100, blank=True, default='')
     refund_attempts = models.PositiveSmallIntegerField(default=0)
     refund_error = models.TextField(blank=True, default='')
+    # Earlier Razorpay order ids of this order (comma separated), so a late payment on a
+    # replaced attempt can still be matched to the order and reconciled or refunded.
+    previous_razorpay_order_ids = models.TextField(blank=True, default='')
+    refund_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        help_text="Amount of the latest (possibly partial) refund; 0 means the full order total")
     
     # Order status
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -160,6 +166,11 @@ class OrderItem(models.Model):
     # Snapshot data (price at time of purchase)
     price_at_purchase = models.DecimalField(max_digits=10, decimal_places=2)
     condition_at_purchase = models.CharField(max_length=20)
+    # Seller proceeds and platform commission, stored separately from the customer price.
+    refurbisher_price_at_purchase = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    platform_commission_at_purchase = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+
 
     # Extended warranty snapshot, copied from the cart item at checkout time
     has_extended_warranty = models.BooleanField(default=False)
@@ -228,15 +239,22 @@ class OrderItem(models.Model):
 
     def is_return_eligible(self):
         """
-        True if this item can still have a return requested: the order has
-        been delivered, no return has already been requested/actioned, and
-        we're within 7 days of the delivered_at timestamp.
+        True if this item can still have a return requested: the item itself
+        was delivered, no return has already been requested/actioned, and
+        we're within 7 days of its own delivery time.
         """
-        if self.order.status != 'delivered' or not self.order.delivered_at:
+        if self.order.status == 'cancelled' or self.fulfillment_status == 'rejected':
             return False
         if self.return_status != 'none':
             return False
-        return (timezone.now() - self.order.delivered_at) <= timedelta(days=7)
+        delivered_at = self.delivered_at
+        if delivered_at is None and self.order.status == 'delivered':
+            delivered_at = self.order.delivered_at
+        if delivered_at is None:
+            return False
+        if self.fulfillment_status != 'delivered' and self.order.status != 'delivered':
+            return False
+        return (timezone.now() - delivered_at) <= timedelta(days=7)
 
 
 class DevicePhoto(models.Model):

@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import *
 from .admin_views import *
 from .invoice_gen import *
+from .inquiry_views import InquiryView
 
 router = DefaultRouter()
 
@@ -71,4 +72,5 @@ router.register(r'admin-pricing', AdminPricingPageViewSet, basename='admin-prici
 urlpatterns = [
     path('', include(router.urls)),
     path('invoice/<str:order_id>/', InvoiceView.as_view(), name='order-invoice'),
+    path('inquiry/', InquiryView.as_view(), name='inquiry'),
 ]

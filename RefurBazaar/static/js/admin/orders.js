@@ -77,19 +77,20 @@ async function loadList() {
     const cust  = `${o.first_name||''} ${o.last_name||''}`.trim() || '—';
     const s     = o.status || 'pending';
     const paid  = o.payment_received === true;
-    return `<tr style="cursor:pointer" onclick="location.href='/admin-order-detail/${o.order_id}/'">
-      <td><span class="mono fw-600" style="font-size:12px">${o.order_id}</span></td>
+    const oid = encodeURIComponent(o.order_id);
+    return `<tr style="cursor:pointer" onclick="location.href='/admin-order-detail/${oid}/'">
+      <td><span class="mono fw-600" style="font-size:12px">${escStr(o.order_id)}</span></td>
       <td>
-        <div class="fw-600">${cust}</div>
-        <div class="text-muted fs-12 mono">${o.phone || ''}</div>
+        <div class="fw-600">${escStr(cust)}</div>
+        <div class="text-muted fs-12 mono">${escStr(o.phone || '')}</div>
       </td>
-      <td>${o.item_count ?? (o.items?.length ?? '—')}</td>
+      <td>${escStr(o.item_count ?? (o.items?.length ?? '—'))}</td>
       <td class="fw-600">${fmtCurrency(o.total_amount)}</td>
-      <td><span class="badge ${paid ? 'badge-green' : 'badge-yellow'}">${paid ? 'Paid' : 'Unpaid'}</span><div class="text-muted fs-12">${o.payment_method_display || ''}</div></td>
+      <td><span class="badge ${paid ? 'badge-green' : 'badge-yellow'}">${paid ? 'Paid' : 'Unpaid'}</span><div class="text-muted fs-12">${escStr(o.payment_method_display || '')}</div></td>
       <td>${orderBadge(s)}</td>
       <td class="text-muted fs-12">${fmtDate(o.created_at)}</td>
       <td><div style="display:flex;gap:6px;justify-content:flex-end" onclick="event.stopPropagation()">
-        <a href="/admin-order-detail/${o.order_id}/" class="btn btn-ghost btn-sm"><i class="fa-solid fa-eye"></i> View</a>
+        <a href="/admin-order-detail/${oid}/" class="btn btn-ghost btn-sm"><i class="fa-solid fa-eye"></i> View</a>
       </div></td>
     </tr>`;
   }).join('');
@@ -113,4 +114,8 @@ function renderPag(total) {
 }
 
 function set(id, v) { const el=document.getElementById(id); if(el) el.textContent=v; }
+
+function escStr(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 function num(n) { return (n||0).toLocaleString('en-IN'); }

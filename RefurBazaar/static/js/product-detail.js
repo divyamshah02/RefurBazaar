@@ -785,9 +785,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (success && response.success) {
         showToast(
-          payload.has_extended_warranty
+          (payload.has_extended_warranty
             ? "Product added to cart with extended warranty!"
-            : "Product added to cart!",
+            : "Product added to cart!") +
+            ' <a href="/cart" class="text-white fw-bold text-decoration-underline ms-2">View Cart</a>',
           "success"
         )
         const cartCount = window.refreshCartBadge

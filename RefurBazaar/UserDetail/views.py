@@ -9,11 +9,17 @@ import secrets
 
 OTP_RESEND_COOLDOWN_SECONDS = 30
 OTP_MAX_ATTEMPTS = 5
+OTP_MAX_PER_IP_HOUR = 10
+OTP_MAX_PER_DESTINATION_HOUR = 5
+OTP_MAX_GLOBAL_HOUR = 300
+
 
 from .models import *
 from .serializers import *
 from utils.decorators import *
 from utils.email_service import send_otp_email
+from utils.rate_limit import client_ip, hit_limit
+
 
 
 EMAIL_LOGIN_ROLES = ("customer", "refurbisher")
@@ -89,6 +95,17 @@ class OtpAuthViewSet(viewsets.ViewSet):
                     "success": False, "user_not_logged_in": False, "user_unauthorized": False,
                     "data": None, "error": conflict
                 }, status=status.HTTP_400_BAD_REQUEST)
+
+        ip = client_ip(request)
+        if (
+            hit_limit("otp-ip", ip, OTP_MAX_PER_IP_HOUR, 3600)
+            or hit_limit("otp-global", "all", OTP_MAX_GLOBAL_HOUR, 3600)
+            or hit_limit("otp-destination", email or mobile, OTP_MAX_PER_DESTINATION_HOUR, 3600)
+        ):
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Too many OTP requests. Please try again later."
+            }, status=status.HTTP_429_TOO_MANY_REQUESTS)
 
         destination_filter = {"email": email} if email else {"mobile": mobile}
         last_otp = OTPVerification.objects.filter(**destination_filter).order_by('-created_at').first()

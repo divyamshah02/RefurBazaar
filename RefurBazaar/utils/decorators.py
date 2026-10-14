@@ -108,8 +108,9 @@ def check_authentication(required_role=None):
     return decorator
 
 
-def check_refurbisher_profile():
-    '''Checks if refurbisher has completed profile and is approved by admin'''
+def check_refurbisher_profile(allow_unapproved=False):
+    '''Checks if refurbisher has completed profile and is approved by admin.
+    allow_unapproved keeps already-placed orders reachable if approval is revoked later.'''
     def decorator(view_func):
         @wraps(view_func)
         def _wrapped_view(self, request, *args, **kwargs):
@@ -186,7 +187,7 @@ def check_refurbisher_profile():
                 )
             
             # Check if profile is approved by admin
-            if not company_profile.is_approved:
+            if not allow_unapproved and not company_profile.is_approved:
                 return Response(
                     {
                         "success": False,

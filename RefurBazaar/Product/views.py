@@ -224,7 +224,9 @@ class ProductModelViewSet(viewsets.ViewSet):
             is_active=True,
             category=category,
             listings__status='active',
-            listings__units__is_sold=False
+            listings__units__is_sold=False,
+            listings__refurbisher__active_user=True,
+            listings__refurbisher__company_profile__is_approved=True,
         ).distinct()
         
         # Apply brand filter
@@ -236,6 +238,8 @@ class ProductModelViewSet(viewsets.ViewSet):
         # Build filter for listing units with proper relationship path
         units_filter = Q(
             listings__status='active',
+            listings__refurbisher__active_user=True,
+            listings__refurbisher__company_profile__is_approved=True,
             listings__units__is_sold=False
         )
         
@@ -259,15 +263,21 @@ class ProductModelViewSet(viewsets.ViewSet):
         queryset = queryset.annotate(
             min_price=Min('listings__units__price', filter=Q(
                 listings__status='active',
+                listings__refurbisher__active_user=True,
+                listings__refurbisher__company_profile__is_approved=True,
                 listings__units__is_available=True,
                 listings__units__is_sold=False
             )),
             fallback_min_price=Min('listings__units__price', filter=Q(
                 listings__status='active',
+                listings__refurbisher__active_user=True,
+                listings__refurbisher__company_profile__is_approved=True,
                 listings__units__is_sold=False
             )),
             available_units_count=Count('listings__units', filter=Q(
                 listings__status='active',
+                listings__refurbisher__active_user=True,
+                listings__refurbisher__company_profile__is_approved=True,
                 listings__units__is_available=True,
                 listings__units__is_sold=False
             ), distinct=True)
@@ -510,6 +520,8 @@ class ProductModelViewSet(viewsets.ViewSet):
         queryset = ListingUnit.objects.filter(
             listing__model=product_model,
             listing__status='active',
+            listing__refurbisher__active_user=True,
+            listing__refurbisher__company_profile__is_approved=True,
             is_available=True,
             is_sold=False
         ).select_related('listing', 'listing__refurbisher')
@@ -742,15 +754,48 @@ class ListingViewSet(viewsets.ViewSet):
             'model', 'model__brand', 'refurbisher'
         ).prefetch_related('units', 'units__attributes')
         
+        stats = {
+            "total": queryset.count(),
+            "active": queryset.filter(status='active').count(),
+            "inactive": queryset.filter(status='inactive').count(),
+            "draft": queryset.filter(status='draft').count(),
+        }
+
         if model_id:
             queryset = queryset.filter(model_id=model_id)
         if status_filter:
             queryset = queryset.filter(status=status_filter)
+        category = request.query_params.get('category')
+        if category:
+            queryset = queryset.filter(model__category=category)
+        search = (request.query_params.get('search') or '').strip()
+        if search:
+            queryset = queryset.filter(
+                Q(model__name__icontains=search) | Q(model__brand__name__icontains=search)
+            )
+        queryset = queryset.order_by('-id')
+
+        paginated = 'page' in request.query_params or 'page_size' in request.query_params
+        meta = {}
+        if paginated:
+            try:
+                page_size = max(1, min(int(request.query_params.get('page_size', 10)), 100))
+            except (TypeError, ValueError):
+                page_size = 10
+            count = queryset.count()
+            total_pages = max(1, -(-count // page_size))
+            try:
+                page = max(1, min(int(request.query_params.get('page', 1)), total_pages))
+            except (TypeError, ValueError):
+                page = 1
+            start = (page - 1) * page_size
+            queryset = queryset[start:start + page_size]
+            meta = {"count": count, "page": page, "page_size": page_size, "total_pages": total_pages}
 
         serializer = ListingSerializer(queryset, many=True, context={'pricing_view': 'refurbisher'})
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
-            "data": serializer.data, "error": None
+            "data": serializer.data, "stats": stats, **meta, "error": None
         }, status=status.HTTP_200_OK)
 
     @handle_exceptions
@@ -1389,12 +1434,23 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
         if is_active is not None:
             queryset = queryset.filter(is_active=(is_active.lower() == 'true'))
 
-        serializer = ProductModelSerializer(queryset, many=True)
+        from Admin.views import paginate_queryset
+        from django.db.models import Count, Q as _Q
+
+        all_models = ProductModel.objects.aggregate(
+            total=Count('pk'),
+            active=Count('pk', filter=_Q(is_active=True)),
+            mobile=Count('pk', filter=_Q(category='mobile')),
+            laptop=Count('pk', filter=_Q(category='laptop')),
+            tablet=Count('pk', filter=_Q(category='tablet')),
+        )
+        page_items, meta = paginate_queryset(request, queryset)
+        serializer = ProductModelSerializer(page_items, many=True)
         return Response({
             "success": True,
             "user_not_logged_in": False,
             "user_unauthorized": False,
-            "data": serializer.data,
+            "data": {"results": serializer.data, "stats": all_models, **meta},
             "error": None
         }, status=status.HTTP_200_OK)
 

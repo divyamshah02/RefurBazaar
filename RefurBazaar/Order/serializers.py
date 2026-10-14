@@ -37,6 +37,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         model = OrderItem
         fields = [
             'id', 'listing_unit', 'price_at_purchase', 'condition_at_purchase',
+            'refurbisher_price_at_purchase', 'platform_commission_at_purchase',
             'has_extended_warranty', 'warranty_price',
             'refurbisher', 'refurbisher_name', 'brand_name', 'model_name',
             'product_image', 'device_imei', 'device_photos', 'verification_notes',

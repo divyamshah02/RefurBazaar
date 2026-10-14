@@ -155,7 +155,7 @@ function renderItem(it) {
 
   /* Product image thumbnail */
   const thumb = img
-    ? `<img src="${img}" alt="${name}"
+    ? `<img src="${escStr(img)}" alt="${escStr(name)}"
            style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer;flex-shrink:0"
            onclick="openLightbox('${escStr(img)}')" />`
     : `<div style="width:56px;height:56px;border-radius:8px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0">
@@ -177,7 +177,7 @@ function renderItem(it) {
         ${photos.map(p => {
           const url = p.photo_url || p.photo || '';
           return url
-            ? `<img src="${url}" alt="Device photo"
+            ? `<img src="${escStr(url)}" alt="Device photo"
                     style="width:52px;height:52px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer"
                     onclick="openLightbox('${escStr(url)}')" />`
             : '';
@@ -197,7 +197,7 @@ function renderItem(it) {
         <span>AWB: <span class="mono" style="color:var(--text-primary)">${escStr(it.shiprocket_awb_code)}</span></span>
         <span>Courier: <strong style="color:var(--text-primary)">${escStr(it.shiprocket_courier_name || '—')}</strong></span>
         <span>Status: <strong style="color:var(--text-primary)">${escStr(it.shiprocket_status || '—')}</strong></span>
-        ${it.shiprocket_tracking_url ? `<a href="${it.shiprocket_tracking_url}" target="_blank">Track shipment</a>` : ''}
+        ${it.shiprocket_tracking_url ? `<a href="${escStr(it.shiprocket_tracking_url)}" target="_blank" rel="noopener noreferrer">Track shipment</a>` : ''}
       </div>`
     : (it.pickup_scheduled_date
         ? `<div style="margin-top:8px;font-size:12px;color:var(--text-muted)">Pickup scheduled: ${escStr(it.pickup_scheduled_date)} via ${escStr(it.shiprocket_courier_name || 'courier')}</div>`
