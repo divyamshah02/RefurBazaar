@@ -15,7 +15,10 @@ import os
 from io import BytesIO
 from decimal import Decimal, ROUND_HALF_UP
 
-from django.http import HttpResponse
+from xml.sax.saxutils import escape as _xml_escape
+
+from django.http import HttpResponse, Http404
+from utils.decorators import check_authentication
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 
@@ -57,6 +60,18 @@ DEFAULT_HSN = "8517"  # Mobile phones / communication devices
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+def _esc(value):
+    """Escape user-supplied text so reportlab never parses it as markup (no <img> fetches)."""
+    return _xml_escape("" if value is None else str(value))
+
+
+def _warranty_total(items):
+    return sum(
+        (Decimal(str(i.warranty_price or 0)) for i in items if i.has_extended_warranty),
+        Decimal("0"),
+    )
+
 
 def _fmt_inr(value):
     """Format Decimal/float as 1,23,456.00 (Indian grouping, no symbol)."""
@@ -187,11 +202,21 @@ class InvoiceView(APIView):
     """
     GET /api/orders/invoice/<order_id>/
     Returns a downloadable GST tax-invoice PDF for the given order.
-    Accessible without authentication (order_id acts as the token).
+    Requires a signed-in user who owns the order, sold an item on it, or is an admin.
     """
 
+    @check_authentication()
     def get(self, request, order_id):
         order = get_object_or_404(Order, order_id=order_id)
+        user = request.user
+        role = getattr(user, "role", None)
+        allowed = (
+            role == "admin"
+            or order.user_id == user.id
+            or (role == "refurbisher" and order.items.filter(refurbisher_id=user.id).exists())
+        )
+        if not allowed:
+            raise Http404("Order not found")
         pdf_bytes = self._build_pdf(order)
 
         filename = f"Recarvit_Invoice_{order.order_id}.pdf"
@@ -297,7 +322,7 @@ class InvoiceView(APIView):
         value_style = ParagraphStyle("meta_value", fontSize=8.5, textColor=DARK_GRAY, leading=12)
 
         def cell(label, value):
-            return [Paragraph(label, label_style), Paragraph(str(value), value_style)]
+            return [Paragraph(label, label_style), Paragraph(_esc(value), value_style)]
 
         inv_number = order.order_number or order.order_id
         row1 = [
@@ -343,6 +368,9 @@ class InvoiceView(APIView):
             seller_state = "N/A"
             warehouse_name = company_name
 
+        company_name, gst, seller_addr, seller_state, warehouse_name = (
+            _esc(company_name), _esc(gst), _esc(seller_addr), _esc(seller_state), _esc(warehouse_name),
+        )
         sold_by = [
             Paragraph("SOLD BY / SUPPLIER", head_style),
             Paragraph(f"<b>{company_name}</b>", body_style),
@@ -374,24 +402,25 @@ class InvoiceView(APIView):
         body_style = ParagraphStyle("addr_body2", fontSize=8.5, textColor=DARK_GRAY, leading=13)
 
         if order.different_billing_address and order.billing_address:
-            bill_addr = order.billing_address
-            bill_city_state = f"{order.billing_city}, {order.billing_state} - {order.billing_pincode}"
+            bill_addr = _esc(order.billing_address)
+            bill_city_state = _esc(f"{order.billing_city}, {order.billing_state} - {order.billing_pincode}")
         else:
-            bill_addr = order.shipping_address
-            bill_city_state = f"{order.shipping_city}, {order.shipping_state} - {order.shipping_pincode}"
+            bill_addr = _esc(order.shipping_address)
+            bill_city_state = _esc(f"{order.shipping_city}, {order.shipping_state} - {order.shipping_pincode}")
 
+        buyer_name = _esc(f"{order.first_name} {order.last_name}")
         bill_to = [
             Paragraph("BILL TO", head_style),
-            Paragraph(f"<b>{order.first_name} {order.last_name}</b>", body_style),
+            Paragraph(f"<b>{buyer_name}</b>", body_style),
             Paragraph(bill_addr, body_style),
             Paragraph(bill_city_state, body_style),
             Paragraph("GSTIN: NA (B2C)", body_style),
         ]
         ship_to = [
             Paragraph("SHIP TO / PLACE OF DELIVERY", head_style),
-            Paragraph(f"<b>{order.first_name} {order.last_name}</b>", body_style),
-            Paragraph(order.shipping_address, body_style),
-            Paragraph(f"{order.shipping_city}, {order.shipping_state} - {order.shipping_pincode}", body_style),
+            Paragraph(f"<b>{buyer_name}</b>", body_style),
+            Paragraph(_esc(order.shipping_address), body_style),
+            Paragraph(_esc(f"{order.shipping_city}, {order.shipping_state} - {order.shipping_pincode}"), body_style),
         ]
         col_w = total_w / 2
         t = Table([[bill_to, ship_to]], colWidths=[col_w, col_w])
@@ -437,9 +466,9 @@ class InvoiceView(APIView):
             listing = lu.listing
             model = listing.model
             brand = model.brand.name
-            product_name = f"{brand} {model.name}"
-            condition = item.condition_at_purchase.title()
-            imei_str = f"<br/><font size='6.5' color='#757575'>IMEI: {item.device_imei}</font>" if item.device_imei else ""
+            product_name = _esc(f"{brand} {model.name}")
+            condition = _esc(item.condition_at_purchase.title())
+            imei_str = f"<br/><font size='6.5' color='#757575'>IMEI: {_esc(item.device_imei)}</font>" if item.device_imei else ""
             desc = Paragraph(
                 f"<b>{product_name}</b><br/><font size='6.5' color='#2E7D32'>Condition: {condition}</font>{imei_str}",
                 cell_style,
@@ -459,6 +488,23 @@ class InvoiceView(APIView):
                 Paragraph(tax_type, cell_center),
                 Paragraph(tax_line, cell_right),
                 Paragraph(_fmt_inr(item.price_at_purchase), cell_right),
+            ])
+
+        warranty_total = _warranty_total(items)
+        if warranty_total > 0:
+            taxable, cgst, sgst, igst, tax_total = self._item_tax_breakup(warranty_total, intra_state)
+            tax_type = "CGST+SGST" if intra_state else "IGST"
+            tax_line = f"C:{_fmt_inr(cgst)} S:{_fmt_inr(sgst)}" if intra_state else f"IGST: {_fmt_inr(igst)}"
+            rows.append([
+                Paragraph(str(len(items) + 1), cell_center),
+                Paragraph("Extended Warranty", cell_style),
+                Paragraph("9987", cell_center),
+                Paragraph("1", cell_center),
+                Paragraph(_fmt_inr(taxable), cell_right),
+                Paragraph("18%", cell_center),
+                Paragraph(tax_type, cell_center),
+                Paragraph(tax_line, cell_right),
+                Paragraph(_fmt_inr(warranty_total), cell_right),
             ])
 
         if delivery_charge and delivery_charge > 0:
@@ -518,6 +564,15 @@ class InvoiceView(APIView):
             sgst_total += sgst
             igst_total += igst
             grand_total += Decimal(str(item.price_at_purchase))
+
+        warranty_total = _warranty_total(items)
+        if warranty_total > 0:
+            taxable, cgst, sgst, igst, _ = self._item_tax_breakup(warranty_total, intra_state)
+            taxable_total += taxable
+            cgst_total += cgst
+            sgst_total += sgst
+            igst_total += igst
+            grand_total += warranty_total
 
         if delivery_charge and delivery_charge > 0:
             taxable, cgst, sgst, igst, _ = self._item_tax_breakup(delivery_charge, intra_state)

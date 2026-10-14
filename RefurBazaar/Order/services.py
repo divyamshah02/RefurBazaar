@@ -18,6 +18,7 @@ import hmac
 import hashlib
 import logging
 from datetime import timedelta
+from decimal import Decimal
 
 import razorpay
 from django.conf import settings
@@ -203,6 +204,11 @@ def confirm_payment(order, payment_id, signature='', verify_capture=True):
                 raise CheckoutError(
                     "A device in this order was bought by someone else before the payment completed.", 409
                 )
+            problem = unit_problem(unit, locked)
+            if problem:
+                raise CheckoutError(
+                    f"A device in this order is {problem}, so the order cannot be fulfilled.", 409
+                )
 
         locked.razorpay_payment_id = payment_id or locked.razorpay_payment_id
         locked.razorpay_signature = signature or locked.razorpay_signature
@@ -238,10 +244,35 @@ def create_razorpay_order(order):
         })
     except Exception as exc:
         raise CheckoutError(f"Razorpay order creation failed: {exc}", 502)
+    if order.razorpay_order_id:
+        known = [i for i in (order.previous_razorpay_order_ids or '').split(',') if i]
+        if order.razorpay_order_id not in known:
+            known.append(order.razorpay_order_id)
+        order.previous_razorpay_order_ids = ','.join(known)
     order.razorpay_order_id = rzp_order['id']
-    order.save(update_fields=['razorpay_order_id', 'updated_at'])
+    order.save(update_fields=['razorpay_order_id', 'previous_razorpay_order_ids', 'updated_at'])
     rzp_order['key_id'] = key_id
     return rzp_order
+
+
+def knows_razorpay_order(order, razorpay_order_id):
+    """True if this is the order's current Razorpay order or one of its earlier attempts."""
+    if not razorpay_order_id:
+        return False
+    if order.razorpay_order_id == razorpay_order_id:
+        return True
+    return razorpay_order_id in (order.previous_razorpay_order_ids or '').split(',')
+
+
+def refund_extra_payment(payment_id):
+    """Refund a captured payment for an order that is already paid by another attempt."""
+    try:
+        client, _ = get_razorpay_client()
+        client.payment.refund(payment_id, {})
+        return True
+    except Exception:
+        logger.exception("Could not refund duplicate payment %s", payment_id)
+        return False
 
 
 def valid_signature(razorpay_order_id, razorpay_payment_id, signature):
@@ -265,7 +296,7 @@ def payment_is_captured(order, payment_id):
         client, _ = get_razorpay_client()
         payment = client.payment.fetch(payment_id)
         expected = int(order.total_amount * 100)
-        if order.razorpay_order_id and payment.get('order_id') != order.razorpay_order_id:
+        if order.razorpay_order_id and not knows_razorpay_order(order, payment.get('order_id')):
             return False
         if int(payment.get('amount') or 0) != expected:
             return False
@@ -282,20 +313,25 @@ def payment_is_captured(order, payment_id):
 MAX_REFUND_ATTEMPTS = 5
 
 
-def request_refund(order, payment_id=None):
+def request_refund(order, payment_id=None, amount=None):
     """
-    Full refund of a payment we cannot fulfil. The attempt and its outcome are
+    Refund a payment we cannot fulfil: the whole payment, or `amount` for a
+    partial refund (e.g. one rejected item). The attempt and its outcome are
     saved on the order so a failed refund is visible to admin and retried
     (see retry_failed_refunds). Returns True once Razorpay has accepted it.
     """
-    if order.refund_status == 'processed':
+    if amount is None and order.refund_status == 'processed':
         return True
+    if amount is None and order.refund_status == 'failed' and order.refund_amount:
+        amount = order.refund_amount
     payment_id = payment_id or order.refund_payment_id or order.razorpay_payment_id
     order.refund_payment_id = payment_id or ''
     order.refund_attempts = (order.refund_attempts or 0) + 1
+    order.refund_amount = amount if amount is not None else order.total_amount
     try:
         client, _ = get_razorpay_client()
-        refund = client.payment.refund(payment_id, {})
+        payload = {'amount': int(Decimal(str(amount)) * 100)} if amount is not None else {}
+        refund = client.payment.refund(payment_id, payload)
         order.refund_status = 'processed'
         order.refund_id = refund.get('id', '') if isinstance(refund, dict) else ''
         order.refund_error = ''
@@ -306,9 +342,42 @@ def request_refund(order, payment_id=None):
         logger.error("Refund failed for order %s (attempt %s): %s", order.order_id, order.refund_attempts, exc)
         accepted = False
     order.save(update_fields=[
-        'refund_payment_id', 'refund_attempts', 'refund_status', 'refund_id', 'refund_error', 'updated_at'
+        'refund_payment_id', 'refund_attempts', 'refund_status', 'refund_id', 'refund_error',
+        'refund_amount', 'updated_at'
     ])
     return accepted
+
+
+def needs_online_refund(order):
+    return bool(order.payment_received and order.payment_method == 'razorpay' and order.razorpay_payment_id)
+
+
+def cancel_order_with_refund(order):
+    """
+    Cancel an order at any stage before delivery. Paid online orders are
+    refunded first; the devices go back on sale only once the refund has been
+    accepted (or none is needed), so a failed refund never frees paid stock.
+    Returns 'cancelled', 'refund_failed' or 'already_cancelled'.
+    """
+    from .models import Order
+    with transaction.atomic():
+        locked = Order.objects.select_for_update().get(pk=order.pk)
+        if locked.status == 'cancelled':
+            order.refresh_from_db()
+            return 'already_cancelled'
+        if locked.status == 'delivered':
+            raise CheckoutError("A delivered order cannot be cancelled. Use the returns flow instead.", 400)
+        locked.status = 'cancelled'
+        locked.save(update_fields=['status', 'updated_at'])
+
+    outcome = 'cancelled'
+    if needs_online_refund(locked):
+        if not request_refund(locked):
+            outcome = 'refund_failed'
+    if outcome == 'cancelled':
+        release_order_units(locked)
+    order.refresh_from_db()
+    return outcome
 
 
 def retry_failed_refunds():
@@ -320,6 +389,8 @@ def retry_failed_refunds():
         retried += 1
         if not request_refund(order):
             still_failing += 1
+        elif order.status == 'cancelled':
+            release_order_units(order)
     return retried, still_failing
 
 

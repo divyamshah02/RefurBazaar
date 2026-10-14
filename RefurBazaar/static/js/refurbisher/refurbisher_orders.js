@@ -113,7 +113,10 @@ function displayOrders() {
 }
 
 function getRefurbisherTotal(items) {
-    return items.reduce((sum, item) => sum + parseFloat(item.price_at_purchase), 0);
+    return items.reduce((sum, item) => {
+        const sellerPrice = item.refurbisher_price_at_purchase ?? item.price_at_purchase;
+        return sum + parseFloat(sellerPrice);
+    }, 0);
 }
 
 function getOrderStatusBadge(order) {

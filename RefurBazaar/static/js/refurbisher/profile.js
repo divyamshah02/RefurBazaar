@@ -258,7 +258,6 @@ async function savePersonalInfo() {
 
   if (success && response.success) {
     showSuccessMessage("Personal information updated successfully!")
-    setTimeout(() => location.reload(), 1000);
     await loadProfileData()
   } else {
     showErrorMessage(response.error || "Failed to update personal information")
@@ -267,25 +266,6 @@ async function savePersonalInfo() {
 
 // Save Business Details
 async function saveBusinessDetails() {
-      const gst = document.getElementById("gstNumber").value.toUpperCase().trim();
-      const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}Z[A-Z0-9]{1}$/;
-      const errorDiv = document.getElementById("gstError");
-
-      if (gst === "") {
-          errorDiv.innerText = "";
-           alert("Invalid GSTIN format. Please enter a valid GSTIN.");
-           return;
-
-      }
-
-      if (!gstRegex.test(gst)) {
-          errorDiv.innerText = "Invalid GSTIN format";
-          alert("Invalid GSTIN format. Please enter a valid GSTIN.");
-           return;
-      } else {
-          errorDiv.innerText = "";
-      }
-  
   const formData = {
     first_name: document.getElementById("firstName").value.trim(),
     last_name: document.getElementById("lastName").value.trim(),
@@ -307,7 +287,6 @@ async function saveBusinessDetails() {
 
   if (success && response.success) {
     showSuccessMessage("Business details updated successfully!")
-    setTimeout(() => location.reload(), 1000);
     await loadProfileData()
   } else {
     showErrorMessage(response.error || "Failed to update business details")
@@ -356,7 +335,6 @@ async function saveAddress() {
 
   if (success && response.success) {
     showSuccessMessage("Address information updated successfully!")
-    setTimeout(() => location.reload(), 1000);
     await loadProfileData()
   } else {
     showErrorMessage(response.error || "Failed to update address information")
@@ -412,7 +390,6 @@ async function saveDocuments() {
 
   if (success && response.success) {
     showSuccessMessage("Documents uploaded successfully!")
-    setTimeout(() => location.reload(), 1000);
     await loadProfileData()
   } else {
     showErrorMessage(response.error || "Failed to upload documents")
@@ -611,7 +588,17 @@ function updateCompletionItems(personal, business, documents, payment) {
 }
 
 // Update verification badge
+function updateSubmitButtonLabel() {
+  const button = document.getElementById("submitVerificationBtn")
+  if (!button || !companyProfileData) return
+  const alreadySubmitted = companyProfileData.is_profile_complete || companyProfileData.is_approved
+  button.innerHTML = alreadySubmitted
+    ? '<i class="fas fa-check me-2"></i>Resubmit for Review'
+    : '<i class="fas fa-check me-2"></i>Submit for Verification'
+}
+
 function updateVerificationBadge() {
+  updateSubmitButtonLabel()
   const badge = document.getElementById("verificationBadge")
   if (!badge) return
 
@@ -623,7 +610,9 @@ function updateVerificationBadge() {
 
   if (isComplete) {
     badge.className = "badge bg-success fs-6"
-    badge.innerHTML = '<i class="fas fa-check-circle me-1"></i>Verified'
+    badge.innerHTML = companyProfileData && companyProfileData.is_approved
+      ? '<i class="fas fa-check-circle me-1"></i>Approved by Admin'
+      : '<i class="fas fa-check-circle me-1"></i>Details Complete'
   } else {
     badge.className = "badge bg-warning fs-6"
     badge.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Verification Pending'
@@ -721,7 +710,6 @@ async function savePaymentInfo() {
 
   if (success && response.success) {
     showSuccessMessage("Payment information updated successfully!")
-    setTimeout(() => location.reload(), 1000);
     await loadProfileData()
   } else {
     showErrorMessage(response.error || "Failed to update payment information")

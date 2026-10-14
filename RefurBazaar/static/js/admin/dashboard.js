@@ -42,7 +42,8 @@ async function loadStats(csrf, url) {
 /* ─── Recent orders ─────────────────────────────────────────────── */
 async function loadRecentOrders(csrf, url) {
   const tbody = document.getElementById('recent-orders-body');
-  const [ok, res] = await callApi('GET', url, null, csrf);
+  const pagedUrl = url + (url.includes('?') ? '&' : '?') + 'page=1&page_size=10';
+  const [ok, res] = await callApi('GET', pagedUrl, null, csrf);
   const rows = res?.data?.results || res?.data || [];
   if (!ok || !res.success || !rows.length) {
     tbody.innerHTML = `<tr><td colspan="6">

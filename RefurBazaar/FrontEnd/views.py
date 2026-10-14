@@ -233,7 +233,7 @@ class RefurbisherProfileViewSet(viewsets.ViewSet):
 class RefurbisherAddListingViewSet(viewsets.ViewSet):
 
     @handle_exceptions
-    @page_access('refurbisher')
+    @page_access('refurbisher', require_approved=True)
     def list(self, request):
         return render(request, 'refurbisher/refurbisher_add_listing.html')
 

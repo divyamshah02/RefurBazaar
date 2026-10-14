@@ -129,7 +129,9 @@ function displayOrderDetail() {
     displayOrderItems();
     
     // Order summary
-    const yourSubtotal = orderData.items.reduce((sum, item) => sum + parseFloat(item.price_at_purchase), 0);
+    const yourSubtotal = orderData.items.reduce(
+        (sum, item) => sum + parseFloat(item.refurbisher_price_at_purchase ?? item.price_at_purchase), 0
+    );
     document.getElementById('yourSubtotal').textContent = `₹${yourSubtotal.toFixed(2)}`;
     document.getElementById('orderDate').textContent = formatDate(orderData.created_at);
     document.getElementById('paymentStatus').innerHTML = orderData.payment_received 
@@ -154,7 +156,8 @@ function displayOrderItems() {
                         <p class="text-muted mb-1">
                             <small>Unit #${item.listing_unit.unit_number} | Condition: ${item.condition_at_purchase}</small>
                         </p>
-                        <p class="mb-1"><strong>Price:</strong> ₹${parseFloat(item.price_at_purchase).toFixed(2)}</p>
+                        <p class="mb-1"><strong>Your price:</strong> ₹${parseFloat(item.refurbisher_price_at_purchase ?? item.price_at_purchase).toFixed(2)}
+                            ${parseFloat(item.platform_commission_at_purchase || 0) > 0 ? `<small class="text-muted">(platform commission ₹${parseFloat(item.platform_commission_at_purchase).toFixed(2)} not included)</small>` : ''}</p>
                         ${getFulfillmentStatusBadge(item)}
                         
                         ${item.device_imei ? `

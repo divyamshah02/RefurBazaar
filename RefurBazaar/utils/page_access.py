@@ -93,8 +93,11 @@ def access_denied_response(request, required_role):
     return render(request, 'errors/access_denied.html', context, status=403)
 
 
-def page_access(required_role, allow_incomplete_profile=False, anonymous_ok=False):
+def page_access(required_role, allow_incomplete_profile=False, anonymous_ok=False, require_approved=False):
     """Guard an HTML view so only ``required_role`` can open it.
+
+    ``require_approved`` sends refurbishers whose profile is not yet approved
+    back to the profile page (used for pages that create new listings).
 
     ``anonymous_ok`` lets logged-out visitors through (used for the customer
     account page, which is itself the customer login page).
@@ -123,6 +126,8 @@ def page_access(required_role, allow_incomplete_profile=False, anonymous_ok=Fals
             if required_role == 'refurbisher' and not allow_incomplete_profile:
                 company_profile = getattr(user, 'company_profile', None)
                 if not company_profile or not company_profile.is_profile_complete:
+                    return redirect('/refurbisher-profile/')
+                if require_approved and not company_profile.is_approved:
                     return redirect('/refurbisher-profile/')
 
             return view_func(self, request, *args, **kwargs)

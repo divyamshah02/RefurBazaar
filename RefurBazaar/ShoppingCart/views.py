@@ -426,7 +426,28 @@ class CartTransferViewSet(viewsets.ViewSet):
                 "error": "No guest cart found for this session"
             }, status=status.HTTP_404_NOT_FOUND)
 
+        removed_unavailable = 0
         with transaction.atomic():
+            def is_purchasable(cart_item):
+                unit = cart_item.listing_unit
+                if unit is None or not unit.is_available or unit.is_sold:
+                    return False
+                listing = unit.listing
+                seller = listing.refurbisher
+                return (
+                    listing.status == 'active'
+                    and seller.is_active
+                    and getattr(seller, 'is_approved', True)
+                )
+
+            # Drop guest items that can no longer be bought; keep the rest.
+            for guest_item in list(guest_cart.items.select_related(
+                'listing_unit', 'listing_unit__listing', 'listing_unit__listing__refurbisher'
+            )):
+                if not is_purchasable(guest_item):
+                    guest_item.delete()
+                    removed_unavailable += 1
+
             # Deactivate existing user cart if exists
             existing_user_cart = ShoppingCart.objects.filter(
                 user=user, 
@@ -435,7 +456,11 @@ class CartTransferViewSet(viewsets.ViewSet):
             
             if existing_user_cart:
                 # Merge items from existing user cart to guest cart
-                for item in existing_user_cart.items.all():
+                for item in existing_user_cart.items.select_related(
+                    'listing_unit', 'listing_unit__listing', 'listing_unit__listing__refurbisher'
+                ):
+                    if not is_purchasable(item):
+                        continue
                     # Check if item already exists in guest cart
                     if not guest_cart.items.filter(listing_unit=item.listing_unit).exists():
                         item.cart = guest_cart

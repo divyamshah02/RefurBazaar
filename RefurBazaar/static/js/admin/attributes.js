@@ -1,7 +1,8 @@
 'use strict';
 /* attributes.js */
 
-let _atCsrf, _atUrls, _atAll = [], _atFiltered = [];
+let _atCsrf, _atUrls, _atAll = [], _atFiltered = [], _atPage = 1;
+const AT_PAGE_SIZE = 20;
 
 const CAT_LABELS = { mobile:'Mobile', laptop:'Laptop', tablet:'Tablet', accessory:'Accessory' };
 const TYPE_LABELS = { text:'Text', number:'Number', select:'Select', boolean:'Boolean' };
@@ -22,31 +23,54 @@ function InitAttributes(csrf, urls) {
 
 /* ─── Load + Stats ──────────────────────────────────────────────── */
 async function loadAttributes() {
-  const [ok, res] = await callApi('GET', _atUrls.listUrl, null, _atCsrf);
+  const params = new URLSearchParams({ page: _atPage, page_size: AT_PAGE_SIZE });
+  const q   = document.getElementById('q').value.trim();
+  const cat = document.getElementById('f-category').value;
+  const typ = document.getElementById('f-type').value;
+  if (q)   params.set('search', q);
+  if (cat) params.set('category', cat);
+  if (typ) params.set('data_type', typ);
+  const [ok, res] = await callApi('GET', `${_atUrls.listUrl}?${params}`, null, _atCsrf);
   if (!ok || !res.success) {
     document.getElementById('tbl-body').innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-circle-exclamation"></i><h4>Failed to load attributes</h4></div></td></tr>`;
     return;
   }
   _atAll = res.data || [];
-  set('s-total',  _atAll.length.toLocaleString('en-IN'));
-  set('s-mobile', _atAll.filter(a=>a.category==='mobile').length.toLocaleString('en-IN'));
-  set('s-laptop', _atAll.filter(a=>a.category==='laptop').length.toLocaleString('en-IN'));
-  set('s-tablet', _atAll.filter(a=>a.category==='tablet').length.toLocaleString('en-IN'));
-  applyFilter();
+  _atFiltered = _atAll;
+  const meta  = res.meta || {};
+  const stats = meta.stats || {};
+  set('s-total',  (stats.total  ?? _atAll.length).toLocaleString('en-IN'));
+  set('s-mobile', (stats.mobile ?? 0).toLocaleString('en-IN'));
+  set('s-laptop', (stats.laptop ?? 0).toLocaleString('en-IN'));
+  set('s-tablet', (stats.tablet ?? 0).toLocaleString('en-IN'));
+  _atPage = meta.page || 1;
+  renderTable();
+  renderPag(meta.count || 0, meta.total_pages || 1);
 }
 
-/* ─── Filter ────────────────────────────────────────────────────── */
+/* ─── Filter (server side) ──────────────────────────────────────── */
 function applyFilter() {
-  const q   = document.getElementById('q').value.toLowerCase();
-  const cat = document.getElementById('f-category').value;
-  const typ = document.getElementById('f-type').value;
-  _atFiltered = _atAll.filter(a => {
-    if (q   && !(a.name||'').toLowerCase().includes(q)) return false;
-    if (cat  && a.category !== cat) return false;
-    if (typ  && a.data_type !== typ) return false;
-    return true;
-  });
-  renderTable();
+  _atPage = 1;
+  loadAttributes();
+}
+
+function renderPag(total, pages) {
+  const info = document.getElementById('pag-info');
+  const btns = document.getElementById('pag-btns');
+  if (!info || !btns) return;
+  const start = (_atPage - 1) * AT_PAGE_SIZE + 1;
+  const end   = Math.min(_atPage * AT_PAGE_SIZE, total);
+  info.textContent = total ? `Showing ${start}–${end} of ${total}` : '';
+  if (pages <= 1) { btns.innerHTML = ''; return; }
+  btns.innerHTML = `
+    <button class="btn btn-ghost btn-sm" ${_atPage === 1 ? 'disabled' : ''} onclick="goAttrPage(${_atPage - 1})" aria-label="Previous page"><i class="fa-solid fa-chevron-left"></i></button>
+    <span class="text-muted fs-12" style="padding:0 6px;line-height:30px">Page ${_atPage} of ${pages}</span>
+    <button class="btn btn-ghost btn-sm" ${_atPage >= pages ? 'disabled' : ''} onclick="goAttrPage(${_atPage + 1})" aria-label="Next page"><i class="fa-solid fa-chevron-right"></i></button>`;
+}
+
+function goAttrPage(p) {
+  _atPage = p;
+  loadAttributes();
 }
 
 /* ─── Render ────────────────────────────────────────────────────── */

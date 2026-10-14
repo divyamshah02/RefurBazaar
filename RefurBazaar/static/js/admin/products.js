@@ -1,7 +1,7 @@
 'use strict';
 /* products.js — default product catalog */
 
-let _prCsrf, _prUrls, _prAll = [], _prFiltered = [], _prPage = 1;
+let _prCsrf, _prUrls, _prAll = [], _prTotal = 0, _prPage = 1;
 const _prPageSize = 25;
 let _prBrands = [], _prAttrs = [];
 
@@ -48,42 +48,42 @@ async function loadProducts() {
     <div class="skeleton" style="height:13px;width:35%;margin:0 auto"></div>
   </td></tr>`;
 
-  const [ok, res] = await callApi('GET', _prUrls.listUrl, null, _prCsrf);
+  const params = new URLSearchParams({ page: _prPage, page_size: _prPageSize });
+  const q = document.getElementById('q').value.trim();
+  const cat = document.getElementById('f-category').value;
+  const bid = document.getElementById('f-brand').value;
+  const act = document.getElementById('f-active').value;
+  if (q) params.set('search', q);
+  if (cat) params.set('category', cat);
+  if (bid) params.set('brand_id', bid);
+  if (act) params.set('is_active', act);
+
+  const [ok, res] = await callApi('GET', `${_prUrls.listUrl}?${params}`, null, _prCsrf);
   if (!ok || !res.success) {
     body.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-circle-exclamation"></i><h4>Failed to load products</h4></div></td></tr>`;
     return;
   }
-  _prAll = res.data || [];
-  set('s-total', _prAll.length.toLocaleString('en-IN'));
-  set('s-active', _prAll.filter(p => p.is_active).length.toLocaleString('en-IN'));
-  set('s-mobile', _prAll.filter(p => p.category === 'mobile').length.toLocaleString('en-IN'));
-  set('s-laptop', _prAll.filter(p => p.category === 'laptop').length.toLocaleString('en-IN'));
-  set('s-tablet', _prAll.filter(p => p.category === 'tablet').length.toLocaleString('en-IN'));
-  applyFilter();
+  _prAll = res.data.results || [];
+  _prTotal = res.data.count || 0;
+  const st = res.data.stats || {};
+  set('s-total', (st.total ?? 0).toLocaleString('en-IN'));
+  set('s-active', (st.active ?? 0).toLocaleString('en-IN'));
+  set('s-mobile', (st.mobile ?? 0).toLocaleString('en-IN'));
+  set('s-laptop', (st.laptop ?? 0).toLocaleString('en-IN'));
+  set('s-tablet', (st.tablet ?? 0).toLocaleString('en-IN'));
+  renderTable();
 }
 
 /* ─── Filter ────────────────────────────────────────────────────── */
 function applyFilter() {
-  const q = document.getElementById('q').value.toLowerCase();
-  const cat = document.getElementById('f-category').value;
-  const bid = document.getElementById('f-brand').value;
-  const act = document.getElementById('f-active').value;
-  _prFiltered = _prAll.filter(p => {
-    if (q && !(p.name || '').toLowerCase().includes(q) && !(p.brand_name || '').toLowerCase().includes(q)) return false;
-    if (cat && p.category !== cat) return false;
-    if (bid && String(p.brand) !== bid && String(p.brand_id) !== bid) return false;
-    if (act === 'true' && !p.is_active) return false;
-    if (act === 'false' && p.is_active) return false;
-    return true;
-  });
-  renderTable();
+  loadProducts();
 }
 
 /* ─── Render ────────────────────────────────────────────────────── */
 function renderTable() {
   const tbody = document.getElementById('tbl-body');
-  const start = (_prPage - 1) * _prPageSize;
-  const slice = _prFiltered.slice(start, start + _prPageSize);
+  const slice = _prAll;
+
 
   if (!slice.length) {
     tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-box"></i><h4>No products found</h4><p>Try adjusting your filters or add a product</p></div></td></tr>`;
@@ -118,7 +118,7 @@ function renderTable() {
 
 /* ─── Pagination ────────────────────────────────────────────────── */
 function renderPag() {
-  const total = _prFiltered.length;
+  const total = _prTotal;
   const pages = Math.ceil(total / _prPageSize);
   const info = document.getElementById('pag-info');
   const btns = document.getElementById('pag-btns');
@@ -127,9 +127,9 @@ function renderPag() {
   info.textContent = total ? `Showing ${start}–${end} of ${total}` : '';
   if (pages <= 1) { btns.innerHTML = ''; return; }
   btns.innerHTML = `
-    <button class="btn btn-ghost btn-sm" ${_prPage === 1 ? 'disabled' : ''} onclick="_prPage--;renderTable()"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="btn btn-ghost btn-sm" ${_prPage === 1 ? 'disabled' : ''} onclick="_prPage--;loadProducts()"><i class="fa-solid fa-chevron-left"></i></button>
     <span class="text-muted fs-12" style="padding:0 6px;line-height:30px">Page ${_prPage} of ${pages}</span>
-    <button class="btn btn-ghost btn-sm" ${_prPage >= pages ? 'disabled' : ''} onclick="_prPage++;renderTable()"><i class="fa-solid fa-chevron-right"></i></button>`;
+    <button class="btn btn-ghost btn-sm" ${_prPage >= pages ? 'disabled' : ''} onclick="_prPage++;loadProducts()"><i class="fa-solid fa-chevron-right"></i></button>`;
 }
 
 /* ─── Create / Edit modal ───────────────────────────────────────── */
