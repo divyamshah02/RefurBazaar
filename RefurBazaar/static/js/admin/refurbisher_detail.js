@@ -50,7 +50,7 @@ function renderProfile(u, cp, listings, orders, reviewHistory) {
 
   const statusBadgeMap = { approved:'badge-green', pending:'badge-yellow', rejected:'badge-red', incomplete:'badge-gray' };
   document.getElementById('rd-status-badge').innerHTML =
-    `<span class="badge ${statusBadgeMap[status]||'badge-gray'}">${cap(status)}</span>`;
+    `<span class="badge ${statusBadgeMap[status]||'badge-gray'}">${escHtml(cap(status))}</span>`;
 
   // Stats (from embedded data)
   set('rd-stat-listings', listings.length.toLocaleString('en-IN'));
@@ -94,8 +94,8 @@ function renderProfile(u, cp, listings, orders, reviewHistory) {
   const uploaded = docFields.filter(d => cp[d.key]);
   if (uploaded.length) {
     docList.innerHTML = uploaded.map(d =>
-      `<a href="${cp[d.key]}" target="_blank" class="doc-chip">
-        <i class="fa-solid fa-file-lines"></i> ${d.label}
+      `<a href="${escHtml(safeUrl(cp[d.key]))}" target="_blank" rel="noopener noreferrer" class="doc-chip">
+        <i class="fa-solid fa-file-lines"></i> ${escHtml(d.label)}
       </a>`).join('');
   }
 
@@ -165,11 +165,11 @@ function renderReviewHistory(rows) {
         <div class="modal-header-icon ${m.cls.replace('badge-', '')}" style="flex-shrink:0"><i class="fa-solid ${m.icon}"></i></div>
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
-            <span class="badge ${m.cls}">${m.label}</span>
-            <span class="text-muted fs-12">by ${by}</span>
-            <span class="text-muted fs-12">· ${fmtDateTime(r.created_at)}</span>
+            <span class="badge ${m.cls}">${escHtml(m.label)}</span>
+            <span class="text-muted fs-12">by ${escHtml(by)}</span>
+            <span class="text-muted fs-12">· ${escHtml(fmtDateTime(r.created_at))}</span>
           </div>
-          ${r.reason ? `<p style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin:0;white-space:pre-wrap">${r.reason}</p>` : `<p class="text-muted fs-12" style="margin:0">No message provided</p>`}
+          ${r.reason ? `<p style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin:0;white-space:pre-wrap">${escHtml(r.reason)}</p>` : `<p class="text-muted fs-12" style="margin:0">No message provided</p>`}
         </div>
       </div>`;
   }).join('');
@@ -189,12 +189,12 @@ function renderListings(rows) {
     const unitPrices = (l.units||[]).map(u=>parseFloat(u.price)).filter(p=>!isNaN(p));
     const price      = unitPrices.length ? fmtCurrency(Math.min(...unitPrices)) : '—';
     return `<tr>
-      <td class="fw-600">${name}</td>
-      <td class="fw-600">${price}</td>
-      <td>${l.total_quantity ?? '—'}</td>
-      <td><span class="badge ${STATUS_CLS[s]||'badge-gray'}">${cap(s)}</span></td>
-      <td class="text-muted fs-12">${fmtDate(l.created_at)}</td>
-      <td><a href="/admin-listing-detail/${l.listing_id||l.id}/" class="btn btn-ghost btn-sm"><i class="fa-solid fa-eye"></i></a></td>
+      <td class="fw-600">${escHtml(name)}</td>
+      <td class="fw-600">${escHtml(price)}</td>
+      <td>${escHtml(l.total_quantity ?? '—')}</td>
+      <td><span class="badge ${STATUS_CLS[s]||'badge-gray'}">${escHtml(cap(s))}</span></td>
+      <td class="text-muted fs-12">${escHtml(fmtDate(l.created_at))}</td>
+      <td><a href="/admin-listing-detail/${encodeURIComponent(l.listing_id||l.id)}/" class="btn btn-ghost btn-sm"><i class="fa-solid fa-eye"></i></a></td>
     </tr>`;
   }).join('');
 }
@@ -211,13 +211,13 @@ function renderOrders(rows) {
     const cust = `${o.first_name||''} ${o.last_name||''}`.trim() || '—';
     const s    = o.status || 'pending';
     return `<tr>
-      <td><span class="mono">${o.order_id}</span></td>
-      <td>${cust}</td>
-      <td>${o.items?.length ?? '—'}</td>
-      <td class="fw-600">${fmtCurrency(o.total_amount)}</td>
-      <td><span class="badge ${STATUS[s]||'badge-gray'}">${cap(s)}</span></td>
-      <td class="text-muted fs-12">${fmtDate(o.created_at)}</td>
-      <td><a href="/admin-order-detail/${o.order_id}/" class="btn btn-ghost btn-sm"><i class="fa-solid fa-eye"></i></a></td>
+      <td><span class="mono">${escHtml(o.order_id)}</span></td>
+      <td>${escHtml(cust)}</td>
+      <td>${escHtml(o.items?.length ?? '—')}</td>
+      <td class="fw-600">${escHtml(fmtCurrency(o.total_amount))}</td>
+      <td><span class="badge ${STATUS[s]||'badge-gray'}">${escHtml(cap(s))}</span></td>
+      <td class="text-muted fs-12">${escHtml(fmtDate(o.created_at))}</td>
+      <td><a href="/admin-order-detail/${encodeURIComponent(o.order_id)}/" class="btn btn-ghost btn-sm"><i class="fa-solid fa-eye"></i></a></td>
     </tr>`;
   }).join('');
 }
@@ -292,11 +292,14 @@ async function createWarehouse() {
 }
 
 /* ─── Helpers ───────────────────────────────────────────────────── */
+// Always text. Anything that needs markup builds it with escHtml() and assigns innerHTML itself.
 function set(id, v) {
   const el = document.getElementById(id);
-  if (!el) return;
-  if (typeof v === 'string' && v.includes('<')) el.innerHTML = v;
-  else el.textContent = v;
+  if (el) el.textContent = v ?? '—';
+}
+function safeUrl(url) {
+  const value = String(url || '');
+  return /^(https?:\/\/|\/)/i.test(value) ? value : '#';
 }
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : '—'; }
 function fmtDateTime(s) {

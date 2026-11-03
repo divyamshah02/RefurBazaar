@@ -73,7 +73,8 @@ def resolve_listing_unit(listing_unit_id, request):
 
 
 def ok(data=None, status=200):
-    return JsonResponse({'success': True, 'data': data or {}}, status=status)
+    # An empty list must stay a list: the admin UI maps over it. Only a missing payload becomes {}.
+    return JsonResponse({'success': True, 'data': {} if data is None else data}, status=status)
 
 
 def err(msg, status=400):

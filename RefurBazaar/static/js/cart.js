@@ -4,8 +4,8 @@ let cartListUrl = null
 let cartClearUrl = null
 let cartData = null
 
-const PROCESSING_FEE_ORIGINAL = 449
-const PROCESSING_FEE_DISCOUNTED = 199
+// There is no processing fee: the amount charged is item price + extended warranty (delivery is free).
+// The server builds the order total the same way, so cart, checkout and order always agree.
 const DELIVERY_ORIGINAL = 100
 
 // Extended warranty price per product category — mirrors Product/utils.py
@@ -92,8 +92,15 @@ function renderCart(data) {
       const formattedItemTotal = itemTotal.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })
       const formattedWarrantyPrice = warrantyPrice.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 
+      const unavailableNote = item.unavailable_reason
+        ? `<p class="text-danger small fw-semibold mb-1" role="alert">
+             <i class="fas fa-triangle-exclamation me-1"></i>No longer available: ${escapeCartHtml(item.unavailable_reason)}.
+             Remove it to continue to checkout.
+           </p>`
+        : ''
+
       return `
-        <tr class="cart-item-row" data-item-id="${item.id}" data-unit-id="${unit.id}">
+        <tr class="cart-item-row${item.unavailable_reason ? ' cart-item-unavailable' : ''}" data-item-id="${item.id}" data-unit-id="${unit.id}" ${item.unavailable_reason ? 'style="opacity:.7"' : ''}>
           <td class="product-cell">
             <div class="product-info">
               <a href="${productUrl}" class="product-image-link">
@@ -104,6 +111,7 @@ function renderCart(data) {
                   <h6 class="product-name">${unit.brand_name} ${unit.model_name}</h6>
                 </a>
                 <p class="product-specs">${specsStr}</p>
+                ${unavailableNote}
                 <a href="${productUrl}" class="view-product-link">
                   <i class="fas fa-external-link-alt me-1"></i>View Product
                 </a>
@@ -163,6 +171,70 @@ function renderCart(data) {
       `
     })
     .join("")
+
+  applyAvailabilityGuard(data)
+}
+
+function escapeCartHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;")
+}
+
+/**
+ * Items checkout would reject (sold, listing/seller no longer active, reserved) are flagged here
+ * using the server's own verdict (`unavailable_reason`), so the customer finds out in the cart,
+ * not as a 409 at checkout. Checkout stays disabled until they are removed.
+ */
+function applyAvailabilityGuard(data) {
+  const unavailable = (data.items || []).filter((item) => item.unavailable_reason)
+
+  let notice = document.getElementById("cartAvailabilityNotice")
+  const checkoutLink = document.querySelector("#cartSummary a.btn-place-order")
+
+  if (!unavailable.length) {
+    if (notice) notice.remove()
+    if (checkoutLink) {
+      checkoutLink.classList.remove("disabled")
+      checkoutLink.removeAttribute("aria-disabled")
+      checkoutLink.removeAttribute("tabindex")
+    }
+    return
+  }
+
+  if (!notice) {
+    notice = document.createElement("div")
+    notice.id = "cartAvailabilityNotice"
+    notice.className = "alert alert-danger d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3"
+    notice.setAttribute("role", "alert")
+    const wrapper = document.getElementById("cartTableWrapper")
+    wrapper.parentNode.insertBefore(notice, wrapper)
+  }
+  notice.innerHTML = `
+    <span>
+      <i class="fas fa-triangle-exclamation me-2"></i>
+      ${unavailable.length} item${unavailable.length !== 1 ? "s are" : " is"} no longer available and
+      ${unavailable.length !== 1 ? "were" : "was"} left out of your total. Remove
+      ${unavailable.length !== 1 ? "them" : "it"} to continue to checkout.
+    </span>
+    <button type="button" class="btn btn-sm btn-danger" id="removeUnavailableBtn">Remove unavailable items</button>
+  `
+  document.getElementById("removeUnavailableBtn").addEventListener("click", removeUnavailableItems)
+
+  if (checkoutLink) {
+    checkoutLink.classList.add("disabled")
+    checkoutLink.setAttribute("aria-disabled", "true")
+    checkoutLink.setAttribute("tabindex", "-1")
+    checkoutLink.style.pointerEvents = "none"
+  }
+}
+
+async function removeUnavailableItems() {
+  const unavailable = (cartData?.items || []).filter((item) => item.unavailable_reason)
+  for (const item of unavailable) {
+    await removeFromCart(item.id, { silent: true })
+  }
+  await loadCart()
 }
 
 function showEmptyCart() {
@@ -187,14 +259,15 @@ function showEmptyCart() {
 function updateCartSummary(data) {
   if (!data.items || data.items.length === 0) return
 
-  // --- Price breakdown ---
-  const itemCount = data.items.length
-  const baseTotal = data.items.reduce((sum, item) => sum + parseFloat(item.listing_unit.price), 0)
-  const warrantyTotal = data.items.reduce(
+  // --- Price breakdown (only items that can actually be bought; checkout bills the same set) ---
+  const payable = data.items.filter((item) => !item.unavailable_reason)
+  const itemCount = payable.length
+  const baseTotal = payable.reduce((sum, item) => sum + parseFloat(item.listing_unit.price), 0)
+  const warrantyTotal = payable.reduce(
     (sum, item) => sum + (item.has_extended_warranty ? parseFloat(item.warranty_price) : 0),
     0
   )
-  const warrantyItemCount = data.items.filter((item) => item.has_extended_warranty).length
+  const warrantyItemCount = payable.filter((item) => item.has_extended_warranty).length
 
   // Synthetic MRP: assume ~18% avg discount on refurbished goods for display
   const mrpTotal = Math.round(baseTotal * 1.18)
@@ -258,9 +331,9 @@ function calculateGST(mrpTotal) {
 function renderPriceSummary(itemCount, mrpTotal, discount, baseTotal, warrantyTotal = 0, warrantyItemCount = 0) {
   const warrantyChecked = warrantyTotal > 0
 
-  const totalAmount = baseTotal + warrantyTotal + PROCESSING_FEE_DISCOUNTED
+  const totalAmount = baseTotal + warrantyTotal
   // Delivery is free
-  const totalSaved = discount + (DELIVERY_ORIGINAL) + (PROCESSING_FEE_ORIGINAL - PROCESSING_FEE_DISCOUNTED)
+  const totalSaved = discount + DELIVERY_ORIGINAL
 
   const fmt = (n) => n.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 
@@ -377,14 +450,16 @@ async function toggleItemWarranty(cartItemId, checked) {
   }
 }
 
-async function removeFromCart(cartItemId) {
-  if (!confirm("Are you sure you want to remove this item from your cart?")) return
+async function removeFromCart(cartItemId, { silent = false } = {}) {
+  if (!silent && !confirm("Are you sure you want to remove this item from your cart?")) return
 
   try {
     const [success, response] = await window.callApi("DELETE", `${cartListUrl}${cartItemId}/`, null, csrfToken)
     if (response.success) {
-      showToast("Item removed from cart!", "info")
-      loadCart()
+      if (!silent) {
+        showToast("Item removed from cart!", "info")
+        loadCart()
+      }
     } else {
       showToast(response.error || "Failed to remove item", "error")
     }

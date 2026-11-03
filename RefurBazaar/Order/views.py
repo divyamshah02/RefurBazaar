@@ -27,7 +27,7 @@ from .services import (
     supersede_pending_orders, confirm_payment, create_razorpay_order, get_razorpay_client,
     valid_signature, request_refund, retry_failed_refunds, sync_customer_profile, save_checkout_address,
     PaymentNotCaptured, active_claims, unit_problem, knows_razorpay_order, refund_extra_payment,
-    needs_online_refund,
+    needs_online_refund, free_refunded_unit,
 )
 from .shiprocket_service import (
     create_shiprocket_shipment, refresh_tracking, cancel_shiprocket_shipment, shipment_is_booked,
@@ -231,6 +231,9 @@ def refurbisher_safe_order_data(order):
     data = OrderSerializer(order).data
     for field in REFURBISHER_HIDDEN_ORDER_FIELDS:
         data.pop(field, None)
+    # The same rule the item APIs enforce, so the page never offers an action the server refuses.
+    data['fulfilment_block_reason'] = _fulfilment_block_reason(order)
+    data.pop('refunds', None)
     return data
 
 
@@ -883,8 +886,9 @@ class OrderViewSet(viewsets.ViewSet):
                 "success": False, "user_not_logged_in": False, "user_unauthorized": False,
                 "data": None, "error": "This item can no longer be changed."
             }, status=status.HTTP_400_BAD_REQUEST)
-        if order_item.order.status == 'cancelled':
-            return _error("This order has been cancelled.", 400)
+        blocked = _fulfilment_block_reason(order_item.order)
+        if blocked:
+            return _error(blocked, 400)
         
         # Validate data
         serializer = OrderItemActionSerializer(data=request.data)
@@ -925,33 +929,19 @@ class OrderViewSet(viewsets.ViewSet):
             order_item.save()
 
             order = order_item.order
+            refund_ok = True
             if order.payment_received:
-                # Paid item: refund its amount, close the order when nothing is left to
-                # fulfil, and free the device only after the refund is accepted.
-                refund_ok = True
-                if needs_online_refund(order):
-                    refund_ok = request_refund(order, amount=item_payable_amount(order_item))
-                if not order.items.exclude(fulfillment_status='rejected').exists():
-                    order.status = 'cancelled'
-                    order.save(update_fields=['status', 'updated_at'])
-                if refund_ok:
-                    with transaction.atomic():
-                        listing_unit = ListingUnit.objects.select_for_update().get(pk=order_item.listing_unit_id)
-                        if not active_claims(listing_unit, exclude_order=order):
-                            listing_unit.is_sold = False
-                            listing_unit.half_sold = False
-                            listing_unit.half_sold_at = None
-                            listing_unit.is_available = True
-                            listing_unit.save(update_fields=['is_sold', 'half_sold', 'half_sold_at', 'is_available'])
-            else:
-                with transaction.atomic():
-                    listing_unit = ListingUnit.objects.select_for_update().get(pk=order_item.listing_unit_id)
-                    if not active_claims(listing_unit, exclude_order=order_item.order):
-                        listing_unit.is_sold = False
-                        listing_unit.half_sold = False
-                        listing_unit.half_sold_at = None
-                        listing_unit.is_available = True
-                        listing_unit.save(update_fields=['is_sold', 'half_sold', 'half_sold_at', 'is_available'])
+                # Paid item: its own refund row (so it is tracked and retried independently of
+                # any other item's refund). The device is freed only once that refund is
+                # accepted or queued for manual handling.
+                refund_ok = request_refund(
+                    order, amount=item_payable_amount(order_item), order_item=order_item
+                )
+            if not order.items.exclude(fulfillment_status='rejected').exists():
+                order.status = 'cancelled'
+                order.save(update_fields=['status', 'updated_at'])
+            if refund_ok:
+                free_refunded_unit(order_item)
         
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,

@@ -66,14 +66,14 @@ async function loadList() {
     return `<tr>
       <td>
         <div style="display:flex;align-items:center;gap:10px">
-          <div class="avatar" style="background:${color};flex-shrink:0">${initials}</div>
+          <div class="avatar" style="background:${escHtml(color)};flex-shrink:0">${escHtml(initials)}</div>
           <div>
-            <div class="fw-600">${name}</div>
-            <div class="text-muted fs-12">${c.email || '—'}</div>
+            <div class="fw-600">${escHtml(name)}</div>
+            <div class="text-muted fs-12">${escHtml(c.email || '—')}</div>
           </div>
         </div>
       </td>
-      <td class="mono">${(c.contact_number && c.contact_number !== 'None') ? c.contact_number : '—'}</td>
+      <td class="mono">${escHtml((c.contact_number && c.contact_number !== 'None') ? c.contact_number : '—')}</td>
       <td class="fw-600">${(c.total_orders || 0).toLocaleString('en-IN')}</td>
       <td class="fw-600">${fmtCurrency(c.total_spent || 0)}</td>
       <td><span class="badge ${isActive ? 'badge-green' : 'badge-gray'}">${isActive ? 'Active' : 'Inactive'}</span></td>

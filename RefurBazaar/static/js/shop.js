@@ -9,6 +9,7 @@ let selectedConditions = []
 let minPrice = null
 let maxPrice = null
 let sortBy = "featured"
+let searchQuery = ""
 let allProducts = []
 let allBrands = []
 let conditionCounts = {}
@@ -273,6 +274,7 @@ async function loadShopData() {
   if (selectedConditions.length > 0) params.append("conditions", selectedConditions.join(","))
   if (minPrice !== null) params.append("min_price", minPrice)
   if (maxPrice !== null) params.append("max_price", maxPrice)
+  if (searchQuery) params.append("search", searchQuery)
 
   const url = `${shop_api_url}?${params.toString()}`
   const [success, response] = await callApi("GET", url, null, csrf_token)
@@ -348,6 +350,8 @@ function renderProducts() {
 
   if (allProducts.length === 0) {
     productsContainer.innerHTML = ""
+    const heading = emptyState.querySelector("h4")
+    if (heading) heading.textContent = searchQuery ? `No results for "${searchQuery}"` : "No products found"
     emptyState.style.display = "block"
     return
   }
@@ -366,14 +370,6 @@ function renderProducts() {
     const hexAttr = mainAttrs.find(a =>
       a.attribute_name.toLowerCase().includes("colour hex") ||
       a.attribute_name.toLowerCase().includes("color hex")
-    )
-
-    // Chip attributes: everything in main that is NOT the hex attribute
-    const chipAttrs = mainAttrs.filter(a =>
-      !a.attribute_name.toLowerCase().includes("colour hex") &&
-      !a.attribute_name.toLowerCase().includes("color hex") &&
-      !a.attribute_name.toLowerCase().includes("color") &&
-      !a.attribute_name.toLowerCase().includes("colour")
     )
 
     // Build color dots HTML (max 4, show +N if more)
@@ -400,32 +396,26 @@ function renderProducts() {
         </div>`
     }
 
-    // Build spec chips (first 2 chip attrs)
-    let chipsHtml = ""
-    if (chipAttrs.length > 0) {
-      const shown = chipAttrs.slice(0, 2)
-      chipsHtml = `<div class="card-chips">` +
-        shown.map(a => {
-          const val = a.possible_values && a.possible_values.length > 0
-            ? a.possible_values[0]
-            : ""
-          return val ? `<span class="card-chip">${escapeHtml(val)}</span>` : ""
-        }).join("") +
-        `</div>`
-    }
+    // Spec chips come from the API's per-model card_specs: the memory/storage options that exist on
+    // units a customer can buy right now (the same data the product page offers), never a template.
+    const cardSpecs = product.card_specs || { fixed: [], options: [] }
+    const optionChips = cardSpecs.options.slice(0, 2).map((option) => {
+      const values = option.values || []
+      if (!values.length) return ""
+      const text = values.length === 1 ? values[0] : `${values[0]} – ${values[values.length - 1]}`
+      return `<span class="card-chip" title="${escapeHtml(option.name)}">${escapeHtml(text)}</span>`
+    }).join("")
+    let chipsHtml = optionChips ? `<div class="card-chips">${optionChips}</div>` : ""
 
     // Discount ribbon: calculate ~30% savings
     const originalPrice = Math.round(product.min_price * 1.3)
     const discountPct = Math.round(((originalPrice - product.min_price) / originalPrice) * 100)
     let product_title = escapeHtml(product.name)
-    let extraSpecs = ""
+    const extraSpecs = ""
     if (product.category == 'laptop') {
-      product_title = `${escapeHtml(product.brand_name)} ${product_title} | Intel Core i6 13th Gen | 14" FHD Display | Windows 11 Pro`
-      chipsHtml = ''
-      extraSpecs = `<div class="card-chips">
-                    <span class="card-chip">32 GB RAM </span>
-                    <span class="card-chip">512GB SSD </span>
-                    </div>`
+      // Laptops show the model's own fixed specs (processor, display, OS) after its name.
+      const fixedSpecs = (cardSpecs.fixed || []).slice(0, 3).map((spec) => escapeHtml(spec.value))
+      product_title = [`${escapeHtml(product.brand_name)} ${product_title}`, ...fixedSpecs].join(" | ")
     }
     const isAvailable = product.is_available !== false
     const cardOnClick = isAvailable ? `onclick="window.location.href='/product/${product.id}/'"` : ""
@@ -522,8 +512,9 @@ function updateResultsCount() {
 // Update Category Title
 // ============================================================
 function updateCategoryTitle() {
-  const map = { mobile: "Smartphones", laptop: "Laptops", tablet: "Tablets", accessory: "Accessories" }
-  document.getElementById("categoryTitle").textContent = map[currentCategory] || "Products"
+  const map = { mobile: "Smartphones", laptop: "Laptops", tablet: "Tablets", accessory: "Accessories", all: "All products" }
+  const title = map[currentCategory] || "Products"
+  document.getElementById("categoryTitle").textContent = searchQuery ? `Results for "${searchQuery}"` : title
 }
 
 // ============================================================
@@ -565,6 +556,17 @@ function togglePriceSection() {
 // Clear All Filters
 // ============================================================
 function clearFilters() {
+  // Clearing also drops the search, otherwise the page would keep showing an empty result set.
+  if (searchQuery) {
+    searchQuery = ""
+    currentCategory = "mobile"
+    const categorySelect = document.getElementById("categorySelect")
+    if (categorySelect) categorySelect.value = "mobile"
+    window.history.replaceState(null, "", window.location.pathname)
+    const headerBox = document.querySelector('#headerSearchForm input[name="search"]')
+    if (headerBox) headerBox.value = ""
+    updateCategoryTitle()
+  }
   selectedBrands = []
   selectedConditions = []
   minPrice = null
@@ -662,6 +664,17 @@ function formatPrice(price) {
 function initCategoryFromQueryParam() {
   const urlParams = new URLSearchParams(window.location.search)
   const categoryParam = urlParams.get("category")
+  searchQuery = (urlParams.get("search") || "").trim().slice(0, 100)
+
+  // A search without a category looks across every category.
+  if (searchQuery && !categoryParam) {
+    const categorySelect = document.getElementById("categorySelect")
+    if (categorySelect) categorySelect.value = "all"
+    currentCategory = "all"
+    updateCategoryTitle()
+    return
+  }
+
   if (categoryParam) {
     const categorySelect = document.getElementById("categorySelect")
     if (categorySelect) {

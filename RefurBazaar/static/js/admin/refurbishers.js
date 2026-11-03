@@ -96,30 +96,30 @@ async function loadList() {
     return `<tr>
       <td>
         <div style="display:flex;align-items:center;gap:10px">
-          <div class="avatar" style="background:${color};flex-shrink:0">${initials}</div>
+          <div class="avatar" style="background:${escHtml(color)};flex-shrink:0">${escHtml(initials)}</div>
           <div>
-            <div class="fw-600">${name}</div>
-            <div class="text-muted fs-12">${email}</div>
+            <div class="fw-600">${escHtml(name)}</div>
+            <div class="text-muted fs-12">${escHtml(email)}</div>
           </div>
         </div>
       </td>
-      <td>${company}</td>
-      <td class="mono">${phone}</td>
-      <td>${listings}</td>
+      <td>${escHtml(company)}</td>
+      <td class="mono">${escHtml(phone)}</td>
+      <td>${escHtml(listings)}</td>
       <td>${approvalBadge(approvalStatus)}</td>
       <td class="text-muted fs-12">${fmtDate(r.date_joined || r.created_at)}</td>
       <td>
         <div style="display:flex;gap:6px;justify-content:flex-end">
-          <a href="/admin-refurbisher-detail/${uid}/" class="btn btn-ghost btn-sm"><i class="fa-solid fa-eye"></i> View</a>
+          <a href="/admin-refurbisher-detail/${encodeURIComponent(uid)}/" class="btn btn-ghost btn-sm"><i class="fa-solid fa-eye"></i> View</a>
           ${approvalStatus === 'pending' ? `
-            <button class="btn btn-success btn-sm" onclick="promptAction('approve','${uid}','${name}')"><i class="fa-solid fa-check"></i> Approve</button>
-            <button class="btn btn-danger btn-sm" onclick="promptAction('reject','${uid}','${name}')"><i class="fa-solid fa-xmark"></i> Reject</button>
+            <button class="btn btn-success btn-sm" data-uid="${escHtml(uid)}" data-name="${escHtml(name)}" onclick="promptAction('approve', this.dataset.uid, this.dataset.name)"><i class="fa-solid fa-check"></i> Approve</button>
+            <button class="btn btn-danger btn-sm" data-uid="${escHtml(uid)}" data-name="${escHtml(name)}" onclick="promptAction('reject', this.dataset.uid, this.dataset.name)"><i class="fa-solid fa-xmark"></i> Reject</button>
           ` : ''}
           ${approvalStatus === 'rejected' ? `
-            <button class="btn btn-success btn-sm" onclick="promptAction('approve','${uid}','${name}')"><i class="fa-solid fa-check"></i> Approve</button>
+            <button class="btn btn-success btn-sm" data-uid="${escHtml(uid)}" data-name="${escHtml(name)}" onclick="promptAction('approve', this.dataset.uid, this.dataset.name)"><i class="fa-solid fa-check"></i> Approve</button>
           ` : ''}
           ${approvalStatus === 'approved' ? `
-            <button class="btn btn-warning btn-sm" onclick="promptAction('reject','${uid}','${name}')"><i class="fa-solid fa-ban"></i> Revoke</button>
+            <button class="btn btn-warning btn-sm" data-uid="${escHtml(uid)}" data-name="${escHtml(name)}" onclick="promptAction('reject', this.dataset.uid, this.dataset.name)"><i class="fa-solid fa-ban"></i> Revoke</button>
           ` : ''}
         </div>
       </td>
@@ -144,7 +144,7 @@ function renderPagination(total) {
     <button class="btn btn-ghost btn-sm" ${_rfPage >= pages ? 'disabled' : ''} onclick="_rfPage++;loadList()"><i class="fa-solid fa-chevron-right"></i></button>`;
 }
 
-/* ─── Approve / Reject ────────��─────────────────────────────────── */
+/* ─── Approve / Reject ──────────────────────────────────────────── */
 let _pendingAction = null;
 function promptAction(action, userId, name) {
   _pendingAction = { action, userId };

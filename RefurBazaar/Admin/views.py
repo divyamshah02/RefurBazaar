@@ -225,11 +225,47 @@ class AdminDashboardViewSet(viewsets.ViewSet):
         if new_status and new_status not in VALID_STATUSES:
             return Response({"success": False, "error": f"Invalid status '{new_status}'"}, status=status.HTTP_400_BAD_REQUEST)
 
+        parsed_payment = None
         if payment_received is not None:
             parsed_payment = parse_bool(payment_received)
             if parsed_payment is None:
                 return Response({"success": False, "error": "payment_received must be true or false"}, status=status.HTTP_400_BAD_REQUEST)
-            order.payment_received = parsed_payment
+
+        from Order.services import (
+            CheckoutError, cancel_order_with_refund, mark_order_paid, mark_order_unpaid,
+        )
+
+        def fail(exc):
+            return Response({"success": False, "error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Cancelling goes first and on its own: the payment flag must stay as it was so the
+        # refund covers exactly what the customer paid.
+        if new_status == 'cancelled' and order.status != 'cancelled':
+            if order.status not in ORDER_STATUS_TRANSITIONS or 'cancelled' not in ORDER_STATUS_TRANSITIONS[order.status]:
+                return Response({"success": False, "error": f"Cannot change order from '{order.status}' to 'cancelled'"}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                outcome = cancel_order_with_refund(order)
+            except CheckoutError as exc:
+                return fail(exc)
+            messages = {
+                'cancelled': "Order cancelled.",
+                'manual_refund': "Order cancelled. This payment was not taken through Razorpay, so the refund is queued for manual payout.",
+                'refund_failed': "Order cancelled. The refund could not be issued yet and has been queued for automatic retry.",
+                'already_cancelled': "Order was already cancelled.",
+            }
+            return Response({
+                "success": True, "data": OrderSerializer(order).data, "message": messages.get(outcome, "Order cancelled."),
+                "refund_status": order.refund_status, "error": None,
+            }, status=status.HTTP_200_OK)
+
+        # Payment flag: marking an order paid also sells its devices (one transaction).
+        try:
+            if parsed_payment is True:
+                mark_order_paid(order)
+            elif parsed_payment is False:
+                mark_order_unpaid(order)
+        except CheckoutError as exc:
+            return fail(exc)
 
         if new_status and new_status != order.status:
             allowed = ORDER_STATUS_TRANSITIONS.get(order.status, ())
@@ -237,27 +273,10 @@ class AdminDashboardViewSet(viewsets.ViewSet):
                 return Response({"success": False, "error": f"Cannot change order from '{order.status}' to '{new_status}'"}, status=status.HTTP_400_BAD_REQUEST)
             if new_status in ('shipped', 'delivered') and not order.payment_received and order.payment_method != 'cod':
                 return Response({"success": False, "error": "Payment must be received before the order can be shipped or delivered"}, status=status.HTTP_400_BAD_REQUEST)
-            if new_status == 'cancelled':
-                from Order.services import cancel_order_with_refund, CheckoutError
-                order.save(update_fields=['payment_received', 'updated_at'])
-                try:
-                    outcome = cancel_order_with_refund(order)
-                except CheckoutError as exc:
-                    return Response({"success": False, "error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
-                serializer = OrderSerializer(order)
-                message = (
-                    "Order cancelled. The refund could not be issued yet and has been queued for retry."
-                    if outcome == 'refund_failed' else "Order cancelled."
-                )
-                return Response({
-                    "success": True, "data": serializer.data, "message": message,
-                    "refund_status": getattr(order, 'refund_status', ''), "error": None,
-                }, status=status.HTTP_200_OK)
             order.status = new_status
-        order.save()
+            order.save(update_fields=['status', 'updated_at'])
 
-        serializer = OrderSerializer(order)
-        return Response({"success": True, "data": serializer.data, "error": None}, status=status.HTTP_200_OK)
+        return Response({"success": True, "data": OrderSerializer(order).data, "error": None}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], url_path='refurbishers')
     @handle_exceptions

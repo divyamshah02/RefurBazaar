@@ -9,6 +9,7 @@ let unitCounter = 0 // Track unit count for unique IDs
 const units = []
 let new_return_id = null
 let handle_mul_units = 0
+let unitsBuiltForModelId = null // which model the unit cards on step 2 were built for
 /**
  * Initialize the add listing page
  */
@@ -71,6 +72,7 @@ async function onCategoryChange() {
   modelSelect.disabled = true
   selectedModel = null
   modelAttributes = []
+  resetUnitDraft()
 
   if (!category) {
     brandSelect.disabled = true
@@ -108,6 +110,7 @@ async function onBrandChange() {
   modelSelect.innerHTML = '<option value="">Select Model</option>'
   selectedModel = null
   modelAttributes = []
+  resetUnitDraft()
 
   if (!brandId) {
     modelSelect.disabled = true
@@ -144,6 +147,9 @@ async function onBrandChange() {
  */
 async function onModelChange() {
   const modelId = document.getElementById("modelSelect").value
+
+  // A different device means different fields: never carry unit data over from the previous one.
+  resetUnitDraft()
 
   if (!modelId) {
     selectedModel = null
@@ -410,6 +416,24 @@ function addNewUnit() {
 }
 
 /**
+ * Throw away every unit card (and the specs/price guide built from the previous model).
+ * Called whenever category, brand or model changes so a new device never inherits the
+ * old device's draft units.
+ */
+function resetUnitDraft() {
+  document.querySelectorAll("#unitsContainer .unit-card").forEach((card) => card.remove())
+  const emptyState = document.getElementById("emptyUnitsState")
+  if (emptyState) emptyState.style.display = "block"
+  const fixedSpecs = document.getElementById("fixedSpecsContainer")
+  if (fixedSpecs) fixedSpecs.innerHTML = ""
+  const priceGuide = document.getElementById("priceGuideContainer")
+  if (priceGuide) priceGuide.innerHTML = ""
+  unitsBuiltForModelId = null
+  new_return_id = null
+  handle_mul_units = 0
+}
+
+/**
  * Remove a unit from the listing
  */
 function removeUnit(unitId) {
@@ -465,7 +489,12 @@ function changeStep(direction) {
   // If moving to step 2, show device info and auto-add first unit
   if (currentStep === 2) {
     showSelectedDeviceInfo()
-    addNewUnit() // Auto-click add unit button
+    const hasUnits = document.querySelectorAll("#unitsContainer .unit-card").length > 0
+    if (unitsBuiltForModelId !== selectedModel.id || !hasUnits) {
+      resetUnitDraft()
+      unitsBuiltForModelId = selectedModel.id
+      addNewUnit() // seed the first unit for THIS model only
+    }
   }
 }
 

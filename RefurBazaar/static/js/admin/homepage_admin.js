@@ -445,7 +445,7 @@ const HP = (() => {
         const url = tab.id === 'items' && itemFilter ? `section-items/?section_id=${itemFilter}` : `${tab.resource}/`;
         const r = await api('GET', url);
         if (!r.success) { host.innerHTML = tab.mode === 'cards' ? '<p class="hp-hint" style="padding:20px">Failed to load.</p>' : `<tr><td colspan="${tab.cols.length + 3}" class="hp-hint" style="padding:20px">Failed to load: ${esc(r.error)}</td></tr>`; return; }
-        const rows = r.data || [];
+        const rows = Array.isArray(r.data) ? r.data : [];
         rowsCache[tab.resource] = rows;
         if (!rows.length) { host.innerHTML = tab.mode === 'cards' ? emptyState(tab.title.toLowerCase()) : emptyState(tab.title.toLowerCase(), tab.resource, tab.cols.length + 3); return; }
         if (tab.mode === 'cards') {
@@ -465,7 +465,7 @@ const HP = (() => {
             host.innerHTML = '<div class="skeleton" style="height:70px"></div>';
             const r = await api('GET', `${g.resource}/`);
             if (!r.success) { host.innerHTML = `<p class="hp-hint">Failed to load: ${esc(r.error)}</p>`; continue; }
-            const rows = r.data || [];
+            const rows = Array.isArray(r.data) ? r.data : [];
             rowsCache[g.resource] = rows;
             host.innerHTML = rows.length ? rows.map(row => `<div class="hp-banner-row${row.is_active ? '' : ' is-off'}">
                 <div class="hp-card-media">${PV[g.resource](row)}</div>
@@ -476,7 +476,7 @@ const HP = (() => {
 
     async function loadSections() {
         const r = await api('GET', 'product-sections/');
-        if (r.success) sections = r.data || [];
+        if (r.success) sections = Array.isArray(r.data) ? r.data : [];
         const sel = $('item-section-filter');
         if (sel) {
             sel.innerHTML = '<option value="">All sections</option>' + sections.map(s => `<option value="${s.id}"${String(s.id) === String(itemFilter) ? ' selected' : ''}>${esc(s.title)}</option>`).join('');
