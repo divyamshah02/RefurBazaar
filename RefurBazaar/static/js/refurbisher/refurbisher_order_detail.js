@@ -108,6 +108,12 @@ async function loadOrderDetail() {
     }
 }
 
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function displayOrderDetail() {
     document.getElementById('loadingState').classList.add('d-none');
     document.getElementById('orderContent').classList.remove('d-none');
@@ -121,8 +127,8 @@ function displayOrderDetail() {
     document.getElementById('customerEmail').textContent = orderData.email;
     document.getElementById('customerPhone').textContent = orderData.phone;
     document.getElementById('shippingAddress').innerHTML = `
-        ${orderData.shipping_address}<br>
-        ${orderData.shipping_city}, ${orderData.shipping_state} ${orderData.shipping_pincode}
+        ${escapeHtml(orderData.shipping_address)}<br>
+        ${escapeHtml(orderData.shipping_city)}, ${escapeHtml(orderData.shipping_state)} ${escapeHtml(orderData.shipping_pincode)}
     `;
     
     // Order items
@@ -134,9 +140,11 @@ function displayOrderDetail() {
     );
     document.getElementById('yourSubtotal').textContent = `₹${yourSubtotal.toFixed(2)}`;
     document.getElementById('orderDate').textContent = formatDate(orderData.created_at);
-    document.getElementById('paymentStatus').innerHTML = orderData.payment_received 
-        ? '<span class="badge bg-success">Paid</span>' 
-        : '<span class="badge bg-warning">Pending</span>';
+    document.getElementById('paymentStatus').innerHTML = orderData.payment_received
+        ? '<span class="badge bg-success">Paid</span>'
+        : (orderData.status === 'cancelled'
+            ? '<span class="badge bg-secondary">Not paid (order cancelled)</span>'
+            : '<span class="badge bg-warning text-dark">Pending</span>');
 }
 
 function displayOrderItems() {
@@ -162,8 +170,8 @@ function displayOrderItems() {
                         
                         ${item.device_imei ? `
                             <div class="mt-2">
-                                <p class="mb-1"><strong>IMEI:</strong> ${item.device_imei}</p>
-                                ${item.verification_notes ? `<p class="text-muted small mb-0">${item.verification_notes}</p>` : ''}
+                                <p class="mb-1"><strong>IMEI:</strong> ${escapeHtml(item.device_imei)}</p>
+                                ${item.verification_notes ? `<p class="text-muted small mb-0">${escapeHtml(item.verification_notes)}</p>` : ''}
                             </div>
                         ` : ''}
                         
@@ -182,7 +190,7 @@ function displayOrderItems() {
                         
                         ${item.rejection_reason ? `
                             <div class="alert alert-danger mt-2 mb-0">
-                                <strong>Rejection Reason:</strong> ${item.rejection_reason}
+                                <strong>Rejection Reason:</strong> ${escapeHtml(item.rejection_reason)}
                             </div>
                         ` : ''}
 
@@ -196,7 +204,7 @@ function displayOrderItems() {
                         ` : ''}
                         ${item.shiprocket_last_error ? `
                             <div class="alert alert-warning mt-2 mb-0 py-1 px-2 small">
-                                <i class="fas fa-exclamation-triangle me-1"></i>Shipping issue: ${item.shiprocket_last_error}
+                                <i class="fas fa-exclamation-triangle me-1"></i>Shipping issue: ${escapeHtml(item.shiprocket_last_error)}
                             </div>
                         ` : ''}
                     </div>
@@ -221,6 +229,14 @@ function getItemActions(item) {
         return '<span class="text-success"><i class="fas fa-check-circle me-1"></i>Delivered</span>';
     }
     
+    // Cancelled or unpaid orders are read-only. The server decides (and enforces) this.
+    if (orderData.fulfilment_block_reason) {
+        return `<div class="alert alert-secondary py-2 px-3 mb-0 text-start small" role="status">
+            <i class="fas fa-lock me-2"></i>${escapeHtml(orderData.fulfilment_block_reason)}
+            No fulfilment actions are available for this item.
+        </div>`;
+    }
+
     if (item.fulfillment_status === 'packed') {
         return '<span class="text-primary"><i class="fas fa-box me-1"></i>Packed</span>';
     }

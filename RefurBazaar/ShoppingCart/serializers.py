@@ -39,6 +39,7 @@ class CartItemListingUnitSerializer(serializers.ModelSerializer):
 class CartItemSerializer(serializers.ModelSerializer):
     """Serializer for CartItem with nested ListingUnit details"""
     listing_unit = CartItemListingUnitSerializer(read_only=True)
+    unavailable_reason = serializers.SerializerMethodField()
     listing_unit_id = serializers.PrimaryKeyRelatedField(
         queryset=ListingUnit.objects.filter(is_available=True, is_sold=False),
         source='listing_unit',
@@ -49,12 +50,17 @@ class CartItemSerializer(serializers.ModelSerializer):
         model = ShoppingCartItem
         fields = [
             'id', 'cart', 'listing_unit', 'listing_unit_id',
-            'has_extended_warranty', 'warranty_price', 'added_at',
+            'has_extended_warranty', 'warranty_price', 'added_at', 'unavailable_reason',
         ]
         # warranty_price is always server-computed (never client-writable);
         # has_extended_warranty is toggled via the dedicated warranty action.
         read_only_fields = ['cart', 'added_at', 'has_extended_warranty', 'warranty_price']
     
+    def get_unavailable_reason(self, obj):
+        """Why checkout would reject this item right now (None when it is fine). Same rule as checkout."""
+        from Order.services import unit_problem
+        return unit_problem(obj.listing_unit)
+
     def validate_listing_unit_id(self, value):
         """Validate that listing unit is available and not sold"""
         if not value.is_available:

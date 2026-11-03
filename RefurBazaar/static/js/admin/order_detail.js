@@ -155,9 +155,9 @@ function renderItem(it) {
 
   /* Product image thumbnail */
   const thumb = img
-    ? `<img src="${escStr(img)}" alt="${escStr(name)}"
+    ? `<img src="${escStr(img)}" data-src="${escStr(img)}" alt="${escStr(name)}"
            style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer;flex-shrink:0"
-           onclick="openLightbox('${escStr(img)}')" />`
+           onclick="openLightbox(this.dataset.src)" />`
     : `<div style="width:56px;height:56px;border-radius:8px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0">
          <i class="fa-solid fa-image" style="color:var(--border)"></i>
        </div>`;
@@ -177,9 +177,9 @@ function renderItem(it) {
         ${photos.map(p => {
           const url = p.photo_url || p.photo || '';
           return url
-            ? `<img src="${escStr(url)}" alt="Device photo"
+            ? `<img src="${escStr(url)}" data-src="${escStr(url)}" alt="Device photo"
                     style="width:52px;height:52px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer"
-                    onclick="openLightbox('${escStr(url)}')" />`
+                    onclick="openLightbox(this.dataset.src)" />`
             : '';
         }).join('')}
       </div>`

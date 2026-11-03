@@ -93,6 +93,11 @@ def active_claims(unit, exclude_order=None):
     claims = OrderItem.objects.filter(listing_unit=unit).exclude(
         order__status='cancelled'
     ).exclude(fulfillment_status='rejected')
+    if not unit.half_sold and not unit.is_sold:
+        # An unpaid online order only reserves a device while its checkout hold is running.
+        # Once the hold has expired the order is stale and must not block the next buyer
+        # (supersede_pending_orders cancels it when that buyer claims the device).
+        claims = claims.exclude(order__status='pending', order__payment_received=False)
     if exclude_order is not None:
         claims = claims.exclude(order=exclude_order)
     return claims.exists()
@@ -192,7 +197,9 @@ def confirm_payment(order, payment_id, signature='', verify_capture=True):
         if locked.status == 'cancelled':
             raise CheckoutError("This order was cancelled before the payment completed.", 409)
 
-        items = list(locked.items.all())
+        items = [i for i in locked.items.all() if i.fulfillment_status != 'rejected']
+        if not items:
+            raise CheckoutError("Every item on this order was rejected, so it cannot be paid.", 409)
         units = {
             u.id: u for u in ListingUnit.objects.select_for_update().filter(
                 id__in=[i.listing_unit_id for i in items]
@@ -219,6 +226,64 @@ def confirm_payment(order, payment_id, signature='', verify_capture=True):
         for unit in units.values():
             sell_unit(unit)
     order.refresh_from_db()
+    return True
+
+
+def mark_order_paid(order):
+    """
+    Admin confirms payment received outside Razorpay. The order flag and the
+    devices' sold state change together under row locks, so a paid order's
+    stock can never reappear for sale when its checkout hold expires.
+    Returns False when the order was already paid.
+    """
+    from .models import Order
+    with transaction.atomic():
+        locked = Order.objects.select_for_update().get(pk=order.pk)
+        if locked.payment_received:
+            order.refresh_from_db()
+            return False
+        if locked.status == 'cancelled':
+            raise CheckoutError("A cancelled order cannot be marked as paid.", 400)
+
+        items = [i for i in locked.items.all() if i.fulfillment_status != 'rejected']
+        if not items:
+            raise CheckoutError("Every item on this order was rejected, so it cannot be paid.", 400)
+        units = {
+            u.id: u for u in ListingUnit.objects.select_for_update().filter(
+                id__in=[i.listing_unit_id for i in items]
+            )
+        }
+        for item in items:
+            unit = units[item.listing_unit_id]
+            if active_claims(unit, exclude_order=locked):
+                raise CheckoutError("A device in this order was bought by someone else.", 409)
+            if not unit.is_sold:
+                problem = unit_problem(unit, locked)
+                if problem:
+                    raise CheckoutError(f"A device in this order is {problem}, so it cannot be marked as paid.", 409)
+
+        locked.payment_received = True
+        if locked.status == 'pending':
+            locked.status = 'confirmed'
+        locked.save()
+        for unit in units.values():
+            sell_unit(unit)
+    order.refresh_from_db()
+    return True
+
+
+def mark_order_unpaid(order):
+    """Undo a cash/COD payment flag. Online (Razorpay) payments can only be reversed by cancelling and refunding."""
+    if not order.payment_received:
+        return False
+    if order.payment_method != 'cod':
+        raise CheckoutError(
+            "An online payment cannot be set back to unpaid. Cancel the order to refund it.", 400
+        )
+    if order.status in ('shipped', 'delivered'):
+        raise CheckoutError("A shipped or delivered order cannot be set back to unpaid.", 400)
+    order.payment_received = False
+    order.save(update_fields=['payment_received', 'updated_at'])
     return True
 
 
@@ -313,38 +378,95 @@ def payment_is_captured(order, payment_id):
 MAX_REFUND_ATTEMPTS = 5
 
 
-def request_refund(order, payment_id=None, amount=None):
-    """
-    Refund a payment we cannot fulfil: the whole payment, or `amount` for a
-    partial refund (e.g. one rejected item). The attempt and its outcome are
-    saved on the order so a failed refund is visible to admin and retried
-    (see retry_failed_refunds). Returns True once Razorpay has accepted it.
-    """
-    if amount is None and order.refund_status == 'processed':
-        return True
-    if amount is None and order.refund_status == 'failed' and order.refund_amount:
-        amount = order.refund_amount
-    payment_id = payment_id or order.refund_payment_id or order.razorpay_payment_id
-    order.refund_payment_id = payment_id or ''
-    order.refund_attempts = (order.refund_attempts or 0) + 1
-    order.refund_amount = amount if amount is not None else order.total_amount
+def sync_refund_summary(order):
+    """Mirror the order's refund rows onto the summary fields the order screens show."""
+    refunds = list(order.refunds.all())
+    if not refunds:
+        order.refund_status = 'none'
+    elif any(r.status == 'failed' for r in refunds):
+        order.refund_status = 'failed'
+    elif any(r.status == 'manual' for r in refunds):
+        order.refund_status = 'manual'
+    else:
+        order.refund_status = 'processed'
+    order.refund_amount = sum((r.amount for r in refunds if r.status == 'processed'), Decimal('0'))
+    order.refund_attempts = min(sum(r.attempts for r in refunds), 32000)
+    failed = [r for r in refunds if r.status == 'failed']
+    order.refund_error = (failed[-1].error if failed else '')[:500]
+    processed = [r for r in refunds if r.razorpay_refund_id]
+    order.refund_id = processed[-1].razorpay_refund_id if processed else ''
+    order.refund_payment_id = refunds[-1].payment_id if refunds else ''
+    order.save(update_fields=[
+        'refund_status', 'refund_amount', 'refund_attempts', 'refund_error',
+        'refund_id', 'refund_payment_id', 'updated_at',
+    ])
+
+
+def _attempt_refund(refund):
+    """Send one OrderRefund row to Razorpay. Returns True once Razorpay has accepted it."""
+    refund.attempts += 1
     try:
         client, _ = get_razorpay_client()
-        payload = {'amount': int(Decimal(str(amount)) * 100)} if amount is not None else {}
-        refund = client.payment.refund(payment_id, payload)
-        order.refund_status = 'processed'
-        order.refund_id = refund.get('id', '') if isinstance(refund, dict) else ''
-        order.refund_error = ''
-        accepted = True
+        response = client.payment.refund(refund.payment_id, {'amount': int(Decimal(str(refund.amount)) * 100)})
+        refund.status = 'processed'
+        refund.razorpay_refund_id = response.get('id', '') if isinstance(response, dict) else ''
+        refund.error = ''
     except Exception as exc:
-        order.refund_status = 'failed'
-        order.refund_error = str(exc)[:500]
-        logger.error("Refund failed for order %s (attempt %s): %s", order.order_id, order.refund_attempts, exc)
-        accepted = False
-    order.save(update_fields=[
-        'refund_payment_id', 'refund_attempts', 'refund_status', 'refund_id', 'refund_error',
-        'refund_amount', 'updated_at'
-    ])
+        refund.status = 'failed'
+        refund.error = str(exc)[:500]
+        logger.error(
+            "Refund %s for order %s failed (attempt %s): %s",
+            refund.pk, refund.order_id, refund.attempts, exc,
+        )
+    refund.save()
+    return refund.status == 'processed'
+
+
+def request_refund(order, payment_id=None, amount=None, order_item=None):
+    """
+    Refund money for an order. Every refund is its own OrderRefund row, so:
+      * a later refund can never overwrite an earlier one that failed;
+      * each failed refund is retried independently (retry_failed_refunds);
+      * the total refunded never exceeds what the customer paid.
+    `amount` is a partial refund (pass `order_item` for a rejected item); leave it
+    out to refund whatever balance is still left on the order.
+    Orders that were not paid through Razorpay get a 'manual' row so the refund is
+    clearly queued for staff. Returns True once the refund is accepted or queued.
+    """
+    from .models import Order, OrderRefund
+    payment_id = payment_id or order.razorpay_payment_id or ''
+    with transaction.atomic():
+        locked = Order.objects.select_for_update().get(pk=order.pk)
+        if order_item is not None:
+            existing = locked.refunds.filter(order_item=order_item).first()
+        else:
+            existing = locked.refunds.filter(order_item__isnull=True).first()
+
+        if existing is None:
+            reserved = sum((r.amount for r in locked.refunds.all()), Decimal('0'))
+            remaining = locked.total_amount - reserved
+            wanted = Decimal(str(amount)) if amount is not None else remaining
+            wanted = min(wanted, remaining)
+            if wanted <= 0:
+                return True
+            online = locked.payment_method == 'razorpay' and bool(payment_id)
+            existing = OrderRefund.objects.create(
+                order=locked, order_item=order_item, payment_id=payment_id, amount=wanted,
+                status='failed' if online else 'manual',
+                error='' if online else 'Payment was not taken through Razorpay; refund the customer manually.',
+            )
+            if not online:
+                sync_refund_summary(locked)
+                order.refresh_from_db()
+                return True
+
+    if existing.status in ('processed', 'manual'):
+        return True
+    if payment_id and not existing.payment_id:
+        existing.payment_id = payment_id
+    accepted = _attempt_refund(existing)
+    sync_refund_summary(order)
+    order.refresh_from_db()
     return accepted
 
 
@@ -352,12 +474,28 @@ def needs_online_refund(order):
     return bool(order.payment_received and order.payment_method == 'razorpay' and order.razorpay_payment_id)
 
 
+def free_refunded_unit(order_item):
+    """Put a rejected/refunded item's device back on sale, unless another live order owns it."""
+    with transaction.atomic():
+        unit = ListingUnit.objects.select_for_update().get(pk=order_item.listing_unit_id)
+        if active_claims(unit, exclude_order=order_item.order):
+            return False
+        unit.is_sold = False
+        unit.half_sold = False
+        unit.half_sold_at = None
+        unit.is_available = True
+        unit.save(update_fields=['is_sold', 'half_sold', 'half_sold_at', 'is_available'])
+    return True
+
+
 def cancel_order_with_refund(order):
     """
-    Cancel an order at any stage before delivery. Paid online orders are
-    refunded first; the devices go back on sale only once the refund has been
-    accepted (or none is needed), so a failed refund never frees paid stock.
-    Returns 'cancelled', 'refund_failed' or 'already_cancelled'.
+    Cancel an order at any stage before delivery. Anything the customer paid is
+    refunded first (online through Razorpay, otherwise queued as a manual refund),
+    covering whatever balance earlier partial refunds left. Devices go back on sale
+    only once the refund is accepted or queued, so a failed gateway refund never
+    frees paid stock.
+    Returns 'cancelled', 'manual_refund', 'refund_failed' or 'already_cancelled'.
     """
     from .models import Order
     with transaction.atomic():
@@ -371,26 +509,34 @@ def cancel_order_with_refund(order):
         locked.save(update_fields=['status', 'updated_at'])
 
     outcome = 'cancelled'
-    if needs_online_refund(locked):
+    if locked.payment_received:
         if not request_refund(locked):
             outcome = 'refund_failed'
-    if outcome == 'cancelled':
+        elif locked.refunds.filter(status='manual').exists():
+            outcome = 'manual_refund'
+    if outcome != 'refund_failed':
         release_order_units(locked)
     order.refresh_from_db()
     return outcome
 
 
 def retry_failed_refunds():
-    """Retry refunds that failed earlier. Returns (retried, still_failing)."""
-    from .models import Order
-    pending = Order.objects.filter(refund_status='failed', refund_attempts__lt=MAX_REFUND_ATTEMPTS)
+    """Retry every failed refund on its own. Returns (retried, still_failing)."""
+    from .models import OrderRefund
+    pending = OrderRefund.objects.filter(
+        status='failed', attempts__lt=MAX_REFUND_ATTEMPTS
+    ).select_related('order', 'order_item', 'order_item__order')
     retried = still_failing = 0
-    for order in pending:
+    for refund in pending:
         retried += 1
-        if not request_refund(order):
+        accepted = _attempt_refund(refund)
+        sync_refund_summary(refund.order)
+        if not accepted:
             still_failing += 1
-        elif order.status == 'cancelled':
-            release_order_units(order)
+        elif refund.order_item_id:
+            free_refunded_unit(refund.order_item)
+        elif refund.order.status == 'cancelled':
+            release_order_units(refund.order)
     return retried, still_failing
 
 

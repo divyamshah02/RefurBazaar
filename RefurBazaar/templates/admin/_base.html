@@ -692,6 +692,14 @@
 <!-- Shared JS -->
 <script src="{% static 'js/api_caller.js' %}"></script>
 <script>
+  // ─── Escaping helper: every user-supplied value rendered through innerHTML goes through this.
+  // Never use it inside an inline onclick string; pass values with data-* attributes instead.
+  function escHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   // ─── Toast helper ─────────────────────────────────────────────
   function showToast(message, type = 'info', duration = 3500) {
     const icons = { success:'fa-circle-check', error:'fa-circle-xmark', warning:'fa-triangle-exclamation', info:'fa-circle-info' };

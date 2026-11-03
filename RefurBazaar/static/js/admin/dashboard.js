@@ -11,7 +11,7 @@ const ORDER_STATUS_MAP = {
 };
 function orderStatusBadge(s) {
   const m = ORDER_STATUS_MAP[s] || { label: s || '—', cls:'badge-gray' };
-  return `<span class="badge ${m.cls}">${m.label}</span>`;
+  return `<span class="badge ${m.cls}">${escHtml(m.label)}</span>`;
 }
 
 /* ─── Entry point ───────────────────────────────────────────────── */
@@ -53,13 +53,13 @@ async function loadRecentOrders(csrf, url) {
   }
   tbody.innerHTML = rows.slice(0, 10).map(o => {
     const cust = `${o.first_name||''} ${o.last_name||''}`.trim() || '—';
-    return `<tr style="cursor:pointer" onclick="location.href='/admin-order-detail/${o.order_id}/'">
-      <td><span class="mono">${o.order_id}</span></td>
+    return `<tr style="cursor:pointer" onclick="location.href='/admin-order-detail/${encodeURIComponent(o.order_id)}/'">
+      <td><span class="mono">${escHtml(o.order_id)}</span></td>
       <td>
-        <div class="fw-600">${cust}</div>
-        <div class="text-muted fs-12">${o.phone || ''}</div>
+        <div class="fw-600">${escHtml(cust)}</div>
+        <div class="text-muted fs-12">${escHtml(o.phone || '')}</div>
       </td>
-      <td class="text-muted">${o.item_count ?? (o.items?.length ?? '—')}</td>
+      <td class="text-muted">${escHtml(o.item_count ?? (o.items?.length ?? '—'))}</td>
       <td class="fw-600">${fmtCurrency(o.total_amount)}</td>
       <td>${orderStatusBadge(o.status)}</td>
       <td class="text-muted fs-12">${fmtDate(o.created_at)}</td>
@@ -85,12 +85,12 @@ async function loadPendingRefurbishers(csrf, url) {
     const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const color    = avatarColor(name);
     return `<div style="display:flex;align-items:center;gap:12px;padding:10px 20px;border-bottom:1px solid var(--border-light)">
-      <div class="avatar" style="background:${color}">${initials}</div>
+      <div class="avatar" style="background:${escHtml(color)}">${escHtml(initials)}</div>
       <div style="flex:1;min-width:0">
-        <div class="fw-600 fs-13 truncate">${name}</div>
-        <div class="text-muted fs-12 truncate">${company}</div>
+        <div class="fw-600 fs-13 truncate">${escHtml(name)}</div>
+        <div class="text-muted fs-12 truncate">${escHtml(company)}</div>
       </div>
-      <a href="/admin-refurbisher-detail/${r.user_id}/" class="btn btn-warning btn-sm">Review</a>
+      <a href="/admin-refurbisher-detail/${encodeURIComponent(r.user_id)}/" class="btn btn-warning btn-sm">Review</a>
     </div>`;
   }).join('');
 }

@@ -143,6 +143,11 @@ async function loadCart() {
 
     if (response.success && response.data) {
       cartData = response.data
+      // Unavailable items are explained (and removable) in the cart; never let checkout start with them.
+      if ((cartData.items || []).some((item) => item.unavailable_reason)) {
+        window.location.replace("/cart")
+        return
+      }
       renderOrderItems(cartData)
       updateOrderSummary(cartData)
       updateCartBadge(cartData)

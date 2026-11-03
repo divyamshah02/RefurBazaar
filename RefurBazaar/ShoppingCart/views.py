@@ -9,6 +9,7 @@ from .models import ShoppingCart, ShoppingCartItem
 from .serializers import CartSerializer, CartItemSerializer
 from Product.models import ListingUnit
 from Product.utils import get_warranty_price
+from Order.services import unit_problem
 
 from .models import Wishlist, WishlistItem
 from .serializers import WishlistSerializer, WishlistItemSerializer
@@ -141,6 +142,16 @@ class CartViewSet(viewsets.ViewSet):
                 "data": None,
                 "error": "This listing unit is not available for purchase"
             }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Same eligibility rules checkout applies (listing status, seller active/approved, reservations).
+        problem = unit_problem(listing_unit)
+        if problem:
+            return Response({
+                "success": False,
+                "user_not_logged_in": not bool(user),
+                "data": None,
+                "error": f"This item cannot be added to your cart: it is {problem}."
+            }, status=status.HTTP_409_CONFLICT)
 
         # Get or create cart
         with transaction.atomic():
@@ -358,12 +369,13 @@ class CartViewSet(viewsets.ViewSet):
 
         # Check each item and remove if unavailable
         removed_items = []
-        for item in cart.items.all():
-            if not item.listing_unit.is_available or item.listing_unit.is_sold:
+        for item in cart.items.select_related('listing_unit__listing__refurbisher'):
+            problem = unit_problem(item.listing_unit)
+            if problem:
                 removed_items.append({
                     'id': item.id,
                     'listing_unit_id': item.listing_unit.id,
-                    'reason': 'No longer available' if not item.listing_unit.is_available else 'Already sold'
+                    'reason': problem.capitalize()
                 })
                 item.delete()
 
@@ -430,15 +442,7 @@ class CartTransferViewSet(viewsets.ViewSet):
         with transaction.atomic():
             def is_purchasable(cart_item):
                 unit = cart_item.listing_unit
-                if unit is None or not unit.is_available or unit.is_sold:
-                    return False
-                listing = unit.listing
-                seller = listing.refurbisher
-                return (
-                    listing.status == 'active'
-                    and seller.is_active
-                    and getattr(seller, 'is_approved', True)
-                )
+                return unit is not None and unit_problem(unit) is None
 
             # Drop guest items that can no longer be bought; keep the rest.
             for guest_item in list(guest_cart.items.select_related(

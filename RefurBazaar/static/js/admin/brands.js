@@ -54,10 +54,10 @@ function renderTable() {
       <td>
         <div style="display:flex;align-items:center;gap:10px">
           ${b.logo
-            ? `<img src="${b.logo}" alt="${b.name}" style="width:32px;height:32px;object-fit:contain;border-radius:6px;border:1px solid var(--border)">`
+            ? `<img src="${escHtml(b.logo)}" alt="${escHtml(b.name)}" style="width:32px;height:32px;object-fit:contain;border-radius:6px;border:1px solid var(--border)">`
             : `<div style="width:32px;height:32px;border-radius:6px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-tag" style="color:var(--text-muted);font-size:12px"></i></div>`
           }
-          <span class="fw-600">${b.name}</span>
+          <span class="fw-600">${escHtml(b.name)}</span>
         </div>
       </td>
       <td class="text-muted">${(b.model_count ?? '—').toLocaleString?.() ?? '—'}</td>
@@ -65,7 +65,7 @@ function renderTable() {
       <td>
         <div style="display:flex;gap:6px;justify-content:flex-end">
           <button class="btn btn-ghost btn-sm" onclick="editBrand(${b.id})"><i class="fa-solid fa-pen"></i> Edit</button>
-          <button class="btn btn-danger btn-sm" onclick="promptDelete(${b.id},'${escStr(b.name)}')" aria-label="Delete brand ${escStr(b.name)}" title="Delete brand"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+          <button class="btn btn-danger btn-sm" data-name="${escHtml(b.name)}" onclick="promptDelete(${Number(b.id)}, this.dataset.name)" aria-label="Delete brand ${escHtml(b.name)}" title="Delete brand"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
         </div>
       </td>
     </tr>`).join('');
@@ -145,7 +145,7 @@ async function confirmDelete() {
     showToast('Brand deleted', 'success');
     loadBrands();
   } else {
-    showToast(res?.message || 'Failed to delete brand', 'error');
+    showToast(res?.error || res?.message || 'Failed to delete brand', 'error', 7000);
   }
 }
 

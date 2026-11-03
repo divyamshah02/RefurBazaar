@@ -588,7 +588,8 @@ async function saveProduct() {
 
   if (!ok || !res?.success) {
     btn.disabled = false; btn.textContent = 'Save Product';
-    showToast(res?.message || res?.error || 'Failed to save product', 'error');
+    const fieldErrors = (res?.errors?.attributes || []).map(e => `Attribute ${e.attribute_id ?? (e.index != null ? '#' + (e.index + 1) : '')}: ${e.error}`);
+    showToast([res?.message || res?.error || 'Failed to save product', ...fieldErrors].join(' | '), 'error', 8000);
     return;
   }
 

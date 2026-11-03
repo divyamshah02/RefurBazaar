@@ -85,6 +85,7 @@ class Order(models.Model):
         ('none', 'No refund'),
         ('processed', 'Refund accepted'),
         ('failed', 'Refund failed - needs attention'),
+        ('manual', 'Manual refund required'),
     ]
     refund_status = models.CharField(max_length=20, choices=REFUND_STATUS_CHOICES, default='none')
     refund_payment_id = models.CharField(max_length=100, blank=True, default='')
@@ -268,3 +269,35 @@ class DevicePhoto(models.Model):
     
     def __str__(self):
         return f"Photo for OrderItem {self.order_item.id}"
+
+
+class OrderRefund(models.Model):
+    """
+    One refund (full order, or a single rejected item). Each refund keeps its own
+    amount, status and attempt count so a later refund can never overwrite an
+    earlier failed one, and every failure is retried independently.
+    """
+    STATUS_CHOICES = [
+        ('processed', 'Refund accepted'),
+        ('failed', 'Refund failed - will be retried'),
+        ('manual', 'Manual refund required'),
+    ]
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='refunds')
+    order_item = models.ForeignKey(
+        OrderItem, null=True, blank=True, on_delete=models.SET_NULL, related_name='refunds',
+        help_text="Set for a single-item refund; empty for a refund of the remaining order balance")
+    payment_id = models.CharField(max_length=100, blank=True, default='')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='failed')
+    razorpay_refund_id = models.CharField(max_length=100, blank=True, default='')
+    attempts = models.PositiveSmallIntegerField(default=0)
+    error = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['id']
+
+    def __str__(self):
+        return f"Refund {self.amount} for order {self.order_id} ({self.status})"

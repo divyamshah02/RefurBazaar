@@ -150,11 +150,85 @@ class BrandViewSet(viewsets.ViewSet):
                 "success": False, "user_not_logged_in": False, "user_unauthorized": False,
                 "data": None, "error": "Brand not found"
             }, status=status.HTTP_404_NOT_FOUND)
-        brand.delete()
+        model_count = ProductModel.objects.filter(brand=brand).count()
+        if model_count:
+            listing_count = Listing.objects.filter(model__brand=brand).count()
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": {"models": model_count, "listings": listing_count},
+                "error": (
+                    f"This brand has {model_count} product model(s) and {listing_count} listing(s), so it cannot be deleted. "
+                    "Mark the brand inactive instead to hide it while keeping the inventory."
+                ),
+            }, status=status.HTTP_409_CONFLICT)
+        try:
+            brand.delete()
+        except ProtectedError:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "This brand is referenced by existing records and cannot be deleted."
+            }, status=status.HTTP_409_CONFLICT)
         return Response({
             "success": True, "user_not_logged_in": False, "user_unauthorized": False,
             "data": None, "error": None
         }, status=status.HTTP_200_OK)
+
+
+def _natural_key(value):
+    """Sort '8 GB' before '16 GB' (numbers by value, everything else alphabetically)."""
+    import re as _re
+    match = _re.search(r'\d+(?:\.\d+)?', str(value))
+    unit_multiplier = 1000 if _re.search(r'tb', str(value), _re.I) else 1
+    return (float(match.group()) * unit_multiplier if match else float('inf'), str(value).lower())
+
+
+def _card_specs_for(model_ids):
+    """
+    Real, model-specific specs for shop cards, built from the same data the product page uses:
+      fixed   - spec values the admin fixed on the model (processor, screen size, OS, ...)
+      options - choice attributes (RAM, storage, ...) with the values that actually exist on
+                units a customer can buy right now, so a card never advertises a configuration
+                the product page cannot offer.
+    Two queries for the whole page, regardless of how many cards are shown.
+    """
+    from collections import defaultdict
+    if not model_ids:
+        return {}
+
+    links = (ProductModelAttribute.objects
+             .filter(product_model_id__in=model_ids, section='main')
+             .select_related('attribute')
+             .order_by('attribute__display_order', 'id'))
+
+    live_values = defaultdict(lambda: defaultdict(set))
+    rows = (ListingUnitAttribute.objects
+            .filter(
+                listing_unit__listing__model_id__in=model_ids,
+                listing_unit__listing__status='active',
+                listing_unit__listing__refurbisher__active_user=True,
+                listing_unit__listing__refurbisher__company_profile__is_approved=True,
+                listing_unit__is_available=True,
+                listing_unit__is_sold=False,
+            )
+            .values_list('listing_unit__listing__model_id', 'attribute_id', 'value'))
+    for model_id, attribute_id, value in rows:
+        value = str(value or '').strip()
+        if value:
+            live_values[model_id][attribute_id].add(value)
+
+    specs = defaultdict(lambda: {"fixed": [], "options": []})
+    for link in links:
+        name = link.attribute.name
+        lowered = name.lower()
+        if 'colour' in lowered or 'color' in lowered:
+            continue
+        if link.default_value and not link.is_required:
+            specs[link.product_model_id]["fixed"].append({"name": name, "value": link.default_value})
+        elif link.data_type == 'choice' or link.is_required:
+            values = sorted(live_values[link.product_model_id].get(link.attribute_id, ()), key=_natural_key)
+            if values:
+                specs[link.product_model_id]["options"].append({"name": name, "values": values})
+    return dict(specs)
 
 
 class ProductModelViewSet(viewsets.ViewSet):
@@ -211,27 +285,37 @@ class ProductModelViewSet(viewsets.ViewSet):
          - conditions: Comma-separated conditions (excellent,good,fair)
          - sort_by: featured, price_low, price_high, newest
         """
-        category = request.query_params.get('category', 'mobile')
+        search = (request.query_params.get('search') or '').strip()[:100]
+        # With a search term the category is optional: searching without one covers every category.
+        category = request.query_params.get('category') or ('all' if search else 'mobile')
+        all_categories = category == 'all'
         brand_ids = request.query_params.get('brand_ids', '')
         min_price = request.query_params.get('min_price')
         max_price = request.query_params.get('max_price')
         conditions = request.query_params.get('conditions', '')
         sort_by = request.query_params.get('sort_by', 'featured')
+        category_scope = {} if all_categories else {'category': category}
+        unit_category_scope = {} if all_categories else {'listing__model__category': category}
         
         # Base queryset - get product models with active, unsold listings
         # (units may be available or out-of-stock; sold units are excluded entirely)
         queryset = ProductModel.objects.filter(
             is_active=True,
-            category=category,
+            **category_scope,
             listings__status='active',
             listings__units__is_sold=False,
             listings__refurbisher__active_user=True,
             listings__refurbisher__company_profile__is_approved=True,
         ).distinct()
         
+        # Every word of the search must appear in the model name or the brand name
+        # ("iphone 11 pro" matches the iPhone 11 Pro, not every iPhone).
+        for word in search.split():
+            queryset = queryset.filter(Q(name__icontains=word) | Q(brand__name__icontains=word))
+
         # Apply brand filter
         if brand_ids:
-            brand_id_list = [int(bid) for bid in brand_ids.split(',') if bid.strip()]
+            brand_id_list = [int(bid) for bid in brand_ids.split(',') if bid.strip().isdigit()]
             if brand_id_list:
                 queryset = queryset.filter(brand_id__in=brand_id_list)
         
@@ -295,18 +379,21 @@ class ProductModelViewSet(viewsets.ViewSet):
             queryset = queryset.order_by('-available_units_count', 'brand__name', 'name')
         
         # Serialize products with min_price and in-stock status
+        models_page = list(queryset)
+        card_specs = _card_specs_for([m.id for m in models_page])
         products = []
-        for model in queryset:
+        for model in models_page:
             data = ProductModelSerializer(model).data
             is_in_stock = model.available_units_count > 0
             display_price = model.min_price if is_in_stock else model.fallback_min_price
             data['min_price'] = float(display_price) if display_price else 0
             data['is_available'] = is_in_stock
+            data['card_specs'] = card_specs.get(model.id, {"fixed": [], "options": []})
             products.append(data)
         
         # Get available brands for this category with counts
         brands = Brand.objects.filter(
-            models__category=category,
+            **({} if all_categories else {'models__category': category}),
             models__is_active=True,
             models__listings__status='active',
             models__listings__units__is_available=True,
@@ -326,7 +413,7 @@ class ProductModelViewSet(viewsets.ViewSet):
         
         # Get condition counts for this category
         condition_counts = ListingUnit.objects.filter(
-            listing__model__category=category,
+            **unit_category_scope,
             listing__status='active',
             is_available=True,
             is_sold=False
@@ -336,7 +423,7 @@ class ProductModelViewSet(viewsets.ViewSet):
         
         # Get price range for this category
         price_range = ListingUnit.objects.filter(
-            listing__model__category=category,
+            **unit_category_scope,
             listing__status='active',
             is_available=True,
             is_sold=False
@@ -1405,6 +1492,137 @@ Add this to your Product app's views.py
 """
 
 
+def _validate_model_attributes(raw_value):
+    """
+    Check an attribute list BEFORE anything is written. Returns (rows, errors); `errors`
+    is empty when every entry is valid. Nothing here touches the database except a
+    read-only existence check, so a bad payload can never erase the current schema.
+    """
+    import json
+    if isinstance(raw_value, str):
+        try:
+            raw_value = json.loads(raw_value) if raw_value.strip() else []
+        except ValueError:
+            return None, [{"index": None, "error": "Attributes must be valid JSON."}]
+    if not isinstance(raw_value, list):
+        return None, [{"index": None, "error": "Attributes must be a list."}]
+
+    valid_types = {value for value, _ in ProductModelAttribute.DATA_TYPE_CHOICES}
+    valid_sections = {value for value, _ in ProductModelAttribute.SECTION_CHOICES}
+    rows, errors, seen = [], [], set()
+
+    for index, item in enumerate(raw_value):
+        if not isinstance(item, dict):
+            errors.append({"index": index, "error": "Each attribute must be an object."})
+            continue
+        attr_id = item.get('attribute_id')
+        if not attr_id:
+            continue  # blank rows from the form are ignored
+        try:
+            attr_id = int(attr_id)
+        except (TypeError, ValueError):
+            errors.append({"index": index, "attribute_id": attr_id, "error": "Attribute id must be a number."})
+            continue
+        if attr_id in seen:
+            errors.append({"index": index, "attribute_id": attr_id, "error": "This attribute is listed more than once."})
+            continue
+        seen.add(attr_id)
+
+        data_type = item.get('data_type', 'text')
+        section = item.get('section', 'main')
+        possible_values = item.get('possible_values', [])
+        if isinstance(possible_values, str):
+            try:
+                possible_values = json.loads(possible_values) if possible_values.strip() else []
+            except ValueError:
+                errors.append({"index": index, "attribute_id": attr_id, "error": "possible_values must be valid JSON."})
+                continue
+        if data_type not in valid_types:
+            errors.append({"index": index, "attribute_id": attr_id, "error": f"Invalid data type '{data_type}'."})
+            continue
+        if section not in valid_sections:
+            errors.append({"index": index, "attribute_id": attr_id, "error": f"Invalid section '{section}'."})
+            continue
+        if not isinstance(possible_values, list):
+            errors.append({"index": index, "attribute_id": attr_id, "error": "possible_values must be a list."})
+            continue
+
+        rows.append({
+            "index": index,
+            "attribute_id": attr_id,
+            "is_required": parse_bool(item.get('is_required'), False),
+            "section": section,
+            "data_type": data_type,
+            "possible_values": possible_values,
+            "default_value": item.get('default_value') or None,
+        })
+
+    existing = set(AttributeMaster.objects.filter(id__in=[r["attribute_id"] for r in rows]).values_list('id', flat=True))
+    for row in rows:
+        if row["attribute_id"] not in existing:
+            errors.append({"index": row["index"], "attribute_id": row["attribute_id"], "error": "Attribute does not exist."})
+    return rows, errors
+
+
+def _update_product_model(request, product_model):
+    """
+    Shared by PUT and PATCH. Validates everything first and returns a field-level 400
+    without writing anything; otherwise saves the model fields and replaces the attribute
+    definitions in ONE transaction, so a failure can never leave a model with none or
+    only some of its attributes.
+    """
+    data = request.data
+    rows = None
+    if 'attributes' in data:
+        rows, attribute_errors = _validate_model_attributes(data.get('attributes'))
+        if attribute_errors:
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": None, "error": "Some attributes are invalid. Nothing was changed.",
+                "errors": {"attributes": attribute_errors},
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    with transaction.atomic():
+        if 'name' in data:
+            product_model.name = data['name']
+        if 'description' in data:
+            product_model.description = data['description']
+        if 'release_year' in data:
+            product_model.release_year = data['release_year']
+        if 'price_min' in data:
+            product_model.price_min = data.get('price_min') or None
+        if 'price_max' in data:
+            product_model.price_max = data.get('price_max') or None
+        if 'is_active' in data:
+            product_model.is_active = parse_bool(data['is_active'], default=product_model.is_active)
+        if 'image' in request.FILES:
+            product_model.image = request.FILES['image']
+        product_model.save()
+
+        if rows is not None:
+            ProductModelAttribute.objects.filter(product_model=product_model).delete()
+            ProductModelAttribute.objects.bulk_create([
+                ProductModelAttribute(
+                    product_model=product_model,
+                    attribute_id=row["attribute_id"],
+                    is_required=row["is_required"],
+                    section=row["section"],
+                    data_type=row["data_type"],
+                    possible_values=row["possible_values"],
+                    default_value=row["default_value"],
+                )
+                for row in rows
+            ])
+
+    return Response({
+        "success": True,
+        "user_not_logged_in": False,
+        "user_unauthorized": False,
+        "data": ProductModelSerializer(product_model).data,
+        "error": None,
+    }, status=status.HTTP_200_OK)
+
+
 class ProductModelAdminViewSet(viewsets.ViewSet):
     """
     Admin endpoints for creating and managing default product models.
@@ -1600,182 +1818,42 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
     @handle_exceptions
     @check_authentication(required_role='admin')
     def update(self, request, pk=None):
-        """
-        Update an existing ProductModel and its attributes.
-        Partial updates are supported.
-        """
-        product_model = get_object_or_404(ProductModel, id=pk)
-
-        # Update basic fields
-        if 'name' in request.data:
-            product_model.name = request.data['name']
-        if 'description' in request.data:
-            product_model.description = request.data['description']
-        if 'release_year' in request.data:
-            product_model.release_year = request.data['release_year']
-        if 'price_min' in request.data:
-            product_model.price_min = request.data.get('price_min') or None
-        if 'price_max' in request.data:
-            product_model.price_max = request.data.get('price_max') or None
-        if 'is_active' in request.data:
-            product_model.is_active = parse_bool(request.data['is_active'], default=product_model.is_active)
-
-        # Handle image upload
-        if 'image' in request.FILES:
-            product_model.image = request.FILES['image']
-
-        product_model.save()
-
-        # Handle attributes update if provided
-        if 'attributes' in request.data:
-            attributes = request.data.get('attributes')
-
-            # Parse if needed
-            import json
-            if isinstance(attributes, str):
-                try:
-                    attributes = json.loads(attributes)
-                except:
-                    attributes = []
-
-            with transaction.atomic():
-                # Remove existing attributes (rolled back with the re-create if anything fails)
-                ProductModelAttribute.objects.filter(product_model=product_model).delete()
-
-                # Add new attributes
-                for attr_data in attributes:
-                    attr_id         = attr_data.get('attribute_id')
-                    is_required     = attr_data.get('is_required', False)
-                    section         = attr_data.get('section', 'main')
-                    data_type       = attr_data.get('data_type', 'text')
-                    possible_values = attr_data.get('possible_values', [])
-                    default_value   = attr_data.get('default_value') or None
-                    if isinstance(possible_values, str):
-                        import json as _json
-                        try: possible_values = _json.loads(possible_values)
-                        except: possible_values = []
-
-                    if not attr_id:
-                        continue
-
-                    attribute = get_object_or_404(AttributeMaster, id=attr_id)
-                    ProductModelAttribute.objects.create(
-                        product_model=product_model,
-                        attribute=attribute,
-                        is_required=is_required,
-                        section=section,
-                        data_type=data_type,
-                        possible_values=possible_values,
-                        default_value=default_value,
-                    )
-
-        serializer = ProductModelSerializer(product_model)
-        return Response({
-            "success": True,
-            "user_not_logged_in": False,
-            "user_unauthorized": False,
-            "data": serializer.data,
-            "error": None
-        }, status=status.HTTP_200_OK)
-
+        """Update an existing ProductModel and (optionally) replace its attribute definitions."""
+        return _update_product_model(request, get_object_or_404(ProductModel, id=pk))
 
     @handle_exceptions
     @check_authentication(required_role='admin')
     def partial_update(self, request, pk=None):
-        """
-        Update an existing ProductModel and its attributes.
-        Partial updates are supported. The admin product page sends PATCH, which
-        the router only binds to `partial_update`.
-        """
-        product_model = get_object_or_404(ProductModel, id=pk)
-
-        # Update basic fields
-        if 'name' in request.data:
-            product_model.name = request.data['name']
-        if 'description' in request.data:
-            product_model.description = request.data['description']
-        if 'release_year' in request.data:
-            product_model.release_year = request.data['release_year']
-        if 'price_min' in request.data:
-            product_model.price_min = request.data.get('price_min') or None
-        if 'price_max' in request.data:
-            product_model.price_max = request.data.get('price_max') or None
-        if 'is_active' in request.data:
-            product_model.is_active = parse_bool(request.data['is_active'], default=product_model.is_active)
-
-        # Handle image upload
-        if 'image' in request.FILES:
-            product_model.image = request.FILES['image']
-
-        product_model.save()
-
-        # Handle attributes update if provided
-        if 'attributes' in request.data:
-            attributes = request.data.get('attributes')
-
-            # Parse if needed
-            import json
-            if isinstance(attributes, str):
-                try:
-                    attributes = json.loads(attributes)
-                except:
-                    attributes = []
-
-            with transaction.atomic():
-                # Remove existing attributes (rolled back with the re-create if anything fails)
-                ProductModelAttribute.objects.filter(product_model=product_model).delete()
-
-                # Add new attributes
-                for attr_data in attributes:
-                    attr_id         = attr_data.get('attribute_id')
-                    is_required     = attr_data.get('is_required', False)
-                    section         = attr_data.get('section', 'main')
-                    data_type       = attr_data.get('data_type', 'text')
-                    possible_values = attr_data.get('possible_values', [])
-                    default_value   = attr_data.get('default_value') or None
-                    if isinstance(possible_values, str):
-                        import json as _json
-                        try: possible_values = _json.loads(possible_values)
-                        except: possible_values = []
-
-                    if not attr_id:
-                        continue
-
-                    attribute = get_object_or_404(AttributeMaster, id=attr_id)
-                    ProductModelAttribute.objects.create(
-                        product_model=product_model,
-                        attribute=attribute,
-                        is_required=is_required,
-                        section=section,
-                        data_type=data_type,
-                        possible_values=possible_values,
-                        default_value=default_value,
-                    )
-
-        serializer = ProductModelSerializer(product_model)
-        return Response({
-            "success": True,
-            "user_not_logged_in": False,
-            "user_unauthorized": False,
-            "data": serializer.data,
-            "error": None
-        }, status=status.HTTP_200_OK)
-
+        """PATCH variant. The admin product page sends PATCH, which the router binds to `partial_update`."""
+        return _update_product_model(request, get_object_or_404(ProductModel, id=pk))
 
     @handle_exceptions
     @check_authentication(required_role='admin')
     def destroy(self, request, pk=None):
         """
-        Delete a ProductModel and all its associations.
+        Delete a ProductModel only when nothing depends on it. A model with listings,
+        units or order history is protected: deleting it would cascade into refurbisher
+        inventory. Admins archive it instead by marking it inactive.
         """
         product_model = get_object_or_404(ProductModel, id=pk)
+        listing_count = Listing.objects.filter(model=product_model).count()
+        if listing_count:
+            unit_count = ListingUnit.objects.filter(listing__model=product_model).count()
+            return Response({
+                "success": False, "user_not_logged_in": False, "user_unauthorized": False,
+                "data": {"listings": listing_count, "units": unit_count},
+                "error": (
+                    f"This model has {listing_count} listing(s) with {unit_count} unit(s), so it cannot be deleted. "
+                    "Mark it inactive instead: it is hidden from customers while the inventory and order history are kept."
+                ),
+            }, status=status.HTTP_409_CONFLICT)
         try:
             product_model.delete()
         except ProtectedError:
             return Response({
                 "success": False, "user_not_logged_in": False, "user_unauthorized": False,
-                "data": None, "error": "This model has listings and cannot be deleted. Mark it inactive instead."
-            }, status=status.HTTP_400_BAD_REQUEST)
+                "data": None, "error": "This model is referenced by existing records and cannot be deleted. Mark it inactive instead."
+            }, status=status.HTTP_409_CONFLICT)
 
         return Response({
             "success": True,
@@ -1783,7 +1861,7 @@ class ProductModelAdminViewSet(viewsets.ViewSet):
             "user_unauthorized": False,
             "data": None,
             "error": None
-        }, status=status.HTTP_204_NO_CONTENT)
+        }, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], url_path='add-image')
     @handle_exceptions

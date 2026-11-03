@@ -82,20 +82,20 @@ function renderTable() {
   }
   tbody.innerHTML = _atFiltered.map(a => {
     const vals = a.possible_values
-      ? a.possible_values.slice(0, 4).map(v => `<span style="display:inline-block;padding:2px 7px;background:var(--bg);border:1px solid var(--border);border-radius:12px;font-size:11px">${v}</span>`).join(' ')
+      ? a.possible_values.slice(0, 4).map(v => `<span style="display:inline-block;padding:2px 7px;background:var(--bg);border:1px solid var(--border);border-radius:12px;font-size:11px">${escHtml(v)}</span>`).join(' ')
         + (a.possible_values.length > 4 ? `<span class="text-muted fs-11"> +${a.possible_values.length-4} more</span>` : '')
       : '<span class="text-muted fs-12">—</span>';
     return `<tr>
-      <td class="fw-600">${a.name}</td>
-      <td><span class="text-muted fs-12" style="font-weight:600;text-transform:uppercase;letter-spacing:.5px">${CAT_LABELS[a.category]||a.category||'—'}</span></td>
-      <td><span class="badge badge-blue">${TYPE_LABELS[a.data_type]||a.data_type||'—'}</span></td>
+      <td class="fw-600">${escHtml(a.name)}</td>
+      <td><span class="text-muted fs-12" style="font-weight:600;text-transform:uppercase;letter-spacing:.5px">${escHtml(CAT_LABELS[a.category]||a.category||'—')}</span></td>
+      <td><span class="badge badge-blue">${escHtml(TYPE_LABELS[a.data_type]||a.data_type||'—')}</span></td>
       <td>${vals}</td>
       <td><span class="badge ${a.is_active !== false ? 'badge-green' : 'badge-gray'}">${a.is_active !== false ? 'Yes' : 'No'}</span></td>
       <td class="text-muted">${a.display_order ?? '—'}</td>
       <td>
         <div style="display:flex;gap:6px;justify-content:flex-end">
           <button class="btn btn-ghost btn-sm" onclick="editAttr(${a.id})"><i class="fa-solid fa-pen"></i> Edit</button>
-          <button class="btn btn-danger btn-sm" onclick="promptDelete(${a.id},'${escStr(a.name)}')" aria-label="Delete attribute ${escStr(a.name)}" title="Delete attribute"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+          <button class="btn btn-danger btn-sm" data-name="${escHtml(a.name)}" onclick="promptDelete(${Number(a.id)}, this.dataset.name)" aria-label="Delete attribute ${escHtml(a.name)}" title="Delete attribute"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
         </div>
       </td>
     </tr>`;

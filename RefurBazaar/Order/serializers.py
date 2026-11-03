@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Order, OrderItem, DevicePhoto
+from .models import Order, OrderItem, DevicePhoto, OrderRefund
 from Product.serializers import ListingUnitSerializer
 from .services import normalize_phone
 
@@ -68,9 +68,18 @@ class OrderItemSerializer(serializers.ModelSerializer):
         return None
 
 
+class OrderRefundSerializer(serializers.ModelSerializer):
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+
+    class Meta:
+        model = OrderRefund
+        fields = ['id', 'order_item', 'amount', 'status', 'status_display', 'attempts', 'error', 'created_at']
+
+
 class OrderSerializer(serializers.ModelSerializer):
     """Serializer for Order with nested items"""
     items = OrderItemSerializer(many=True, read_only=True)
+    refunds = OrderRefundSerializer(many=True, read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     payment_method_display = serializers.CharField(source='get_payment_method_display', read_only=True)
     
@@ -89,6 +98,7 @@ class OrderSerializer(serializers.ModelSerializer):
             'payment_method', 'payment_method_display', 'razorpay_order_id', 
             'razorpay_payment_id', 'razorpay_signature', 'razorpay_link', 'payment_received',
             'status', 'status_display', 'order_note', 'delivered_at',
+            'refund_status', 'refund_attempts', 'refunds',
             'tracking_number', 'courier_name', 'tracking_url', 'items',
             'created_at', 'updated_at'
         ]

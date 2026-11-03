@@ -13,13 +13,21 @@
 
             <div class="search-col flex-grow-1 d-flex justify-content-center px-lg-4">
                 <div class="search-wrapper">
-                    <form class="search-input-group">
-                        <input type="search" class="form-control" placeholder="Search for iPhones, Laptops..."
-                            aria-label="Search">
-                        <button class="btn" type="button">
-                            <i class="fas fa-search"></i>
+                    <form class="search-input-group" action="/shop/" method="get" role="search" id="headerSearchForm">
+                        <input type="search" name="search" class="form-control" placeholder="Search for iPhones, Laptops..."
+                            aria-label="Search" maxlength="100" autocomplete="off" required>
+                        <button class="btn" type="submit" aria-label="Search">
+                            <i class="fas fa-search" aria-hidden="true"></i>
                         </button>
                     </form>
+                    <script>
+                        // Keep the typed query visible on the results page.
+                        (function () {
+                            var q = new URLSearchParams(window.location.search).get('search');
+                            var box = document.querySelector('#headerSearchForm input[name="search"]');
+                            if (q && box) box.value = q;
+                        })();
+                    </script>
                 </div>
             </div>
 

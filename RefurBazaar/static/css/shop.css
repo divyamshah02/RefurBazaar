@@ -979,3 +979,16 @@
   padding: 8px 18px;
   border-radius: 999px;
 }
+
+/* The fixed concierge pill (and, below 992px, the floating Filters button) sit on top of the bottom of
+   the viewport. Reserve their height under the footer so its last row of links stays visible and
+   clickable instead of being covered. */
+body.has-concierge .rc-footer-section {
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 991.98px) {
+  body.has-concierge .rc-footer-section {
+    padding-bottom: calc(8.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
