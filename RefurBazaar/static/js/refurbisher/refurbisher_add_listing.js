@@ -357,7 +357,7 @@ function addNewUnit() {
             <label class="form-label">Condition * <i class="fas fa-circle-info" onclick="toggleConditionsDetails()"></i></label>
             <select class="form-select" data-field="condition" required>
               <option value="">Select Condition</option>
-              <option value="excellent">Excellent</option>
+              <option value="excellent">Superb</option>
               <option value="good">Good</option>
               <option value="fair">Fair</option>
             </select>

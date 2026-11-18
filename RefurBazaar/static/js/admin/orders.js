@@ -62,7 +62,8 @@ async function loadList() {
 
   const [ok, res] = await callApi('GET', `${_orUrls.listUrl}?${params}`, null, _orCsrf);
   if (!ok || !res.success) {
-    body.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fa-solid fa-circle-exclamation"></i><h4>Failed to load orders</h4></div></td></tr>`;
+    const reason = res && res.error ? `<p class="text-muted fs-12">${escStr(res.error)}</p>` : '';
+    body.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fa-solid fa-circle-exclamation"></i><h4>Failed to load orders</h4>${reason}</div></td></tr>`;
     return;
   }
 

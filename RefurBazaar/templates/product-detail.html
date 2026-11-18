@@ -19,7 +19,8 @@
            ============================================= */
 
         /* --- Page background --- */
-        body { background: #f7f7f6; }
+        /* body { background: #f7f7f6; } */
+        body { background: #ffffff; }
 
         /* --- WhatsApp FAB --- */
         .whatsapp-fab {
@@ -53,7 +54,7 @@
         /* =============================================
            PRODUCT PAGE WRAPPER
            ============================================= */
-        .pd-page-wrapper { max-width: 1320px; margin: 0 auto; padding: 28px 20px 60px; }
+        .pd-page-wrapper { margin: 0 auto; padding: 28px 20px 60px; }
 
         /* =============================================
            LEFT COLUMN — GALLERY
@@ -66,7 +67,8 @@
             border: 1px solid #e8eaed;
             display: flex; align-items: center; justify-content: center;
             overflow: hidden; padding: 2rem;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+            /* box-shadow: 0 4px 24px rgba(0,0,0,0.05); */
+            box-shadow: 0 4px 24px rgba(0,0,0,0);
             transition: all 0.4s ease;
         }
         .main-image img {
@@ -112,7 +114,8 @@
         /* =============================================
            RIGHT COLUMN — PRODUCT DETAILS
            ============================================= */
-        .pd-right { background: #fff; border-radius: 20px; border: 1px solid #e8eaed; padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
+        /* .pd-right { background: #fff; border-radius: 20px; border: 1px solid #e8eaed; padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); } */
+        .pd-right { background: #fff; border-radius: 20px; border: 1px solid #e8eaed; padding: 28px; }
 
         /* --- Product Header --- */
         .pd-brand-tag {
@@ -205,7 +208,8 @@
             cursor: not-allowed; opacity: 0.6; transform: none !important;
         }
         .condition-card.disabled h6, .storage-card.disabled h6, .color-card.disabled h6 {
-            color: #9ca3af !important; text-decoration: line-through;
+            color: #9ca3af !important; 
+            /* text-decoration: line-through; */
         }
         .color-card.disabled .color-dot { filter: grayscale(1); opacity: 0.55; }
 
@@ -800,7 +804,7 @@
                         <div class="trust-badge-item">
                             <i class="fas fa-undo"></i>
                             <span class="tb-label">7-Day Return</span>
-                            <span class="tb-sub">No questions asked</span>
+                            <span class="tb-sub">Hassle Free</span>
                         </div>
                         <div class="trust-badge-item">
                             <i class="fas fa-truck"></i>
@@ -831,9 +835,9 @@
                                 <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
                             </div>
                             <span class="pd-rating-text">4.8 (1,245 reviews)</span>
-                            <a href="javascript:void(0)" onclick="toggleSpecsPanel()" class="pd-spec-link ms-2">
+                            <!-- <a href="javascript:void(0)" onclick="toggleSpecsPanel()" class="pd-spec-link ms-2">
                                 <i class="fas fa-sliders-h"></i> View Specifications
-                            </a>
+                            </a> -->
                         </div>
                     </div>
 
@@ -867,12 +871,26 @@
                     <div class="sellers-section">
                         <span class="sellers-label">Available from</span>
                         <span id="custom-out-of-stock-label" style="display:none; 
-                display: inline-block; background: #fee2e2; color: #dc2626;
-                font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
-                letter-spacing: 1px; padding: 4px 14px; border-radius: 20px; margin-bottom: 14px;
-            ">Out of Stock</span>
+                                display: inline-block; background: #fee2e2; color: #dc2626;
+                                font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
+                                letter-spacing: 1px; padding: 4px 14px; border-radius: 20px; margin-bottom: 14px;
+                            ">Out of Stock</span>
                         <div class="sellers-list" id="sellersList">
                             <!-- populated by JS -->
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="purchase-option border-0 p-0 mb-0">
+                            <input type="radio" name="purchase" id="buyNow" checked class="d-none">
+                            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                                <div class="price-area">
+                                    <a href="javascript:void(0)" onclick="toggleSpecsPanel()" class="pd-spec-link ms-2">
+                                        <i class="fas fa-sliders-h"></i> View Specifications
+                                    </a>
+                                </div>                                
+                            </div>
+                           
                         </div>
                     </div>
 

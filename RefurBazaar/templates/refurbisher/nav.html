@@ -195,12 +195,20 @@
             font-size: 1.6rem;
         }
     }
+    .brand-logo img {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+}
 </style>
 <nav class="navbar navbar-expand-lg main-navbar" id="navbar">
     <div class="container-fluid px-4">
-        <a class="navbar-brand me-auto" href="/refurbisher-profile/">
-            <i class="fas fa-recycle me-2"></i>RefurBazar
+        <a class="brand-logo" href="/refurbisher-profile/">
+            <img src="/static/images/new logo/Recarvit Logo edited-nobg.png" alt="RefurBazaar">
         </a>
+        <!-- <a class="navbar-brand me-auto" href="/refurbisher-profile/">
+            <i class="fas fa-recycle me-2"></i>RefurBazar
+        </a> -->
 
         {% if user.company_profile.is_profile_complete %}
         <div class="navbar-search mx-auto d-none d-lg-block">

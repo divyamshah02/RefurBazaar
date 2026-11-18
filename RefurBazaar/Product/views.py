@@ -272,166 +272,164 @@ class ProductModelViewSet(viewsets.ViewSet):
             "data": categories, "error": None
         }, status=status.HTTP_200_OK)
     
+    SHOP_SORTS = ('featured', 'price_low', 'price_high', 'newest')
+    SHOP_DEFAULT_PAGE_SIZE = 12
+    SHOP_MAX_PAGE_SIZE = 48
+
+    @staticmethod
+    def _price_param(value):
+        """A non-negative price from the query string, or None when it is missing or not a number."""
+        from decimal import Decimal, InvalidOperation
+        try:
+            price = Decimal(str(value).strip())
+        except (InvalidOperation, ValueError, AttributeError):
+            return None
+        return price if price.is_finite() and price >= 0 else None
+
+    @staticmethod
+    def _int_param(value, default, minimum=1, maximum=None):
+        try:
+            number = int(value)
+        except (TypeError, ValueError):
+            return default
+        number = max(minimum, number)
+        return min(number, maximum) if maximum else number
+
     @action(detail=False, methods=['get'], url_path='shop')
     @handle_exceptions
     def shop(self, request):
         """
-        Shop page endpoint with filters and aggregations
-        Query params:
-         - category: Filter by category
-         - brand_ids: Comma-separated brand IDs
-         - min_price: Minimum price filter
-         - max_price: Maximum price filter
-         - conditions: Comma-separated conditions (excellent,good,fair)
+        Shop page endpoint: filters, sorting and pagination all happen here, so every
+        combination of them works together and can be expressed in the page URL.
+
+        Query params (all optional):
+         - category: mobile / laptop / tablet / accessory / all (defaults to mobile, or all when searching)
+         - search: every word must appear in the model or brand name
+         - brand_ids: comma-separated brand ids
+         - conditions: comma-separated, any of excellent,good,fair,poor
+         - min_price / max_price: inclusive price bounds
          - sort_by: featured, price_low, price_high, newest
+         - page, page_size: 1-based page and items per page (max 48)
         """
-        search = (request.query_params.get('search') or '').strip()[:100]
+        from django.db.models import Case, When, Value, IntegerField
+        from django.db.models.functions import Coalesce
+
+        params = request.query_params
+        search = (params.get('search') or '').strip()[:100]
         # With a search term the category is optional: searching without one covers every category.
-        category = request.query_params.get('category') or ('all' if search else 'mobile')
+        category = params.get('category') or ('all' if search else 'mobile')
         all_categories = category == 'all'
-        brand_ids = request.query_params.get('brand_ids', '')
-        min_price = request.query_params.get('min_price')
-        max_price = request.query_params.get('max_price')
-        conditions = request.query_params.get('conditions', '')
-        sort_by = request.query_params.get('sort_by', 'featured')
+        sort_by = params.get('sort_by') if params.get('sort_by') in self.SHOP_SORTS else 'featured'
+
+        brand_id_list = [int(b) for b in (params.get('brand_ids') or '').split(',') if b.strip().isdigit()]
+        valid_conditions = {value for value, _ in ListingUnit.CONDITION_CHOICES}
+        condition_list = [c for c in (x.strip() for x in (params.get('conditions') or '').split(',')) if c in valid_conditions]
+
+        min_price = self._price_param(params.get('min_price'))
+        max_price = self._price_param(params.get('max_price'))
+        if min_price is not None and max_price is not None and min_price > max_price:
+            min_price, max_price = max_price, min_price
+
+        page_size = self._int_param(params.get('page_size'), self.SHOP_DEFAULT_PAGE_SIZE, maximum=self.SHOP_MAX_PAGE_SIZE)
+        requested_page = self._int_param(params.get('page'), 1)
+
         category_scope = {} if all_categories else {'category': category}
-        unit_category_scope = {} if all_categories else {'listing__model__category': category}
-        
-        # Base queryset - get product models with active, unsold listings
-        # (units may be available or out-of-stock; sold units are excluded entirely)
-        queryset = ProductModel.objects.filter(
-            is_active=True,
-            **category_scope,
-            listings__status='active',
-            listings__units__is_sold=False,
-            listings__refurbisher__active_user=True,
-            listings__refurbisher__company_profile__is_approved=True,
-        ).distinct()
-        
-        # Every word of the search must appear in the model name or the brand name
-        # ("iphone 11 pro" matches the iPhone 11 Pro, not every iPhone).
-        for word in search.split():
+        search_words = search.split()
+
+        # One filter() call: all the unit-level conditions (seller, stock, price, condition) must hold
+        # for the SAME unit, and the aggregates below are computed over exactly those units.
+        unit_conditions = {
+            'listings__status': 'active',
+            'listings__refurbisher__active_user': True,
+            'listings__refurbisher__company_profile__is_approved': True,
+            'listings__units__is_sold': False,
+        }
+        if min_price is not None:
+            unit_conditions['listings__units__price__gte'] = min_price
+        if max_price is not None:
+            unit_conditions['listings__units__price__lte'] = max_price
+        if condition_list:
+            unit_conditions['listings__units__condition__in'] = condition_list
+        if brand_id_list:
+            unit_conditions['brand_id__in'] = brand_id_list
+
+        queryset = ProductModel.objects.filter(is_active=True, **category_scope, **unit_conditions)
+        for word in search_words:
             queryset = queryset.filter(Q(name__icontains=word) | Q(brand__name__icontains=word))
 
-        # Apply brand filter
-        if brand_ids:
-            brand_id_list = [int(bid) for bid in brand_ids.split(',') if bid.strip().isdigit()]
-            if brand_id_list:
-                queryset = queryset.filter(brand_id__in=brand_id_list)
-        
-        # Build filter for listing units with proper relationship path
-        units_filter = Q(
-            listings__status='active',
-            listings__refurbisher__active_user=True,
-            listings__refurbisher__company_profile__is_approved=True,
-            listings__units__is_sold=False
-        )
-        
-        # Apply price filters
-        if min_price:
-            units_filter &= Q(listings__units__price__gte=float(min_price))
-        if max_price:
-            units_filter &= Q(listings__units__price__lte=float(max_price))
-        
-        # Apply condition filters
-        if conditions:
-            condition_list = [c.strip() for c in conditions.split(',') if c.strip()]
-            if condition_list:
-                units_filter &= Q(listings__units__condition__in=condition_list)
-        
-        # Filter models that match the criteria
-        queryset = queryset.filter(units_filter).distinct()
-        
-        # Annotate with min price among in-stock units, and a fallback min price
-        # among any unsold unit (used to still show a price for out-of-stock items)
+        in_stock = Q(listings__units__is_available=True)
         queryset = queryset.annotate(
-            min_price=Min('listings__units__price', filter=Q(
-                listings__status='active',
-                listings__refurbisher__active_user=True,
-                listings__refurbisher__company_profile__is_approved=True,
-                listings__units__is_available=True,
-                listings__units__is_sold=False
-            )),
-            fallback_min_price=Min('listings__units__price', filter=Q(
-                listings__status='active',
-                listings__refurbisher__active_user=True,
-                listings__refurbisher__company_profile__is_approved=True,
-                listings__units__is_sold=False
-            )),
-            available_units_count=Count('listings__units', filter=Q(
-                listings__status='active',
-                listings__refurbisher__active_user=True,
-                listings__refurbisher__company_profile__is_approved=True,
-                listings__units__is_available=True,
-                listings__units__is_sold=False
-            ), distinct=True)
+            min_price=Min('listings__units__price', filter=in_stock),
+            fallback_min_price=Min('listings__units__price'),
+            available_units_count=Count('listings__units', filter=in_stock, distinct=True),
+        ).annotate(
+            display_price=Coalesce('min_price', 'fallback_min_price'),
+            in_stock_rank=Case(When(available_units_count__gt=0, then=Value(0)), default=Value(1), output_field=IntegerField()),
         )
-        
-        # Apply sorting — out-of-stock items should sort after in-stock ones,
-        # using the fallback price for ordering when they have no in-stock units
+
+        # In-stock models always come first; inside each group the chosen sort decides the order.
+        # `id` is the final tiebreaker so pages never shuffle or repeat items.
         if sort_by == 'price_low':
-            queryset = queryset.order_by('-available_units_count', 'min_price', 'fallback_min_price')
+            ordering = ('in_stock_rank', 'display_price', 'name', 'id')
         elif sort_by == 'price_high':
-            queryset = queryset.order_by('-available_units_count', '-min_price', '-fallback_min_price')
+            ordering = ('in_stock_rank', '-display_price', 'name', 'id')
         elif sort_by == 'newest':
-            queryset = queryset.order_by('-available_units_count', '-created_at')
-        else:  # featured
-            queryset = queryset.order_by('-available_units_count', 'brand__name', 'name')
-        
-        # Serialize products with min_price and in-stock status
-        models_page = list(queryset)
+            ordering = ('in_stock_rank', '-created_at', '-id')
+        else:
+            ordering = ('in_stock_rank', 'brand__name', 'name', 'id')
+        queryset = queryset.order_by(*ordering)
+
+        total_count = queryset.count()
+        total_pages = max(1, -(-total_count // page_size))
+        page = min(requested_page, total_pages)
+        offset = (page - 1) * page_size
+        models_page = list(queryset[offset:offset + page_size])
+
         card_specs = _card_specs_for([m.id for m in models_page])
         products = []
         for model in models_page:
             data = ProductModelSerializer(model).data
             is_in_stock = model.available_units_count > 0
-            display_price = model.min_price if is_in_stock else model.fallback_min_price
-            data['min_price'] = float(display_price) if display_price else 0
+            data['min_price'] = float(model.display_price) if model.display_price is not None else 0
             data['is_available'] = is_in_stock
             data['card_specs'] = card_specs.get(model.id, {"fixed": [], "options": []})
             products.append(data)
-        
-        # Get available brands for this category with counts
-        brands = Brand.objects.filter(
-            **({} if all_categories else {'models__category': category}),
+
+        # Sidebar facets describe the whole category (and search), not only the current page or filters,
+        # so the price bounds and brand list stay stable while the customer narrows the results.
+        visible_units = {
+            'listing__status': 'active',
+            'listing__refurbisher__active_user': True,
+            'listing__refurbisher__company_profile__is_approved': True,
+            'is_available': True,
+            'is_sold': False,
+        }
+        if not all_categories:
+            visible_units['listing__model__category'] = category
+
+        facet_units = ListingUnit.objects.filter(**visible_units)
+        facet_brands = Brand.objects.filter(
             models__is_active=True,
+            **({} if all_categories else {'models__category': category}),
             models__listings__status='active',
+            models__listings__refurbisher__active_user=True,
+            models__listings__refurbisher__company_profile__is_approved=True,
             models__listings__units__is_available=True,
-            models__listings__units__is_sold=False
-        ).annotate(
-            product_count=Count('models', distinct=True)
-        ).distinct().order_by('name')
-        
-        brands_data = [
-            {
-                'id': brand.id,
-                'name': brand.name,
-                'count': brand.product_count
-            }
-            for brand in brands
-        ]
-        
-        # Get condition counts for this category
-        condition_counts = ListingUnit.objects.filter(
-            **unit_category_scope,
-            listing__status='active',
-            is_available=True,
-            is_sold=False
-        ).values('condition').annotate(count=Count('id'))
-        
-        conditions_data = {item['condition']: item['count'] for item in condition_counts}
-        
-        # Get price range for this category
-        price_range = ListingUnit.objects.filter(
-            **unit_category_scope,
-            listing__status='active',
-            is_available=True,
-            is_sold=False
-        ).aggregate(
-            min_price=Min('price'),
-            max_price=Max('price')
+            models__listings__units__is_sold=False,
         )
-        
+        for word in search_words:
+            facet_units = facet_units.filter(
+                Q(listing__model__name__icontains=word) | Q(listing__model__brand__name__icontains=word))
+            facet_brands = facet_brands.filter(Q(models__name__icontains=word) | Q(name__icontains=word))
+
+        brands = facet_brands.annotate(product_count=Count('models', distinct=True)).distinct().order_by('name')
+        brands_data = [{'id': b.id, 'name': b.name, 'count': b.product_count} for b in brands]
+        conditions_data = {
+            row['condition']: row['count']
+            for row in facet_units.values('condition').annotate(count=Count('id'))
+        }
+        price_range = facet_units.aggregate(min_price=Min('price'), max_price=Max('price'))
+
         return Response({
             "success": True,
             "user_not_logged_in": False,
@@ -441,7 +439,15 @@ class ProductModelViewSet(viewsets.ViewSet):
                 "brands": brands_data,
                 "conditions": conditions_data,
                 "price_range": price_range,
-                "total_count": len(products)
+                "total_count": total_count,
+                "pagination": {
+                    "page": page,
+                    "page_size": page_size,
+                    "total_pages": total_pages,
+                    "total_count": total_count,
+                    "has_previous": page > 1,
+                    "has_next": page < total_pages,
+                },
             },
             "error": None
         }, status=status.HTTP_200_OK)

@@ -1,0 +1,32 @@
+XX - in home page in tab see check list - 7-day no-questions return
+shop page pagination - and filters not working properly
+CERTIFIED RENEWED IPHONES - off
+
+check homepage dyanmic
+
+shop page product title font size reduce and make the fitlers thin
+
+instead of 
+
+
+in product detail
+remove  Warranty & Returns - Condition
+
+a box of view sepcs below whats in the box
+
+rmeove box shadow from product selected options
+
+
+
+in checkout the amount is geting down
+- also no hexcode in mobile summary in checkout page 228B22 
+
+
+
+in add new listing make it superb good fair not excellent
+
+
+
+unable to delete the listing from outside 
+
+price hike is not happening after commission not incresing

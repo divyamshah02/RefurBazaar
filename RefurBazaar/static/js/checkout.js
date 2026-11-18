@@ -194,13 +194,13 @@ function renderOrderItems(data) {
 
       return `
         <div class="order-item mb-3">
-          <img src="${imageUrl}" alt="${unit.model_name}" class="img-fluid rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
-          <div class="flex-grow-1">
+          <img src="${imageUrl}" alt="${unit.model_name}" class="img-fluid rounded" style="width: 60px; height: 60px; object-fit: cover;">
+          <div class="order-item-details">
             <h6 class="mb-1">${unit.brand_name} ${unit.model_name}</h6>
-            <small class="text-muted">${attributes} • ${unit.condition}</small>
+            <small class="text-muted">${attributes}</small>
             ${warrantyBadge}
           </div>
-          <div class="text-end">
+          <div class="order-item-price text-end">
             <strong>₹${Number.parseFloat(unit.price).toLocaleString("en-IN")}</strong>
           </div>
         </div>

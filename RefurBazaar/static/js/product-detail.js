@@ -230,7 +230,7 @@ function renderSpecsSections() {
   }
 
   if (section && (mainAttrs.length > 0 || secondaryAttrs.length > 0 || productData.description)) {
-    section.style.display = ""
+    // section.style.display = ""
   }
 }
 
