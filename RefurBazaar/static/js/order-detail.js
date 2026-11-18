@@ -358,7 +358,7 @@ function openRazorpayForOrder(razorpayOrder, order) {
       email: order.email,
       contact: order.phone,
     },
-    theme: { color: "#6bb044" },
+    theme: { color: "#009B4E" },
     modal: {
       ondismiss: () => setPayButtonsBusy(false),
     },

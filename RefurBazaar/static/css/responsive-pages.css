@@ -384,6 +384,33 @@ video {
   overflow-wrap: anywhere;
 }
 
+/* Order summary row: image | name + specs | price.
+   - the price never breaks, so ₹2,44,444 is always one line;
+   - the name/specs column keeps at least 8rem, so it stays readable;
+   - when the card is too narrow for all three, the price drops to its own right-aligned line
+     instead of squeezing the name into one-word lines. */
+.page-checkout .order-item {
+  flex-wrap: wrap;
+}
+
+.page-checkout .order-item .order-item-details {
+  flex: 1 1 8rem;
+  min-width: 0;
+}
+
+.page-checkout .order-item .order-item-price,
+.page-checkout .order-item .order-item-price * {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.page-checkout .order-item .order-item-price {
+  flex: 0 0 auto;
+  margin-left: auto;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 @media (max-width: 991.98px) {
   .page-checkout .order-summary-card {
     position: static;

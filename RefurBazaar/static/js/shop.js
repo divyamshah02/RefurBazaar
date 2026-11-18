@@ -14,6 +14,13 @@ let allProducts = []
 let allBrands = []
 let conditionCounts = {}
 
+// Pagination (server side; the API returns one page at a time)
+const PAGE_SIZE = 12
+let currentPage = 1
+let totalPages = 1
+let totalCount = 0
+let shopRequestId = 0
+
 // Price range bounds (set from API)
 let globalMinPrice = 0
 let globalMaxPrice = 250000
@@ -33,9 +40,17 @@ async function initShop(api_url, csrf) {
   setupPriceFilters()
   setupConditionFilters()
   setupSortFilter()
-  initCategoryFromQueryParam()
+  setupPagination()
 
-  await loadShopData()
+  // The URL is the source of truth: /shop/?category=laptop&brand_ids=2&conditions=good
+  // &min_price=20000&max_price=40000&sort_by=price_low&page=2 restores exactly that view.
+  readStateFromUrl()
+  window.addEventListener("popstate", async () => {
+    readStateFromUrl()
+    await loadShopData({ updateUrl: false })
+  })
+
+  await loadShopData({ updateUrl: false })
 }
 
 // ============================================================
@@ -46,9 +61,11 @@ function setupCategoryFilter() {
   categorySelect.addEventListener("change", async (e) => {
     currentCategory = e.target.value
     updateCategoryTitle()
-    // Reset price bounds on category change
+    // Brands and price bounds belong to a category, so they reset when it changes
+    selectedBrands = []
     minPrice = null
     maxPrice = null
+    currentPage = 1
     await loadShopData()
   })
 }
@@ -65,6 +82,7 @@ function setupBrandFilters() {
       } else {
         selectedBrands = selectedBrands.filter((id) => id !== brandId)
       }
+      currentPage = 1
       await loadShopData()
     }
   })
@@ -101,11 +119,7 @@ function setupPriceFilters() {
     clearActivePills()
 
     clearTimeout(priceTimeout)
-    priceTimeout = setTimeout(async () => {
-      minPrice = minVal
-      maxPrice = maxVal
-      await loadShopData()
-    }, 400)
+    priceTimeout = setTimeout(() => setPriceFilter(minVal, maxVal), 400)
   }
 
   minRange.addEventListener("input", onSliderChange)
@@ -128,11 +142,7 @@ function setupPriceFilters() {
     clearActivePills()
 
     clearTimeout(priceTimeout)
-    priceTimeout = setTimeout(async () => {
-      minPrice = minVal
-      maxPrice = maxVal
-      await loadShopData()
-    }, 600)
+    priceTimeout = setTimeout(() => setPriceFilter(minVal, maxVal), 600)
   }
 
   minInputBox.addEventListener("change", onInputBoxChange)
@@ -179,6 +189,7 @@ function clearActivePills() {
 function initPriceRange(minP, maxP) {
   globalMinPrice = Math.floor(minP || 0)
   globalMaxPrice = Math.ceil(maxP || 250000)
+  if (globalMaxPrice <= globalMinPrice) globalMaxPrice = globalMinPrice + 1
 
   const minRange = document.getElementById("minPriceRange")
   const maxRange = document.getElementById("maxPriceRange")
@@ -190,16 +201,27 @@ function initPriceRange(minP, maxP) {
   maxRange.max = globalMaxPrice
   maxRange.step = minRange.step
 
-  // Only reset slider positions if no active price filter
-  if (minPrice === null) {
-    minRange.value = globalMinPrice
-    maxRange.value = globalMaxPrice
-    updatePriceUI(globalMinPrice, globalMaxPrice)
-  }
+  // Show the active filter (from the URL or the sliders); otherwise the full range.
+  const shownMin = minPrice === null ? globalMinPrice : minPrice
+  const shownMax = maxPrice === null ? globalMaxPrice : maxPrice
+  minRange.value = Math.min(Math.max(shownMin, globalMinPrice), globalMaxPrice)
+  maxRange.value = Math.min(Math.max(shownMax, globalMinPrice), globalMaxPrice)
+  updatePriceUI(shownMin, shownMax)
 
   updateTrackFill()
   renderPricePills()
   renderPriceHistogram()
+}
+
+/**
+ * Apply a price filter chosen with the slider, the boxes or a quick pill.
+ * Values that equal the full range mean "no limit", so they are not sent or put in the URL.
+ */
+function setPriceFilter(minVal, maxVal) {
+  minPrice = minVal <= globalMinPrice ? null : minVal
+  maxPrice = maxVal >= globalMaxPrice ? null : maxVal
+  currentPage = 1
+  return loadShopData()
 }
 
 function renderPricePills() {
@@ -219,9 +241,10 @@ function renderPricePills() {
 
   // Cap at 3 pills
   const shown = pills.slice(0, 3)
-  container.innerHTML = shown.map(p =>
-    `<button class="price-pill" onclick="setPriceRangeQuick(${globalMinPrice}, ${p.max}, this)">${p.label}</button>`
-  ).join("")
+  container.innerHTML = shown.map(p => {
+    const active = minPrice === null && maxPrice === p.max ? " active" : ""
+    return `<button class="price-pill${active}" onclick="setPriceRangeQuick(${globalMinPrice}, ${p.max}, this)">${p.label}</button>`
+  }).join("")
 }
 
 function renderPriceHistogram() {
@@ -247,6 +270,7 @@ function setupConditionFilters() {
       } else {
         selectedConditions = selectedConditions.filter((c) => c !== condition)
       }
+      currentPage = 1
       await loadShopData()
     })
   })
@@ -258,6 +282,7 @@ function setupConditionFilters() {
 function setupSortFilter() {
   document.getElementById("sortBy").addEventListener("change", async (e) => {
     sortBy = e.target.value
+    currentPage = 1
     await loadShopData()
   })
 }
@@ -265,19 +290,52 @@ function setupSortFilter() {
 // ============================================================
 // Load Shop Data from API
 // ============================================================
-async function loadShopData() {
+function buildShopParams() {
+  const params = new URLSearchParams({ category: currentCategory, sort_by: sortBy, page: currentPage, page_size: PAGE_SIZE })
+  if (selectedBrands.length > 0) params.set("brand_ids", selectedBrands.join(","))
+  if (selectedConditions.length > 0) params.set("conditions", selectedConditions.join(","))
+  if (minPrice !== null) params.set("min_price", minPrice)
+  if (maxPrice !== null) params.set("max_price", maxPrice)
+  if (searchQuery) params.set("search", searchQuery)
+  return params
+}
+
+// The address bar mirrors the active view, without the defaults, so it can be shared or bookmarked.
+function buildPageParams(page = currentPage) {
+  const params = new URLSearchParams()
+  if (searchQuery) params.set("search", searchQuery)
+  const impliedBySearch = searchQuery && currentCategory === "all"
+  if (!impliedBySearch && currentCategory !== "mobile") params.set("category", currentCategory)
+  if (selectedBrands.length > 0) params.set("brand_ids", selectedBrands.join(","))
+  if (selectedConditions.length > 0) params.set("conditions", selectedConditions.join(","))
+  if (minPrice !== null) params.set("min_price", minPrice)
+  if (maxPrice !== null) params.set("max_price", maxPrice)
+  if (sortBy !== "featured") params.set("sort_by", sortBy)
+  if (page > 1) params.set("page", page)
+  return params
+}
+
+function pageHref(page) {
+  const query = buildPageParams(page).toString()
+  return query ? `${window.location.pathname}?${query}` : window.location.pathname
+}
+
+function syncUrl() {
+  const next = pageHref(currentPage)
+  if (next !== window.location.pathname + window.location.search) {
+    window.history.pushState(null, "", next)
+  }
+}
+
+async function loadShopData({ updateUrl = true } = {}) {
+  // Only the newest request may render: a slow earlier response must not overwrite a newer one.
+  const requestId = ++shopRequestId
   showLoading()
+  if (updateUrl) syncUrl()
 
-  const params = new URLSearchParams({ category: currentCategory, sort_by: sortBy })
-
-  if (selectedBrands.length > 0) params.append("brand_ids", selectedBrands.join(","))
-  if (selectedConditions.length > 0) params.append("conditions", selectedConditions.join(","))
-  if (minPrice !== null) params.append("min_price", minPrice)
-  if (maxPrice !== null) params.append("max_price", maxPrice)
-  if (searchQuery) params.append("search", searchQuery)
-
-  const url = `${shop_api_url}?${params.toString()}`
+  const url = `${shop_api_url}?${buildShopParams().toString()}`
   const [success, response] = await callApi("GET", url, null, csrf_token)
+  if (requestId !== shopRequestId) return
 
   if (success && response.success) {
     const data = response.data
@@ -285,14 +343,32 @@ async function loadShopData() {
     allBrands = data.brands
     conditionCounts = data.conditions
 
-    // Set price range bounds from API on first load (or category change)
-    if (data.price_range && minPrice === null && maxPrice === null) {
+    const pagination = data.pagination || {}
+    totalCount = pagination.total_count ?? allProducts.length
+    totalPages = pagination.total_pages || 1
+    // The server clamps a page that no longer exists (e.g. after filtering); follow it.
+    if (pagination.page && pagination.page !== currentPage) {
+      currentPage = pagination.page
+      if (updateUrl) window.history.replaceState(null, "", pageHref(currentPage))
+    }
+
+    // Brands that do not exist in this category would otherwise stay selected without a visible checkbox.
+    const unknownBrands = selectedBrands.filter((id) => !allBrands.some((brand) => brand.id === id))
+    if (unknownBrands.length > 0) {
+      selectedBrands = selectedBrands.filter((id) => !unknownBrands.includes(id))
+      currentPage = 1
+      return loadShopData({ updateUrl })
+    }
+
+    // Bounds come from the API on every load; an active price filter keeps its values.
+    if (data.price_range) {
       initPriceRange(data.price_range.min_price, data.price_range.max_price)
     }
 
     renderBrandFilters()
     renderConditionCounts()
     renderProducts()
+    renderPagination()
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
       bootstrap.Tooltip.getOrCreateInstance(el, {
         html: true,
@@ -301,8 +377,82 @@ async function loadShopData() {
     });
     updateResultsCount()
   } else {
+    totalPages = 1
+    renderPagination()
     showError("Failed to load products. Please try again.")
   }
+}
+
+// ============================================================
+// Pagination
+// ============================================================
+function setupPagination() {
+  const nav = document.getElementById("paginationNav")
+  if (!nav) return
+  nav.addEventListener("click", (e) => {
+    const link = e.target.closest("a.page-link[data-page]")
+    if (!link) return
+    // Let ctrl/cmd/middle click open the page in a new tab through its real href.
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return
+    e.preventDefault()
+    const page = parseInt(link.dataset.page, 10)
+    const item = link.closest(".page-item")
+    if (!page || page === currentPage || (item && item.classList.contains("disabled"))) return
+    goToPage(page)
+  })
+}
+
+function goToPage(page) {
+  currentPage = Math.min(Math.max(1, page), totalPages)
+  const header = document.querySelector(".products-header")
+  if (header) header.scrollIntoView({ behavior: "smooth", block: "start" })
+  return loadShopData()
+}
+
+// First page, last page and the neighbours of the current page, with gaps shown as an ellipsis.
+function pageWindow(current, total) {
+  const wanted = new Set([1, total, current - 1, current, current + 1])
+  if (current <= 3) { wanted.add(2); wanted.add(3) }
+  if (current >= total - 2) { wanted.add(total - 1); wanted.add(total - 2) }
+  const pages = [...wanted].filter((n) => n >= 1 && n <= total).sort((a, b) => a - b)
+  const result = []
+  pages.forEach((n, i) => {
+    if (i > 0 && n - pages[i - 1] > 1) result.push("gap")
+    result.push(n)
+  })
+  return result
+}
+
+function renderPagination() {
+  const nav = document.getElementById("paginationNav")
+  const list = document.getElementById("paginationList")
+  if (!nav || !list) return
+
+  if (totalPages <= 1) {
+    nav.style.display = "none"
+    list.innerHTML = ""
+    return
+  }
+
+  const link = (label, page, { disabled = false, active = false, aria = "" } = {}) => `
+    <li class="page-item${disabled ? " disabled" : ""}${active ? " active" : ""}">
+      <a class="page-link" href="${pageHref(page)}" data-page="${page}"
+         ${aria ? `aria-label="${aria}"` : ""} ${active ? 'aria-current="page"' : ""}
+         ${disabled ? 'tabindex="-1" aria-disabled="true"' : ""}>${label}</a>
+    </li>`
+
+  const numbers = pageWindow(currentPage, totalPages).map((entry) =>
+    entry === "gap"
+      ? '<li class="page-item disabled"><span class="page-link">&hellip;</span></li>'
+      : link(entry, entry, { active: entry === currentPage, aria: `Page ${entry}` })
+  )
+
+  list.innerHTML = [
+    link("Previous", currentPage - 1, { disabled: currentPage <= 1, aria: "Previous page" }),
+    ...numbers,
+    link("Next", currentPage + 1, { disabled: currentPage >= totalPages, aria: "Next page" }),
+  ].join("")
+  nav.style.display = "block"
 }
 
 // ============================================================
@@ -320,7 +470,7 @@ function renderBrandFilters() {
              id="brand${brand.id}" value="${brand.id}"
              ${selectedBrands.includes(brand.id) ? "checked" : ""}>
       <label class="form-check-label" for="brand${brand.id}">
-        ${brand.name} <span class="count">(${brand.count})</span>
+        ${escapeHtml(brand.name)} <span class="count">(${brand.count})</span>
       </label>
     </div>
   `).join("")
@@ -502,10 +652,17 @@ function escapeHtml(str) {
 // ============================================================
 function updateResultsCount() {
   const el = document.getElementById("resultsCount")
-  const total = allProducts.length
-  if (total === 0) el.textContent = "No results found"
-  else if (total === 1) el.textContent = "Showing 1 result"
-  else el.textContent = `Showing ${total} results`
+  if (totalCount === 0) {
+    el.textContent = "No results found"
+  } else if (totalCount === 1) {
+    el.textContent = "Showing 1 result"
+  } else if (totalPages <= 1) {
+    el.textContent = `Showing ${totalCount} results`
+  } else {
+    const first = (currentPage - 1) * PAGE_SIZE + 1
+    const last = first + allProducts.length - 1
+    el.textContent = `Showing ${first}\u2013${last} of ${totalCount} results`
+  }
 }
 
 // ============================================================
@@ -527,9 +684,7 @@ function setPriceRange(min, max) {
   maxRange.value = max
   updatePriceUI(min, max)
   updateTrackFill()
-  minPrice = min
-  maxPrice = max
-  loadShopData()
+  setPriceFilter(min, max)
 }
 
 function setPriceRangeQuick(min, max, btnEl) {
@@ -572,6 +727,7 @@ function clearFilters() {
   minPrice = null
   maxPrice = null
   sortBy = "featured"
+  currentPage = 1
 
   const minRange = document.getElementById("minPriceRange")
   const maxRange = document.getElementById("maxPriceRange")
@@ -632,6 +788,8 @@ function setListView() {
 // Loading / Error helpers
 // ============================================================
 function showLoading() {
+  const count = document.getElementById("resultsCount")
+  if (count) count.textContent = "Updating results..."
   document.getElementById("productsContainer").innerHTML = `
     <div class="col-12 text-center py-5">
       <div class="spinner-border text-primary" role="status">
@@ -661,28 +819,53 @@ function formatPrice(price) {
 // ============================================================
 // Auto-select category from query param
 // ============================================================
-function initCategoryFromQueryParam() {
-  const urlParams = new URLSearchParams(window.location.search)
-  const categoryParam = urlParams.get("category")
-  searchQuery = (urlParams.get("search") || "").trim().slice(0, 100)
+const SHOP_SORTS = ["featured", "price_low", "price_high", "newest"]
+const SHOP_CONDITIONS = ["excellent", "good", "fair"]
 
+function parseUrlPrice(value) {
+  if (value === null || value.trim() === "") return null
+  const number = Number(value)
+  return Number.isFinite(number) && number >= 0 ? Math.round(number) : null
+}
+
+/**
+ * Restore every control from the address bar. Anything invalid or unknown is ignored,
+ * so a hand-edited or old link never breaks the page.
+ */
+function readStateFromUrl() {
+  const query = new URLSearchParams(window.location.search)
+
+  searchQuery = (query.get("search") || "").trim().slice(0, 100)
+
+  const categorySelect = document.getElementById("categorySelect")
+  const validCategories = Array.from(categorySelect.options).map((option) => option.value)
+  const categoryParam = query.get("category")
   // A search without a category looks across every category.
-  if (searchQuery && !categoryParam) {
-    const categorySelect = document.getElementById("categorySelect")
-    if (categorySelect) categorySelect.value = "all"
-    currentCategory = "all"
-    updateCategoryTitle()
-    return
-  }
+  currentCategory = validCategories.includes(categoryParam) ? categoryParam : searchQuery ? "all" : "mobile"
+  categorySelect.value = currentCategory
 
-  if (categoryParam) {
-    const categorySelect = document.getElementById("categorySelect")
-    if (categorySelect) {
-      categorySelect.value = categoryParam
-      currentCategory = categoryParam
-      updateCategoryTitle()
-    }
-  }
+  selectedBrands = [...new Set(
+    (query.get("brand_ids") || "").split(",").map((id) => parseInt(id, 10)).filter((id) => Number.isInteger(id) && id > 0)
+  )]
+  selectedConditions = [...new Set(
+    (query.get("conditions") || "").split(",").map((c) => c.trim().toLowerCase()).filter((c) => SHOP_CONDITIONS.includes(c))
+  )]
+
+  minPrice = parseUrlPrice(query.get("min_price"))
+  maxPrice = parseUrlPrice(query.get("max_price"))
+  if (minPrice !== null && maxPrice !== null && minPrice > maxPrice) [minPrice, maxPrice] = [maxPrice, minPrice]
+
+  sortBy = SHOP_SORTS.includes(query.get("sort_by")) ? query.get("sort_by") : "featured"
+  currentPage = Math.max(1, parseInt(query.get("page"), 10) || 1)
+
+  document.getElementById("sortBy").value = sortBy
+  document.querySelectorAll(".condition-filter").forEach((box) => { box.checked = selectedConditions.includes(box.value) })
+  document.querySelectorAll(".brand-filter").forEach((box) => { box.checked = selectedBrands.includes(parseInt(box.value, 10)) })
+
+  const headerBox = document.querySelector('#headerSearchForm input[name="search"]')
+  if (headerBox) headerBox.value = searchQuery
+
+  updateCategoryTitle()
 }
 
 // ============================================================

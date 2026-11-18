@@ -777,7 +777,12 @@
 /* ============================================================
    Pagination
    ============================================================ */
+.pagination-nav {
+  text-align: center;
+}
+
 .pagination-nav .pagination {
+  display: inline-flex;
   border-radius: 50px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -799,6 +804,30 @@
 .pagination .page-link:hover {
   background: var(--light-green, #e9f7ef);
   color: var(--primary-green);
+}
+
+.pagination .page-item.disabled .page-link {
+  background: #fff;
+  color: #9aa0a6;
+  pointer-events: none;
+}
+
+.pagination .page-link:focus-visible {
+  outline: 2px solid var(--primary-green);
+  outline-offset: -2px;
+}
+
+/* Keep the whole pager on one line on phones: tighter targets, "Previous"/"Next" stay readable. */
+@media (max-width: 575.98px) {
+  .pagination-nav .pagination {
+    flex-wrap: nowrap;
+    max-width: 100%;
+  }
+
+  .pagination .page-link {
+    padding: 0.6rem 0.7rem;
+    font-size: 0.85rem;
+  }
 }
 
 /* ============================================================

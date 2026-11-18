@@ -1,9 +1,9 @@
 :root {
-  --primary-color: #6bb044; /* updated */
+  --primary-color: #009B4E; /* updated */
   --primary-dark: #568e38;  /* optional: darker shade of new primary */
   --primary-light: #e6f3dd; /* optional: lighter shade of new primary */
   --secondary-color: #1a4685; /* updated */
-  --gradient-primary: linear-gradient(135deg, #6bb044 0%, #1a4685 100%); /* updated gradient */
+  --gradient-primary: linear-gradient(135deg, #009B4E 0%, #1a4685 100%); /* updated gradient */
   
   /* keep the rest as is */
   --accent-color: #ff6b35;
